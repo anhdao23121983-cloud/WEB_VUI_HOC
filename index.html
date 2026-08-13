@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ANH ĐÀO - Học Liệu & Vui Học Tin Học 3-5 | Kế Hoạch Bài Dạy CV 2345</title>
+  <meta name="description" content="Hệ thống Quản lý Kế hoạch bài dạy chuẩn Công văn 2345 tích hợp AI và Game Hub học tập tương tác Tin học lớp 3, 4, 5.">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Custom Design System -->
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased flex flex-col min-h-screen">
+
+  <!-- ==========================================================================
+       1. NAVIGATION BAR
+       ========================================================================== -->
+  <header class="navbar px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-sm">
+    <!-- Brand Logo -->
+    <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.hash='landing'">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-emerald-500 flex items-center justify-center text-white font-black text-xl shadow-md">
+        🌸
+      </div>
+      <div>
+        <h1 class="text-base lg:text-lg font-black text-slate-900 leading-tight">ANH ĐÀO • CLASSROOM</h1>
+        <p class="text-[11px] font-bold text-cyan-700 uppercase tracking-wider">Học Liệu & Vui Học Tin Học 3-5</p>
+      </div>
+    </div>
+
+    <!-- Quick Navigation Links -->
+    <nav class="hidden md:flex items-center gap-2">
+      <button onclick="window.location.hash='landing'" class="px-3 py-1.5 rounded-lg font-bold text-sm text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">Trang Chủ</button>
+      <button onclick="window.location.hash='teacher'" class="px-3 py-1.5 rounded-lg font-bold text-sm text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">👩‍🏫 Giáo Viên (CV 2345)</button>
+      <button onclick="window.location.hash='student'" class="px-3 py-1.5 rounded-lg font-bold text-sm text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">🎒 Học Sinh (Lớp 3-5)</button>
+      <button onclick="window.location.hash='gamehub'" class="px-3 py-1.5 rounded-lg font-bold text-sm text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">🎮 Game Hub</button>
+    </nav>
+
+    <!-- User Box & Database Status -->
+    <div class="flex items-center gap-3">
+      <span id="db-status-badge" class="hidden sm:inline-flex badge badge-cyan font-bold cursor-pointer" onclick="teacherPortal.openSettingsModal()">
+        ● Local DB (Demo Mode)
+      </span>
+
+      <!-- Box khi đã đăng nhập -->
+      <div id="nav-user-box" class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+        <span id="nav-user-avatar" class="text-lg">👨‍🏫</span>
+        <div class="text-left hidden lg:block leading-tight">
+          <p id="nav-user-name" class="text-xs font-black text-slate-800">Thầy Anh Đào</p>
+          <p id="nav-user-role" class="text-[10px] text-slate-500 font-bold">Giáo viên</p>
+        </div>
+        <button onclick="authService.logout(); window.location.hash='auth';" class="text-xs text-rose-600 font-bold ml-1 hover:underline">Thoát</button>
+      </div>
+
+      <!-- Box khi là khách -->
+      <div id="nav-guest-box" class="hidden">
+        <button onclick="window.location.hash='auth'" class="btn btn-primary btn-sm">Đăng Nhập</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       2. MAIN CONTENT VIEWPORT
+       ========================================================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8">
+    
+    <!-- VIEW 1: LANDING OVERVIEW -->
+    <section id="landing-view" class="space-y-8 animate-slide-up">
+      <!-- Hero Banner -->
+      <div class="banner-anhdao p-8 md:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8">
+        <div class="space-y-4 max-w-2xl">
+          <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3.5 py-1.5 rounded-full text-white font-black text-xs uppercase tracking-wider border border-white/30">
+            <span>✨</span> HỆ THỐNG GIÁO DỤC SỐ TOÀN DIỆN
+          </div>
+          <h2 class="text-3xl md:text-5xl font-black text-white leading-tight">
+            VUI HỌC TIN HỌC 3 - 5 & SOẠN GIÁO ÁN CV 2345
+          </h2>
+          <p class="text-cyan-100 text-sm md:text-base leading-relaxed">
+            Hệ sinh thái học liệu số thiết kế chuyên biệt cho Thầy và Trò: Soạn thảo kế hoạch bài dạy chuẩn Công văn 2345 tích hợp AI, ngân hàng trò chơi lập trình & phần cứng tương tác, theo dõi tiến độ thời gian thực.
+          </p>
+          <div class="flex flex-wrap items-center gap-3 pt-2 justify-center md:justify-start">
+            <button onclick="window.location.hash='teacher'" class="btn btn-emerald btn-lg font-black shadow-lg">
+              👩‍🏫 Portal Giáo Viên (Soạn CV 2345)
+            </button>
+            <button onclick="window.location.hash='student'" class="btn btn-amber btn-lg font-black shadow-lg">
+              🎒 Portal Học Sinh (Khám Phá)
+            </button>
+            <button onclick="window.location.hash='gamehub'" class="btn btn-outline btn-lg font-bold bg-white/90 text-slate-800">
+              🎮 Trải Nghiệm Game Hub
+            </button>
+          </div>
+        </div>
+
+        <div class="w-full max-w-xs bg-white/10 backdrop-blur-lg p-6 rounded-3xl border border-white/30 text-center text-white space-y-4 animate-float">
+          <span class="text-6xl block">💻</span>
+          <div>
+            <h4 class="text-xl font-extrabold">GDPT 2018</h4>
+            <p class="text-xs text-cyan-200">Kết nối tri thức • Cánh diều • Chân trời</p>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/20 text-xs">
+            <div class="bg-white/15 p-2 rounded-xl">
+              <span class="font-black text-lg block text-amber-300">100%</span>
+              <span>Chuẩn 2345</span>
+            </div>
+            <div class="bg-white/15 p-2 rounded-xl">
+              <span class="font-black text-lg block text-emerald-300">4+</span>
+              <span>Minigames</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sơ Đồ 4 Tầng Kiến Trúc Hệ Thống (Trực quan hóa sơ đồ của Thầy) -->
+      <div class="space-y-4">
+        <div class="text-center max-w-xl mx-auto">
+          <h3 class="text-2xl font-black text-slate-900">🏛️ KIẾN TRÚC 4 TẦNG HỆ THỐNG</h3>
+          <p class="text-xs text-slate-500 font-semibold">Mô hình vận hành theo đúng sơ đồ thiết kế Classroom App</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Tầng 1 -->
+          <div class="glass-card p-5 border-t-4 border-cyan-500 space-y-3">
+            <span class="text-3xl p-2.5 bg-cyan-100 text-cyan-700 rounded-xl inline-block">🌐</span>
+            <h4 class="font-bold text-slate-900 text-base">1. TẦNG GIAO DIỆN</h4>
+            <ul class="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
+              <li>Màn hình Auth & Banner Anh Đào</li>
+              <li>Portal Giáo viên quản lý môn & bài</li>
+              <li>Portal Học sinh (Lớp 3 - 5)</li>
+              <li>Game Hub & iFrame Runner</li>
+            </ul>
+          </div>
+
+          <!-- Tầng 2 -->
+          <div class="glass-card p-5 border-t-4 border-amber-500 space-y-3">
+            <span class="text-3xl p-2.5 bg-amber-100 text-amber-700 rounded-xl inline-block">🛡️</span>
+            <h4 class="font-bold text-slate-900 text-base">2. BẢO MẬT & RLS</h4>
+            <ul class="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
+              <li>Supabase Auth & Session JWT</li>
+              <li>Row Level Security Guard (RLS)</li>
+              <li>Phân quyền Teacher / Student</li>
+              <li>Đăng nhập nhanh bằng Mã học sinh</li>
+            </ul>
+          </div>
+
+          <!-- Tầng 3 -->
+          <div class="glass-card p-5 border-t-4 border-emerald-500 space-y-3">
+            <span class="text-3xl p-2.5 bg-emerald-100 text-emerald-700 rounded-xl inline-block">⚙️</span>
+            <h4 class="font-bold text-slate-900 text-base">3. TẦNG NGHIỆP VỤ & AI</h4>
+            <ul class="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
+              <li>Controller SGK Tin học 3, 4, 5</li>
+              <li>Trợ lý AI Soạn Kế Hoạch 2345</li>
+              <li>Game Score & Student Tracker</li>
+              <li>Bộ xuất file Word (.doc) tự động</li>
+            </ul>
+          </div>
+
+          <!-- Tầng 4 -->
+          <div class="glass-card p-5 border-t-4 border-teal-500 space-y-3">
+            <span class="text-3xl p-2.5 bg-teal-100 text-teal-700 rounded-xl inline-block">🗄️</span>
+            <h4 class="font-bold text-slate-900 text-base">4. DATABASE & STORAGE</h4>
+            <ul class="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
+              <li>Supabase PostgreSQL Database</li>
+              <li>Supabase Storage Buckets</li>
+              <li>Bảng Profiles, Plans, Scores</li>
+              <li>Bộ nhớ đệm Offline LocalStorage</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: AUTH SCREEN -->
+    <section id="auth-view" class="hidden max-w-md mx-auto py-8 animate-pop">
+      <div class="glass-card p-8 space-y-6">
+        <div class="text-center space-y-1">
+          <div class="w-14 h-14 bg-gradient-to-tr from-cyan-600 to-emerald-500 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto shadow-md">
+            🔑
+          </div>
+          <h3 class="text-2xl font-black text-slate-900 pt-2">ĐĂNG NHẬP HỆ THỐNG</h3>
+          <p class="text-xs text-slate-500">Chọn vai trò của bạn để tiếp tục</p>
+        </div>
+
+        <!-- Role Tabs -->
+        <div class="flex bg-slate-100 p-1 rounded-xl">
+          <button onclick="document.getElementById('auth-teacher-form').classList.remove('hidden'); document.getElementById('auth-student-form').classList.add('hidden');" class="flex-1 py-2 text-xs font-extrabold rounded-lg bg-white shadow-sm text-cyan-800">
+            👩‍🏫 Giáo Viên
+          </button>
+          <button onclick="document.getElementById('auth-teacher-form').classList.add('hidden'); document.getElementById('auth-student-form').classList.remove('hidden');" class="flex-1 py-2 text-xs font-extrabold rounded-lg text-slate-600">
+            🎒 Học Sinh
+          </button>
+        </div>
+
+        <!-- Form Giáo Viên -->
+        <div id="auth-teacher-form" class="space-y-4">
+          <div class="form-group">
+            <label class="form-label">Email Giáo Viên</label>
+            <input type="text" id="auth-teacher-email" value="anhdao.teacher@vuihoc.edu.vn" class="form-control" placeholder="Email của Thầy/Cô...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mật khẩu</label>
+            <input type="password" id="auth-teacher-pass" value="123456" class="form-control" placeholder="••••••••">
+          </div>
+          <button onclick="authService.loginTeacher(document.getElementById('auth-teacher-email').value, '123456'); window.location.hash='teacher';" class="btn btn-primary w-full btn-lg font-bold">
+            Đăng Nhập Giáo Viên
+          </button>
+        </div>
+
+        <!-- Form Học Sinh (Đăng nhập 1 chạm bằng Mã) -->
+        <div id="auth-student-form" class="hidden space-y-4">
+          <div class="form-group">
+            <label class="form-label">Mã Học Sinh / Tên của Em</label>
+            <input type="text" id="auth-student-code" value="HS3A01" class="form-control uppercase font-black tracking-wider text-center text-lg" placeholder="Ví dụ: HS3A01">
+          </div>
+          <button onclick="authService.loginStudentByCode(document.getElementById('auth-student-code').value); window.location.hash='student';" class="btn btn-amber w-full btn-lg font-black">
+            🚀 Vào Học Ngay (1 Chạm)
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: PORTAL CONTAINER (Nơi render Teacher / Student / GameHub) -->
+    <section id="portal-view" class="hidden animate-slide-up">
+      <div id="main-content-area">
+        <!-- Được inject tự động bằng Javascript -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       3. MODALS (CÁC CỬA SỔ CHỨC NĂNG)
+       ========================================================================== -->
+
+  <!-- MODAL: SOẠN KẾ HOẠCH BÀI DẠY CHUẨN CÔNG VĂN 2345 -->
+  <div id="lesson-planner-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 space-y-6">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+        <div>
+          <span class="badge badge-emerald font-black mb-1">✨ CHUẨN CÔNG VĂN 2345/BGDĐT</span>
+          <h3 class="text-2xl font-black text-slate-900">SOẠN KẾ HOẠCH BÀI DẠY TIN HỌC</h3>
+        </div>
+        <button onclick="lessonPlannerModal.closeModal()" class="text-slate-400 hover:text-slate-700 text-2xl font-bold">✕</button>
+      </div>
+
+      <!-- Thông tin chung & Nút AI -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+        <div class="md:col-span-2">
+          <label class="form-label">Tên Bài Học *</label>
+          <input type="text" id="plan-input-title" value="Khám phá máy tính" class="form-control font-bold" placeholder="Nhập tên bài...">
+        </div>
+        <div>
+          <label class="form-label">Khối Lớp</label>
+          <select id="plan-input-grade" class="form-control font-bold">
+            <option value="3">Tin học Lớp 3</option>
+            <option value="4">Tin học Lớp 4</option>
+            <option value="5">Tin học Lớp 5</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Thời lượng</label>
+          <input type="text" id="plan-input-duration" value="2 tiết" class="form-control font-bold">
+        </div>
+        <div class="md:col-span-2">
+          <label class="form-label">Bộ Sách Giáo Khoa</label>
+          <select id="plan-input-book" class="form-control font-semibold">
+            <option value="Kết nối tri thức với cuộc sống">Kết nối tri thức với cuộc sống</option>
+            <option value="Cánh diều">Cánh diều</option>
+            <option value="Chân trời sáng tạo">Chân trời sáng tạo</option>
+          </select>
+        </div>
+        <div class="md:col-span-2 flex items-end">
+          <button id="btn-ai-generate" onclick="lessonPlannerModal.generateWithAI()" class="btn btn-emerald w-full font-black py-2.5 shadow-md">
+            <span>✨ AI Tự Động Soạn 2345</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Form Soạn Thảo 4 Phần CV 2345 -->
+      <div class="space-y-5">
+        <!-- I. YÊU CẦU CẦN ĐẠT -->
+        <div class="p-4 bg-white rounded-xl border border-slate-200 space-y-3">
+          <h4 class="font-black text-cyan-800 text-sm">I. YÊU CẦU CẦN ĐẠT</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-bold text-slate-700">1. Năng lực chung</label>
+              <textarea id="plan-obj-general" rows="2" class="form-control text-xs" placeholder="Tự chủ và tự học, giao tiếp và hợp tác..."></textarea>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-700">2. Năng lực tin học đặc thù</label>
+              <textarea id="plan-obj-specific" rows="2" class="form-control text-xs" placeholder="Nhận biết thành phần máy tính..."></textarea>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-700">3. Phẩm chất chủ yếu</label>
+            <input type="text" id="plan-obj-qualities" class="form-control text-xs" placeholder="Chăm chỉ, trách nhiệm bảo quản thiết bị...">
+          </div>
+        </div>
+
+        <!-- II. ĐỒ DÙNG DẠY HỌC -->
+        <div class="p-4 bg-white rounded-xl border border-slate-200 space-y-3">
+          <h4 class="font-black text-cyan-800 text-sm">II. ĐỒ DÙNG DẠY HỌC</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-bold text-slate-700">Giáo viên</label>
+              <input type="text" id="plan-equip-teacher" class="form-control text-xs" placeholder="Máy tính, tivi, bài giảng PowerPoint...">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-700">Học sinh</label>
+              <input type="text" id="plan-equip-student" class="form-control text-xs" placeholder="SGK, vở ghi...">
+            </div>
+          </div>
+        </div>
+
+        <!-- III. TIẾN TRÌNH DẠY HỌC 4 BƯỚC -->
+        <div class="p-4 bg-white rounded-xl border border-slate-200 space-y-4">
+          <h4 class="font-black text-cyan-800 text-sm">III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU</h4>
+          
+          <!-- HĐ 1: Khởi động -->
+          <div class="p-3 bg-slate-50 rounded-lg space-y-2 text-xs">
+            <span class="font-bold text-slate-900 block">1. HOẠT ĐỘNG KHỞI ĐỘNG (5 - 7 phút)</span>
+            <input type="text" id="act1-content" class="form-control text-xs" placeholder="Nội dung khởi động...">
+            <textarea id="act1-org" rows="2" class="form-control text-xs" placeholder="Tổ chức thực hiện (GV - HS)..."></textarea>
+          </div>
+
+          <!-- HĐ 2: Khám phá -->
+          <div class="p-3 bg-slate-50 rounded-lg space-y-2 text-xs">
+            <span class="font-bold text-slate-900 block">2. HOẠT ĐỘNG HÌNH THÀNH KIẾN THỨC (15 - 18 phút)</span>
+            <input type="text" id="act2-content" class="form-control text-xs" placeholder="Nội dung khám phá...">
+            <textarea id="act2-org" rows="2" class="form-control text-xs" placeholder="Tổ chức thực hiện..."></textarea>
+          </div>
+
+          <!-- HĐ 3: Luyện tập -->
+          <div class="p-3 bg-slate-50 rounded-lg space-y-2 text-xs">
+            <span class="font-bold text-slate-900 block">3. HOẠT ĐỘNG LUYỆN TẬP & THỰC HÀNH (10 - 12 phút)</span>
+            <input type="text" id="act3-content" class="form-control text-xs" placeholder="Nội dung luyện tập...">
+            <textarea id="act3-org" rows="2" class="form-control text-xs" placeholder="Tổ chức thực hiện..."></textarea>
+          </div>
+
+          <!-- HĐ 4: Vận dụng -->
+          <div class="p-3 bg-slate-50 rounded-lg space-y-2 text-xs">
+            <span class="font-bold text-slate-900 block">4. HOẠT ĐỘNG VẬN DỤNG (3 - 5 phút)</span>
+            <input type="text" id="act4-content" class="form-control text-xs" placeholder="Nội dung vận dụng...">
+            <textarea id="act4-org" rows="2" class="form-control text-xs" placeholder="Tổ chức thực hiện..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+        <button onclick="lessonPlannerModal.exportDirectWord()" class="btn btn-outline font-bold">
+          📄 Xuất Trực Tiếp File Word (.doc)
+        </button>
+        <div class="flex items-center gap-3">
+          <button onclick="lessonPlannerModal.closeModal()" class="btn btn-outline">Hủy Bỏ</button>
+          <button onclick="lessonPlannerModal.savePlan()" class="btn btn-primary font-black px-6">
+            💾 Lưu Giáo Án
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: XEM CHI TIẾT GIÁO ÁN -->
+  <div id="plan-preview-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-3xl">
+      <div id="plan-preview-content"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: HỌC SINH XEM BÀI HỌC -->
+  <div id="student-lesson-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-xl">
+      <div id="student-lesson-content"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: CÀI ĐẶT SUPABASE & GEMINI AI -->
+  <div id="settings-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-lg space-y-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <h3 class="text-xl font-black text-slate-900">⚙️ CẤU HÌNH DATABASE & AI</h3>
+        <button onclick="document.getElementById('settings-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div class="p-3 bg-cyan-50 rounded-xl border border-cyan-200 text-cyan-800">
+          💡 <b>Ghi chú:</b> Hệ thống đang chạy mượt mà ở chế độ <b>Local Database (Demo)</b>. Khi Thầy điền API Key bên dưới, hệ thống sẽ tự động đồng bộ lên Supabase Cloud thật!
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Supabase Project URL</label>
+          <input type="text" id="settings-sb-url" class="form-control font-mono text-xs" placeholder="https://your-project.supabase.co">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Supabase Anon Public Key</label>
+          <input type="text" id="settings-sb-key" class="form-control font-mono text-xs" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Google Gemini API Key (Tùy chọn)</label>
+          <input type="password" id="settings-ai-key" class="form-control font-mono text-xs" placeholder="AIzaSy...">
+          <p class="text-[11px] text-slate-400 mt-1">Dùng để kích hoạt AI trực tiếp từ Google Gemini khi soạn giáo án.</p>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-3 border-t border-slate-200">
+        <button onclick="document.getElementById('settings-modal').classList.remove('active')" class="btn btn-outline btn-sm">Đóng</button>
+        <button onclick="app.saveSettings()" class="btn btn-primary btn-sm font-black">Lưu Cấu Hình</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NHÚNG GAME NGOÀI (IFRAME RUNNER) -->
+  <div id="iframe-runner-modal" class="modal-backdrop">
+    <div class="modal-content p-6 max-w-lg space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <h3 class="text-lg font-black text-slate-900">🌐 NHÚNG HỌC LIỆU / GAME NGOÀI</h3>
+        <button onclick="gameHub.closeIframeRunnerModal()" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+      <div class="space-y-2">
+        <label class="form-label">Đường Link Game hoặc Học Liệu (URL)</label>
+        <input type="text" id="iframe-url-input" class="form-control text-sm" placeholder="https://scratch.mit.edu/projects/... hoặc link web game">
+        <p class="text-xs text-slate-500">Hỗ trợ các dự án Scratch, Wordwall, Canva hoặc mô phỏng 3D.</p>
+      </div>
+      <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
+        <button onclick="gameHub.closeIframeRunnerModal()" class="btn btn-outline btn-sm">Hủy</button>
+        <button onclick="gameHub.launchCustomIframe()" class="btn btn-emerald btn-sm font-black">Mở Trải Nghiệm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATIONS CONTAINER -->
+  <div id="toast-container"></div>
+
+  <!-- ==========================================================================
+       4. FOOTER
+       ========================================================================== -->
+  <footer class="mt-auto bg-white border-t border-slate-200 py-6 px-4 text-center text-xs text-slate-500">
+    <p class="font-bold text-slate-700">🎓 Dự án: Classroom App - Hệ thống Học liệu & Vui học Tin học Tiểu học 3-5</p>
+    <p class="mt-1">Thiết kế theo chuẩn Công văn 2345/BGDĐT & Chương trình GDPT 2018 | Tác giả: <b>anhdao23121983</b></p>
+  </footer>
+
+  <!-- App Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/data/curriculumData.js"></script>
+  <script src="js/data/mockDatabase.js"></script>
+  <script src="js/services/authService.js"></script>
+  <script src="js/services/supabaseService.js"></script>
+  <script src="js/services/aiPlannerService.js"></script>
+  <script src="js/services/docExportService.js"></script>
+  <script src="js/components/teacherPortal.js"></script>
+  <script src="js/components/studentPortal.js"></script>
+  <script src="js/components/gameHub.js"></script>
+  <script src="js/components/lessonPlannerModal.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

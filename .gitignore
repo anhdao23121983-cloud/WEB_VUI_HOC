@@ -1,0 +1,62 @@
+# ==========================================
+# GITIGNORE - DỰ ÁN WEB VUI HỌC (CLASSROOM APP)
+# ==========================================
+
+# 1. Các thư mục phụ thuộc (Dependencies)
+node_modules/
+vendor/
+
+# 2. File môi trường & bí mật (Environment & Secrets)
+.env
+.env.local
+.env.development
+.env.production
+*.env
+*.pem
+*.key
+
+# 3. Thư mục biên dịch & build
+dist/
+build/
+.cache/
+out/
+
+# 4. Logs & File tạm hệ thống
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.system_generated/
+tmp/
+temp/
+
+# 5. File hệ điều hành (OS Cache)
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# 6. Cấu hình IDE / Trình soạn thảo
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# 7. File đa phương tiện và nén dung lượng lớn (>100MB)
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.zip
+*.rar
+*.7z
+*.tar.gz
+*.iso
+*.exe
