@@ -55,7 +55,7 @@
           <p id="nav-user-name" class="text-xs font-black text-slate-800">Thầy Anh Đào</p>
           <p id="nav-user-role" class="text-[10px] text-slate-500 font-bold">Giáo viên</p>
         </div>
-        <button onclick="authService.logout(); window.location.hash='auth';" class="text-xs text-rose-600 font-bold ml-1 hover:underline">Thoát</button>
+        <button onclick="app.handleLogout()" class="text-xs text-rose-600 font-bold ml-1 hover:underline">Đăng Xuất</button>
       </div>
 
       <!-- Box khi là khách -->
@@ -175,50 +175,126 @@
       </div>
     </section>
 
-    <!-- VIEW 2: AUTH SCREEN -->
-    <section id="auth-view" class="hidden max-w-md mx-auto py-8 animate-pop">
-      <div class="glass-card p-8 space-y-6">
+    <!-- VIEW 2: AUTH SCREEN (ĐĂNG NHẬP & ĐĂNG KÝ ĐỒNG BỘ SUPABASE) -->
+    <section id="auth-view" class="hidden max-w-lg mx-auto py-6 animate-pop">
+      <div class="glass-card p-6 md:p-8 space-y-6 shadow-2xl border-2 border-cyan-100">
+        <!-- Auth Header -->
         <div class="text-center space-y-1">
-          <div class="w-14 h-14 bg-gradient-to-tr from-cyan-600 to-emerald-500 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto shadow-md">
-            🔑
+          <div class="w-16 h-16 bg-gradient-to-tr from-cyan-600 to-emerald-500 rounded-2xl flex items-center justify-center text-white text-3xl mx-auto shadow-lg animate-float">
+            🌸
           </div>
-          <h3 class="text-2xl font-black text-slate-900 pt-2">ĐĂNG NHẬP HỆ THỐNG</h3>
-          <p class="text-xs text-slate-500">Chọn vai trò của bạn để tiếp tục</p>
+          <h3 class="text-2xl font-black text-slate-900 pt-2">CỔNG XÁC THỰC THÀNH VIÊN</h3>
+          <p class="text-xs text-slate-500 font-semibold">Đồng bộ dữ liệu trực tiếp với Supabase Database</p>
         </div>
 
-        <!-- Role Tabs -->
-        <div class="flex bg-slate-100 p-1 rounded-xl">
-          <button onclick="document.getElementById('auth-teacher-form').classList.remove('hidden'); document.getElementById('auth-student-form').classList.add('hidden');" class="flex-1 py-2 text-xs font-extrabold rounded-lg bg-white shadow-sm text-cyan-800">
-            👩‍🏫 Giáo Viên
+        <!-- Chuyển đổi giữa Đăng Nhập & Đăng Ký -->
+        <div class="flex bg-slate-100 p-1.5 rounded-2xl">
+          <button id="auth-tab-btn-login" onclick="app.switchAuthTab('login')" class="flex-1 py-2.5 text-xs font-black rounded-xl bg-white shadow text-cyan-800 transition-all">
+            🔑 ĐĂNG NHẬP
           </button>
-          <button onclick="document.getElementById('auth-teacher-form').classList.add('hidden'); document.getElementById('auth-student-form').classList.remove('hidden');" class="flex-1 py-2 text-xs font-extrabold rounded-lg text-slate-600">
-            🎒 Học Sinh
+          <button id="auth-tab-btn-register" onclick="app.switchAuthTab('register')" class="flex-1 py-2.5 text-xs font-black rounded-xl text-slate-500 hover:text-slate-800 transition-all">
+            ✨ ĐĂNG KÝ TÀI KHOẢN
           </button>
         </div>
 
-        <!-- Form Giáo Viên -->
-        <div id="auth-teacher-form" class="space-y-4">
+        <!-- FORM 1: ĐĂNG NHẬP -->
+        <div id="auth-form-login" class="space-y-4">
           <div class="form-group">
-            <label class="form-label">Email Giáo Viên</label>
-            <input type="text" id="auth-teacher-email" value="anhdao.teacher@vuihoc.edu.vn" class="form-control" placeholder="Email của Thầy/Cô...">
+            <label class="form-label">Tên Đăng Nhập (Username)</label>
+            <div class="relative">
+              <input type="text" id="login-username" value="anhdao" class="form-control pl-10 font-bold" placeholder="Nhập username (ví dụ: anhdao, hs3a01)...">
+              <span class="absolute left-3.5 top-2.5 text-slate-400">👤</span>
+            </div>
           </div>
+
           <div class="form-group">
             <label class="form-label">Mật khẩu</label>
-            <input type="password" id="auth-teacher-pass" value="123456" class="form-control" placeholder="••••••••">
+            <div class="relative">
+              <input type="password" id="login-password" value="123456" class="form-control pl-10 font-bold" placeholder="Nhập mật khẩu...">
+              <span class="absolute left-3.5 top-2.5 text-slate-400">🔒</span>
+            </div>
           </div>
-          <button onclick="authService.loginTeacher(document.getElementById('auth-teacher-email').value, '123456'); window.location.hash='teacher';" class="btn btn-primary w-full btn-lg font-bold">
-            Đăng Nhập Giáo Viên
+
+          <button id="btn-submit-login" onclick="app.handleLogin()" class="btn btn-primary w-full btn-lg font-black shadow-lg">
+            <span>🚀 ĐĂNG NHẬP VÀO HỆ THỐNG</span>
           </button>
+
+          <!-- Đăng nhập 1 chạm mẫu -->
+          <div class="pt-4 border-t border-slate-200">
+            <p class="text-[11px] font-bold text-slate-500 text-center mb-2 uppercase">Hoặc Chọn Đăng Nhập Nhanh:</p>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <button onclick="app.quickLogin('anhdao', '123456')" class="p-2.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 font-bold rounded-xl border border-cyan-200 text-left transition-all">
+                👨‍🏫 Thầy Giáo Anh Đào
+              </button>
+              <button onclick="app.quickLogin('hs3a01', '123456')" class="p-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-xl border border-emerald-200 text-left transition-all">
+                👦 HS Lớp 3 (Nguyễn Văn An)
+              </button>
+              <button onclick="app.quickLogin('hs4b02', '123456')" class="p-2.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold rounded-xl border border-amber-200 text-left transition-all">
+                👧 HS Lớp 4 (Lê Thị Mai)
+              </button>
+              <button onclick="app.quickLogin('hs5a03', '123456')" class="p-2.5 bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold rounded-xl border border-blue-200 text-left transition-all">
+                🧑‍💻 HS Lớp 5 (Trần Đức Nam)
+              </button>
+            </div>
+          </div>
         </div>
 
-        <!-- Form Học Sinh (Đăng nhập 1 chạm bằng Mã) -->
-        <div id="auth-student-form" class="hidden space-y-4">
+        <!-- FORM 2: ĐĂNG KÝ TÀI KHOẢN MỚI -->
+        <div id="auth-form-register" class="hidden space-y-4">
+          <!-- Chọn vai trò -->
           <div class="form-group">
-            <label class="form-label">Mã Học Sinh / Tên của Em</label>
-            <input type="text" id="auth-student-code" value="HS3A01" class="form-control uppercase font-black tracking-wider text-center text-lg" placeholder="Ví dụ: HS3A01">
+            <label class="form-label">Bạn là:</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="p-3 bg-cyan-50 rounded-xl border-2 border-cyan-500 cursor-pointer flex items-center gap-2 font-bold text-xs text-cyan-900" id="role-label-teacher">
+                <input type="radio" name="register-role" value="teacher" onchange="app.handleRoleChange('teacher')" checked class="accent-cyan-600">
+                <span>👨‍🏫 Giáo Viên</span>
+              </label>
+              <label class="p-3 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer flex items-center gap-2 font-bold text-xs text-slate-700" id="role-label-student">
+                <input type="radio" name="register-role" value="student" onchange="app.handleRoleChange('student')" class="accent-cyan-600">
+                <span>🎒 Học Sinh</span>
+              </label>
+            </div>
           </div>
-          <button onclick="authService.loginStudentByCode(document.getElementById('auth-student-code').value); window.location.hash='student';" class="btn btn-amber w-full btn-lg font-black">
-            🚀 Vào Học Ngay (1 Chạm)
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label">Tên Đăng Nhập (Username) *</label>
+              <input type="text" id="reg-username" class="form-control font-bold" placeholder="Viết liền không dấu...">
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label">Họ và Tên Đầy Đủ *</label>
+              <input type="text" id="reg-fullname" class="form-control font-bold" placeholder="Ví dụ: Nguyễn Thị Hoa...">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label">Tên Trường Học</label>
+              <input type="text" id="reg-school" value="Trường Tiểu Học Vui Học" class="form-control text-xs">
+            </div>
+            <div class="form-group mb-0" id="reg-grade-group">
+              <label class="form-label">Khối Lớp</label>
+              <select id="reg-grade" class="form-control text-xs font-bold">
+                <option value="3">Tin học Lớp 3</option>
+                <option value="4">Tin học Lớp 4</option>
+                <option value="5">Tin học Lớp 5</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label">Mật khẩu *</label>
+              <input type="password" id="reg-password" class="form-control text-xs" placeholder="Tối thiểu 6 ký tự...">
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label">Xác nhận mật khẩu *</label>
+              <input type="password" id="reg-confirm-password" class="form-control text-xs" placeholder="Nhập lại mật khẩu...">
+            </div>
+          </div>
+
+          <button id="btn-submit-register" onclick="app.handleRegister()" class="btn btn-emerald w-full btn-lg font-black shadow-lg mt-2">
+            <span>✨ TẠO TÀI KHOẢN & ĐỒNG BỘ SUPABASE</span>
           </button>
         </div>
       </div>

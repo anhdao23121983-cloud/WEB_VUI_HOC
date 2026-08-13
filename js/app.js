@@ -1,11 +1,12 @@
 /**
  * CLASSROOM APP - MAIN CONTROLLER & APPLICATION ROUTER
- * Quản lý trạng thái, Điều hướng trang, và Xử lý sự kiện toàn cục
+ * Quản lý Đăng Ký, Đăng Nhập, Đăng Xuất, Điều hướng và Đồng bộ Supabase
  */
 
 class Application {
   constructor() {
     this.currentRoute = "landing";
+    this.selectedRegisterRole = "teacher";
   }
 
   init() {
@@ -49,16 +50,18 @@ class Application {
     } else if (route === "auth") {
       document.getElementById("auth-view")?.classList.remove("hidden");
     } else if (route === "teacher") {
-      // Nếu chưa đăng nhập giáo viên -> Tự động đăng nhập mẫu để Thầy trải nghiệm liền
-      if (!window.authService.isTeacher()) {
-        window.authService.loginTeacher("anhdao.teacher@vuihoc.edu.vn", "123456");
+      if (!user) {
+        this.showToast("Vui lòng đăng nhập tài khoản Giáo viên!", "warning");
+        window.location.hash = "auth";
+        return;
       }
       document.getElementById("portal-view")?.classList.remove("hidden");
       window.teacherPortal.render("main-content-area");
     } else if (route === "student") {
-      // Nếu chưa đăng nhập học sinh -> Tự động đăng nhập học sinh mẫu
-      if (!window.authService.isStudent()) {
-        window.authService.loginStudentByCode("HS3A01");
+      if (!user) {
+        this.showToast("Vui lòng đăng nhập tài khoản Học sinh!", "warning");
+        window.location.hash = "auth";
+        return;
       }
       document.getElementById("portal-view")?.classList.remove("hidden");
       window.studentPortal.render("main-content-area");
@@ -70,6 +73,163 @@ class Application {
     }
 
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // =========================================================================
+  // XỬ LÝ AUTH UI (CHUYỂN TAB, ĐĂNG NHẬP, ĐĂNG KÝ, ĐĂNG XUẤT)
+  // =========================================================================
+  
+  // Chuyển Tab Đăng Nhập / Đăng Ký
+  switchAuthTab(tab) {
+    const loginForm = document.getElementById("auth-form-login");
+    const registerForm = document.getElementById("auth-form-register");
+    const btnLogin = document.getElementById("auth-tab-btn-login");
+    const btnRegister = document.getElementById("auth-tab-btn-register");
+
+    if (tab === "login") {
+      loginForm?.classList.remove("hidden");
+      registerForm?.classList.add("hidden");
+      btnLogin.className = "flex-1 py-2.5 text-xs font-black rounded-xl bg-white shadow text-cyan-800 transition-all";
+      btnRegister.className = "flex-1 py-2.5 text-xs font-black rounded-xl text-slate-500 hover:text-slate-800 transition-all";
+    } else {
+      loginForm?.classList.add("hidden");
+      registerForm?.classList.remove("hidden");
+      btnRegister.className = "flex-1 py-2.5 text-xs font-black rounded-xl bg-white shadow text-emerald-800 transition-all";
+      btnLogin.className = "flex-1 py-2.5 text-xs font-black rounded-xl text-slate-500 hover:text-slate-800 transition-all";
+    }
+  }
+
+  // Thay đổi vai trò khi đăng ký (Giáo viên / Học sinh)
+  handleRoleChange(role) {
+    this.selectedRegisterRole = role;
+    const labelTeacher = document.getElementById("role-label-teacher");
+    const labelStudent = document.getElementById("role-label-student");
+    const gradeGroup = document.getElementById("reg-grade-group");
+
+    if (role === "teacher") {
+      labelTeacher.className = "p-3 bg-cyan-50 rounded-xl border-2 border-cyan-500 cursor-pointer flex items-center gap-2 font-bold text-xs text-cyan-900";
+      labelStudent.className = "p-3 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer flex items-center gap-2 font-bold text-xs text-slate-700";
+      if (gradeGroup) gradeGroup.classList.add("hidden");
+    } else {
+      labelStudent.className = "p-3 bg-emerald-50 rounded-xl border-2 border-emerald-500 cursor-pointer flex items-center gap-2 font-bold text-xs text-emerald-900";
+      labelTeacher.className = "p-3 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer flex items-center gap-2 font-bold text-xs text-slate-700";
+      if (gradeGroup) gradeGroup.classList.remove("hidden");
+    }
+  }
+
+  // Xử lý bấm Đăng Nhập
+  async handleLogin() {
+    const usernameInput = document.getElementById("login-username");
+    const passInput = document.getElementById("login-password");
+    const btnSubmit = document.getElementById("btn-submit-login");
+
+    const username = usernameInput ? usernameInput.value : "";
+    const password = passInput ? passInput.value : "";
+
+    if (!username || !password) {
+      this.showToast("Vui lòng nhập Tên đăng nhập và Mật khẩu!", "warning");
+      return;
+    }
+
+    if (btnSubmit) {
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<span>⏳ Đang kiểm tra tài khoản trên Supabase...</span>`;
+    }
+
+    try {
+      const result = await window.authService.login(username, password);
+      if (result.success) {
+        this.showToast(`🎉 Chào mừng ${result.user.name} đã đăng nhập thành công!`, "success");
+        if (result.user.role === "teacher") {
+          window.location.hash = "teacher";
+        } else {
+          window.location.hash = "student";
+        }
+      } else {
+        this.showToast(result.error || "Tên đăng nhập hoặc mật khẩu không đúng!", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      this.showToast("Có lỗi xảy ra trong quá trình xác thực!", "error");
+    } finally {
+      if (btnSubmit) {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<span>🚀 ĐĂNG NHẬP VÀO HỆ THỐNG</span>`;
+      }
+    }
+  }
+
+  // Đăng nhập nhanh 1 chạm bằng tài khoản mẫu
+  quickLogin(username, password) {
+    const usernameInput = document.getElementById("login-username");
+    const passInput = document.getElementById("login-password");
+    if (usernameInput) usernameInput.value = username;
+    if (passInput) passInput.value = password;
+    this.handleLogin();
+  }
+
+  // Xử lý bấm Đăng Ký Tài Khoản Mới
+  async handleRegister() {
+    const username = document.getElementById("reg-username")?.value;
+    const fullName = document.getElementById("reg-fullname")?.value;
+    const schoolName = document.getElementById("reg-school")?.value;
+    const gradeLevel = document.getElementById("reg-grade")?.value;
+    const password = document.getElementById("reg-password")?.value;
+    const confirmPassword = document.getElementById("reg-confirm-password")?.value;
+    const btnSubmit = document.getElementById("btn-submit-register");
+
+    if (!username || !fullName || !password) {
+      this.showToast("Vui lòng điền đầy đủ các thông tin có dấu *!", "warning");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      this.showToast("Mật khẩu và xác nhận mật khẩu không khớp!", "error");
+      return;
+    }
+
+    if (btnSubmit) {
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<span>⏳ Đang tạo tài khoản và đồng bộ Supabase...</span>`;
+    }
+
+    try {
+      const result = await window.authService.register({
+        username,
+        password,
+        fullName,
+        role: this.selectedRegisterRole,
+        schoolName,
+        className: this.selectedRegisterRole === "teacher" ? "Tổ Tin Học" : `${gradeLevel}A`,
+        gradeLevel: parseInt(gradeLevel) || 3
+      });
+
+      if (result.success) {
+        this.showToast("✨ Đăng ký tài khoản thành công! Dữ liệu đã lưu trên Supabase.", "success");
+        if (result.user.role === "teacher") {
+          window.location.hash = "teacher";
+        } else {
+          window.location.hash = "student";
+        }
+      } else {
+        this.showToast(result.error || "Không thể tạo tài khoản, vui lòng thử lại!", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      this.showToast("Lỗi khi kết nối đăng ký tài khoản!", "error");
+    } finally {
+      if (btnSubmit) {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<span>✨ TẠO TÀI KHOẢN & ĐỒNG BỘ SUPABASE</span>`;
+      }
+    }
+  }
+
+  // Đăng xuất
+  handleLogout() {
+    window.authService.logout();
+    this.showToast("🚪 Đã đăng xuất tài khoản thành công!", "info");
+    window.location.hash = "auth";
   }
 
   // Cập nhật thông tin người dùng trên Navbar

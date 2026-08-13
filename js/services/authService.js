@@ -1,6 +1,6 @@
 /**
- * AUTH SERVICE (DỊCH VỤ XÁC THỰC & PHÂN QUYỀN)
- * Quản lý phiên đăng nhập của Giáo viên, Học sinh và Admin
+ * AUTH SERVICE (DỊCH VỤ XÁC THỰC & PHÂN QUYỀN ĐỒNG BỘ SUPABASE)
+ * Quản lý Đăng Ký, Đăng Nhập, Đăng Xuất và lưu trữ trực tiếp trên Supabase Database
  */
 
 class AuthService {
@@ -9,7 +9,7 @@ class AuthService {
     this.listeners = [];
   }
 
-  // Đăng ký nhận thông báo thay đổi trạng thái đăng nhập
+  // Đăng ký nhận thông báo thay đổi phiên đăng nhập
   onAuthStateChanged(callback) {
     this.listeners.push(callback);
     callback(this.currentUser);
@@ -19,84 +19,211 @@ class AuthService {
     this.listeners.forEach(cb => cb(this.currentUser));
   }
 
-  // Lấy thông tin người dùng hiện tại
   getUser() {
     return this.currentUser;
   }
 
-  // Kiểm tra quyền Giáo viên
   isTeacher() {
     return this.currentUser && this.currentUser.role === CONFIG.ROLES.TEACHER;
   }
 
-  // Kiểm tra quyền Học sinh
   isStudent() {
     return this.currentUser && this.currentUser.role === CONFIG.ROLES.STUDENT;
   }
 
-  // 1. Đăng nhập Giáo viên
-  loginTeacher(email, password) {
-    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
-    
-    // Kiểm tra tài khoản mẫu hoặc tài khoản giáo viên mới
-    let teacher = db.users.find(u => u.email === email && u.role === CONFIG.ROLES.TEACHER);
-    
-    if (!teacher && (email === "anhdao" || email === "admin" || email === "anhdao.teacher@vuihoc.edu.vn")) {
-      teacher = db.users[0];
-    } else if (!teacher) {
-      // Cho phép đăng nhập linh hoạt hoặc tạo tài khoản mới nếu chưa có
-      teacher = {
-        id: "u_teacher_" + Date.now(),
-        email: email,
-        name: email.split("@")[0] || "Thầy Giáo Mới",
-        role: CONFIG.ROLES.TEACHER,
-        school: "Trường Tiểu Học",
-        avatar: "👨‍🏫"
-      };
-      db.users.push(teacher);
-      localStorage.setItem("app_mock_db", JSON.stringify(db));
+  // =========================================================================
+  // 1. ĐĂNG KÝ TÀI KHOẢN MỚI (ĐỒNG BỘ SUPABASE DATABASE)
+  // =========================================================================
+  async register({ username, password, fullName, role = "student", schoolName = "Trường Tiểu Học", className = "3A", gradeLevel = 3 }) {
+    const cleanUsername = username.trim().toLowerCase();
+    const cleanPassword = password.trim();
+    const cleanFullName = fullName.trim();
+
+    if (!cleanUsername || !cleanPassword || !cleanFullName) {
+      return { success: false, error: "Vui lòng điền đầy đủ Tên đăng nhập, Mật khẩu và Họ tên!" };
     }
 
-    this.currentUser = teacher;
-    localStorage.setItem("app_current_user", JSON.stringify(teacher));
-    this.notifyListeners();
-    return { success: true, user: teacher };
-  }
-
-  // 2. Đăng nhập nhanh cho Học sinh bằng Mã hoặc Tên
-  loginStudentByCode(studentCode) {
-    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
-    const cleanCode = studentCode.trim().toUpperCase();
-
-    let student = db.users.find(u => u.studentCode === cleanCode);
-    
-    if (!student) {
-      // Nếu mã mới -> Tạo tài khoản học sinh nhanh
-      student = {
-        id: "u_student_" + Date.now(),
-        studentCode: cleanCode,
-        name: "Học Sinh " + cleanCode,
-        role: CONFIG.ROLES.STUDENT,
-        grade: 3,
-        className: "3A",
-        stars: 50,
-        avatar: "🎒"
-      };
-      db.users.push(student);
-      localStorage.setItem("app_mock_db", JSON.stringify(db));
+    if (cleanPassword.length < 6) {
+      return { success: false, error: "Mật khẩu phải có ít nhất 6 ký tự!" };
     }
 
-    this.currentUser = student;
-    localStorage.setItem("app_current_user", JSON.stringify(student));
+    const avatar = role === "teacher" ? "👨‍🏫" : (gradeLevel === 4 ? "👧" : (gradeLevel === 5 ? "🧑‍💻" : "👦"));
+
+    const newUser = {
+      username: cleanUsername,
+      password: cleanPassword,
+      full_name: cleanFullName,
+      role: role,
+      school_name: schoolName || "Trường Tiểu Học",
+      class_name: className || "3A",
+      grade_level: parseInt(gradeLevel) || 3,
+      stars: role === "teacher" ? 999 : 50,
+      avatar: avatar
+    };
+
+    // 1. Lưu lên Supabase nếu có kết nối
+    if (window.supabaseService?.isLive && window.supabaseService?.client) {
+      try {
+        const client = window.supabaseService.client;
+        
+        // Kiểm tra xem username đã tồn tại chưa
+        const { data: existingUser } = await client
+          .from("app_users")
+          .select("username")
+          .eq("username", cleanUsername)
+          .maybeSingle();
+
+        if (existingUser) {
+          return { success: false, error: "Tên đăng nhập này đã được sử dụng, vui lòng chọn tên khác!" };
+        }
+
+        const { data, error } = await client
+          .from("app_users")
+          .insert([newUser])
+          .select()
+          .single();
+
+        if (error) {
+          console.warn("Lỗi lưu user lên Supabase, chuyển lưu dự phòng:", error.message);
+        } else if (data) {
+          newUser.id = data.id;
+        }
+      } catch (err) {
+        console.warn("Lỗi đồng bộ đăng ký Supabase:", err);
+      }
+    }
+
+    // 2. Lưu dự phòng vào LocalStorage
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (!db.users) db.users = [];
+    
+    // Kiểm tra local
+    const existsLocally = db.users.find(u => (u.username || "").toLowerCase() === cleanUsername);
+    if (existsLocally && !newUser.id) {
+      return { success: false, error: "Tên đăng nhập đã tồn tại trong hệ thống!" };
+    }
+
+    const mappedUser = {
+      id: newUser.id || ("u_" + Date.now()),
+      username: cleanUsername,
+      name: cleanFullName,
+      role: role,
+      school: schoolName,
+      className: className,
+      grade: parseInt(gradeLevel) || 3,
+      stars: newUser.stars,
+      avatar: avatar
+    };
+
+    db.users.push(mappedUser);
+    localStorage.setItem("app_mock_db", JSON.stringify(db));
+
+    // Đăng nhập luôn cho người dùng vừa tạo
+    this.currentUser = mappedUser;
+    localStorage.setItem("app_current_user", JSON.stringify(mappedUser));
     this.notifyListeners();
-    return { success: true, user: student };
+
+    return { success: true, user: mappedUser };
   }
 
-  // Đăng xuất
+  // =========================================================================
+  // 2. ĐĂNG NHẬP BẰNG USERNAME & MẬT KHẨU (ĐỒNG BỘ SUPABASE DATABASE)
+  // =========================================================================
+  async login(username, password) {
+    const cleanUsername = username.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    if (!cleanUsername || !cleanPassword) {
+      return { success: false, error: "Vui lòng nhập Tên đăng nhập và Mật khẩu!" };
+    }
+
+    // 1. Kiểm tra trên Supabase Cloud Database trước
+    if (window.supabaseService?.isLive && window.supabaseService?.client) {
+      try {
+        const client = window.supabaseService.client;
+        const { data: user, error } = await client
+          .from("app_users")
+          .select("*")
+          .eq("username", cleanUsername)
+          .eq("password", cleanPassword)
+          .maybeSingle();
+
+        if (user && !error) {
+          const loggedUser = {
+            id: user.id,
+            username: user.username,
+            name: user.full_name,
+            role: user.role,
+            school: user.school_name,
+            className: user.class_name,
+            grade: user.grade_level,
+            stars: user.stars || 0,
+            avatar: user.avatar || "🎒"
+          };
+
+          this.currentUser = loggedUser;
+          localStorage.setItem("app_current_user", JSON.stringify(loggedUser));
+          this.notifyListeners();
+          return { success: true, user: loggedUser };
+        }
+      } catch (err) {
+        console.warn("Lỗi kiểm tra đăng nhập trên Supabase, chuyển sang kiểm tra Local:", err);
+      }
+    }
+
+    // 2. Kiểm tra trên LocalStorage Database
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    
+    // Tìm theo username hoặc email hoặc mã học sinh
+    let found = (db.users || []).find(u => 
+      ((u.username && u.username.toLowerCase() === cleanUsername) || 
+       (u.email && u.email.toLowerCase() === cleanUsername) ||
+       (u.studentCode && u.studentCode.toLowerCase() === cleanUsername))
+    );
+
+    // Xử lý tài khoản mặc định
+    if (!found) {
+      if (cleanUsername === "anhdao" || cleanUsername === "teacher") {
+        found = {
+          id: "u_teacher_01",
+          username: "anhdao",
+          name: "Thầy Giáo Anh Đào",
+          role: "teacher",
+          school: "Trường Tiểu Học Vui Học",
+          avatar: "👨‍🏫"
+        };
+      } else if (cleanUsername.startsWith("hs") || cleanUsername === "hocsinh") {
+        found = {
+          id: "u_student_01",
+          username: cleanUsername,
+          name: "Học Sinh " + cleanUsername.toUpperCase(),
+          role: "student",
+          grade: 3,
+          className: "3A",
+          stars: 180,
+          avatar: "👦"
+        };
+      }
+    }
+
+    if (found) {
+      this.currentUser = found;
+      localStorage.setItem("app_current_user", JSON.stringify(found));
+      this.notifyListeners();
+      return { success: true, user: found };
+    }
+
+    return { success: false, error: "Tên đăng nhập hoặc mật khẩu không chính xác!" };
+  }
+
+  // =========================================================================
+  // 3. ĐĂNG XUẤT TÀI KHOẢN
+  // =========================================================================
   logout() {
     this.currentUser = null;
     localStorage.removeItem("app_current_user");
     this.notifyListeners();
+    return { success: true };
   }
 }
 
