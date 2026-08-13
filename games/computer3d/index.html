@@ -93,6 +93,31 @@
 
       <!-- Quick Control Tools -->
       <div class="hud-card px-4 py-2.5 pointer-events-auto flex items-center gap-2 shadow-2xl flex-wrap justify-end">
+        
+        <!-- TRÌNH PHÁT NHẠC NỀN LOFI THƯ GIÃN HỌC TẬP -->
+        <div class="flex items-center gap-1.5 bg-slate-800/90 px-2.5 py-1.5 rounded-xl border border-slate-700">
+          <button onclick="toggleLofiMusic()" id="btn-lofi-music" class="text-xs font-black flex items-center gap-1 text-amber-300 hover:text-amber-200 transition-all" title="Bật/Tắt Nhạc Lofi Thư Giãn">
+            <span id="music-icon">🎵</span> <span id="music-btn-text">Nhạc Lofi: TẮT</span>
+          </button>
+          
+          <!-- Visualizer sóng âm -->
+          <div id="music-visualizer" class="hidden flex items-end gap-0.5 h-3.5 px-0.5">
+            <span class="w-1 bg-amber-400 rounded-full animate-bounce h-2"></span>
+            <span class="w-1 bg-cyan-400 rounded-full animate-bounce h-3.5"></span>
+            <span class="w-1 bg-emerald-400 rounded-full animate-bounce h-2.5"></span>
+          </div>
+
+          <!-- Kênh nhạc -->
+          <select id="music-channel-select" onchange="changeMusicChannel(this.value)" class="bg-slate-900 text-[10px] text-cyan-200 rounded-lg px-1 py-0.5 border border-slate-700 font-bold outline-none cursor-pointer">
+            <option value="chords">☕ Lofi Chords</option>
+            <option value="rain">🌧️ Tiếng Mưa</option>
+            <option value="space">🪐 Không Gian</option>
+          </select>
+
+          <!-- Thanh chỉnh âm lượng -->
+          <input type="range" id="music-volume-slider" min="0" max="100" value="35" oninput="setMusicVolume(this.value)" class="w-12 h-1.5 accent-amber-400 cursor-pointer" title="Âm lượng nhạc nền">
+        </div>
+
         <!-- Chế độ Ngày / Đêm -->
         <button onclick="toggleDayNight()" id="btn-day-night" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1">
           <span>☀️</span> <span id="day-night-text">Ngày</span>
@@ -158,12 +183,9 @@
       </div>
     </div>
 
-    <!-- =========================================================================
-         1. MODAL: ỨNG DỤNG VẼ TRANH PAINT 2D TRÊN MÀN HÌNH MÁY TÍNH ẢO
-         ========================================================================= -->
+    <!-- MODAL 1: ỨNG DỤNG VẼ TRANH PAINT 2D -->
     <div id="paint-app-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-pop">
       <div class="hud-card p-5 max-w-2xl w-full border-2 border-cyan-400 glow-cyan shadow-2xl space-y-3">
-        <!-- Header Paint -->
         <div class="flex items-center justify-between pb-2 border-b border-slate-700">
           <div class="flex items-center gap-2">
             <span class="text-2xl p-1.5 bg-cyan-500/20 rounded-xl">🎨</span>
@@ -175,9 +197,7 @@
           <button onclick="closePaintApp()" class="text-slate-400 hover:text-white text-2xl font-black">✕</button>
         </div>
 
-        <!-- Toolbars -->
         <div class="flex items-center justify-between flex-wrap gap-2 p-2 bg-slate-900/70 rounded-xl border border-slate-700 text-xs">
-          <!-- Bảng màu -->
           <div class="flex items-center gap-1.5">
             <span class="font-bold text-slate-400 text-[11px]">Màu:</span>
             <button onclick="setPaintColor('#ef4444')" class="w-6 h-6 rounded-full bg-red-500 border border-white/50 hover:scale-110 transition-all"></button>
@@ -189,7 +209,6 @@
             <button onclick="setPaintColor('#ffffff')" class="w-6 h-6 rounded-full bg-white border border-slate-400 hover:scale-110 transition-all"></button>
           </div>
 
-          <!-- Kích thước cọ -->
           <div class="flex items-center gap-1.5">
             <span class="font-bold text-slate-400 text-[11px]">Nét:</span>
             <button onclick="setPaintBrushSize(3)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-[11px] font-bold">Nhỏ</button>
@@ -201,12 +220,10 @@
           <button onclick="clearPaintCanvas()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-[11px] font-bold text-rose-300">🗑️ Xóa Hết</button>
         </div>
 
-        <!-- Canvas Vẽ -->
         <div class="bg-white rounded-xl overflow-hidden border-2 border-slate-700 shadow-inner flex justify-center">
           <canvas id="paint-canvas" width="600" height="340" class="cursor-crosshair bg-white"></canvas>
         </div>
 
-        <!-- Footer Paint -->
         <div class="flex items-center justify-between pt-1">
           <span class="text-xs text-amber-300 font-bold">⭐ Vẽ xong nhận ngay: +15 Ngôi Sao Vàng</span>
           <div class="flex gap-2">
@@ -219,9 +236,7 @@
       </div>
     </div>
 
-    <!-- =========================================================================
-         2. MODAL: THỬ THÁCH LẮP RÁP BO MẠCH CHỦ (MAINBOARD ASSEMBLY)
-         ========================================================================= -->
+    <!-- MODAL 2: THỬ THÁCH LẮP RÁP BO MẠCH CHỦ -->
     <div id="assembly-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-pop">
       <div class="hud-card p-6 max-w-2xl w-full border-2 border-indigo-500 glow-cyan shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto scrollbar-none">
         <div class="flex items-center justify-between pb-3 border-b border-slate-700">
@@ -235,37 +250,31 @@
           <button onclick="closeAssemblyModal()" class="text-slate-400 hover:text-white text-2xl font-black">✕</button>
         </div>
 
-        <!-- Khu vực Bo Mạch Chủ Mô Phỏng Lắp Ráp -->
         <div class="p-4 bg-emerald-950/40 rounded-2xl border-2 border-emerald-600/50 space-y-3 relative">
           <div class="flex items-center justify-between">
             <span class="text-xs font-black text-emerald-300 uppercase">Bo Mạch Chủ Chuẩn ATX Tin Học Tiểu Học</span>
             <span id="assembly-progress" class="text-xs font-black text-amber-300 bg-amber-400/20 px-2.5 py-0.5 rounded-full">Tiến Độ: 0/4 Linh Kiện</span>
           </div>
 
-          <!-- 4 Vị trí cắm linh kiện -->
           <div class="grid grid-cols-2 gap-3">
-            <!-- Slot 1: Socket CPU -->
             <div id="slot-cpu" class="p-3 bg-slate-900/80 rounded-xl border border-dashed border-slate-500 flex flex-col items-center justify-center text-center min-h-[90px] transition-all">
               <span class="text-2xl">⚡</span>
               <span class="text-xs font-bold text-slate-300 mt-1">1. Khe Cắm CPU (Socket)</span>
               <span id="status-cpu" class="text-[10px] text-amber-400 font-semibold">[Chưa cắm Chip]</span>
             </div>
 
-            <!-- Slot 2: Quạt Tản Nhiệt -->
             <div id="slot-fan" class="p-3 bg-slate-900/80 rounded-xl border border-dashed border-slate-500 flex flex-col items-center justify-center text-center min-h-[90px] transition-all">
               <span class="text-2xl">💨</span>
               <span class="text-xs font-bold text-slate-300 mt-1">2. Vị Trí Quạt Tản Nhiệt</span>
               <span id="status-fan" class="text-[10px] text-amber-400 font-semibold">[Chưa gắn Quạt]</span>
             </div>
 
-            <!-- Slot 3: Khe Cắm RAM -->
             <div id="slot-ram" class="p-3 bg-slate-900/80 rounded-xl border border-dashed border-slate-500 flex flex-col items-center justify-center text-center min-h-[90px] transition-all">
               <span class="text-2xl">💾</span>
               <span class="text-xs font-bold text-slate-300 mt-1">3. Khe Cắm RAM (DIMM)</span>
               <span id="status-ram" class="text-[10px] text-amber-400 font-semibold">[Chưa cắm RAM]</span>
             </div>
 
-            <!-- Slot 4: Khe Cắm Ổ Cứng SSD -->
             <div id="slot-ssd" class="p-3 bg-slate-900/80 rounded-xl border border-dashed border-slate-500 flex flex-col items-center justify-center text-center min-h-[90px] transition-all">
               <span class="text-2xl">🗄️</span>
               <span class="text-xs font-bold text-slate-300 mt-1">4. Khe Ổ Cứng (M.2 / SATA)</span>
@@ -274,7 +283,6 @@
           </div>
         </div>
 
-        <!-- Khay Linh Kiện Chờ Lắp -->
         <div class="space-y-2">
           <p class="text-xs font-bold text-slate-400 uppercase">Khay Linh Kiện (Bấm vào linh kiện để cắm vào bo mạch):</p>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -306,7 +314,7 @@
       </div>
     </div>
 
-    <!-- MODAL: BẢNG HƯỚNG DẪN 5K AN TOÀN PHÒNG MÁY TÍNH -->
+    <!-- MODAL 3: BẢNG HƯỚNG DẪN 5K AN TOÀN -->
     <div id="safety-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-pop">
       <div class="hud-card p-6 max-w-2xl w-full border-2 border-amber-400 glow-amber shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto scrollbar-none">
         
@@ -321,7 +329,6 @@
           <button onclick="closeSafetyModal()" class="text-slate-400 hover:text-white text-2xl font-black">✕</button>
         </div>
 
-        <!-- 5 Cards Quy Tắc 5K -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
           <div class="p-3.5 bg-rose-950/40 rounded-xl border border-rose-800/40 flex items-start gap-3">
             <span class="text-2xl p-2 bg-rose-600/30 rounded-xl">🚫</span>
@@ -364,7 +371,6 @@
           </div>
         </div>
 
-        <!-- Trắc nghiệm An Toàn Mini-Quiz (Nhận +20 Sao) -->
         <div class="p-4 bg-slate-800/70 rounded-2xl border border-slate-700 space-y-2.5">
           <div class="flex items-center justify-between">
             <span class="text-xs font-black text-amber-300 uppercase">📝 Thử Thách Nhanh: Em Xử Lý Thế Nào?</span>
@@ -439,24 +445,34 @@
        THREE.JS 3D SCENE & INTERACTIVE LOGIC
        ========================================================================= -->
   <script>
-    // Audio Synthesizer (Tiếng click, quạt gió CPU hú, chime khởi động, success)
+    // Audio Synthesizer & Procedural Lofi Music Engine
     class SoundFX {
       constructor() {
         this.ctx = null;
         this.fanNoiseNode = null;
         this.fanGainNode = null;
         this.fanFilterNode = null;
+        
+        // Music Engine State
+        this.isMusicPlaying = false;
+        this.musicVolume = 0.35;
+        this.musicChannel = 'chords';
+        this.musicTimer = null;
+        this.musicGainNode = null;
+        this.ambientGainNode = null;
       }
+
       init() {
         if (!this.ctx) {
           const AudioContext = window.AudioContext || window.webkitAudioContext;
           this.ctx = new AudioContext();
           this.initFanSound();
+          this.initMusicNodes();
         }
       }
+
       initFanSound() {
         if (!this.ctx) return;
-        // Tạo bộ sinh nhiễu trắng cho tiếng quạt gió CPU (White Noise)
         const bufferSize = this.ctx.sampleRate * 2;
         const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
         const output = noiseBuffer.getChannelData(0);
@@ -481,7 +497,112 @@
         this.fanGainNode.connect(this.ctx.destination);
         whiteNoise.start();
       }
-      setFanSpeed(level) { // 'off', 'idle', 'heavy'
+
+      initMusicNodes() {
+        if (!this.ctx) return;
+        this.musicGainNode = this.ctx.createGain();
+        this.musicGainNode.gain.setValueAtTime(this.musicVolume, this.ctx.currentTime);
+        this.musicGainNode.connect(this.ctx.destination);
+      }
+
+      // ==========================================
+      // LOFI PROCEDURAL MUSIC ENGINE
+      // ==========================================
+      startMusic() {
+        this.init();
+        if (this.isMusicPlaying) return;
+        this.isMusicPlaying = true;
+        this.scheduleLofiLoop();
+      }
+
+      stopMusic() {
+        this.isMusicPlaying = false;
+        if (this.musicTimer) clearTimeout(this.musicTimer);
+      }
+
+      setVolume(val) {
+        this.musicVolume = val / 100;
+        if (this.musicGainNode && this.ctx) {
+          this.musicGainNode.gain.linearRampToValueAtTime(this.musicVolume, this.ctx.currentTime + 0.1);
+        }
+      }
+
+      setChannel(channel) {
+        this.musicChannel = channel;
+        if (this.isMusicPlaying) {
+          if (this.musicTimer) clearTimeout(this.musicTimer);
+          this.scheduleLofiLoop();
+        }
+      }
+
+      // Vòng lặp phát nhạc Lofi mượt mà
+      scheduleLofiLoop() {
+        if (!this.isMusicPlaying || !this.ctx) return;
+
+        // Tiến trình 4 hợp âm Lofi Jazz ấm áp (Cmaj7 -> Am7 -> Dm7 -> G7)
+        const chordProgressions = {
+          chords: [
+            [261.63, 329.63, 392.00, 493.88], // Cmaj7 (C4, E4, G4, B4)
+            [220.00, 261.63, 329.63, 392.00], // Am7 (A3, C4, E4, G4)
+            [293.66, 349.23, 440.00, 523.25], // Dm7 (D4, F4, A4, C5)
+            [196.00, 246.94, 293.66, 349.23]  // G7 (G3, B3, D4, F4)
+          ],
+          rain: [
+            [261.63, 392.00, 523.25],
+            [220.00, 329.63, 440.00],
+            [174.61, 261.63, 349.23],
+            [196.00, 293.66, 392.00]
+          ],
+          space: [
+            [130.81, 196.00, 261.63, 392.00],
+            [110.00, 164.81, 220.00, 329.63],
+            [146.83, 220.00, 293.66, 440.00],
+            [98.00, 146.83, 196.00, 293.66]
+          ]
+        };
+
+        const currentProgression = chordProgressions[this.musicChannel] || chordProgressions.chords;
+        let step = 0;
+
+        const playNextChord = () => {
+          if (!this.isMusicPlaying) return;
+
+          const chord = currentProgression[step % currentProgression.length];
+          const now = this.ctx.currentTime;
+          const duration = 2.4; // 2.4 giây mỗi hợp âm (~60 BPM thư giãn)
+
+          // Chơi từng nốt trong hợp âm với bộ lọc Lowpass ấm cúng
+          chord.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const noteGain = this.ctx.createGain();
+            const filter = this.ctx.createBiquadFilter();
+
+            osc.type = this.musicChannel === 'space' ? 'sine' : 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(this.musicChannel === 'rain' ? 650 : 900, now);
+
+            noteGain.gain.setValueAtTime(0, now + idx * 0.05);
+            noteGain.gain.linearRampToValueAtTime(0.06, now + idx * 0.05 + 0.3);
+            noteGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+            osc.connect(filter);
+            filter.connect(noteGain);
+            noteGain.connect(this.musicGainNode);
+
+            osc.start(now + idx * 0.05);
+            osc.stop(now + duration + 0.1);
+          });
+
+          step++;
+          this.musicTimer = setTimeout(playNextChord, duration * 1000);
+        };
+
+        playNextChord();
+      }
+
+      setFanSpeed(level) {
         this.init();
         if (!this.fanGainNode || !this.fanFilterNode) return;
         const now = this.ctx.currentTime;
@@ -491,11 +612,11 @@
           this.fanFilterNode.frequency.linearRampToValueAtTime(500, now + 0.5);
           this.fanGainNode.gain.linearRampToValueAtTime(0.08, now + 0.5);
         } else if (level === 'heavy') {
-          // Tăng tốc quạt gió CPU phát tiếng hú lớn hơn khi máy xử lý nặng
           this.fanFilterNode.frequency.linearRampToValueAtTime(1100, now + 0.4);
           this.fanGainNode.gain.linearRampToValueAtTime(0.22, now + 0.4);
         }
       }
+
       playClick() {
         this.init();
         const osc = this.ctx.createOscillator();
@@ -510,6 +631,7 @@
         osc.start();
         osc.stop(this.ctx.currentTime + 0.06);
       }
+
       playSwitch() {
         this.init();
         const osc = this.ctx.createOscillator();
@@ -524,6 +646,7 @@
         osc.start();
         osc.stop(this.ctx.currentTime + 0.08);
       }
+
       playOpen() {
         this.init();
         const osc = this.ctx.createOscillator();
@@ -538,6 +661,7 @@
         osc.start();
         osc.stop(this.ctx.currentTime + 0.25);
       }
+
       playBoot() {
         this.init();
         const notes = [523.25, 659.25, 783.99, 1046.50];
@@ -555,6 +679,7 @@
           osc.stop(this.ctx.currentTime + idx * 0.12 + 0.8);
         });
       }
+
       playSuccess() {
         this.init();
         const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
@@ -574,6 +699,40 @@
     }
     const soundFX = new SoundFX();
 
+    // Điều khiển Nhạc Lofi từ Giao diện
+    let isMusicActive = false;
+
+    function toggleLofiMusic() {
+      isMusicActive = !isMusicActive;
+      const btnText = document.getElementById("music-btn-text");
+      const icon = document.getElementById("music-icon");
+      const visualizer = document.getElementById("music-visualizer");
+      const btn = document.getElementById("btn-lofi-music");
+
+      if (isMusicActive) {
+        soundFX.startMusic();
+        btnText.innerText = "Nhạc Lofi: BẬT";
+        icon.innerText = "🎶";
+        visualizer.classList.remove("hidden");
+        btn.className = "text-xs font-black flex items-center gap-1 text-emerald-400 transition-all";
+      } else {
+        soundFX.stopMusic();
+        btnText.innerText = "Nhạc Lofi: TẮT";
+        icon.innerText = "🎵";
+        visualizer.classList.add("hidden");
+        btn.className = "text-xs font-black flex items-center gap-1 text-slate-400 transition-all";
+      }
+    }
+
+    function setMusicVolume(val) {
+      soundFX.setVolume(val);
+    }
+
+    function changeMusicChannel(channel) {
+      soundFX.setChannel(channel);
+      soundFX.playClick();
+    }
+
     // 3D Scene Setup
     let scene, camera, renderer, controls;
     let screenMesh, screenCanvas, screenCtx, screenTexture;
@@ -591,7 +750,6 @@
     let bootTimer = null;
     let customPainting = null;
 
-    // Trạng thái linh kiện lắp ráp Mainboard
     const assembledParts = { cpu: false, fan: false, ram: false, ssd: false };
 
     const componentData = {
@@ -678,7 +836,6 @@
       cyanFill.position.set(-2, 3, 2);
       scene.add(cyanFill);
 
-      // Đèn trần phòng học (Ceiling Lights)
       ceilingLight1 = new THREE.PointLight(0xffffff, 0.9, 10);
       ceilingLight1.position.set(-2, 5.5, 0);
       scene.add(ceilingLight1);
@@ -737,7 +894,6 @@
       }
     }
 
-    // 3. TÍNH NĂNG: CÔNG TẮC ĐÈN TRẦN PHÒNG HỌC
     function toggleCeilingLights() {
       isCeilingLightsOn = !isCeilingLightsOn;
       soundFX.playSwitch();
@@ -760,7 +916,6 @@
       }
     }
 
-    // 5. TÍNH NĂNG: CHẾ ĐỘ KÍNH THỰC TẾ ẢO VR (Stereo Viewport Toggle)
     function toggleVRMode() {
       isVRMode = !isVRMode;
       soundFX.playClick();
@@ -789,7 +944,6 @@
       wall.position.set(0, 4, -3);
       scene.add(wall);
 
-      // Bảng xanh sư phạm
       const boardGeo = new THREE.BoxGeometry(7, 3, 0.08);
       const boardMat = new THREE.MeshStandardMaterial({ color: 0x064e3b, roughness: 0.5 });
       const board = new THREE.Mesh(boardGeo, boardMat);
@@ -802,7 +956,6 @@
       frame.position.set(0, 4, -2.92);
       scene.add(frame);
 
-      // 2 Bóng đèn tuýp LED trên trần
       const tubeGeo = new THREE.CylinderGeometry(0.04, 0.04, 3.5, 16);
       tubeGeo.rotateZ(Math.PI / 2);
       const tubePositions = [[-2, 5.8, 0], [2, 5.8, 0]];
@@ -820,7 +973,6 @@
       const darkPlastic = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4 });
       const metalMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8, roughness: 0.2 });
 
-      // 1. Bàn máy tính
       const topGeo = new THREE.BoxGeometry(2.8, 0.08, 1.4);
       const deskTop = new THREE.Mesh(topGeo, woodMat);
       deskTop.position.set(0, 1.0, 0);
@@ -840,7 +992,6 @@
         scene.add(leg);
       });
 
-      // 2. MÀN HÌNH MÁY TÍNH
       const baseGeo = new THREE.CylinderGeometry(0.18, 0.22, 0.03, 32);
       const monitorBase = new THREE.Mesh(baseGeo, darkPlastic);
       monitorBase.position.set(0, 1.05, 0);
@@ -872,10 +1023,8 @@
       screenMesh.name = "screen_display";
       scene.add(screenMesh);
 
-      // 3. THÂN MÁY TÍNH CHI TIẾT
       buildDetailedPCTower();
 
-      // 4. BÀN PHÍM & CHUỘT
       const kbGeo = new THREE.BoxGeometry(0.85, 0.02, 0.28);
       const keyboard = new THREE.Mesh(kbGeo, darkPlastic);
       keyboard.position.set(-0.1, 1.05, 0.35);
@@ -888,7 +1037,6 @@
       mouse.castShadow = true;
       scene.add(mouse);
 
-      // 5. Ổ CẮM & PHÍCH ĐIỆN
       const stripGeo = new THREE.BoxGeometry(0.5, 0.06, 0.18);
       const strip = new THREE.Mesh(stripGeo, new THREE.MeshStandardMaterial({ color: 0xf1f5f9 }));
       strip.position.set(-1.1, 0.03, -0.4);
@@ -1036,9 +1184,6 @@
       if (card) card.classList.add("hidden");
     }
 
-    // =========================================================================
-    // 1. LOGIC ỨNG DỤNG VẼ PAINT 2D TƯƠNG TÁC
-    // =========================================================================
     let pCanvas, pCtx, isPainting = false, paintColor = '#ef4444', paintSize = 6;
 
     function initPaintAppLogic() {
@@ -1053,7 +1198,6 @@
       pCanvas.addEventListener("mouseup", stopPaint);
       pCanvas.addEventListener("mouseleave", stopPaint);
 
-      // Touch support
       pCanvas.addEventListener("touchstart", (e) => {
         const touch = e.touches[0];
         const rect = pCanvas.getBoundingClientRect();
@@ -1081,7 +1225,7 @@
         return;
       }
       soundFX.playClick();
-      soundFX.setFanSpeed('heavy'); // Quạt gió hú lớn hơn khi máy xử lý ứng dụng Paint
+      soundFX.setFanSpeed('heavy');
       document.getElementById("paint-app-modal").classList.remove("hidden");
     }
 
@@ -1155,9 +1299,6 @@
       }
     }
 
-    // =========================================================================
-    // 2. LOGIC MINI-GAME LẮP RÁP BO MẠCH CHỦ (MAINBOARD ASSEMBLY)
-    // =========================================================================
     function openAssemblyModal() {
       soundFX.playClick();
       soundFX.setFanSpeed('heavy');
@@ -1183,7 +1324,6 @@
 
       assembledParts[type] = true;
 
-      // Cập nhật giao diện Slot
       const slot = document.getElementById(`slot-${type}`);
       const status = document.getElementById(`status-${type}`);
       const btn = document.getElementById(`btn-part-${type}`);
@@ -1195,7 +1335,6 @@
         btn.classList.add("opacity-40", "pointer-events-none");
       }
 
-      // Đếm số lượng đã lắp
       const count = Object.values(assembledParts).filter(Boolean).length;
       document.getElementById("assembly-progress").innerText = `Tiến Độ: ${count}/4 Linh Kiện`;
 
@@ -1237,7 +1376,6 @@
       if (fb) fb.classList.add("hidden");
     }
 
-    // Modal 5K An Toàn Phòng Máy
     function openSafetyModal() {
       soundFX.playClick();
       document.getElementById("safety-modal").classList.remove("hidden");
@@ -1325,7 +1463,6 @@
       screenCtx.fillStyle = grad;
       screenCtx.fillRect(0, 0, 1024, 640);
 
-      // Nếu có tranh vẽ Paint của học sinh thì hiển thị lên màn hình
       if (customPainting) {
         screenCtx.drawImage(customPainting, 262, 100, 500, 300);
         screenCtx.fillStyle = "rgba(0,0,0,0.5)";
@@ -1495,7 +1632,7 @@
       } else if (bootProgress < 100) {
         mission.innerText = "⏳ Hệ thống đang khởi động, em hãy chờ trong giây lát...";
       } else {
-        mission.innerText = "🎉 Hoàn hảo! Em có thể nhấp vào Màn hình để vẽ Paint, bấm 'Lắp Ráp Mainboard' hoặc 'Tắt Máy An Toàn'!";
+        mission.innerText = "🎉 Hoàn hảo! Em có thể nhấp vào Màn hình để vẽ Paint, bật Nhạc Lofi hoặc 'Tắt Máy An Toàn'!";
       }
     }
 
