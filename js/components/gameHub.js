@@ -118,7 +118,19 @@ class GameHub {
       icon.innerText = "💡";
       badge.innerText = "🏆 Vệ Binh Không Gian Mạng";
       this.initCyberQuizGame(viewport);
+    } else if (gameId === "game_3d_computer_power") {
+      title.innerText = "🖥️ Mô Phỏng 3D: Phòng Máy & Bật/Tắt Máy Tính";
+      icon.innerText = "🌐";
+      badge.innerText = "🏆 Bậc Thầy Vận Hành 3D";
+      this.init3DComputerGame(viewport);
     }
+  }
+
+  // Khởi động Mô phỏng 3D
+  init3DComputerGame(viewport) {
+    viewport.innerHTML = `
+      <iframe src="games/computer3d/index.html" class="w-full h-[600px] rounded-xl border-0 shadow-2xl" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    `;
   }
 
   // Đóng màn hình chơi game
@@ -505,13 +517,30 @@ class GameHub {
     `;
   }
 
+  launch3DComputer() {
+    this.closeIframeRunnerModal();
+    this.launchGame("game_3d_computer_power");
+  }
+
   // Lưu điểm học sinh vào Database
   saveScoreForCurrentStudent(gameId, score, stars) {
     const user = window.authService?.getUser();
     if (user) {
-      window.supabaseService?.recordGameScore(user.id || user.studentCode, gameId, score, stars);
+      window.supabaseService?.recordGameScore(user.id || user.username || user.studentCode, gameId, score, stars);
+      if (window.app) {
+        window.app.showToast(`⭐ Chúc mừng ${user.name}! Em đã nhận được +${stars} Ngôi Sao Vàng!`, "success");
+      }
     }
   }
 }
 
 window.gameHub = new GameHub();
+
+// Lắng nghe sự kiện điểm số từ iframe mô phỏng 3D gửi về
+window.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "GAME_SCORE_UPDATE") {
+    const { gameId, score, stars } = event.data;
+    window.gameHub.saveScoreForCurrentStudent(gameId, score, stars);
+  }
+});
+

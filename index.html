@@ -497,17 +497,36 @@
   <div id="iframe-runner-modal" class="modal-backdrop">
     <div class="modal-content p-6 max-w-lg space-y-4">
       <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <h3 class="text-lg font-black text-slate-900">🌐 NHÚNG HỌC LIỆU / GAME NGOÀI</h3>
+        <h3 class="text-lg font-black text-slate-900">🌐 NHÚNG HỌC LIỆU & GAME 3D TƯƠNG TÁC</h3>
         <button onclick="gameHub.closeIframeRunnerModal()" class="text-slate-400 text-2xl font-bold">✕</button>
       </div>
+
+      <!-- Nút chọn nhanh mô hình 3D có sẵn -->
       <div class="space-y-2">
-        <label class="form-label">Đường Link Game hoặc Học Liệu (URL)</label>
+        <p class="text-xs font-bold text-slate-600 uppercase">Chọn Học Liệu / Mô Phỏng Có Sẵn:</p>
+        <div class="space-y-2">
+          <button onclick="gameHub.launch3DComputer()" class="w-full p-3 bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-700 hover:to-emerald-700 text-white rounded-xl text-left flex items-center justify-between shadow-md transition-all">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">🖥️</span>
+              <div>
+                <p class="text-xs font-black">Mô Phỏng 3D: Phòng Máy & Bật/Tắt Máy Tính</p>
+                <p class="text-[10px] text-cyan-100 font-semibold">Tương tác 3D thực tế ảo, cắm điện, bật CPU, màn hình</p>
+              </div>
+            </div>
+            <span class="badge badge-amber text-[10px] font-black">Chạy Ngay ▶</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-slate-200 space-y-2">
+        <label class="form-label">Hoặc Dán Đường Link Tùy Chọn (URL)</label>
         <input type="text" id="iframe-url-input" class="form-control text-sm" placeholder="https://scratch.mit.edu/projects/... hoặc link web game">
         <p class="text-xs text-slate-500">Hỗ trợ các dự án Scratch, Wordwall, Canva hoặc mô phỏng 3D.</p>
       </div>
-      <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
         <button onclick="gameHub.closeIframeRunnerModal()" class="btn btn-outline btn-sm">Hủy</button>
-        <button onclick="gameHub.launchCustomIframe()" class="btn btn-emerald btn-sm font-black">Mở Trải Nghiệm</button>
+        <button onclick="gameHub.launchCustomIframe()" class="btn btn-emerald btn-sm font-black">Mở Link Này</button>
       </div>
     </div>
   </div>

@@ -148,6 +148,15 @@ const MOCK_DATABASE = {
       icon: "💡",
       description: "Thử thách trắc nghiệm 10 câu hỏi siêu tốc về mạng Internet và bảo vệ mật khẩu an toàn!",
       badge: "Vệ Binh Không Gian Mạng"
+    },
+    {
+      id: "game_3d_computer_power",
+      title: "🖥️ Mô Phỏng 3D: Phòng Máy & Bật/Tắt Máy Tính",
+      grade: 3,
+      type: "3d_simulation",
+      icon: "🌐",
+      description: "Trải nghiệm mô phỏng 3D phòng máy tính thực tế ảo, cắm nguồn điện, bật CPU, bật màn hình và tắt máy an toàn!",
+      badge: "Bậc Thầy Vận Hành 3D"
     }
   ],
 
