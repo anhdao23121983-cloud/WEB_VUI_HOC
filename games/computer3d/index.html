@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mô Phỏng 3D Thao Tác Bật/Tắt Máy Tính - ETA School</title>
+  <title>Mô Phỏng 3D Thao Tác Bật/Tắt Máy Tính & Khám Phá Linh Kiện - Classroom App</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -34,7 +34,7 @@
       display: block;
     }
     .hud-card {
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.88);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.18);
@@ -74,7 +74,7 @@
             <span class="text-[10px] font-black text-amber-300 uppercase tracking-wider bg-amber-400/20 px-2 py-0.5 rounded-full">THỰC HÀNH 3D TIỂU HỌC</span>
             <span id="user-display-badge" class="text-[10px] font-bold text-cyan-300 bg-cyan-500/20 px-2 py-0.5 rounded-full">Học Sinh: Đang kết nối</span>
           </div>
-          <h1 class="text-base md:text-lg font-black leading-tight text-white mt-0.5">MÔ PHỎNG PHÒNG MÁY & BẬT/TẮT MÁY TÍNH</h1>
+          <h1 class="text-base md:text-lg font-black leading-tight text-white mt-0.5">MÔ PHỎNG PHÒNG MÁY & KHÁM PHÁ LINH KIỆN 3D</h1>
           <p id="mission-text" class="text-xs text-cyan-200 font-bold mt-0.5">👉 Bước 1: Hãy kiểm tra nguồn điện và Bấm nút 'Bật Nguồn CPU' (Thân máy)!</p>
         </div>
       </div>
@@ -84,6 +84,11 @@
         <!-- Chế độ Ngày / Đêm -->
         <button onclick="toggleDayNight()" id="btn-day-night" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1">
           <span>☀️</span> <span id="day-night-text">Ngày</span>
+        </button>
+
+        <!-- Nút Mở Nắp Thùng Máy -->
+        <button onclick="toggleCasePanel()" id="btn-toggle-case" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 rounded-xl text-xs font-black transition-all flex items-center gap-1 shadow-md">
+          <span>🔓</span> <span id="btn-case-text">Mở Nắp Thùng Máy</span>
         </button>
 
         <!-- Sao thưởng -->
@@ -101,14 +106,34 @@
       </div>
     </div>
 
+    <!-- FLOATING COMPONENT INFO POPUP (Khi bấm/hover vào linh kiện bên trong) -->
+    <div id="component-info-card" class="hidden absolute top-24 left-4 max-w-sm hud-card p-5 border-2 border-cyan-400 glow-cyan shadow-2xl pointer-events-auto animate-pop">
+      <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-700">
+        <div class="flex items-center gap-2">
+          <span id="comp-icon" class="text-3xl">🧠</span>
+          <div>
+            <h3 id="comp-name" class="font-black text-amber-300 text-base">Bo Mạch Chủ (Mainboard)</h3>
+            <span id="comp-tag" class="text-[10px] font-bold text-cyan-300 uppercase">Linh Kiện Phần Cứng</span>
+          </div>
+        </div>
+        <button onclick="closeComponentInfo()" class="text-slate-400 hover:text-white font-black text-lg">✕</button>
+      </div>
+      <p id="comp-desc" class="text-xs text-slate-200 leading-relaxed font-semibold">
+        Bo mạch chủ là bảng mạch chính kết nối tất cả các bộ phận như CPU, RAM, Ổ cứng với nhau.
+      </p>
+      <div class="mt-3 p-2.5 bg-cyan-950/60 rounded-xl border border-cyan-800/50 text-[11px] text-cyan-200">
+        💡 <b>Ví dụ dễ hiểu:</b> Giống như hệ thống đường giao thông giúp các thành phố liên lạc với nhau!
+      </div>
+    </div>
+
     <!-- BOTTOM HUD: Các nút thao tác & Đổi góc nhìn Camera -->
     <div class="absolute bottom-4 left-4 right-4 flex flex-col md:flex-row items-center justify-between gap-3 pointer-events-none">
       <!-- Camera Views -->
       <div class="hud-card p-2 pointer-events-auto flex items-center gap-1.5 shadow-2xl">
         <span class="text-xs font-black text-slate-400 px-2 uppercase hidden sm:inline">Góc Nhìn:</span>
-        <button onclick="setCameraView('overview')" id="cam-btn-overview" class="px-3 py-1.5 bg-cyan-600 rounded-xl text-xs font-black">🏠 Toàn Cảnh</button>
+        <button onclick="setCameraView('overview')" id="cam-btn-overview" class="px-3 py-1.5 bg-cyan-600 rounded-xl text-xs font-black shadow-md">🏠 Toàn Cảnh</button>
         <button onclick="setCameraView('screen')" id="cam-btn-screen" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold">🖥️ Màn Hình</button>
-        <button onclick="setCameraView('tower')" id="cam-btn-tower" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold">🖲️ Thân Máy</button>
+        <button onclick="setCameraView('inside_tower')" id="cam-btn-inside_tower" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-amber-300">🔍 Soi Linh Kiện</button>
         <button onclick="setCameraView('socket')" id="cam-btn-socket" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold">🔌 Ổ Cắm</button>
       </div>
 
@@ -142,7 +167,7 @@
         <span class="text-6xl block animate-bounce">🏆</span>
         <h3 class="text-2xl font-black text-amber-300">XUẤT SẮC! BẠN ĐÃ THỰC HIỆN ĐÚNG QUY TRÌNH!</h3>
         <p class="text-xs text-slate-200 leading-relaxed">
-          Em đã nắm vững toàn bộ quy trình: Kiểm tra nguồn điện ➡️ Bật Thân máy ➡️ Màn hình sáng ➡️ Trải nghiệm hệ điều hành ➡️ Tắt máy an toàn!
+          Em đã nắm vững toàn bộ quy trình: Kiểm tra nguồn điện ➡️ Bật Thân máy ➡️ Màn hình sáng ➡️ Khám phá linh kiện Bo mạch chủ, CPU, RAM ➡️ Tắt máy an toàn!
         </p>
         <div class="p-3.5 bg-emerald-500/20 rounded-2xl border border-emerald-500/40 text-emerald-300 font-black text-base flex items-center justify-center gap-2">
           <span>⭐</span> <span>Phần Thưởng: +50 Ngôi Sao Vàng (Đã lưu Supabase)</span>
@@ -184,9 +209,23 @@
         osc.start();
         osc.stop(this.ctx.currentTime + 0.06);
       }
+      playOpen() {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(600, this.ctx.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+      }
       playBoot() {
         this.init();
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        const notes = [523.25, 659.25, 783.99, 1046.50];
         notes.forEach((freq, idx) => {
           const osc = this.ctx.createOscillator();
           const gain = this.ctx.createGain();
@@ -223,20 +262,60 @@
     // 3D Scene Setup
     let scene, camera, renderer, controls;
     let screenMesh, screenCanvas, screenCtx, screenTexture;
-    let towerPowerLed, towerButtonMesh;
-    let mainLight, ambientLight, cyanFill;
+    let towerPowerLed, towerButtonMesh, towerSidePanel, cpuFanMesh;
+    let mainLight, ambientLight, cyanFill, caseInternalLight;
     let isDay = true;
     let isPluggedIn = true;
     let isTowerOn = false;
     let isMonitorOn = true;
+    let isCaseOpen = false;
     let bootProgress = 0;
     let bootTimer = null;
-    let stars = 50;
+
+    // Dữ liệu mô tả các linh kiện bên trong
+    const componentData = {
+      "comp_mainboard": {
+        name: "Bo Mạch Chủ (Motherboard / Mainboard)",
+        icon: "🧠",
+        desc: "Bảng mạch chính kết nối tất cả các bộ phận: CPU, RAM, Ổ cứng và Nguồn điện lại với nhau thành một khối thống nhất.",
+        analogy: "Giống như bộ khung xương và hệ thống dây thần kinh trong cơ thể con người!"
+      },
+      "comp_cpu": {
+        name: "Bộ Vi Xử Lý (CPU - Central Processing Unit)",
+        icon: "⚡",
+        desc: "Bộ não trung tâm của máy tính, thực hiện mọi phép tính toán logic và ra lệnh cho các thiết bị khác làm việc.",
+        analogy: "Giống như bộ não thông minh chỉ huy mọi hành động của chúng ta!"
+      },
+      "comp_fan": {
+        name: "Quạt Tản Nhiệt CPU (CPU Fan & Heatsink)",
+        icon: "💨",
+        desc: "Làm mát liên tục cho chip CPU khi hoạt động, giúp máy tính chạy êm ái và không bị quá nóng.",
+        analogy: "Giống như chiếc quạt mát giúp chúng ta dễ chịu khi vận động mạnh!"
+      },
+      "comp_ram": {
+        name: "Thanh Bộ Nhớ Trong (RAM)",
+        icon: "💾",
+        desc: "Bộ nhớ lưu trữ tạm thời các dữ liệu và chương trình đang chạy để CPU truy xuất với tốc độ siêu nhanh.",
+        analogy: "Giống như mặt bàn làm việc, bàn càng rộng thì để được càng nhiều sách vở cùng lúc!"
+      },
+      "comp_storage": {
+        name: "Ổ Cứng Lưu Trữ (SSD / HDD)",
+        icon: "🗄️",
+        desc: "Lưu giữ hệ điều hành, bài tập, hình ảnh và phần mềm lâu dài ngay cả khi đã tắt nguồn máy tính.",
+        analogy: "Giống như chiếc tủ sách cất giữ tài liệu an toàn từ năm này qua năm khác!"
+      },
+      "comp_psu": {
+        name: "Bộ Nguồn Máy Tính (PSU - Power Supply)",
+        icon: "🔌",
+        desc: "Chuyển đổi dòng điện lưới 220V thành các dòng điện áp nhỏ (12V, 5V, 3.3V) an toàn để nuôi các linh kiện.",
+        analogy: "Giống như trái tim bơm máu (năng lượng) đi khắp cơ thể!"
+      }
+    };
 
     const cameraPositions = {
       overview: { x: 0, y: 3.5, z: 5.5, target: { x: 0, y: 1.2, z: 0 } },
       screen: { x: 0, y: 1.6, z: 1.8, target: { x: 0, y: 1.5, z: 0 } },
-      tower: { x: 1.5, y: 1.1, z: 1.6, target: { x: 0.9, y: 0.9, z: -0.1 } },
+      inside_tower: { x: 0.55, y: 1.45, z: 0.85, target: { x: 0.95, y: 1.39, z: -0.1 } },
       socket: { x: -1.8, y: 0.8, z: 1.5, target: { x: -1.2, y: 0.3, z: -0.5 } }
     };
 
@@ -264,7 +343,7 @@
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
       controls.maxPolarAngle = Math.PI / 2 + 0.05;
-      controls.minDistance = 1;
+      controls.minDistance = 0.5;
       controls.maxDistance = 10;
       controls.target.set(0, 1.2, 0);
 
@@ -282,6 +361,11 @@
       cyanFill = new THREE.PointLight(0x06b6d4, 0.8, 8);
       cyanFill.position.set(-2, 3, 2);
       scene.add(cyanFill);
+
+      // Đèn chiếu sáng bên trong thùng máy
+      caseInternalLight = new THREE.PointLight(0x38bdf8, 0.2, 1.5);
+      caseInternalLight.position.set(0.95, 1.45, -0.05);
+      scene.add(caseInternalLight);
 
       // Build Objects
       buildClassroom();
@@ -341,7 +425,6 @@
 
     // Build Classroom Environment
     function buildClassroom() {
-      // Sàn gỗ cao cấp
       const floorGeo = new THREE.PlaneGeometry(16, 16);
       const floorMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4 });
       const floor = new THREE.Mesh(floorGeo, floorMat);
@@ -349,7 +432,6 @@
       floor.receiveShadow = true;
       scene.add(floor);
 
-      // Tường sau
       const wallGeo = new THREE.PlaneGeometry(16, 8);
       const wallMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9 });
       const wall = new THREE.Mesh(wallGeo, wallMat);
@@ -363,7 +445,6 @@
       board.position.set(0, 4, -2.9);
       scene.add(board);
 
-      // Khung bảng gỗ
       const frameGeo = new THREE.BoxGeometry(7.2, 3.2, 0.05);
       const frameMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.7 });
       const frame = new THREE.Mesh(frameGeo, frameMat);
@@ -432,29 +513,8 @@
       screenMesh.name = "screen_display";
       scene.add(screenMesh);
 
-      // 3. THÂN MÁY TÍNH (PC TOWER)
-      const towerGeo = new THREE.BoxGeometry(0.35, 0.7, 0.65);
-      const towerMesh = new THREE.Mesh(towerGeo, darkPlastic);
-      towerMesh.position.set(0.95, 1.39, -0.1);
-      towerMesh.castShadow = true;
-      towerMesh.receiveShadow = true;
-      scene.add(towerMesh);
-
-      // Nút Nguồn Thân máy (Power Button)
-      const btnGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.02, 32);
-      const btnMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.2 });
-      towerButtonMesh = new THREE.Mesh(btnGeo, btnMat);
-      towerButtonMesh.rotation.x = Math.PI / 2;
-      towerButtonMesh.position.set(0.95, 1.65, 0.23);
-      towerButtonMesh.name = "tower_power_button";
-      scene.add(towerButtonMesh);
-
-      // Đèn LED Thân máy
-      const ledGeo = new THREE.SphereGeometry(0.012, 16, 16);
-      const ledMat = new THREE.MeshBasicMaterial({ color: 0x10b981 });
-      towerPowerLed = new THREE.Mesh(ledGeo, ledMat);
-      towerPowerLed.position.set(0.95, 1.58, 0.23);
-      scene.add(towerPowerLed);
+      // 3. THÂN MÁY TÍNH (PC TOWER) CHI TIẾT CÓ LINH KIỆN BÊN TRONG
+      buildDetailedPCTower();
 
       // 4. BÀN PHÍM & CHUỘT
       const kbGeo = new THREE.BoxGeometry(0.85, 0.02, 0.28);
@@ -476,6 +536,168 @@
       scene.add(strip);
     }
 
+    // Xây dựng Thân máy tính chi tiết (Khung, Nắp mở, Bo mạch chủ, CPU Fan, RAM, Ổ cứng, Nguồn)
+    function buildDetailedPCTower() {
+      const darkMetal = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.6 });
+      const mainboardMat = new THREE.MeshStandardMaterial({ color: 0x065f46, roughness: 0.4 }); // Xanh bo mạch
+      const heatsinkMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
+      const ramMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.3 });
+      const psuMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5 });
+      const storageMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.7 });
+
+      const towerCenter = { x: 0.95, y: 1.39, z: -0.1 };
+
+      // Khung thùng máy (Chassis Base/Back/Top/Front/Right)
+      // Khung lưng
+      const backWall = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.7, 0.02), darkMetal);
+      backWall.position.set(towerCenter.x, towerCenter.y, towerCenter.z - 0.32);
+      scene.add(backWall);
+
+      // Khung đáy
+      const bottomWall = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.02, 0.65), darkMetal);
+      bottomWall.position.set(towerCenter.x, towerCenter.y - 0.34, towerCenter.z);
+      scene.add(bottomWall);
+
+      // Khung nóc
+      const topWall = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.02, 0.65), darkMetal);
+      topWall.position.set(towerCenter.x, towerCenter.y + 0.34, towerCenter.z);
+      scene.add(topWall);
+
+      // Mặt trước thùng máy (Front Panel)
+      const frontWall = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.7, 0.02), darkMetal);
+      frontWall.position.set(towerCenter.x, towerCenter.y, towerCenter.z + 0.32);
+      scene.add(frontWall);
+
+      // Nắp hông phải
+      const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.7, 0.65), darkMetal);
+      rightWall.position.set(towerCenter.x + 0.17, towerCenter.y, towerCenter.z);
+      scene.add(rightWall);
+
+      // NẮP HÔNG TRÁI CÓ THỂ MỞ ĐƯỢC (Side Panel)
+      const sidePanelGeo = new THREE.BoxGeometry(0.015, 0.68, 0.63);
+      const sidePanelMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.2, metalness: 0.8, transparent: true, opacity: 0.92 });
+      towerSidePanel = new THREE.Mesh(sidePanelGeo, sidePanelMat);
+      towerSidePanel.position.set(towerCenter.x - 0.17, towerCenter.y, towerCenter.z);
+      towerSidePanel.name = "tower_side_panel";
+      scene.add(towerSidePanel);
+
+      // LINH KIỆN 1: BO MẠCH CHỦ (MAINBOARD)
+      const mbGeo = new THREE.BoxGeometry(0.01, 0.5, 0.45);
+      const mainboardMesh = new THREE.Mesh(mbGeo, mainboardMat);
+      mainboardMesh.position.set(towerCenter.x + 0.15, towerCenter.y + 0.04, towerCenter.z - 0.05);
+      mainboardMesh.name = "comp_mainboard";
+      scene.add(mainboardMesh);
+
+      // LINH KIỆN 2: CPU & KHỐI TẢN NHIỆT (CPU & HEATSINK)
+      const cpuBlock = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.12, 0.12), heatsinkMat);
+      cpuBlock.position.set(towerCenter.x + 0.12, towerCenter.y + 0.12, towerCenter.z - 0.08);
+      cpuBlock.name = "comp_cpu";
+      scene.add(cpuBlock);
+
+      // LINH KIỆN 3: QUẠT TẢN NHIỆT CPU (CPU FAN)
+      const fanGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.02, 16);
+      const fanMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.3 });
+      cpuFanMesh = new THREE.Mesh(fanGeo, fanMat);
+      cpuFanMesh.rotation.z = Math.PI / 2;
+      cpuFanMesh.position.set(towerCenter.x + 0.08, towerCenter.y + 0.12, towerCenter.z - 0.08);
+      cpuFanMesh.name = "comp_fan";
+      scene.add(cpuFanMesh);
+
+      // LINH KIỆN 4: THANH RAM (RAM STICKS)
+      for (let i = 0; i < 2; i++) {
+        const ramMesh = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.14, 0.015), ramMat);
+        ramMesh.position.set(towerCenter.x + 0.12, towerCenter.y + 0.12, towerCenter.z + 0.03 + (i * 0.03));
+        ramMesh.name = "comp_ram";
+        scene.add(ramMesh);
+      }
+
+      // LINH KIỆN 5: Ổ CỨNG LƯU TRỮ (SSD/HDD)
+      const storageMesh = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.08, 0.14), storageMat);
+      storageMesh.position.set(towerCenter.x - 0.05, towerCenter.y + 0.15, towerCenter.z + 0.2);
+      storageMesh.name = "comp_storage";
+      scene.add(storageMesh);
+
+      // LINH KIỆN 6: BỘ NGUỒN (PSU)
+      const psuMesh = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.16, 0.28), psuMat);
+      psuMesh.position.set(towerCenter.x, towerCenter.y - 0.24, towerCenter.z - 0.15);
+      psuMesh.name = "comp_psu";
+      scene.add(psuMesh);
+
+      // Nút Nguồn Thân máy (Power Button)
+      const btnGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.02, 32);
+      const btnMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.2 });
+      towerButtonMesh = new THREE.Mesh(btnGeo, btnMat);
+      towerButtonMesh.rotation.x = Math.PI / 2;
+      towerButtonMesh.position.set(towerCenter.x, towerCenter.y + 0.26, towerCenter.z + 0.33);
+      towerButtonMesh.name = "tower_power_button";
+      scene.add(towerButtonMesh);
+
+      // Đèn LED Thân máy
+      const ledGeo = new THREE.SphereGeometry(0.012, 16, 16);
+      const ledMat = new THREE.MeshBasicMaterial({ color: 0x10b981 });
+      towerPowerLed = new THREE.Mesh(ledGeo, ledMat);
+      towerPowerLed.position.set(towerCenter.x, towerCenter.y + 0.19, towerCenter.z + 0.33);
+      scene.add(towerPowerLed);
+    }
+
+    // =========================================================================
+    // MỞ / ĐÓNG NẮP THÙNG MÁY TÍNH (ANIMATED OPEN/CLOSE CASE PANEL)
+    // =========================================================================
+    function toggleCasePanel() {
+      if (!towerSidePanel) return;
+      isCaseOpen = !isCaseOpen;
+
+      const btnText = document.getElementById("btn-case-text");
+      const btn = document.getElementById("btn-toggle-case");
+
+      soundFX.playOpen();
+
+      const targetX = isCaseOpen ? (0.95 - 0.55) : (0.95 - 0.17);
+      const targetOpacity = isCaseOpen ? 0.35 : 0.92;
+
+      new TWEEN.Tween(towerSidePanel.position)
+        .to({ x: targetX }, 700)
+        .easing(TWEEN.Easing.Back.Out)
+        .start();
+
+      towerSidePanel.material.opacity = targetOpacity;
+
+      if (isCaseOpen) {
+        btnText.innerText = "Đóng Nắp Thùng";
+        btn.className = "px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-black transition-all flex items-center gap-1 shadow-md";
+        caseInternalLight.intensity = 0.8;
+        
+        // Tự động chuyển góc nhìn camera vào trong thùng máy
+        setCameraView("inside_tower");
+        showComponentInfo("comp_mainboard");
+        document.getElementById("mission-text").innerText = "🔍 Nắp máy đã mở! Hãy nhấp vào từng linh kiện (CPU, Quạt, RAM, Ổ cứng) để khám phá!";
+      } else {
+        btnText.innerText = "Mở Nắp Thùng Máy";
+        btn.className = "px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 rounded-xl text-xs font-black transition-all flex items-center gap-1 shadow-md";
+        caseInternalLight.intensity = 0.2;
+        closeComponentInfo();
+      }
+    }
+
+    // Hiển thị thông tin linh kiện khi bấm
+    function showComponentInfo(compId) {
+      const data = componentData[compId];
+      if (!data) return;
+
+      const card = document.getElementById("component-info-card");
+      document.getElementById("comp-name").innerText = data.name;
+      document.getElementById("comp-icon").innerText = data.icon;
+      document.getElementById("comp-desc").innerText = data.desc;
+      card.querySelector("div:last-child").innerHTML = `💡 <b>Ví dụ dễ hiểu:</b> ${data.analogy}`;
+      card.classList.remove("hidden");
+      soundFX.playClick();
+    }
+
+    function closeComponentInfo() {
+      const card = document.getElementById("component-info-card");
+      if (card) card.classList.add("hidden");
+    }
+
     // Render 2D Screen OS onto 3D Monitor
     function initScreenCanvas() {
       drawScreenOS();
@@ -484,7 +706,6 @@
     function drawScreenOS() {
       if (!screenCtx) return;
 
-      // 1. Màn hình tắt hoặc rút điện
       if (!isPluggedIn || !isMonitorOn || (!isTowerOn && bootProgress === 0)) {
         screenCtx.fillStyle = "#020617";
         screenCtx.fillRect(0, 0, 1024, 640);
@@ -502,7 +723,6 @@
         return;
       }
 
-      // 2. Màn hình đang Booting Khởi động
       if (bootProgress < 100) {
         screenCtx.fillStyle = "#0f172a";
         screenCtx.fillRect(0, 0, 1024, 640);
@@ -512,7 +732,6 @@
         screenCtx.textAlign = "center";
         screenCtx.fillText("🌸 ANH ĐÀO OS • TIN HỌC 3-5", 512, 260);
 
-        // Thanh tiến trình
         screenCtx.fillStyle = "#334155";
         screenCtx.fillRect(312, 340, 400, 20);
         screenCtx.fillStyle = "#10b981";
@@ -526,7 +745,6 @@
         return;
       }
 
-      // 3. MÀN HÌNH DESKTOP WINDOWS ĐẦY ĐỦ
       const grad = screenCtx.createLinearGradient(0, 0, 1024, 640);
       grad.addColorStop(0, "#0284c7");
       grad.addColorStop(0.5, "#0d9488");
@@ -534,13 +752,11 @@
       screenCtx.fillStyle = grad;
       screenCtx.fillRect(0, 0, 1024, 640);
 
-      // Logo lớn giữa màn hình
       screenCtx.fillStyle = "rgba(255, 255, 255, 0.15)";
       screenCtx.font = "black 85px Outfit, sans-serif";
       screenCtx.textAlign = "center";
       screenCtx.fillText("VUI HỌC TIN HỌC 3-5", 512, 290);
 
-      // Icons trên Desktop
       const icons = [
         { name: "Phần Mềm Paint", icon: "🎨", x: 60, y: 60 },
         { name: "Luyện Gõ 10 Ngón", icon: "⌨️", x: 60, y: 160 },
@@ -563,11 +779,9 @@
         screenCtx.fillText(ic.name, ic.x + 10, ic.y + 70);
       });
 
-      // Thanh Taskbar dưới đáy
       screenCtx.fillStyle = "rgba(15, 23, 42, 0.9)";
       screenCtx.fillRect(0, 580, 1024, 60);
 
-      // Nút Start
       screenCtx.fillStyle = "#06b6d4";
       screenCtx.beginPath();
       screenCtx.roundRect(15, 590, 120, 40, 10);
@@ -578,7 +792,6 @@
       screenCtx.textAlign = "center";
       screenCtx.fillText("🌸 START", 75, 615);
 
-      // Đồng hồ góc phải
       const now = new Date();
       const timeStr = now.toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit' });
       screenCtx.fillStyle = "#cbd5e1";
@@ -592,8 +805,6 @@
     // =========================================================================
     // SIMULATION ACTIONS & RULES
     // =========================================================================
-
-    // 1. Cắm / Rút phích điện
     function togglePlug() {
       soundFX.playClick();
       isPluggedIn = !isPluggedIn;
@@ -611,7 +822,6 @@
       updateMission();
     }
 
-    // 2. Bật / Tắt nút nguồn Thân máy
     function toggleTowerPower() {
       soundFX.playClick();
       if (!isPluggedIn) {
@@ -641,7 +851,6 @@
       updateMission();
     }
 
-    // 3. Bật / Tắt nút nguồn Màn hình
     function toggleMonitorPower() {
       soundFX.playClick();
       isMonitorOn = !isMonitorOn;
@@ -654,7 +863,6 @@
       updateMission();
     }
 
-    // 4. Bắt đầu tiến trình nạp hệ điều hành
     function startBootSequence() {
       bootProgress = 0;
       if (bootTimer) clearInterval(bootTimer);
@@ -670,7 +878,6 @@
       }, 200);
     }
 
-    // 5. Tắt máy chuẩn (Shutdown Sequence)
     function shutdownSequence() {
       if (!isTowerOn) {
         alert("Thân máy tính hiện tại chưa bật!");
@@ -688,12 +895,10 @@
         if (towerButtonMesh) towerButtonMesh.material.emissiveIntensity = 0.2;
         drawScreenOS();
 
-        // Tuyên dương thành công
         triggerCompletion();
       }, 1000);
     }
 
-    // Cập nhật hướng dẫn nhiệm vụ
     function updateMission() {
       const mission = document.getElementById("mission-text");
       if (!isPluggedIn) {
@@ -705,11 +910,10 @@
       } else if (bootProgress < 100) {
         mission.innerText = "⏳ Hệ thống đang khởi động, em hãy chờ trong giây lát...";
       } else {
-        mission.innerText = "🎉 Hoàn hảo! Máy tính đã sẵn sàng. Em hãy bấm 'Tắt Máy An Toàn' để hoàn thành bài thực hành!";
+        mission.innerText = "🎉 Hoàn hảo! Em có thể bấm 'Mở Nắp Thùng Máy' để soi linh kiện hoặc 'Tắt Máy An Toàn'!";
       }
     }
 
-    // Kích hoạt hoàn thành bài thi + pháo hoa confetti
     function triggerCompletion() {
       soundFX.playSuccess();
       confetti({
@@ -719,7 +923,6 @@
       });
       document.getElementById("completion-modal").classList.remove("hidden");
 
-      // Gửi điểm về hệ thống Classroom App chính qua postMessage
       if (window.parent) {
         window.parent.postMessage({
           type: "GAME_SCORE_UPDATE",
@@ -732,21 +935,30 @@
 
     function resetSimulation() {
       document.getElementById("completion-modal").classList.add("hidden");
+      closeComponentInfo();
       isPluggedIn = true;
       isTowerOn = false;
       isMonitorOn = true;
+      isCaseOpen = false;
       bootProgress = 0;
       if (bootTimer) clearInterval(bootTimer);
       
       document.getElementById("btn-plug-text").innerText = "Nguồn: ĐÃ CẮM";
       document.getElementById("btn-tower-text").innerText = "Bật Nguồn CPU";
       document.getElementById("btn-monitor-text").innerText = "Màn Hình: ĐANG BẬT";
+      document.getElementById("btn-case-text").innerText = "Mở Nắp Thùng Máy";
       
       document.getElementById("btn-toggle-plug").className = "px-3.5 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 transition-all flex items-center gap-1.5 shadow-lg";
       document.getElementById("btn-toggle-tower").className = "px-3.5 py-2 rounded-xl text-xs font-black bg-amber-600 hover:bg-amber-500 transition-all flex items-center gap-1.5 shadow-lg animate-pulse-btn";
       document.getElementById("btn-toggle-monitor").className = "px-3.5 py-2 rounded-xl text-xs font-black bg-cyan-600 hover:bg-cyan-500 transition-all flex items-center gap-1.5 shadow-lg";
+      document.getElementById("btn-toggle-case").className = "px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 rounded-xl text-xs font-black transition-all flex items-center gap-1 shadow-md";
 
+      if (towerSidePanel) {
+        towerSidePanel.position.x = 0.95 - 0.17;
+        towerSidePanel.material.opacity = 0.92;
+      }
       if (towerButtonMesh) towerButtonMesh.material.emissiveIntensity = 0.2;
+      
       drawScreenOS();
       updateMission();
       setCameraView("overview");
@@ -760,9 +972,8 @@
       }
     }
 
-    // Camera Movement with Smooth Tween
     function setCameraView(viewKey) {
-      ['overview', 'screen', 'tower', 'socket'].forEach(k => {
+      ['overview', 'screen', 'inside_tower', 'socket'].forEach(k => {
         const btn = document.getElementById(`cam-btn-${k}`);
         if (btn) {
           btn.className = k === viewKey ? 
@@ -785,7 +996,7 @@
         .start();
     }
 
-    // Raycast Interaction (Clicking directly on 3D Monitor / Power Button)
+    // Raycast Interaction (Clicking directly on 3D Monitor / Power Button / Case / Internal Components)
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
@@ -797,10 +1008,16 @@
       const intersects = raycaster.intersectObjects(scene.children, true);
       if (intersects.length > 0) {
         const hit = intersects[0].object;
-        if (hit.name === "tower_power_button") {
+        const name = hit.name;
+
+        if (name === "tower_power_button") {
           toggleTowerPower();
-        } else if (hit.name === "screen_display") {
+        } else if (name === "tower_side_panel") {
+          toggleCasePanel();
+        } else if (name === "screen_display") {
           setCameraView("screen");
+        } else if (componentData[name]) {
+          showComponentInfo(name);
         }
       }
     }
@@ -815,10 +1032,15 @@
       requestAnimationFrame(animate);
       TWEEN.update();
       controls.update();
+
+      // Quạt CPU quay khi thân máy bật
+      if (cpuFanMesh && isTowerOn) {
+        cpuFanMesh.rotation.x += 0.25;
+      }
+
       renderer.render(scene, camera);
     }
 
-    // Start on DOM load
     document.addEventListener("DOMContentLoaded", init3D);
   </script>
 </body>
