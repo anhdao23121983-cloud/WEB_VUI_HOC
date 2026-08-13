@@ -1,10 +1,19 @@
 -- ==============================================================================
 -- CƠ SỞ DỮ LIỆU SUPABASE POSTGRESQL - CLASSROOM APP (WEB VUI HỌC TIN HỌC 3-5)
+-- BẢN SỬA LỖI ĐẦY ĐỦ: XÓA CẤU TRÚC CŨ VÀ TẠO LẠI ĐỒNG BỘ 100% CHUẨN XÁC
 -- Dán toàn bộ mã này vào mục: Supabase Dashboard -> SQL Editor -> New Query -> Run
 -- ==============================================================================
 
--- 1. BẢNG KẾ HOẠCH BÀI DẠY CÔNG VĂN 2345 (LESSON_PLANS)
-CREATE TABLE IF NOT EXISTS public.lesson_plans (
+-- 1. XÓA BẢNG CŨ (NẾU ĐÃ TỒN TẠI VỚI CỘT CŨ) ĐỂ TRÁNH LỖI XUNG ĐỘT CỘT
+DROP TABLE IF EXISTS public.lesson_plans CASCADE;
+DROP TABLE IF EXISTS public.student_progress CASCADE;
+DROP TABLE IF EXISTS public.educational_games CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+DROP TABLE IF EXISTS public.curriculum_lessons CASCADE;
+DROP TABLE IF EXISTS public.curriculum_books CASCADE;
+
+-- 2. TẠO BẢNG KẾ HOẠCH BÀI DẠY CÔNG VĂN 2345 (LESSON_PLANS)
+CREATE TABLE public.lesson_plans (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     title TEXT NOT NULL,
     grade_level INTEGER NOT NULL DEFAULT 3,
@@ -20,8 +29,8 @@ CREATE TABLE IF NOT EXISTS public.lesson_plans (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. BẢNG HỒ SƠ NGƯỜI DÙNG (PROFILES)
-CREATE TABLE IF NOT EXISTS public.profiles (
+-- 3. TẠO BẢNG HỒ SƠ NGƯỜI DÙNG (PROFILES)
+CREATE TABLE public.profiles (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     student_code TEXT UNIQUE,
     full_name TEXT NOT NULL,
@@ -34,8 +43,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 3. BẢNG DANH MỤC TRÒ CHƠI HỌC TẬP (EDUCATIONAL_GAMES)
-CREATE TABLE IF NOT EXISTS public.educational_games (
+-- 4. TẠO BẢNG DANH MỤC TRÒ CHƠI HỌC TẬP (EDUCATIONAL_GAMES)
+CREATE TABLE public.educational_games (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
     grade_level INTEGER NOT NULL,
@@ -46,8 +55,8 @@ CREATE TABLE IF NOT EXISTS public.educational_games (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. BẢNG TIẾN ĐỘ & ĐIỂM SỐ HỌC SINH (STUDENT_PROGRESS)
-CREATE TABLE IF NOT EXISTS public.student_progress (
+-- 5. TẠO BẢNG TIẾN ĐỘ & ĐIỂM SỐ HỌC SINH (STUDENT_PROGRESS)
+CREATE TABLE public.student_progress (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     student_name TEXT NOT NULL,
     game_id TEXT NOT NULL,
@@ -64,26 +73,14 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.educational_games ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.student_progress ENABLE ROW LEVEL SECURITY;
 
--- Tạo chính sách cho phép đọc / ghi dữ liệu công khai từ Website
-DROP POLICY IF EXISTS "Allow public read lesson_plans" ON public.lesson_plans;
+-- Cấp quyền truy cập mở cho Website
 CREATE POLICY "Allow public read lesson_plans" ON public.lesson_plans FOR SELECT USING (true);
-
-DROP POLICY IF EXISTS "Allow public insert lesson_plans" ON public.lesson_plans;
 CREATE POLICY "Allow public insert lesson_plans" ON public.lesson_plans FOR INSERT WITH CHECK (true);
-
-DROP POLICY IF EXISTS "Allow public update lesson_plans" ON public.lesson_plans;
 CREATE POLICY "Allow public update lesson_plans" ON public.lesson_plans FOR UPDATE USING (true);
-
-DROP POLICY IF EXISTS "Allow public delete lesson_plans" ON public.lesson_plans;
 CREATE POLICY "Allow public delete lesson_plans" ON public.lesson_plans FOR DELETE USING (true);
 
-DROP POLICY IF EXISTS "Allow public all profiles" ON public.profiles;
 CREATE POLICY "Allow public all profiles" ON public.profiles FOR ALL USING (true);
-
-DROP POLICY IF EXISTS "Allow public all educational_games" ON public.educational_games;
 CREATE POLICY "Allow public all educational_games" ON public.educational_games FOR ALL USING (true);
-
-DROP POLICY IF EXISTS "Allow public all student_progress" ON public.student_progress;
 CREATE POLICY "Allow public all student_progress" ON public.student_progress FOR ALL USING (true);
 
 -- ==============================================================================
@@ -97,7 +94,7 @@ VALUES
   ('game_cyber_quiz', '🛡️ Đố Vui Tin Học & An Toàn Số', 5, 'quiz_challenge', '💡', 'Thử thách trắc nghiệm 10 câu hỏi siêu tốc về mạng Internet và bảo vệ mật khẩu an toàn!', 'Vệ Binh Không Gian Mạng')
 ON CONFLICT (id) DO NOTHING;
 
--- Chèn 1 giáo án mẫu ban đầu
+-- Chèn Kế hoạch bài dạy mẫu ban đầu chuẩn CV 2345
 INSERT INTO public.lesson_plans (title, grade_level, duration_periods, teacher_name, school_name, objectives, equipment, teaching_steps, notes)
 VALUES (
   'KẾ HOẠCH BÀI DẠY: KHÁM PHÁ MÁY TÍNH',
