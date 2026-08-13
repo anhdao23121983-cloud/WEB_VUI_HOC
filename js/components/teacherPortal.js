@@ -9,13 +9,13 @@ class TeacherPortal {
     this.selectedBook = "KNTT";
   }
 
-  render(containerId) {
+  async render(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
     const user = window.authService?.getUser() || { name: "Thầy Giáo Anh Đào", school: "Trường Tiểu Học" };
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
-    const plans = db.lessonPlans || [];
+    const plans = await window.supabaseService.getLessonPlans();
     const leaderboard = db.leaderboard || [];
 
     container.innerHTML = `

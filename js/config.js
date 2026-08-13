@@ -1,18 +1,18 @@
 /**
  * CẤU HÌNH HỆ THỐNG CLASSROOM APP
- * Lưu trữ cấu hình Supabase, Gemini AI, và các hằng số ứng dụng
+ * Đã tích hợp Supabase Project URL và Public Key của Thầy
  */
 
 const CONFIG = {
   APP_NAME: "HỌC LIỆU & VUI HỌC TIN HỌC TIỂU HỌC",
   APP_SUBTITLE: "Hệ thống Quản lý Kế hoạch bài dạy CV 2345 & Game Hub Tin học 3-5",
   BRAND_BANNER: "ANH ĐÀO - CLASSROOM APP",
-  VERSION: "2.0.0",
+  VERSION: "2.1.0",
 
-  // Cấu hình Supabase (Thầy có thể cập nhật trong Cài đặt hoặc tại đây)
+  // Cấu hình Supabase Trực Tuyến
   SUPABASE: {
-    URL: localStorage.getItem("sb_url") || "",
-    ANON_KEY: localStorage.getItem("sb_anon_key") || "",
+    URL: localStorage.getItem("sb_url") || "https://xqqckatsnsxukgeuxeit.supabase.co",
+    ANON_KEY: localStorage.getItem("sb_anon_key") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxcWNrYXRzbnN4dWtnZXV4ZWl0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjE4Mjk2MywiZXhwIjoyMTAxNzU4OTYzfQ.Kd5ZQVXw1nV5AbSfB3iFt-AAGr7nUS9sS1AzWHkoOHQ",
     BUCKET_DOCS: "lesson-plans",
     BUCKET_GAMES: "game-assets"
   },
