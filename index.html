@@ -25,9 +25,7 @@
   <header class="navbar px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-sm">
     <!-- Brand Logo -->
     <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.hash='landing'">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-emerald-500 flex items-center justify-center text-white font-black text-xl shadow-md">
-        🌸
-      </div>
+      <img src="logo.png" alt="Logo Web Vui Học" class="w-11 h-11 object-contain rounded-xl shadow-md bg-white p-1 border border-slate-200/80">
       <div>
         <h1 class="text-base lg:text-lg font-black text-slate-900 leading-tight">ANH ĐÀO • CLASSROOM</h1>
         <p class="text-[11px] font-bold text-cyan-700 uppercase tracking-wider">Học Liệu & Vui Học Tin Học 3-5</p>
@@ -180,10 +178,8 @@
       <div class="glass-card p-6 md:p-8 space-y-6 shadow-2xl border-2 border-cyan-100">
         <!-- Auth Header -->
         <div class="text-center space-y-1">
-          <div class="w-16 h-16 bg-gradient-to-tr from-cyan-600 to-emerald-500 rounded-2xl flex items-center justify-center text-white text-3xl mx-auto shadow-lg animate-float">
-            🌸
-          </div>
-          <h3 class="text-2xl font-black text-slate-900 pt-2">CỔNG XÁC THỰC THÀNH VIÊN</h3>
+          <img src="logo.png" alt="Logo Anh Đào" class="w-16 h-16 mx-auto object-contain drop-shadow-md bg-white p-1 rounded-2xl border border-slate-200/80 animate-float mb-2">
+          <h3 class="text-2xl font-black text-slate-900 pt-1">CỔNG XÁC THỰC THÀNH VIÊN</h3>
           <p class="text-xs text-slate-500 font-semibold">Đồng bộ dữ liệu trực tiếp với Supabase Database</p>
         </div>
 
@@ -537,9 +533,12 @@
   <!-- ==========================================================================
        4. FOOTER
        ========================================================================== -->
-  <footer class="mt-auto bg-white border-t border-slate-200 py-6 px-4 text-center text-xs text-slate-500">
-    <p class="font-bold text-slate-700">🎓 Dự án: Classroom App - Hệ thống Học liệu & Vui học Tin học Tiểu học 3-5</p>
-    <p class="mt-1">Thiết kế theo chuẩn Công văn 2345/BGDĐT & Chương trình GDPT 2018 | Tác giả: <b>anhdao23121983</b></p>
+  <footer class="mt-auto bg-white border-t border-slate-200 py-6 px-4 text-center text-xs text-slate-500 flex flex-col items-center justify-center gap-2">
+    <div class="flex items-center gap-2">
+      <img src="logo.png" alt="Logo Anh Đào" class="w-7 h-7 object-contain">
+      <p class="font-bold text-slate-700">🎓 Classroom App - Hệ thống Học liệu & Vui học Tin học Tiểu học 3-5</p>
+    </div>
+    <p class="text-[11px]">Thiết kế theo chuẩn Công văn 2345/BGDĐT & Chương trình GDPT 2018 | Tác giả: <b>anhdao23121983</b></p>
   </footer>
 
   <!-- Supabase JS Client v2 -->
