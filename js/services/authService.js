@@ -225,6 +225,45 @@ class AuthService {
     this.notifyListeners();
     return { success: true };
   }
+
+  // =========================================================================
+  // 4. CẬP NHẬT HỒ SƠ & ĐỔI AVATAR / MẬT KHẨU (ĐỒNG BỘ SUPABASE)
+  // =========================================================================
+  async updateUserProfile({ name, avatar, password }) {
+    if (!this.currentUser) return { success: false, error: "Chưa đăng nhập!" };
+
+    const updates = {};
+    if (name && name.trim()) {
+      this.currentUser.name = name.trim();
+      updates.full_name = name.trim();
+    }
+    if (avatar) {
+      this.currentUser.avatar = avatar;
+      updates.avatar = avatar;
+    }
+    if (password && password.trim()) {
+      updates.password = password.trim();
+    }
+
+    // 1. Cập nhật Supabase
+    if (window.supabaseService?.isReady()) {
+      try {
+        const client = window.supabaseService.client;
+        await client
+          .from("app_users")
+          .update(updates)
+          .eq("username", this.currentUser.username);
+      } catch (err) {
+        console.warn("Lỗi cập nhật hồ sơ trên Supabase:", err);
+      }
+    }
+
+    // 2. Cập nhật LocalStorage
+    localStorage.setItem("app_current_user", JSON.stringify(this.currentUser));
+    this.notifyListeners();
+
+    return { success: true, user: this.currentUser };
+  }
 }
 
 window.authService = new AuthService();

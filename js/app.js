@@ -303,6 +303,85 @@ class Application {
     this.checkSupabaseStatus();
     this.showToast("⚙️ Đã lưu cấu hình kết nối thành công!", "success");
   }
+
+  // =========================================================================
+  // MODALS & PROFILE MANAGEMENT (LIGHTBOX, ABOUT US, PROFILE & AVATAR)
+  // =========================================================================
+
+  // 1. Mở Lightbox xem Logo phóng to
+  openLogoLightbox() {
+    const modal = document.getElementById("logo-lightbox-modal");
+    if (modal) modal.classList.add("active");
+  }
+
+  // 2. Mở Modal Giới thiệu Tác giả & Sứ mệnh
+  openAboutModal() {
+    const modal = document.getElementById("about-modal");
+    if (modal) modal.classList.add("active");
+  }
+
+  // 3. Mở Modal Hồ sơ cá nhân
+  openProfileModal() {
+    const user = window.authService.getUser();
+    if (!user) {
+      this.showToast("Vui lòng đăng nhập để xem hồ sơ!", "warning");
+      window.location.hash = "auth";
+      return;
+    }
+
+    this.tempSelectedAvatar = user.avatar || "👤";
+
+    // Cập nhật thông tin lên UI Modal
+    const curAvatar = document.getElementById("profile-current-avatar");
+    const dispName = document.getElementById("profile-display-name");
+    const dispRole = document.getElementById("profile-display-role");
+    const dispStars = document.getElementById("profile-display-stars");
+    const dispBadge = document.getElementById("profile-display-badge");
+    const inputName = document.getElementById("profile-input-name");
+    const inputPass = document.getElementById("profile-input-password");
+
+    if (curAvatar) curAvatar.innerText = this.tempSelectedAvatar;
+    if (dispName) dispName.innerText = user.name;
+    if (dispRole) dispRole.innerText = user.role === "teacher" ? `Giáo Viên • ${user.school || "Tổ Tin Học"}` : `Học Sinh • Lớp ${user.className || "3A"}`;
+    if (dispStars) dispStars.innerText = `⭐ ${user.stars || 0} Sao Vàng`;
+    if (dispBadge) dispBadge.innerText = user.role === "teacher" ? "🏆 Bậc Thầy Sư Phạm" : "🏆 Chiến Binh Tin Học";
+    if (inputName) inputName.value = user.name;
+    if (inputPass) inputPass.value = "";
+
+    const modal = document.getElementById("profile-modal");
+    if (modal) modal.classList.add("active");
+  }
+
+  // Chọn avatar tạm thời
+  selectAvatar(avatarEmoji) {
+    this.tempSelectedAvatar = avatarEmoji;
+    const curAvatar = document.getElementById("profile-current-avatar");
+    if (curAvatar) curAvatar.innerText = avatarEmoji;
+  }
+
+  // Lưu thay đổi hồ sơ cá nhân
+  async saveProfileChanges() {
+    const inputName = document.getElementById("profile-input-name")?.value || "";
+    const inputPass = document.getElementById("profile-input-password")?.value || "";
+
+    if (!inputName.trim()) {
+      this.showToast("Vui lòng không để trống Họ và Tên!", "warning");
+      return;
+    }
+
+    const res = await window.authService.updateUserProfile({
+      name: inputName,
+      avatar: this.tempSelectedAvatar,
+      password: inputPass
+    });
+
+    if (res.success) {
+      document.getElementById("profile-modal")?.classList.remove("active");
+      this.showToast("✨ Đã cập nhật hồ sơ và ảnh đại diện thành công!", "success");
+    } else {
+      this.showToast(res.error || "Không thể cập nhật hồ sơ!", "error");
+    }
+  }
 }
 
 window.app = new Application();

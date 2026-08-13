@@ -14,6 +14,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="logo.png">
+  
   <!-- Custom Design System -->
   <link rel="stylesheet" href="css/main.css">
 </head>
@@ -24,9 +27,9 @@
        ========================================================================== -->
   <header class="navbar px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-sm">
     <!-- Brand Logo -->
-    <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.hash='landing'">
-      <img src="logo.png" alt="Logo Web Vui Học" class="w-11 h-11 object-contain rounded-xl shadow-md bg-white p-1 border border-slate-200/80">
-      <div>
+    <div class="flex items-center gap-3">
+      <img src="logo.png" alt="Logo Web Vui Học" onclick="app.openLogoLightbox()" title="Bấm để xem logo phóng to" class="w-11 h-11 object-contain rounded-xl shadow-md bg-white p-1 border border-slate-200/80 cursor-pointer hover:scale-105 transition-all">
+      <div class="cursor-pointer" onclick="window.location.hash='landing'">
         <h1 class="text-base lg:text-lg font-black text-slate-900 leading-tight">ANH ĐÀO • CLASSROOM</h1>
         <p class="text-[11px] font-bold text-cyan-700 uppercase tracking-wider">Học Liệu & Vui Học Tin Học 3-5</p>
       </div>
@@ -38,6 +41,7 @@
       <button onclick="window.location.hash='teacher'" class="px-3 py-1.5 rounded-lg font-bold text-sm text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">👩‍🏫 Giáo Viên (CV 2345)</button>
       <button onclick="window.location.hash='student'" class="px-3 py-1.5 rounded-lg font-bold text-sm text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">🎒 Học Sinh (Lớp 3-5)</button>
       <button onclick="window.location.hash='gamehub'" class="px-3 py-1.5 rounded-lg font-bold text-sm text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">🎮 Game Hub</button>
+      <button onclick="app.openAboutModal()" class="px-3 py-1.5 rounded-lg font-bold text-sm text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-all">🌸 Giới Thiệu</button>
     </nav>
 
     <!-- User Box & Database Status -->
@@ -48,11 +52,12 @@
 
       <!-- Box khi đã đăng nhập -->
       <div id="nav-user-box" class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
-        <span id="nav-user-avatar" class="text-lg">👨‍🏫</span>
-        <div class="text-left hidden lg:block leading-tight">
-          <p id="nav-user-name" class="text-xs font-black text-slate-800">Thầy Anh Đào</p>
+        <span id="nav-user-avatar" class="text-lg cursor-pointer" onclick="app.openProfileModal()" title="Bấm để đổi ảnh đại diện">👨‍🏫</span>
+        <div class="text-left hidden lg:block leading-tight cursor-pointer" onclick="app.openProfileModal()" title="Bấm để xem hồ sơ cá nhân">
+          <p id="nav-user-name" class="text-xs font-black text-slate-800 hover:text-cyan-700">Thầy Anh Đào</p>
           <p id="nav-user-role" class="text-[10px] text-slate-500 font-bold">Giáo viên</p>
         </div>
+        <button onclick="app.openProfileModal()" class="text-xs text-cyan-700 font-bold ml-1 hover:underline hidden sm:inline" title="Chỉnh sửa hồ sơ và mật khẩu">Hồ Sơ</button>
         <button onclick="app.handleLogout()" class="text-xs text-rose-600 font-bold ml-1 hover:underline">Đăng Xuất</button>
       </div>
 
@@ -523,6 +528,158 @@
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
         <button onclick="gameHub.closeIframeRunnerModal()" class="btn btn-outline btn-sm">Hủy</button>
         <button onclick="gameHub.launchCustomIframe()" class="btn btn-emerald btn-sm font-black">Mở Link Này</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 1: LIGHTBOX XEM LOGO PHÓNG TO -->
+  <div id="logo-lightbox-modal" class="modal-backdrop">
+    <div class="modal-content p-6 max-w-sm text-center space-y-4 animate-pop">
+      <div class="flex justify-end">
+        <button onclick="document.getElementById('logo-lightbox-modal').classList.remove('active')" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">✕</button>
+      </div>
+      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 inline-block shadow-inner">
+        <img src="logo.png" alt="Logo Lớp Học Anh Đào" class="w-48 h-48 object-contain mx-auto drop-shadow-xl animate-float">
+      </div>
+      <div>
+        <h3 class="text-lg font-black text-slate-900">ANH ĐÀO • CLASSROOM</h3>
+        <p class="text-xs text-cyan-700 font-bold uppercase mt-0.5">Biểu Tượng Học Liệu & Vui Học Tin Học Tiểu Học</p>
+        <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+          Logo chính thức đại diện cho tinh thần sáng tạo, ứng dụng công nghệ và lan tỏa tri thức Tin học GDPT 2018 đến các thế hệ học sinh.
+        </p>
+      </div>
+      <button onclick="document.getElementById('logo-lightbox-modal').classList.remove('active')" class="btn btn-primary w-full btn-sm font-black">
+        Đóng Cửa Sổ
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL 2: HỒ SƠ CÁ NHÂN & ĐỔI AVATAR (PROFILE MODAL) -->
+  <div id="profile-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-lg space-y-5 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-cyan-100 rounded-xl">👤</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900">HỒ SƠ THÀNH VIÊN</h3>
+            <p class="text-xs text-slate-500">Cập nhật ảnh đại diện, thông tin và đổi mật khẩu</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('profile-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+
+      <!-- Avatar & Thông tin tóm tắt -->
+      <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-cyan-500/10 to-emerald-500/10 rounded-2xl border border-cyan-200">
+        <div id="profile-current-avatar" class="w-16 h-16 rounded-2xl bg-white shadow-md flex items-center justify-center text-4xl border-2 border-cyan-400">
+          👨‍🏫
+        </div>
+        <div>
+          <h4 id="profile-display-name" class="text-base font-black text-slate-900">Thầy Anh Đào</h4>
+          <p id="profile-display-role" class="text-xs text-cyan-700 font-bold">Giáo Viên • Tổ Tin Học</p>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="badge badge-amber text-[10px] font-black" id="profile-display-stars">⭐ 999 Sao Vàng</span>
+            <span class="badge badge-cyan text-[10px] font-black" id="profile-display-badge">🏆 Bậc Thầy Sư Phạm</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bảng Chọn Avatar -->
+      <div class="space-y-2">
+        <label class="form-label font-bold text-slate-700">Chọn Ảnh Đại Diện (Avatar):</label>
+        <div class="grid grid-cols-8 gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200 text-2xl">
+          <button onclick="app.selectAvatar('👨‍🏫')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">👨‍🏫</button>
+          <button onclick="app.selectAvatar('👩‍🏫')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">👩‍🏫</button>
+          <button onclick="app.selectAvatar('👦')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">👦</button>
+          <button onclick="app.selectAvatar('👧')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">👧</button>
+          <button onclick="app.selectAvatar('🧑‍💻')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">🧑‍💻</button>
+          <button onclick="app.selectAvatar('🤖')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">🤖</button>
+          <button onclick="app.selectAvatar('🦊')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">🦊</button>
+          <button onclick="app.selectAvatar('🦁')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">🦁</button>
+          <button onclick="app.selectAvatar('🐼')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">🐼</button>
+          <button onclick="app.selectAvatar('🚀')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">🚀</button>
+          <button onclick="app.selectAvatar('🎮')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">🎮</button>
+          <button onclick="app.selectAvatar('🐱')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">🐱</button>
+          <button onclick="app.selectAvatar('🦄')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">🦄</button>
+          <button onclick="app.selectAvatar('🌸')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">🌸</button>
+          <button onclick="app.selectAvatar('⭐')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">⭐</button>
+          <button onclick="app.selectAvatar('🏆')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">🏆</button>
+        </div>
+      </div>
+
+      <!-- Đổi Tên & Mật Khẩu -->
+      <div class="space-y-3 pt-2 border-t border-slate-200 text-xs">
+        <div class="form-group">
+          <label class="form-label">Họ và Tên</label>
+          <input type="text" id="profile-input-name" class="form-control text-xs font-bold" placeholder="Họ và tên của bạn...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Đổi Mật Khẩu Mới (Bỏ trống nếu giữ nguyên)</label>
+          <input type="password" id="profile-input-password" class="form-control text-xs font-bold" placeholder="Nhập mật khẩu mới...">
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
+        <button onclick="document.getElementById('profile-modal').classList.remove('active')" class="btn btn-outline btn-sm">Đóng</button>
+        <button onclick="app.saveProfileChanges()" class="btn btn-primary btn-sm font-black">
+          💾 Lưu Thay Đổi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: GIỚI THIỆU TÁC GIẢ & SỨ MỆNH GIÁO DỤC (ABOUT US MODAL) -->
+  <div id="about-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-2xl space-y-5 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-3">
+          <img src="logo.png" alt="Logo Anh Đào" class="w-10 h-10 object-contain">
+          <div>
+            <h3 class="text-lg font-black text-slate-900">VỀ HỆ THỐNG ANH ĐÀO • CLASSROOM</h3>
+            <p class="text-xs text-cyan-700 font-bold">Giải Pháp Học Liệu Số & Kế Hoạch Bài Dạy Chuẩn CV 2345</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('about-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+
+      <div class="space-y-4 text-xs text-slate-600 leading-relaxed max-h-[65vh] overflow-y-auto pr-2">
+        <div class="p-4 bg-gradient-to-r from-cyan-50 to-emerald-50 rounded-2xl border border-cyan-200 flex items-start gap-4">
+          <span class="text-4xl">👨‍🏫</span>
+          <div class="space-y-1">
+            <h4 class="text-sm font-black text-slate-900">Tác giả: Thầy Giáo Anh Đào (anhdao23121983)</h4>
+            <p class="text-slate-600">Giáo viên Tin học đam mê ứng dụng Chuyển đổi số, Công nghệ AI và Thực tế ảo 3D vào giảng dạy trường tiểu học.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="text-2xl mb-1 block">📜</span>
+            <h5 class="font-bold text-slate-900 text-xs">Chuẩn CV 2345/BGDĐT</h5>
+            <p class="text-[11px] text-slate-500 mt-1">Cấu trúc 4 hoạt động bài dạy chính xác: Khởi động, Khám phá, Luyện tập, Vận dụng.</p>
+          </div>
+
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="text-2xl mb-1 block">🎒</span>
+            <h5 class="font-bold text-slate-900 text-xs">Chương Trình GDPT 2018</h5>
+            <p class="text-[11px] text-slate-500 mt-1">Bám sát 6 chủ đề Tin học lớp 3, 4, 5 (Chủ đề A đến F) của cả 3 bộ sách giáo khoa.</p>
+          </div>
+
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="text-2xl mb-1 block">🌐</span>
+            <h5 class="font-bold text-slate-900 text-xs">Mô Phỏng 3D & Game Hub</h5>
+            <p class="text-[11px] text-slate-500 mt-1">Phòng máy vi tính thực tế ảo, game luyện gõ 10 ngón, mê cung thuật toán và an toàn số.</p>
+          </div>
+        </div>
+
+        <div class="p-3.5 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 space-y-1">
+          <h5 class="font-black text-xs">🌟 Sứ Mệnh Giáo Dục:</h5>
+          <p class="text-[11px]">"Biến mỗi giờ học Tin học tiểu học thành một hành trình phiêu lưu kỳ thú, nơi các em không chỉ học lý thuyết mà còn được trực tiếp cầm nắm, tương tác và sáng tạo công nghệ tương lai!"</p>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-2 border-t border-slate-200">
+        <button onclick="document.getElementById('about-modal').classList.remove('active')" class="btn btn-primary btn-sm font-black">
+          Đóng Cửa Sổ
+        </button>
       </div>
     </div>
   </div>

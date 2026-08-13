@@ -90,6 +90,7 @@ class DocExportService {
             <td style="width: 50%; text-align: center;">
               <b>PHÒNG GIÁO DỤC VÀ ĐÀO TẠO</b><br>
               <b>${plan.schoolName || "TRƯỜNG TIỂU HỌC"}</b><br>
+              <i>Hệ thống: ANH ĐÀO • CLASSROOM</i><br>
               --------------------
             </td>
             <td style="width: 50%; text-align: center;">
@@ -101,7 +102,7 @@ class DocExportService {
         </table>
 
         <div class="title">${plan.title}</div>
-        <div class="subtitle">Môn: ${plan.subject || "Tin học"} - Lớp ${plan.grade} | Thời lượng: ${plan.duration || "2 tiết"}</div>
+        <div class="subtitle">Môn: ${plan.subject || "Tin học"} - Lớp ${plan.grade} | Thời lượng: ${plan.duration || "2 tiết"} | Giáo viên: ${plan.teacherName || "Thầy Anh Đào"}</div>
 
         <h2>I. YÊU CẦU CẦN ĐẠT</h2>
         <h3>1. Năng lực</h3>
