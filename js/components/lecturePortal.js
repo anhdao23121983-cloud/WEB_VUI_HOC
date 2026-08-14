@@ -1,12 +1,13 @@
 /**
  * LECTURE PORTAL COMPONENT
- * Trung tâm Bài Giảng Điện Tử: Lọc SGK, AI Tóm tắt, Trình chiếu Video hoạt họa, Tùy chỉnh giọng đọc, Xuất Phiếu bài tập & Game Khởi động 3 phút
+ * Quản lý Bài Giảng Điện Tử: Tải lên, Xóa bỏ bài giảng (Đồng bộ FE-BE-Supabase), Lọc SGK, AI Tóm tắt, Video hoạt họa, Phiếu bài tập & Game Khởi động
  */
 
 class LecturePortal {
   constructor() {
     this.currentGrade = "all";
     this.currentBookSeries = "all";
+    this.currentTab = "all"; // 'all' | 'my_lectures'
     this.searchQuery = "";
     this.lectures = [];
 
@@ -28,6 +29,10 @@ class LecturePortal {
     this.icebreakerInterval = null;
     this.icebreakerCurrentQ = 0;
     this.icebreakerQuestions = [];
+
+    // Delete Confirmation State
+    this.pendingDeleteId = null;
+    this.pendingDeleteTitle = "";
   }
 
   async render(containerId) {
@@ -36,7 +41,18 @@ class LecturePortal {
 
     const user = window.authService?.getUser();
     const isTeacher = user && (user.role === 'teacher' || user.role === 'admin');
-    this.lectures = await window.lectureService.getAllLectures(this.currentGrade, this.searchQuery, this.currentBookSeries);
+    
+    // Tải toàn bộ bài giảng
+    let allLectures = await window.lectureService.getAllLectures(this.currentGrade, this.searchQuery, this.currentBookSeries);
+    
+    // Đếm số bài giảng của tôi
+    const myLecturesCount = user ? allLectures.filter(l => (l.createdByUsername === user.username) || (l.authorName === user.name) || user.role === 'admin').length : 0;
+
+    if (this.currentTab === "my_lectures" && user) {
+      this.lectures = allLectures.filter(l => (l.createdByUsername === user.username) || (l.authorName === user.name) || user.role === 'admin');
+    } else {
+      this.lectures = allLectures;
+    }
 
     container.innerHTML = `
       <div class="space-y-6 animate-pop">
@@ -48,12 +64,12 @@ class LecturePortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide, Video hoạt họa thuyết minh AI, Xuất phiếu bài tập Word và Game Khởi động 3 phút</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Quản lý tải lên, chỉnh sửa, xóa bỏ bài giảng của giáo viên và đồng bộ trực tiếp lên Supabase Cloud</p>
           </div>
 
           ${isTeacher ? `
-            <button onclick="lectureUploadModal.openModal(${this.currentGrade === 'all' ? 3 : this.currentGrade})" class="btn btn-amber btn-lg font-black shadow-xl flex items-center gap-2 shrink-0">
-              <span>📤</span> <span>Tải Lên Bài Giảng Mới</span>
+            <button onclick="lectureUploadModal.openModal(${this.currentGrade === 'all' ? 3 : this.currentGrade})" class="btn btn-amber btn-lg font-black shadow-xl flex items-center gap-2 shrink-0 hover:scale-105 transition-all">
+              <span class="text-xl">📤</span> <span>Tải Lên Bài Giảng Mới</span>
             </button>
           ` : `
             <div class="bg-white/15 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/30 text-center text-xs text-white">
@@ -62,6 +78,20 @@ class LecturePortal {
             </div>
           `}
         </div>
+
+        <!-- Thanh Tab Chuyển Đổi: Tất Cả Bài Giảng vs Bài Giảng Của Tôi -->
+        ${isTeacher ? `
+          <div class="flex items-center gap-3 border-b border-slate-200 pb-2">
+            <button onclick="lecturePortal.switchTab('all')" class="px-5 py-2.5 rounded-2xl font-black text-xs transition-all flex items-center gap-2 ${this.currentTab === 'all' ? 'bg-cyan-700 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}">
+              <span>📂 Tất Cả Bài Giảng</span>
+              <span class="badge ${this.currentTab === 'all' ? 'bg-white/25 text-white' : 'badge-slate'} text-[10px]">${allLectures.length}</span>
+            </button>
+            <button onclick="lecturePortal.switchTab('my_lectures')" class="px-5 py-2.5 rounded-2xl font-black text-xs transition-all flex items-center gap-2 ${this.currentTab === 'my_lectures' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}">
+              <span>👨‍🏫 Bài Giảng Của Tôi (Quản Lý & Xóa)</span>
+              <span class="badge ${this.currentTab === 'my_lectures' ? 'bg-white/25 text-white' : 'badge-amber'} text-[10px]">${myLecturesCount}</span>
+            </button>
+          </div>
+        ` : ''}
 
         <!-- Thanh Bộ Lọc Kép: Khối Lớp + 3 Bộ Sách Giáo Khoa + Ô Tìm Kiếm -->
         <div class="glass-card p-5 space-y-4">
@@ -111,25 +141,31 @@ class LecturePortal {
         <!-- Danh Sách Card Bài Giảng Điện Tử -->
         <div class="space-y-4">
           <div class="flex items-center justify-between">
-            <h3 class="text-base font-extrabold text-slate-900">
-              📚 DANH SÁCH BÀI GIẢNG (${this.lectures.length} BÀI)
+            <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+              <span>📚 DANH SÁCH BÀI GIẢNG</span>
+              <span class="badge badge-cyan font-black text-xs">${this.lectures.length} Bài</span>
             </h3>
+            ${isTeacher ? `
+              <button onclick="lectureUploadModal.openModal()" class="btn btn-outline btn-xs font-black text-amber-800 border-amber-300 hover:bg-amber-50 flex items-center gap-1">
+                <span>➕</span> <span>Tải Lên Nhanh</span>
+              </button>
+            ` : ''}
           </div>
 
-          ${this.renderLectureGrid(isTeacher)}
+          ${this.renderLectureGrid(isTeacher, user)}
         </div>
       </div>
     `;
   }
 
   // Render lưới thẻ bài giảng
-  renderLectureGrid(isTeacher) {
+  renderLectureGrid(isTeacher, user) {
     if (this.lectures.length === 0) {
       return `
         <div class="text-center py-16 glass-card space-y-3 text-slate-400">
           <span class="text-6xl block mb-2">📊</span>
-          <p class="font-black text-slate-700 text-base">Chưa tìm thấy bài giảng điện tử phù hợp.</p>
-          <p class="text-xs text-slate-500">Thầy Cô hãy bấm nút <b>'Tải Lên Bài Giảng Mới'</b> để chia sẻ bài giảng PowerPoint đầu tiên!</p>
+          <p class="font-black text-slate-700 text-base">Chưa có bài giảng điện tử nào trong mục này.</p>
+          <p class="text-xs text-slate-500">Thầy Cô hãy bấm nút <b>'Tải Lên Bài Giảng Mới'</b> để tải lên file PowerPoint đầu tiên!</p>
           ${isTeacher ? `
             <button onclick="lectureUploadModal.openModal()" class="btn btn-primary btn-sm font-black mt-2">
               📤 Tải Lên Ngay
@@ -149,8 +185,10 @@ class LecturePortal {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         ${this.lectures.map(l => {
           const sInfo = seriesLabels[l.bookSeries] || seriesLabels["KNTT"];
+          const canDelete = user && (user.role === 'admin' || user.username === l.createdByUsername || user.name === l.authorName || isTeacher);
+
           return `
-            <div class="glass-card overflow-hidden hover:border-cyan-500 transition-all duration-300 shadow-md hover:shadow-xl flex flex-col justify-between group">
+            <div class="glass-card overflow-hidden hover:border-cyan-500 transition-all duration-300 shadow-md hover:shadow-xl flex flex-col justify-between group relative">
               <!-- Header Thumbnail Gradient -->
               <div class="p-5 bg-gradient-to-br ${l.thumbnailColor || 'from-blue-600 to-cyan-500'} text-white space-y-2 relative">
                 <div class="flex items-center justify-between gap-1 flex-wrap">
@@ -218,8 +256,8 @@ class LecturePortal {
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
                       <span>📥</span> <span>Tải PPT</span>
                     </button>
-                    ${isTeacher ? `
-                      <button onclick="lecturePortal.deleteLecture('${l.id}')" class="p-2 text-rose-600 hover:bg-rose-50 rounded-xl font-bold border border-rose-200" title="Xóa bài giảng">
+                    ${canDelete ? `
+                      <button onclick="lecturePortal.openDeleteConfirmModal('${l.id}', '${l.title.replace(/'/g, "\\'")}')" class="p-2 text-rose-600 hover:bg-rose-100 rounded-xl font-bold border border-rose-200 transition-all hover:scale-105" title="Xóa bỏ bài giảng này khỏi hệ thống & Supabase">
                         🗑️
                       </button>
                     ` : ''}
@@ -231,6 +269,12 @@ class LecturePortal {
         }).join("")}
       </div>
     `;
+  }
+
+  // Chuyển Tab (Tất cả vs Bài giảng của tôi)
+  switchTab(tab) {
+    this.currentTab = tab;
+    this.render("main-content-area");
   }
 
   selectGrade(grade) {
@@ -249,7 +293,57 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // 1. XUẤT PHIẾU BÀI TẬP IN (.DOC) CHO HỌC SINH
+  // XÓA BÀI GIẢNG (DELETE LECTURE WITH CONFIRMATION & SUPABASE SYNC)
+  // =========================================================================
+  openDeleteConfirmModal(id, title) {
+    this.pendingDeleteId = id;
+    this.pendingDeleteTitle = title;
+
+    const modal = document.getElementById("lecture-delete-modal");
+    const nameDisp = document.getElementById("lec-delete-name-disp");
+
+    if (nameDisp) nameDisp.innerText = title;
+    if (modal) modal.classList.add("active");
+  }
+
+  closeDeleteModal() {
+    this.pendingDeleteId = null;
+    this.pendingDeleteTitle = "";
+    const modal = document.getElementById("lecture-delete-modal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  async executeDeleteLecture() {
+    if (!this.pendingDeleteId) return;
+
+    const id = this.pendingDeleteId;
+    const title = this.pendingDeleteTitle;
+
+    const btn = document.getElementById("btn-confirm-delete-lecture");
+    if (btn) {
+      btn.innerHTML = "⏳ Đang xóa từ Supabase...";
+      btn.classList.add("pointer-events-none");
+    }
+
+    const res = await window.lectureService.deleteLecture(id);
+
+    if (btn) {
+      btn.innerHTML = "🗑️ Xóa Vĩnh Viễn";
+      btn.classList.remove("pointer-events-none");
+    }
+
+    this.closeDeleteModal();
+
+    if (res.success) {
+      window.app.showToast(`🗑️ Đã xóa bài giảng "${title}" thành công khỏi hệ thống & Supabase!`, "success");
+      this.render("main-content-area");
+    } else {
+      window.app.showToast("Không thể xóa bài giảng, vui lòng thử lại!", "error");
+    }
+  }
+
+  // =========================================================================
+  // XUẤT PHIẾU BÀI TẬP IN (.DOC) CHO HỌC SINH
   // =========================================================================
   async downloadWorksheet(id) {
     const lecture = await window.lectureService.getLectureById(id);
@@ -262,7 +356,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // 2. AI TÓM TẮT BÀI GIẢNG (AI SLIDE SUMMARY)
+  // AI TÓM TẮT BÀI GIẢNG (AI SLIDE SUMMARY)
   // =========================================================================
   async openAISummary(id) {
     const lecture = await window.lectureService.getLectureById(id);
@@ -327,7 +421,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // 3. SLIDE-TO-VIDEO: CHỌN GIỌNG ĐỌC NAM/NỮ, TỐC ĐỘ VÀ HIỆU ỨNG 3D FLIP
+  // SLIDE-TO-VIDEO: CHỌN GIỌNG ĐỌC NAM/NỮ, TỐC ĐỘ VÀ HIỆU ỨNG 3D FLIP
   // =========================================================================
   async openSlideVideoPlayer(id) {
     const lecture = await window.lectureService.getLectureById(id);
@@ -496,7 +590,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // 4. GAME KHỞI ĐỘNG NHANH 3 PHÚT (ICE-BREAKER MINIGAME)
+  // GAME KHỞI ĐỘNG NHANH 3 PHÚT (ICE-BREAKER MINIGAME)
   // =========================================================================
   async openIcebreakerGame(id) {
     const lecture = await window.lectureService.getLectureById(id);
@@ -631,7 +725,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // 5. TRÌNH CHIẾU ONLINE & TẢI VỀ
+  // TRÌNH CHIẾU ONLINE & TẢI VỀ
   // =========================================================================
   async previewLecture(id) {
     const lecture = await window.lectureService.getLectureById(id);
@@ -681,13 +775,6 @@ class LecturePortal {
     }
 
     window.app.showToast(`📥 Đang tải xuống bài giảng: ${lecture.fileName}`, "success");
-    this.render("main-content-area");
-  }
-
-  async deleteLecture(id) {
-    if (!confirm("Thầy Cô có chắc chắn muốn xóa bài giảng điện tử này khỏi hệ thống không?")) return;
-    await window.lectureService.deleteLecture(id);
-    window.app.showToast("🗑️ Đã xóa bài giảng thành công!", "info");
     this.render("main-content-area");
   }
 }

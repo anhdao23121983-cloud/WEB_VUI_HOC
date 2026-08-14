@@ -32,6 +32,7 @@ class LectureService {
             bookSeries: item.book_series || "KNTT",
             lessonId: item.lesson_id,
             authorName: item.author_name || "Thầy Giáo Anh Đào",
+            createdByUsername: item.created_by_username || "anhdao",
             schoolName: item.school_name || "Trường Tiểu Học Vui Học",
             fileName: item.file_name,
             fileSizeText: item.file_size_text || "5.0 MB",
@@ -78,15 +79,21 @@ class LectureService {
     return list;
   }
 
-  // 2. Lấy thông tin 1 bài giảng theo ID
+  // 2. Lấy danh sách bài giảng của riêng giáo viên đang đăng nhập
+  async getMyLectures(username) {
+    const all = await this.getAllLectures();
+    return all.filter(l => (l.createdByUsername === username) || (l.authorName && l.authorName.toLowerCase().includes(username.toLowerCase())));
+  }
+
+  // 3. Lấy thông tin 1 bài giảng theo ID
   async getLectureById(id) {
     const all = await this.getAllLectures();
     return all.find(l => l.id === id);
   }
 
-  // 3. Tải lên và lưu bài giảng mới
+  // 4. Tải lên và lưu bài giảng mới (Đồng bộ FE -> BE -> Supabase Cloud)
   async uploadLecture(lectureData) {
-    const user = window.authService?.getUser() || { name: "Thầy Giáo Anh Đào", school: "Trường Tiểu Học" };
+    const user = window.authService?.getUser() || { username: "anhdao", name: "Thầy Giáo Anh Đào", school: "Trường Tiểu Học" };
     const lectureId = lectureData.id || ("lec_" + Date.now());
 
     const colors = [
@@ -106,6 +113,7 @@ class LectureService {
       bookSeries: lectureData.bookSeries || "KNTT",
       lessonId: lectureData.lessonId || "L" + (lectureData.grade || 3) + "_01",
       authorName: lectureData.authorName || user.name,
+      createdByUsername: user.username || "anhdao",
       schoolName: user.school || "Trường Tiểu Học Vui Học",
       fileName: lectureData.fileName || "BaiGiang_TinHoc.pptx",
       fileSizeText: lectureData.fileSizeText || "6.5 MB",
@@ -142,6 +150,7 @@ class LectureService {
           book_series: lectureObj.bookSeries,
           lesson_id: lectureObj.lessonId,
           author_name: lectureObj.authorName,
+          created_by_username: lectureObj.createdByUsername,
           school_name: lectureObj.schoolName,
           file_name: lectureObj.fileName,
           file_size_text: lectureObj.fileSizeText,
@@ -160,7 +169,7 @@ class LectureService {
         }
 
         const { data, error } = await client.from("lecture_slides").insert([payload]).select().single();
-        if (data) {
+        if (data && data.id) {
           lectureObj.id = data.id;
         }
       } catch (err) {
@@ -171,20 +180,25 @@ class LectureService {
     return { success: true, lecture: lectureObj };
   }
 
-  // 4. Xóa bài giảng
+  // 5. Xóa bài giảng điện tử (Xóa cả LocalStorage và Supabase Cloud)
   async deleteLecture(id) {
+    // 1. Xóa trong LocalStorage
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     if (db.lectures) {
       db.lectures = db.lectures.filter(l => l.id !== id);
       localStorage.setItem("app_mock_db", JSON.stringify(db));
     }
 
+    // 2. Xóa trên Supabase Cloud Database
     if (window.supabaseService?.isReady()) {
       try {
         const client = window.supabaseService.client;
-        await client.from("lecture_slides").delete().eq("id", id);
+        const { error } = await client.from("lecture_slides").delete().eq("id", id);
+        if (error) {
+          console.warn("Lỗi xóa bài giảng từ Supabase:", error);
+        }
       } catch (err) {
-        console.warn("Lỗi xóa bài giảng trên Supabase:", err);
+        console.warn("Lỗi kết nối xóa bài giảng Supabase:", err);
       }
     }
 

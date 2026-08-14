@@ -68,8 +68,10 @@ CREATE TABLE public.lecture_slides (
     title TEXT NOT NULL,
     grade_level INTEGER NOT NULL DEFAULT 3,
     topic_name TEXT DEFAULT 'Chủ đề A: Máy tính và em',
+    book_series TEXT DEFAULT 'KNTT', -- KNTT, CD, CTST
     lesson_id TEXT,
     author_name TEXT DEFAULT 'Thầy Giáo Anh Đào',
+    created_by_username TEXT DEFAULT 'anhdao',
     school_name TEXT DEFAULT 'Trường Tiểu Học Vui Học',
     file_name TEXT NOT NULL,
     file_size_text TEXT DEFAULT '5.2 MB',

@@ -937,6 +937,35 @@
     </div>
   </div>
 
+  <!-- MODAL 11: XÁC NHẬN XÓA BÀI GIẢNG ĐIỆN TỬ (LECTURE DELETE MODAL) -->
+  <div id="lecture-delete-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-md space-y-5 animate-pop text-center">
+      <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-3xl flex items-center justify-center text-3xl mx-auto shadow-inner">
+        🗑️
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="text-lg font-black text-slate-900">XÁC NHẬN XÓA BÀI GIẢNG?</h3>
+        <p class="text-xs text-slate-500">
+          Thầy Cô có chắc chắn muốn xóa vĩnh viễn bài giảng sau khỏi hệ thống và <b>Cơ sở dữ liệu Supabase</b>?
+        </p>
+        <div class="p-3 bg-rose-50 rounded-xl border border-rose-200 text-xs font-bold text-rose-900 line-clamp-2">
+          <span id="lec-delete-name-disp">Tên bài giảng...</span>
+        </div>
+        <p class="text-[11px] text-slate-400">⚠️ Thao tác này sẽ xóa đồng bộ trên toàn bộ máy chủ và không thể khôi phục lại.</p>
+      </div>
+
+      <div class="flex items-center justify-center gap-3 pt-2">
+        <button onclick="lecturePortal.closeDeleteModal()" class="btn btn-outline btn-sm px-5">
+          Hủy Bỏ
+        </button>
+        <button id="btn-confirm-delete-lecture" onclick="lecturePortal.executeDeleteLecture()" class="btn btn-danger btn-sm font-black px-6 shadow-md">
+          🗑️ Xóa Vĩnh Viễn
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATIONS CONTAINER -->
   <div id="toast-container"></div>
 
