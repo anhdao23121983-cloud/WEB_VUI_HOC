@@ -831,6 +831,108 @@ class DocExportService {
     URL.revokeObjectURL(url);
   }
 
+  // 6. Xuất Bảng Điểm Tổng Hợp Lớp Học Ra File Word / Excel (.doc / .xls)
+  exportGradebookExcelDoc(className = "3A", gradeLevel = 3, attempts = []) {
+    const filename = `Bang_Diem_Tong_Hop_Lop_${className}_TinHoc.doc`;
+
+    const htmlContent = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset="utf-8">
+        <title>Bảng Điểm Lớp ${className}</title>
+        <style>
+          body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 1.35;
+            color: #000;
+            margin: 15mm 15mm 15mm 20mm;
+          }
+          .header-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+          .header-table td { vertical-align: top; font-size: 11pt; }
+          .title { text-align: center; font-size: 14pt; font-weight: bold; text-transform: uppercase; margin: 10px 0 3px 0; }
+          .subtitle { text-align: center; font-size: 11pt; font-style: italic; margin-bottom: 15px; }
+          table.grade-table { width: 100%; border-collapse: collapse; margin: 10px 0 20px 0; }
+          table.grade-table th, table.grade-table td { border: 1px solid #000; padding: 6px 8px; font-size: 11pt; }
+          table.grade-table th { background-color: #f2f2f2; text-align: center; }
+        </style>
+      </head>
+      <body>
+        <table class="header-table">
+          <tr>
+            <td style="width: 50%; text-align: center;">
+              <b>TRƯỜNG TIỂU HỌC VUI HỌC</b><br>
+              <b>NĂM HỌC 2026 - 2027</b>
+            </td>
+            <td style="width: 50%; text-align: center;">
+              <b>BẢNG TỔNG HỢP KẾT QUẢ ĐÁNH GIÁ ĐỊNH KỲ</b><br>
+              <i>Môn: Tin Học - Lớp: <b>${className}</b></i>
+            </td>
+          </tr>
+        </table>
+
+        <div class="title">BẢNG ĐIỂM KIỂM TRA ĐỊNH KỲ MÔN TIN HỌC (LỚP ${className})</div>
+        <div class="subtitle">Quy chuẩn theo Thông tư 27/2020/TT-BGDĐT • Giáo viên bộ môn: Thầy Anh Đào</div>
+
+        <table class="grade-table">
+          <thead>
+            <tr>
+              <th style="width: 6%;">STT</th>
+              <th style="width: 28%;">Họ và Tên Học Sinh</th>
+              <th style="width: 15%;">Điểm Trắc Nghiệm (7.0đ)</th>
+              <th style="width: 15%;">Điểm Thực Hành (3.0đ)</th>
+              <th style="width: 12%;">Tổng Điểm (10đ)</th>
+              <th style="width: 24%;">Mức Đạt Được (TT 27)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${attempts.map((att, idx) => {
+              const tn = ((att.score / 10) * 7.0).toFixed(1);
+              const th = (att.score - tn).toFixed(1);
+              return `
+                <tr>
+                  <td style="text-align: center;">${idx + 1}</td>
+                  <td><b>${att.studentName}</b></td>
+                  <td style="text-align: center;">${tn}</td>
+                  <td style="text-align: center;">${th}</td>
+                  <td style="text-align: center; font-weight: bold; color: #1e40af;">${att.score}</td>
+                  <td style="text-align: center; font-weight: bold;">${att.classification || (att.score >= 9 ? 'Hoàn thành Tốt (T)' : 'Hoàn thành (H)')}</td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+
+        <table style="width: 100%; margin-top: 25px;">
+          <tr>
+            <td style="width: 50%; text-align: center;">
+              <b>HIỆU TRƯỞNG DUYỆT</b><br><br><br><br>
+              <i>(Ký và đóng dấu)</i>
+            </td>
+            <td style="width: 50%; text-align: center;">
+              <b>GIÁO VIÊN BỘ MÔN</b><br><br><br><br>
+              <b>Thầy Giáo Anh Đào</b>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + htmlContent], {
+      type: 'application/msword'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   slugify(text) {
     return text.toString().toLowerCase()
       .normalize('NFD')
@@ -843,5 +945,6 @@ class DocExportService {
 }
 
 window.docExportService = new DocExportService();
+
 
 

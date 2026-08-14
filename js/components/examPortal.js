@@ -5,6 +5,9 @@
  * - Tải Bảng đáp án & Biểu điểm riêng biệt (.doc)
  * - Thống kê phổ điểm & xếp loại học sinh theo Thông tư 27
  * - Trộn đề thi tự động 4 mã đề (101, 102, 103, 104) kèm ma trận đối chiếu
+ * - Xem lại Lịch sử làm bài thi & Nhật ký chấm điểm của từng học sinh
+ * - Xuất Bảng Điểm Tổng Hợp Lớp (.doc / .xls) nộp BGH & vào sổ điểm
+ * - AI Tự Động Sinh Đề Kiểm Tra Theo Từng Chủ Đề GDPT 2018 (Chủ đề A..F)
  * - Tải lên, Chỉnh sửa, Đổi file, Xóa bỏ đề thi (Đồng bộ 100% Supabase)
  */
 
@@ -68,21 +71,27 @@ class ExamPortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn Thông Tư 27/2020 & GDPT 2018</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">NGÂN HÀNG ĐỀ KIỂM TRA & ĐÁNH GIÁ</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Làm bài trực tuyến tự chấm, Trộn đề 4 mã, Xuất Word kèm Đáp án & Biểu điểm và Thống kê phổ điểm</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Làm bài trực tuyến tự chấm, AI Tạo đề theo chủ đề, Trộn 4 mã đề, Lịch sử thi & Xuất bảng điểm</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
-            <button onclick="examPortal.openAnalyticsModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-4 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md">
+            <button onclick="examPortal.openHistoryModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Xem lại lịch sử làm bài và điểm số của học sinh">
+              <span>📜</span> <span>Lịch Sử Thi</span>
+            </button>
+            <button onclick="examPortal.openAnalyticsModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Xem phổ điểm và tỷ lệ xếp loại T-H-C">
               <span>📈</span> <span>Phổ Điểm</span>
             </button>
             ${isTeacher ? `
-              <button onclick="examUploadModal.openModal(${this.currentGrade === 'all' ? 3 : this.currentGrade})" class="btn btn-amber btn-lg font-black shadow-xl flex items-center gap-2 shrink-0 hover:scale-105 transition-all">
-                <span class="text-xl">📤</span> <span>Tải Lên Đề Mới</span>
+              <button onclick="examPortal.openAIGeneratorModal()" class="btn bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-black text-xs py-2.5 px-3.5 rounded-xl border border-white/30 flex items-center gap-1.5 shadow-lg hover:scale-105 transition-all" title="AI tự động sinh đề theo từng chủ đề A, B, C, D, E, F">
+                <span>✨</span> <span>AI Sinh Đề</span>
+              </button>
+              <button onclick="examUploadModal.openModal(${this.currentGrade === 'all' ? 3 : this.currentGrade})" class="btn btn-amber btn-sm font-black shadow-xl flex items-center gap-1.5 shrink-0 hover:scale-105 transition-all">
+                <span>📤</span> <span>Tải Đề Lên</span>
               </button>
             ` : `
               <div class="bg-white/15 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/30 text-center text-xs text-white">
                 <span class="font-bold block text-amber-300">💡 Dành Cho Học Sinh:</span>
-                <span>Em có thể bấm <b>'✍️ Làm Bài Trực Tuyến'</b> để tự luyện tập và chấm điểm!</span>
+                <span>Em có thể bấm <b>'✍️ Thi Trực Tuyến'</b> để tự luyện tập và chấm điểm!</span>
               </div>
             `}
           </div>
@@ -187,9 +196,14 @@ class ExamPortal {
               <span class="badge badge-emerald font-black text-xs">${this.exams.length} Đề</span>
             </h3>
             ${isTeacher ? `
-              <button onclick="examUploadModal.openModal()" class="btn btn-outline btn-xs font-black text-emerald-800 border-emerald-300 hover:bg-emerald-50 flex items-center gap-1">
-                <span>➕</span> <span>Tải Lên Đề Mới</span>
-              </button>
+              <div class="flex items-center gap-2">
+                <button onclick="examPortal.openAIGeneratorModal()" class="btn btn-outline btn-xs font-black text-purple-800 border-purple-300 hover:bg-purple-50 flex items-center gap-1">
+                  <span>✨</span> <span>AI Sinh Đề</span>
+                </button>
+                <button onclick="examUploadModal.openModal()" class="btn btn-outline btn-xs font-black text-emerald-800 border-emerald-300 hover:bg-emerald-50 flex items-center gap-1">
+                  <span>➕</span> <span>Tải Đề Lên</span>
+                </button>
+              </div>
             ` : ''}
           </div>
 
@@ -206,11 +220,16 @@ class ExamPortal {
         <div class="text-center py-16 glass-card space-y-3 text-slate-400">
           <span class="text-6xl block mb-2">📝</span>
           <p class="font-black text-slate-700 text-base">Chưa có đề kiểm tra nào trong mục này.</p>
-          <p class="text-xs text-slate-500">Thầy Cô hãy bấm nút <b>'Tải Lên Đề Mới'</b> để chia sẻ đề thi đầu tiên!</p>
+          <p class="text-xs text-slate-500">Thầy Cô hãy bấm nút <b>'Tải Lên Đề Mới'</b> hoặc <b>'AI Sinh Đề'</b> để tạo đề thi đầu tiên!</p>
           ${isTeacher ? `
-            <button onclick="examUploadModal.openModal()" class="btn btn-emerald btn-sm font-black mt-2">
-              📤 Tải Lên Ngay
-            </button>
+            <div class="flex items-center justify-center gap-2 mt-2">
+              <button onclick="examPortal.openAIGeneratorModal()" class="btn btn-primary btn-sm font-black">
+                ✨ AI Sinh Đề Tự Động
+              </button>
+              <button onclick="examUploadModal.openModal()" class="btn btn-emerald btn-sm font-black">
+                📤 Tải Lên Đề Mới
+              </button>
+            </div>
           ` : ''}
         </div>
       `;
@@ -339,14 +358,12 @@ class ExamPortal {
     `;
   }
 
-  // Đánh dấu yêu thích
   toggleFavorite(id) {
     const isFav = window.examService.toggleFavorite(id);
     window.app.showToast(isFav ? "⭐ Đã thêm đề thi vào mục Yêu Thích!" : "Đã xóa khỏi mục Yêu Thích!", "info");
     this.render("main-content-area");
   }
 
-  // Chuyển Tab
   switchTab(tab) {
     this.currentTab = tab;
     this.render("main-content-area");
@@ -420,7 +437,6 @@ class ExamPortal {
 
     if (!q || !qContainer) return;
 
-    // Render thanh số câu hỏi (1..7)
     if (navTrack) {
       navTrack.innerHTML = this.runnerQuestions.map((_, idx) => {
         const isAnswered = this.runnerAnswers[idx] !== undefined;
@@ -524,7 +540,6 @@ class ExamPortal {
     });
 
     const user = window.authService?.getUser() || { name: "Nguyễn Văn An" };
-    // Điểm trắc nghiệm (Tối đa 7đ) + Thực hành mẫu 3đ = Thang điểm 10
     const rawScore = Number(((correctCount / this.runnerQuestions.length) * 7.0 + 3.0).toFixed(1));
     const durationSpent = Math.floor((Date.now() - this.runnerStartTime) / 1000);
 
@@ -662,22 +677,16 @@ class ExamPortal {
             </div>
           </div>
 
-          <!-- Bảng Vinh Danh Học Sinh Điểm 10 -->
-          <div class="space-y-2">
-            <h4 class="font-extrabold text-slate-800 text-xs flex items-center gap-1.5">
-              <span>🌟</span> <span>VINH DANH HỌC SINH ĐẠT ĐIỂM XUẤT SẮC</span>
-            </h4>
-            <div class="space-y-1.5">
-              ${data.topStudents.map((st, idx) => `
-                <div class="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between shadow-sm">
-                  <div class="flex items-center gap-2">
-                    <span class="w-6 h-6 rounded-full bg-amber-400 text-slate-900 font-black text-xs flex items-center justify-center">${idx + 1}</span>
-                    <span class="font-bold text-slate-900 text-xs">${st.studentName}</span>
-                    <span class="badge badge-cyan text-[10px]">Lớp ${st.grade || 3}</span>
-                  </div>
-                  <span class="badge badge-emerald font-black text-xs">⭐ ${st.score} Điểm (Xuất Sắc)</span>
-                </div>
-              `).join("")}
+          <!-- Bảng Vinh Danh & Nút Xuất Bảng Điểm -->
+          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+            <span class="text-[11px] text-slate-400">Xuất báo cáo kết quả kiểm tra cho BGH</span>
+            <div class="flex items-center gap-2">
+              <button onclick="examPortal.exportClassGradebookDoc('3A')" class="btn btn-emerald btn-sm font-black flex items-center gap-1 shadow-md">
+                <span>📊</span> <span>Xuất Bảng Điểm Lớp 3A (.doc)</span>
+              </button>
+              <button onclick="document.getElementById('exam-analytics-modal').classList.remove('active')" class="btn btn-outline btn-sm font-bold">
+                Đóng
+              </button>
             </div>
           </div>
         </div>
@@ -766,6 +775,117 @@ class ExamPortal {
     if (this.currentShuffledExam && this.currentShuffledData) {
       window.docExportService.exportShuffledExamsDoc(this.currentShuffledExam, this.currentShuffledData);
       window.app.showToast("📥 Đang tải xuống trọn bộ 4 mã đề thi hoán vị Word!", "success");
+    }
+  }
+
+  // =========================================================================
+  // 5. XEM LẠI LỊCH SỬ LÀM BÀI THI & XUẤT BẢNG ĐIỂM LỚP
+  // =========================================================================
+  openHistoryModal(studentUsername = null) {
+    const history = window.examService.getExamHistory(studentUsername);
+    const modal = document.getElementById("exam-history-modal");
+    const content = document.getElementById("exam-history-content");
+
+    if (content) {
+      content.innerHTML = `
+        <div class="space-y-4 text-xs text-slate-800 animate-pop">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <span class="badge badge-emerald font-black text-xs">TỔNG CỘNG: ${history.length} LƯỢT THI</span>
+              <span class="text-[11px] text-slate-500">Ghi nhận tiến độ làm bài thời gian thực</span>
+            </div>
+            <button onclick="examPortal.exportClassGradebookDoc('3A')" class="btn btn-emerald btn-xs font-black flex items-center gap-1 shadow">
+              <span>📊</span> <span>Xuất Bảng Điểm Lớp (.doc)</span>
+            </button>
+          </div>
+
+          <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead class="bg-slate-100 text-slate-700 font-black text-[11px]">
+                <tr>
+                  <th class="p-3">Học Sinh</th>
+                  <th class="p-3">Tên Đề Thi</th>
+                  <th class="p-3 text-center">Khối</th>
+                  <th class="p-3 text-center">Điểm Số</th>
+                  <th class="p-3 text-center">Xếp Loại</th>
+                  <th class="p-3 text-center">Thời Gian</th>
+                  <th class="p-3 text-center">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 font-medium">
+                ${history.map((h, idx) => `
+                  <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-bold text-slate-900">${h.studentName}</td>
+                    <td class="p-3 font-semibold text-slate-700 line-clamp-1 max-w-[220px]">${h.examTitle}</td>
+                    <td class="p-3 text-center"><span class="badge badge-cyan text-[10px]">Lớp ${h.grade}</span></td>
+                    <td class="p-3 text-center font-black text-emerald-700 text-sm">${h.score} / 10</td>
+                    <td class="p-3 text-center"><span class="badge ${h.score >= 9 ? 'badge-amber' : 'badge-emerald'} text-[10px] font-black">${h.classification}</span></td>
+                    <td class="p-3 text-center text-[10px] text-slate-400">${Math.floor((h.durationSpentSeconds || 120) / 60)}p ${((h.durationSpentSeconds || 120) % 60)}s</td>
+                    <td class="p-3 text-center">
+                      <button onclick="examPortal.deleteAttemptRecord('${h.id}')" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="Xóa lượt thi này">
+                        🗑️
+                      </button>
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    if (modal) modal.classList.add("active");
+  }
+
+  deleteAttemptRecord(attemptId) {
+    if (confirm("Thầy Cô có chắc chắn muốn xóa bản ghi kết quả thi này?")) {
+      window.examService.deleteExamHistory(attemptId);
+      window.app.showToast("🗑️ Đã xóa bản ghi lượt thi thành công!", "info");
+      this.openHistoryModal();
+    }
+  }
+
+  exportClassGradebookDoc(className = "3A") {
+    const history = window.examService.getExamHistory();
+    if (window.docExportService?.exportGradebookExcelDoc) {
+      window.docExportService.exportGradebookExcelDoc(className, 3, history);
+      window.app.showToast(`📊 Đang tải xuống Bảng Điểm Tổng Hợp Lớp ${className}!`, "success");
+    }
+  }
+
+  // =========================================================================
+  // 6. AI TỰ ĐỘNG SINH ĐỀ KIỂM TRA THEO TỪNG CHỦ ĐỀ GDPT 2018
+  // =========================================================================
+  openAIGeneratorModal() {
+    const modal = document.getElementById("ai-exam-generator-modal");
+    if (modal) modal.classList.add("active");
+  }
+
+  async executeAIGenerateExam() {
+    const grade = document.getElementById("ai-gen-grade")?.value || "3";
+    const topicKey = document.getElementById("ai-gen-topic")?.value || "topic_a";
+    const series = document.getElementById("ai-gen-series")?.value || "KNTT";
+
+    const btn = document.getElementById("btn-submit-ai-gen");
+    if (btn) {
+      btn.innerHTML = "⏳ AI Đang Biên Soạn Đề Chuẩn TT 27...";
+      btn.classList.add("pointer-events-none");
+    }
+
+    window.app.showToast("✨ AI đang tổng hợp kiến thức và sinh đề kiểm tra mới...", "info");
+    const res = await window.examService.generateExamByTopicAI(grade, topicKey, series);
+
+    if (btn) {
+      btn.innerHTML = "✨ Bắt Đầu Sinh Đề Ngay";
+      btn.classList.remove("pointer-events-none");
+    }
+
+    document.getElementById("ai-exam-generator-modal")?.classList.remove("active");
+
+    if (res.success) {
+      window.app.showToast(`🎉 AI đã sinh thành công Đề kiểm tra mới và lưu vào Ngân Hàng Đề!`, "success");
+      this.render("main-content-area");
     }
   }
 

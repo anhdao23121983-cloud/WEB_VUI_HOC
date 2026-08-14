@@ -720,6 +720,99 @@ class ExamService {
       answerMatrix
     };
   }
+
+  // 15. Lấy danh sách lịch sử thi của học sinh
+  getExamHistory(studentUsername = null) {
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    let attempts = db.exam_attempts || [
+      {
+        id: "att_01",
+        examTitle: "Đề Kiểm Tra Cuối Học Kỳ I - Tin Học Lớp 3 (KNTT)",
+        studentName: "Nguyễn Văn An",
+        grade: 3,
+        score: 10.0,
+        totalScore: 10,
+        classification: "Hoàn thành Tốt (T)",
+        starsEarned: 20,
+        durationSpentSeconds: 145,
+        submittedAt: "2026-08-14T08:30:00.000Z"
+      },
+      {
+        id: "att_02",
+        examTitle: "Đề Kiểm Tra Giữa Học Kỳ I - Tin Học Lớp 4 (Cánh Diều)",
+        studentName: "Lê Bảo Ngọc",
+        grade: 4,
+        score: 8.5,
+        totalScore: 10,
+        classification: "Hoàn thành (H)",
+        starsEarned: 15,
+        durationSpentSeconds: 210,
+        submittedAt: "2026-08-14T09:15:00.000Z"
+      },
+      {
+        id: "att_03",
+        examTitle: "Đề Kiểm Tra Thường Xuyên 15 Phút: Khám Phá Máy Tính",
+        studentName: "Trần Minh Quân",
+        grade: 3,
+        score: 9.0,
+        totalScore: 10,
+        classification: "Hoàn thành Tốt (T)",
+        starsEarned: 20,
+        durationSpentSeconds: 95,
+        submittedAt: "2026-08-14T10:00:00.000Z"
+      }
+    ];
+
+    if (studentUsername) {
+      attempts = attempts.filter(a => a.studentName.toLowerCase().includes(studentUsername.toLowerCase()));
+    }
+
+    return attempts;
+  }
+
+  // 16. Xóa 1 bản ghi lịch sử làm bài (Reset lượt thi)
+  deleteExamHistory(attemptId) {
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (db.exam_attempts) {
+      db.exam_attempts = db.exam_attempts.filter(a => a.id !== attemptId);
+      localStorage.setItem("app_mock_db", JSON.stringify(db));
+    }
+    return { success: true };
+  }
+
+  // 17. AI Tự Động Sinh Đề Kiểm Tra Hoàn Chỉnh Theo Chủ Đề Bài Học (GDPT 2018)
+  async generateExamByTopicAI(grade, topicKey, series = "KNTT") {
+    await new Promise(r => setTimeout(r, 700));
+
+    const topicTitles = {
+      "topic_a": "Chủ đề A: Máy tính và em",
+      "topic_b": "Chủ đề B: Mạng máy tính và Internet",
+      "topic_c": "Chủ đề C: Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin",
+      "topic_d": "Chủ đề D: Đạo đức, pháp luật và văn hóa trong môi trường số",
+      "topic_e": "Chủ đề E: Ứng dụng tin học (Vẽ Paint, Soạn thảo văn bản, Trình chiếu)",
+      "topic_f": "Chủ đề F: Giải quyết vấn đề với sự trợ giúp của máy tính (Lập trình khối lệnh)"
+    };
+
+    const topicName = topicTitles[topicKey] || "Chủ đề A: Máy tính và em";
+    const title = `Đề Kiểm Tra Đánh Giá Định Kỳ Theo ${topicName} (Lớp ${grade})`;
+
+    const newExam = {
+      title: title,
+      grade: parseInt(grade),
+      examType: "regular",
+      bookSeries: series,
+      durationMinutes: 35,
+      totalScore: 10,
+      fileName: `De_AI_${topicKey}_Lop${grade}.docx`,
+      fileSizeText: "1.9 MB",
+      fileType: "docx",
+      fileUrl: "#",
+      description: `Đề kiểm tra trắc nghiệm & thực hành do AI tự động biên soạn theo chuẩn ${topicName}, bám sát Thông tư 27/2020 và GDPT 2018.`
+    };
+
+    const uploadRes = await this.uploadExam(newExam);
+    return uploadRes;
+  }
 }
 
 window.examService = new ExamService();
