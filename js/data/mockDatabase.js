@@ -4,45 +4,60 @@
  */
 
 const MOCK_DATABASE = {
-  // 1. TÀI KHOẢN MẪU
+  // 1. TÀI KHOẢN MẪU & PHÂN QUYỀN (ADMIN, TEACHER, STUDENT)
   users: [
     {
+      id: "u_admin_01",
+      username: "admin",
+      name: "Quản Trị Viên Tối Cao",
+      role: "admin",
+      school: "Hệ Thống Anh Đào Classroom",
+      avatar: "👑",
+      stars: 9999,
+      isActive: true
+    },
+    {
       id: "u_teacher_01",
-      email: "anhdao.teacher@vuihoc.edu.vn",
+      username: "anhdao",
       name: "Thầy Giáo Anh Đào",
       role: "teacher",
       school: "Trường Tiểu Học Vui Học",
-      avatar: "👨‍🏫"
+      avatar: "👨‍🏫",
+      stars: 999,
+      isActive: true
     },
     {
       id: "u_student_01",
-      studentCode: "HS3A01",
+      username: "hs3a01",
       name: "Nguyễn Văn An",
       role: "student",
       grade: 3,
       className: "3A",
       stars: 180,
-      avatar: "👦"
+      avatar: "👦",
+      isActive: true
     },
     {
       id: "u_student_02",
-      studentCode: "HS4B02",
+      username: "hs4b02",
       name: "Lê Thị Mai",
       role: "student",
       grade: 4,
       className: "4B",
       stars: 240,
-      avatar: "👧"
+      avatar: "👧",
+      isActive: true
     },
     {
       id: "u_student_03",
-      studentCode: "HS5A03",
+      username: "hs5a03",
       name: "Trần Đức Nam",
       role: "student",
       grade: 5,
       className: "5A",
       stars: 310,
-      avatar: "🧑‍💻"
+      avatar: "🧑‍💻",
+      isActive: true
     }
   ],
 
@@ -58,60 +73,116 @@ const MOCK_DATABASE = {
       teacherName: "Thầy Giáo Anh Đào",
       schoolName: "Trường Tiểu Học Vui Học",
       createdAt: "2026-08-10",
-      
-      // I. YÊU CẦU CẦN ĐẠT
       objectives: {
         competencies: {
-          general: "Tự chủ và tự học: Tự giác tham gia các hoạt động nhận diện và gọi tên các thiết bị máy tính; Giao tiếp và hợp tác: Biết chia sẻ, thảo luận cùng bạn trong nhóm.",
-          specific: "Nhận biết và chỉ đúng 4 bộ phận cơ bản của máy tính để bàn (Thân máy, Màn hình, Bàn phím, Chuột); Nêu được chức năng cơ bản của từng bộ phận."
+          general: "Tự chủ và tự học trong việc nhận diện thiết bị; Giao tiếp hợp tác nhóm.",
+          specific: "Chỉ đúng và gọi tên 4 bộ phận cơ bản của máy tính để bàn (Thân máy, Màn hình, Bàn phím, Chuột)."
         },
-        qualities: "Chăm chỉ, trách nhiệm trong việc giữ gìn và bảo quản thiết bị máy tính phòng thực hành."
+        qualities: "Chăm chỉ, trách nhiệm bảo quản tài sản phòng tin học trường học."
       },
-
-      // II. ĐỒ DÙNG DẠY HỌC
       equipment: {
-        teacher: "Máy chiếu/Tivi, bài giảng điện tử PowerPoint, máy tính để bàn mẫu, thẻ tên 4 bộ phận máy tính.",
-        student: "Sách giáo khoa Tin học 3, vở ghi bài, bút chì."
+        teacher: "Máy tính, máy chiếu, bài giảng trình chiếu, tranh ảnh bộ phận máy tính.",
+        student: "SGK Tin học 3, vở bài tập."
       },
-
-      // III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU
       activities: [
         {
           step: 1,
           name: "1. HOẠT ĐỘNG KHỞI ĐỘNG (5 phút)",
-          objective: "Tạo hứng thú, kích thích sự tò mò của học sinh về các bộ phận của máy tính.",
-          content: "GV tổ chức trò chơi 'Giải đố nhanh' về người bạn máy tính thông minh.",
-          organization: "GV đọc câu đố: 'Cái gì như chiếc tivi / Giúp em nhìn thấy chữ, hình lung linh?'. HS giơ tay trả lời -> GV dẫn dắt vào bài mới."
+          content: "Trò chơi giải câu đố vui 'Tôi là ai?' về người bạn máy tính.",
+          objective: "Tạo tâm thế hào hứng, kết nối kiến thức thực tế với bài học mới.",
+          organization: "GV chiếu câu đố -> HS suy nghĩ trả lời nhanh -> GV tổng kết trao sao thưởng."
         },
         {
           step: 2,
           name: "2. HOẠT ĐỘNG HÌNH THÀNH KIẾN THỨC (15 phút)",
-          objective: "HS nhận biết 4 bộ phận cơ bản và chức năng của chúng.",
-          content: "Khám phá Thân máy, Màn hình, Bàn phím và Chuột máy tính.",
-          organization: "GV chia lớp thành 4 nhóm, phát phiếu học tập. HS quan sát máy tính thật và ghép thẻ tên tương ứng. Đại diện nhóm trình bày -> GV chuẩn hóa kiến thức."
+          content: "Khám phá 4 bộ phận cơ bản của máy tính để bàn.",
+          objective: "Nắm vững đặc điểm, hình dáng và chức năng cơ bản của từng bộ phận.",
+          organization: "Chia 4 nhóm thảo luận, quan sát máy tính thật và gán thẻ tên phù hợp."
         },
         {
           step: 3,
-          name: "3. HOẠT ĐỘNG LUYỆN TẬP & THỰC HÀNH (10 phút)",
-          objective: "Củng cố kiến thức nhận diện qua trò chơi tương tác.",
-          content: "HS tham gia trò chơi tương tác 'Ghép nối phần cứng máy tính' trên hệ thống Web Vui Học.",
-          organization: "HS thực hành kéo thả nối tên với hình ảnh thiết bị trên máy tính. GV quan sát và tuyên dương các em đạt 3 sao hoàn hảo."
+          name: "3. HOẠT ĐỘNG LUYỆN TẬP (10 phút)",
+          content: "Thực hành trên Web Vui Học: Trò chơi 'Thử tài phần cứng'.",
+          objective: "Củng cố phản xạ nhận biết và kết nối các bộ phận máy tính.",
+          organization: "Học sinh đăng nhập tài khoản trên máy tính và hoàn thành thử thách kéo thả."
         },
         {
           step: 4,
           name: "4. HOẠT ĐỘNG VẬN DỤNG (5 phút)",
-          objective: "Vận dụng kiến thức vào thực tế bảo quản thiết bị.",
-          content: "Nêu quy tắc an toàn khi sử dụng máy tính ở nhà và trường.",
-          organization: "GV nêu tình huống: 'Khi đang dùng máy tính, nếu thấy dây điện hở hoặc máy có mùi khét, em sẽ làm gì?'. HS trả lời -> GV chốt thông điệp an toàn."
+          content: "Nhận biết các loại máy tính khác: Máy tính xách tay (Laptop), Máy tính bảng (Tablet).",
+          objective: "Mở rộng liên hệ thực tế cuộc sống hàng ngày tại gia đình.",
+          organization: "GV gợi mở câu hỏi so sánh -> HS phát biểu -> Giao bài tập về nhà."
         }
       ],
-
-      // IV. ĐIỀU CHỈNH SAU BÀI DẠY
-      evaluation: "Học sinh hào hứng tham gia trò chơi tương tác, 100% học sinh nhận biết chính xác 4 bộ phận máy tính để bàn."
+      notes: "Tiết học diễn ra sôi nổi, 100% học sinh đạt yêu cầu cần đạt."
     }
   ],
 
-  // 3. DANH MỤC TRÒ CHƠI HỌC TẬP (GAME HUB)
+  // 3. NGÂN HÀNG CÂU HỎI TRẮC NGHIỆM THEO BÀI HỌC (LESSON QUIZZES)
+  quizzes: [
+    {
+      id: "quiz_01",
+      lessonId: "L3_02",
+      lessonTitle: "Khám phá máy tính",
+      grade: 3,
+      question: "Bộ phận nào của máy tính để bàn có chức năng hiển thị kết quả làm việc cho em nhìn thấy?",
+      options: ["A. Thân máy", "B. Màn hình", "C. Bàn phím", "D. Chuột máy tính"],
+      correctIndex: 1,
+      explanation: "Màn hình là thiết bị xuất dữ liệu dạng hình ảnh để chúng ta quan sát và làm việc.",
+      stars: 15,
+      createdBy: "Thầy Giáo Anh Đào"
+    },
+    {
+      id: "quiz_02",
+      lessonId: "L3_02",
+      lessonTitle: "Khám phá máy tính",
+      grade: 3,
+      question: "Bộ phận nào được coi là 'Bộ não' trung tâm điều khiển mọi hoạt động của máy tính?",
+      options: ["A. Chuột", "B. Bàn phím", "C. Thân máy tính (chứa CPU)", "D. Loa"],
+      correctIndex: 2,
+      explanation: "Bên trong Thân máy có bộ vi xử lý CPU đóng vai trò như bộ não xử lý mọi phép tính.",
+      stars: 15,
+      createdBy: "Thầy Giáo Anh Đào"
+    },
+    {
+      id: "quiz_03",
+      lessonId: "L3_03",
+      lessonTitle: "Em tập sử dụng chuột máy tính",
+      grade: 3,
+      question: "Khi cầm chuột máy tính bằng tay phải, ngón trỏ của em sẽ đặt vào nút nào?",
+      options: ["A. Nút trái chuột", "B. Nút phải chuột", "C. Nút cuộn ở giữa", "D. Thân chuột"],
+      correctIndex: 0,
+      explanation: "Quy tắc cầm chuột chuẩn: Ngón trỏ đặt nút trái, ngón giữa đặt nút phải.",
+      stars: 15,
+      createdBy: "Thầy Giáo Anh Đào"
+    },
+    {
+      id: "quiz_04",
+      lessonId: "L4_01",
+      lessonTitle: "Phần cứng và phần mềm máy tính",
+      grade: 4,
+      question: "Vật nào sau đây là ví dụ về PHẦN CỨNG của máy tính?",
+      options: ["A. Phần mềm Paint tập vẽ", "B. Hệ điều hành Windows", "C. Bàn phím và Chuột", "D. Trò chơi Minecraft"],
+      correctIndex: 2,
+      explanation: "Phần cứng là các thiết bị vật lý mà em có thể nhìn thấy và chạm tay vào được như bàn phím, chuột, màn hình.",
+      stars: 20,
+      createdBy: "Thầy Giáo Anh Đào"
+    },
+    {
+      id: "quiz_05",
+      lessonId: "L5_01",
+      lessonTitle: "Thu thập và tìm kiếm thông tin trên Internet",
+      grade: 5,
+      question: "Để tìm kiếm thông tin về bài học Lịch sử trên Internet, em nên sử dụng công cụ nào?",
+      options: ["A. Phần mềm soạn thảo Word", "B. Máy tìm kiếm (Google, Bing...)", "C. Phần mềm Paint", "D. Trình nghe nhạc"],
+      correctIndex: 1,
+      explanation: "Máy tìm kiếm trên Internet giúp em tra cứu văn bản, hình ảnh, tài liệu học tập nhanh chóng và chính xác.",
+      stars: 25,
+      createdBy: "Thầy Giáo Anh Đào"
+    }
+  ],
+
+  // 4. DANH MỤC GAME HỌC TẬP TƯƠNG TÁC
   games: [
     {
       id: "game_hardware_match",
@@ -137,7 +208,7 @@ const MOCK_DATABASE = {
       grade: 4,
       type: "logic_puzzle",
       icon: "🧭",
-      description: "Lập trình chuỗi lệnh (Tiến, Rẽ Trái, Rẽ Phải, Nhảy) giúp Hiệp Sĩ vượt cạm bẫy đến đích!",
+      description: "Lập trình chuỗi lệnh (Tiến, Rẽ Trái, Rẽ Phải) giúp Hiệp Sĩ vượt cạm bẫy đến đích!",
       badge: "Nhà Thám Hiểm Thuật Toán"
     },
     {
@@ -160,7 +231,7 @@ const MOCK_DATABASE = {
     }
   ],
 
-  // 4. BẢNG XẾP HẠNG HỌC TẬP
+  // 5. BẢNG XẾP HẠNG HỌC TẬP
   leaderboard: [
     { rank: 1, name: "Trần Đức Nam", class: "5A", stars: 310, badge: "🥇 Đại Kiện Tướng Tin Học", avatar: "🧑‍💻" },
     { rank: 2, name: "Lê Thị Mai", class: "4B", stars: 240, badge: "🥈 Thám Hiểm Gia Xuất Sắc", avatar: "👧" },
@@ -170,8 +241,13 @@ const MOCK_DATABASE = {
   ]
 };
 
-// Khởi tạo LocalStorage nếu chưa có
-if (!localStorage.getItem("app_mock_db")) {
+// Khởi tạo LocalStorage nếu chưa có hoặc cập nhật thêm trường mới
+try {
+  const existing = JSON.parse(localStorage.getItem("app_mock_db"));
+  if (!existing || !existing.quizzes) {
+    localStorage.setItem("app_mock_db", JSON.stringify(MOCK_DATABASE));
+  }
+} catch (e) {
   localStorage.setItem("app_mock_db", JSON.stringify(MOCK_DATABASE));
 }
 

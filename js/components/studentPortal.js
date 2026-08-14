@@ -148,10 +148,15 @@ class StudentPortal {
             </ul>
           </div>
 
-          <div class="pt-4 flex justify-between items-center border-t border-slate-200">
-            <button onclick="studentPortal.openGameForLesson('${foundLesson.id}')" class="btn btn-amber btn-lg font-black shadow-lg">
-              🎮 Làm Bài Tập & Chơi Game (+25 ⭐)
-            </button>
+          <div class="pt-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-slate-200">
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <button onclick="studentPortal.openQuizChallenge(${grade}, '${foundLesson.id}', '${foundLesson.title}')" class="btn btn-primary btn-md font-black shadow-lg flex-1 sm:flex-none">
+                📝 Làm Trắc Nghiệm (+Sao ⭐)
+              </button>
+              <button onclick="studentPortal.openGameForLesson('${foundLesson.id}')" class="btn btn-amber btn-md font-black shadow-lg flex-1 sm:flex-none">
+                🎮 Chơi Game (+25 ⭐)
+              </button>
+            </div>
             <button onclick="document.getElementById('student-lesson-modal').classList.remove('active')" class="btn btn-outline btn-sm">
               Đóng Lại
             </button>
@@ -162,9 +167,17 @@ class StudentPortal {
     }
   }
 
+  // Mở bài tập trắc nghiệm tương tác
+  openQuizChallenge(grade, lessonId, lessonTitle) {
+    document.getElementById('student-lesson-modal')?.classList.remove('active');
+    if (window.quizPlayModal) {
+      window.quizPlayModal.startQuiz(grade, lessonId, lessonTitle);
+    }
+  }
+
   // Vào game tương ứng với bài học
   openGameForLesson(lessonId) {
-    document.getElementById('student-lesson-modal').classList.remove('active');
+    document.getElementById('student-lesson-modal')?.classList.remove('active');
     if (window.app) {
       window.app.navigate("gamehub");
       setTimeout(() => {
