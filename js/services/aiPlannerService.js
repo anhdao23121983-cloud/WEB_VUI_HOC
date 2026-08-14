@@ -30,6 +30,60 @@ class AIPlannerService {
 
   // Trợ lý Sư phạm Chuẩn hóa Công văn 2345
   generateSmartTemplate({ grade, book, lessonTitle, lessonTopic, duration }) {
+    const isLesson7 = lessonTitle.toLowerCase().includes("sắp xếp") || lessonTitle.toLowerCase().includes("bài 7");
+    const isLesson8 = lessonTitle.toLowerCase().includes("thư mục") || lessonTitle.toLowerCase().includes("bài 8");
+
+    const teacherEquipment = (isLesson7 || isLesson8)
+      ? "Máy tính giáo viên, Tivi/Máy chiếu, Bài giảng điện tử đa phương tiện, Học liệu số 3D tương tác tại Web Vui Học (Phòng Thí Nghiệm 3D Ảo: https://webvuihoc.edu.vn/#lab3d & Bản gốc Gemini AI: https://share.gemini.google/NLLCPUG04S6G)."
+      : "Máy tính giáo viên, Tivi/Máy chiếu, Bài giảng điện tử trình chiếu đa phương tiện, Phiếu học tập, Trò chơi tương tác trên Web Vui Học.";
+
+    const activities = [
+      {
+        step: 1,
+        name: "1. HOẠT ĐỘNG KHỞI ĐỘNG (5 - 7 phút)",
+        objective: `Kích thích hứng thú học tập và kết nối trải nghiệm thực tế với nội dung '${lessonTitle}'.`,
+        content: isLesson7 
+          ? "GV trình chiếu hình ảnh 2 bàn học: một bàn học bừa bộn và một bàn học ngăn nắp trên Phòng Thí Nghiệm 3D. Đặt câu hỏi: 'Bàn học nào giúp em tìm sách vở nhanh hơn?'"
+          : isLesson8
+          ? "GV chiếu mô hình Kệ Tủ 3 Tầng ngoài đời thực và Cây Thư Mục trong ổ đĩa D: để học sinh phát hiện sự tương đồng."
+          : "GV tổ chức trò chơi 'Đố vui khởi động' hoặc chiếu đoạn video ngắn liên quan đến bài học.",
+        organization: "GV phổ biến luật chơi và nêu câu hỏi dẫn dắt -> Học sinh sôi nổi tương tác -> GV nhận xét, tuyên dương và giới thiệu vào bài mới."
+      },
+      {
+        step: 2,
+        name: "2. HOẠT ĐỘNG HÌNH THÀNH KIẾN THỨC MỚI (15 - 18 phút)",
+        objective: `Học sinh khám phá, nắm vững khái niệm và kỹ năng cốt lõi của '${lessonTitle}'.`,
+        content: isLesson7
+          ? "Khám phá nguyên tắc phân loại đồ vật: Sách vở (Học tập), Đồ chơi (Giải trí), Thiết bị số (Công nghệ). Học sinh quan sát GV thao tác mẫu trên mô hình Tủ Đồ 3 Tầng ảo."
+          : isLesson8
+          ? "Tìm hiểu khái niệm Thư mục (Folder) và Tệp tin (File). Quan sát cấu trúc cây thư mục phân cấp trong máy tính."
+          : `Khám phá các nội dung chính trong SGK: Đọc thông tin, quan sát tranh ảnh minh họa và thảo luận nhóm.`,
+        organization: "GV chia lớp thành các nhóm 4, giao nhiệm vụ tìm hiểu -> Đại diện các nhóm báo cáo kết quả -> GV chốt kiến thức trọng tâm và làm mẫu thao tác (nếu có)."
+      },
+      {
+        step: 3,
+        name: "3. HOẠT ĐỘNG LUYỆN TẬP & THỰC HÀNH (10 - 12 phút)",
+        objective: "Củng cố kiến thức và rèn luyện kỹ năng thực hành thông qua bài tập và trò chơi tương tác.",
+        content: isLesson7
+          ? "Học sinh thực hành trực tiếp trên Phòng Thí Nghiệm 3D: Kéo thả 10 đồ vật vào đúng 3 ngăn tủ, sau đó tham gia thử thách đo tốc độ tìm kiếm cuốn Sách Tin Học 3."
+          : isLesson8
+          ? "Học sinh thực hành tạo thư mục mới 'Toan', 'TiengViet', 'TinHoc' trên Màn hình Desktop ảo và kéo thả tệp tin vào đúng thư mục con."
+          : "Học sinh làm bài tập trắc nghiệm và tham gia Game thử thách trên nền tảng Web Vui Học.",
+        organization: "Học sinh thực hành cá nhân/cặp đôi trên máy tính -> GV theo dõi, hỗ trợ các học sinh còn lúng túng -> Tuyên dương các bạn đạt kết quả xuất sắc."
+      },
+      {
+        step: 4,
+        name: "4. HOẠT ĐỘNG VẬN DỤNG & MỞ RỘNG (3 - 5 phút)",
+        objective: "Vận dụng kiến thức đã học vào các tình huống thực tế trong gia đình và trường học.",
+        content: isLesson7
+          ? "GV hướng dẫn học sinh về nhà dọn dẹp, sắp xếp lại góc học tập ngăn nắp giống như bài thí nghiệm 3D đã làm trên lớp."
+          : isLesson8
+          ? "GV hướng dẫn học sinh tạo các thư mục lưu trữ bài tập các môn học trên máy tính cá nhân ở nhà."
+          : "Liên hệ thực tế và hướng dẫn học sinh tự khám phá thêm sau giờ học.",
+        organization: "GV nêu câu hỏi tình huống thực tế -> Học sinh suy nghĩ trả lời -> GV dặn dò học sinh ôn bài và chuẩn bị cho tiết học tiếp theo."
+      }
+    ];
+
     return {
       title: `KẾ HOẠCH BÀI DẠY: ${lessonTitle.toUpperCase()}`,
       grade: parseInt(grade),
@@ -44,40 +98,11 @@ class AIPlannerService {
         qualities: "1. Chăm chỉ: Tích cực tham gia các hoạt động học tập, kiên trì luyện tập.\n2. Trách nhiệm: Giữ gìn và bảo quản thiết bị máy tính, tuân thủ nội quy phòng máy."
       },
       equipment: {
-        teacher: "Máy tính giáo viên, Tivi/Máy chiếu, Bài giảng điện tử trình chiếu đa phương tiện, Phiếu học tập, Trò chơi tương tác trên Web Vui Học.",
-        student: "Sách giáo khoa Tin học lớp " + grade + ", Vở ghi, Bút viết, Máy tính thực hành tại phòng máy."
+        teacher: teacherEquipment,
+        student: "Sách giáo khoa Tin học lớp " + grade + ", Vở ghi, Bút viết, Máy tính thực hành tại phòng máy kết nối Internet."
       },
-      activities: [
-        {
-          step: 1,
-          name: "1. HOẠT ĐỘNG KHỞI ĐỘNG (5 - 7 phút)",
-          objective: `Kích thích hứng thú học tập và kết nối trải nghiệm thực tế với nội dung '${lessonTitle}'.`,
-          content: "GV tổ chức trò chơi 'Đố vui khởi động' hoặc chiếu đoạn video ngắn liên quan đến bài học.",
-          organization: "GV phổ biến luật chơi và nêu câu hỏi dẫn dắt -> Học sinh sôi nổi tương tác -> GV nhận xét, tuyên dương và giới thiệu vào bài mới."
-        },
-        {
-          step: 2,
-          name: "2. HOẠT ĐỘNG HÌNH THÀNH KIẾN THỨC MỚI (15 - 18 phút)",
-          objective: `Học sinh khám phá, nắm vững khái niệm và kỹ năng cốt lõi của '${lessonTitle}'.`,
-          content: `Khám phá các nội dung chính trong SGK: Đọc thông tin, quan sát tranh ảnh minh họa và thảo luận nhóm.`,
-          organization: "GV chia lớp thành các nhóm 4, giao nhiệm vụ tìm hiểu -> Đại diện các nhóm báo cáo kết quả -> GV chốt kiến thức trọng tâm và làm mẫu thao tác (nếu có)."
-        },
-        {
-          step: 3,
-          name: "3. HOẠT ĐỘNG LUYỆN TẬP & THỰC HÀNH (10 - 12 phút)",
-          objective: "Củng cố kiến thức và rèn luyện kỹ năng thực hành thông qua bài tập và trò chơi tương tác.",
-          content: "Học sinh làm bài tập trắc nghiệm và tham gia Game thử thách trên nền tảng Web Vui Học.",
-          organization: "Học sinh thực hành cá nhân/cặp đôi trên máy tính -> GV theo dõi, hỗ trợ các học sinh còn lúng túng -> Tuyên dương các bạn đạt kết quả xuất sắc."
-        },
-        {
-          step: 4,
-          name: "4. HOẠT ĐỘNG VẬN DỤNG & MỞ RỘNG (3 - 5 phút)",
-          objective: "Vận dụng kiến thức đã học vào các tình huống thực tế trong gia đình và trường học.",
-          content: "Liên hệ thực tế và hướng dẫn học sinh tự khám phá thêm sau giờ học.",
-          organization: "GV nêu câu hỏi tình huống thực tế -> Học sinh suy nghĩ trả lời -> GV dặn dò học sinh ôn bài và chuẩn bị cho tiết học tiếp theo."
-        }
-      ],
-      evaluation: "Học sinh nắm vững mục tiêu bài học, thao tác thành thạo và tích cực tham gia các hoạt động nhóm."
+      activities: activities,
+      evaluation: "Học sinh nắm vững mục tiêu bài học, thao tác thành thạo trên mô hình 3D và tích cực tham gia các hoạt động nhóm."
     };
   }
 
