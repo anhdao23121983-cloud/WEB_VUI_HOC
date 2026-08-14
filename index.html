@@ -41,6 +41,7 @@
       <button onclick="window.location.hash='teacher'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">👩‍🏫 Giáo Viên (CV 2345)</button>
       <button onclick="window.location.hash='lectures'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-amber-800 bg-amber-50 hover:bg-amber-100 transition-all">📊 Bài Giảng Điện Tử</button>
       <button onclick="window.location.hash='exams'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition-all">📝 Kiểm Tra</button>
+      <button onclick="window.location.hash='lab3d'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-purple-800 bg-purple-50 hover:bg-purple-100 transition-all">🧪 Thí Nghiệm 3D (Bài 7)</button>
       <button onclick="window.location.hash='student'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">🎒 Học Sinh (Lớp 3-5)</button>
       <button onclick="window.location.hash='gamehub'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">🎮 Game Hub</button>
       <button onclick="app.openAboutModal()" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-all">🌸 Giới Thiệu</button>
@@ -92,6 +93,9 @@
           <div class="flex flex-wrap items-center gap-3 pt-2 justify-center md:justify-start">
             <button onclick="window.location.hash='teacher'" class="btn btn-emerald btn-lg font-black shadow-lg">
               👩‍🏫 Portal Giáo Viên (Soạn CV 2345)
+            </button>
+            <button onclick="window.location.hash='lab3d'" class="btn btn-purple btn-lg font-black shadow-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+              🧪 Thí Nghiệm 3D (Bài 7)
             </button>
             <button onclick="window.location.hash='student'" class="btn btn-amber btn-lg font-black shadow-lg">
               🎒 Portal Học Sinh (Khám Phá)
@@ -1514,6 +1518,41 @@
     </div>
   </div>
 
+  <!-- MODAL 30: TOÀN MÀN HÌNH THÍ NGHIỆM 3D TIN HỌC 3 - BÀI 7 (SIMULATION 3D MODAL) -->
+  <div id="simulation-3d-modal" class="modal-backdrop">
+    <div class="modal-content p-4 md:p-6 max-w-5xl w-full h-[90vh] flex flex-col space-y-3 animate-pop">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-200 shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1 bg-purple-100 rounded-xl">🧪</span>
+          <div>
+            <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+              <span>PHÒNG THÍ NGHIỆM 3D: TIN HỌC LỚP 3 • BÀI 7</span>
+              <span class="badge bg-purple-600 text-white text-[10px] font-black">FULLSCREEN LAB</span>
+            </h3>
+            <p class="text-xs text-slate-500 font-semibold">Chủ đề C: Sắp xếp để dễ tìm • Trực quan hóa phân loại đồ vật & cây thư mục máy tính</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="https://share.gemini.google/NLLCPUG04S6G" target="_blank" class="btn btn-outline btn-xs font-bold text-purple-700 bg-purple-50">
+            ↗️ Mở Tab Mới
+          </a>
+          <button onclick="document.getElementById('simulation-3d-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
+        </div>
+      </div>
+
+      <!-- Khung Nội Dung Toàn Màn Hình -->
+      <div class="flex-1 overflow-hidden rounded-2xl border-2 border-purple-200 bg-slate-900 relative">
+        <iframe 
+          src="https://share.gemini.google/NLLCPUG04S6G" 
+          class="w-full h-full border-0 bg-white"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          loading="lazy">
+        </iframe>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATIONS CONTAINER -->
   <div id="toast-container"></div>
 
@@ -1552,6 +1591,7 @@
   <script src="js/components/lecturePortal.js"></script>
   <script src="js/components/examUploadModal.js"></script>
   <script src="js/components/examPortal.js"></script>
+  <script src="js/components/simulation3D.js"></script>
   <script src="js/components/teacherPortal.js"></script>
   <script src="js/components/studentPortal.js"></script>
   <script src="js/components/gameHub.js"></script>

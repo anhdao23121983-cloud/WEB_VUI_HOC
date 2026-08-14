@@ -33,8 +33,23 @@ class GameHub {
           </div>
         </div>
 
-        <!-- Danh sách Thẻ Game -->
+        <!-- Danh sách Thẻ Game & Thí Nghiệm 3D -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- THẺ ĐẶC BIỆT: THÍ NGHIỆM 3D BÀI 7 -->
+          <div class="glass-card glass-card-interactive p-5 flex flex-col justify-between cursor-pointer border-2 border-purple-400 bg-gradient-to-b from-purple-50/50 via-white to-indigo-50/30 hover:border-purple-600 transition-all shadow-md group" onclick="window.location.hash='lab3d'">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-4xl p-3 bg-purple-100 rounded-2xl group-hover:scale-110 transition-all">🧪</span>
+                <span class="badge bg-purple-600 text-white font-black">Lớp 3 • 3D Lab</span>
+              </div>
+              <h3 class="text-lg font-black text-purple-950 mb-1 group-hover:text-purple-700 transition-all">Thí Nghiệm 3D: Sắp Xếp Để Dễ Tìm</h3>
+              <p class="text-xs text-slate-600 leading-relaxed mb-4">Mô phỏng 3D phân loại 10 đồ vật vào kệ tủ 3 tầng, đo thời gian tìm kiếm và khám phá cây thư mục máy tính.</p>
+            </div>
+            <div class="pt-3 border-t border-purple-100 flex items-center justify-between">
+              <span class="text-xs font-black text-amber-600 flex items-center gap-1">⭐ Bài 7 GDPT 2018</span>
+              <button class="btn btn-sm font-black bg-purple-700 hover:bg-purple-800 text-white shadow-sm">Khám Phá ▶</button>
+            </div>
+          </div>
           ${games.map(game => `
             <div class="glass-card glass-card-interactive p-5 flex flex-col justify-between cursor-pointer border-2 hover:border-cyan-500 transition-all" onclick="gameHub.launchGame('${game.id}')">
               <div>

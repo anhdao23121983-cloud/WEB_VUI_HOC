@@ -74,6 +74,9 @@ class Application {
     } else if (route === "exams") {
       document.getElementById("portal-view")?.classList.remove("hidden");
       window.examPortal.render("main-content-area");
+    } else if (route === "lab3d" || route === "experiment3d") {
+      document.getElementById("portal-view")?.classList.remove("hidden");
+      window.simulation3D.render("main-content-area");
     } else {
       document.getElementById("landing-view")?.classList.remove("hidden");
     }
