@@ -82,6 +82,7 @@ class LectureUploadModal {
   async submitUpload() {
     const title = document.getElementById("lec-title-input")?.value || "";
     const grade = parseInt(document.getElementById("lec-grade-input")?.value) || 3;
+    const series = document.getElementById("lec-series-input")?.value || "KNTT";
     const topic = document.getElementById("lec-topic-input")?.value || "Chủ đề A: Máy tính và em";
     const desc = document.getElementById("lec-desc-input")?.value || "";
     const linkUrl = document.getElementById("lec-link-input")?.value || "";
@@ -112,13 +113,13 @@ class LectureUploadModal {
       fileName = this.selectedFile.name;
       fileSizeText = (this.selectedFile.size / (1024 * 1024)).toFixed(1) + " MB";
       fileType = fileName.split('.').pop().toLowerCase();
-      // Nếu là file data url, lưu trữ data URL hoặc fallback Office Viewer URL
       fileUrl = this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
     }
 
     const res = await window.lectureService.uploadLecture({
       title: title,
       grade: grade,
+      bookSeries: series,
       topicName: topic,
       authorName: user.name,
       fileName: fileName,

@@ -740,7 +740,7 @@
           <input type="text" id="lec-title-input" class="form-control text-xs font-bold" placeholder="Ví dụ: Bài Giảng: Khám Phá Máy Tính Để Bàn (Lớp 3)...">
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div class="form-group">
             <label class="form-label font-bold">Khối Lớp</label>
             <select id="lec-grade-input" class="form-control text-xs font-bold">
@@ -750,8 +750,16 @@
             </select>
           </div>
           <div class="form-group">
+            <label class="form-label font-bold">Bộ Sách Giáo Khoa</label>
+            <select id="lec-series-input" class="form-control text-xs font-bold">
+              <option value="KNTT">📘 Kết Nối Tri Thức</option>
+              <option value="CD">📙 Cánh Diều</option>
+              <option value="CTST">📗 Chân Trời Sáng Tạo</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label class="form-label font-bold">Chủ Đề Môn Học</label>
-            <input type="text" id="lec-topic-input" value="Chủ đề A: Máy tính và em" class="form-control text-xs font-semibold" placeholder="Tên chủ đề theo SGK...">
+            <input type="text" id="lec-topic-input" value="Chủ đề A: Máy tính và em" class="form-control text-xs font-semibold" placeholder="Tên chủ đề...">
           </div>
         </div>
 
@@ -820,6 +828,70 @@
       <div class="flex items-center justify-between pt-2 border-t border-slate-200 shrink-0 text-xs">
         <span class="text-slate-500 font-semibold">💡 Thầy Cô có thể nhấn phím F11 hoặc nút phóng to trên slide để trình chiếu toàn màn hình.</span>
         <button onclick="lecturePortal.closePreviewModal()" class="btn btn-outline btn-sm">Đóng Trình Chiếu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 8: AI TÓM TẮT NỘI DUNG BÀI GIẢNG (AI SLIDE SUMMARY MODAL) -->
+  <div id="lecture-ai-summary-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-2xl animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-indigo-100 rounded-xl">✨</span>
+          <h3 class="text-lg font-black text-slate-900">AI TÓM TẮT BÀI DẠY & KIẾN THỨC CỐT LÕI</h3>
+        </div>
+        <button onclick="document.getElementById('lecture-ai-summary-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+      <div id="lec-ai-summary-content" class="mt-4"></div>
+    </div>
+  </div>
+
+  <!-- MODAL 9: TRÌNH CHIẾU VIDEO HOẠT HỌA & THUYẾT MINH GIỌNG ĐỌC AI (SLIDE-TO-VIDEO PLAYER) -->
+  <div id="slide-video-player-modal" class="modal-backdrop">
+    <div class="modal-content p-4 md:p-6 max-w-4xl h-[85vh] flex flex-col justify-between space-y-4 animate-pop bg-slate-950 border-2 border-amber-400">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800 shrink-0 text-white">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🎬</span>
+          <div>
+            <h3 class="text-base font-black text-amber-300">VIDEO BÀI GIẢNG HOẠT HỌA & THUYẾT MINH AI</h3>
+            <p class="text-[11px] text-cyan-300 font-semibold">Tự động chuyển đổi Slide thành Video hoạt họa có giọng đọc</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span id="video-slide-progress-text" class="text-xs font-black text-amber-400 bg-amber-400/20 px-2.5 py-0.5 rounded-full">Trang 1/4</span>
+          <button onclick="lecturePortal.closeSlideVideoPlayer()" class="text-slate-400 text-2xl font-bold hover:text-white">✕</button>
+        </div>
+      </div>
+
+      <!-- Video Screen Frame Container -->
+      <div class="flex-1 w-full relative flex items-center justify-center p-2">
+        <div id="video-slide-screen" class="w-full h-full"></div>
+      </div>
+
+      <!-- Controls Bar & Progress Line -->
+      <div class="space-y-2 shrink-0 pt-2 border-t border-slate-800 text-white">
+        <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+          <div id="video-slide-progress-bar" class="bg-gradient-to-r from-amber-400 to-emerald-400 h-2 rounded-full transition-all duration-700" style="width: 25%"></div>
+        </div>
+
+        <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
+          <div class="flex items-center gap-2">
+            <button onclick="lecturePortal.prevSlideVideo()" class="btn btn-outline btn-sm text-white border-slate-700 hover:bg-slate-800">
+              ◀ Trang Trước
+            </button>
+            <button id="btn-toggle-video-play" onclick="lecturePortal.togglePlayVideo()" class="btn btn-amber btn-sm font-black shadow-lg">
+              <span>▶️</span> <span>Phát Video</span>
+            </button>
+            <button onclick="lecturePortal.nextSlideVideo()" class="btn btn-outline btn-sm text-white border-slate-700 hover:bg-slate-800">
+              Trang Sau ▶
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-slate-400">
+            <span>🎙️ Giọng đọc Sư phạm Tiếng Việt</span>
+            <button onclick="lecturePortal.closeSlideVideoPlayer()" class="btn btn-outline btn-sm text-slate-400 border-slate-700">Đóng</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
