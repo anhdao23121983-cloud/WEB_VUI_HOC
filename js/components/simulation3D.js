@@ -8,11 +8,12 @@
  * 5. 🤖 Robot Dọn Dẹp & Vẽ Tranh 3D (AI Cleaning Robot & 3D Turtle Drawing Bot)
  * 6. 🛡️ An Toàn Số, Tư Thế Ngồi & Đố Vui Blitz 10s (3D Safety Lab)
  * 7. 🖥️ Lắp Ráp Máy Tính 3D (Build Your PC 3D Lab)
- * 8. ☁️ Tự Động Đồng Bộ Điểm Thí Nghiệm Lên Supabase Cloud Database
- * 9. 🎵 Background Music Synthesizer: Nhạc nền vui nhộn Web Audio API
- * 10. 🏆 Bảng Xếp Hạng Top 10 Speedrun Sắp Xếp Nhanh Nhất (Leaderboard)
- * 11. 🎖️ In Chứng Chỉ Huấn Luyện Viên Robot & Kỹ Sư Tin Học Nhí (PDF A4)
- * 12. 🔊 Voice Narration AI & Phòng Chiếu AR Camera Thực Tế Ảo
+ * 8. 🎆 HIỆU ỨNG PHÁO HOA 3D & CONFETTI CHÚC MỪNG ĐIỂM 10 (Particle Engine)
+ * 9. ☁️ Tự Động Đồng Bộ Điểm Thí Nghiệm Lên Supabase Cloud Database
+ * 10. 🎵 Background Music Synthesizer: Nhạc nền vui nhộn Web Audio API
+ * 11. 🏆 Bảng Xếp Hạng Top 10 Speedrun Sắp Xếp Nhanh Nhất (Leaderboard)
+ * 12. 🎖️ In Chứng Chỉ Huấn Luyện Viên Robot & Kỹ Sư Tin Học Nhí (PDF A4)
+ * 13. 🔊 Voice Narration AI & Phòng Chiếu AR Camera Thực Tế Ảo
  */
 
 class Simulation3D {
@@ -27,6 +28,12 @@ class Simulation3D {
     this.audioCtx = null;
     this.searchScenario = "organized";
     this.arStream = null;
+
+    // Fireworks Particle Engine
+    this.fireworksCanvas = null;
+    this.fireworksCtx = null;
+    this.particles = [];
+    this.isFireworksRunning = false;
 
     // Timer Speedrun
     this.speedrunStartTime = null;
@@ -72,10 +79,9 @@ class Simulation3D {
     // === DỮ LIỆU MẠNG INTERNET & TRÌNH DUYỆT WEB 3D ===
     this.webBrowserUrl = "https://webvuihoc.edu.vn";
     this.webPageContent = "Trang Chủ Web Vui Học - Hệ thống học liệu số chuẩn GDPT 2018";
-    this.internetFlowStep = 0;
 
     // === DỮ LIỆU ROBOT DỌN DẸP & VẼ TRANH 3D ===
-    this.robotSubTab = "clean"; // 'clean' | 'draw'
+    this.robotSubTab = "clean";
     this.robotGridSize = 5;
     this.robotPos = { x: 0, y: 0 };
     this.robotCargo = null;
@@ -87,7 +93,7 @@ class Simulation3D {
     this.drawnShape = null;
 
     // === DỮ LIỆU AN TOÀN SỬ DỤNG MÁY TÍNH & ĐỐ VUI 10S BLITZ ===
-    this.safetySubTab = "scenarios"; // 'scenarios' | 'blitz'
+    this.safetySubTab = "scenarios";
     this.blitzCurrentIndex = 0;
     this.blitzTimer = 10;
     this.blitzInterval = null;
@@ -156,7 +162,6 @@ class Simulation3D {
     const top10 = records.slice(0, 10).map((r, i) => ({ ...r, rank: i + 1 }));
     localStorage.setItem("exam_3d_speedrun_leaderboard", JSON.stringify(top10));
 
-    // Đồng bộ lên Supabase Cloud
     if (window.examService?.syncSimulationScoreToCloud) {
       window.examService.syncSimulationScoreToCloud({
         labName: "Sắp Xếp Để Dễ Tìm 3D",
@@ -164,6 +169,94 @@ class Simulation3D {
         durationSpentSeconds: Math.round(timeSec)
       });
       window.app.showToast("☁️ Đã đồng bộ điểm 10.0 và kỷ lục lên Supabase Cloud!", "success");
+    }
+  }
+
+  // =========================================================================
+  // 🎆 FIREWORKS & CONFETTI PARTICLE ENGINE (CANVAS 3D)
+  // =========================================================================
+  triggerFireworks() {
+    let canvas = document.getElementById("sim-fireworks-canvas");
+    if (!canvas) {
+      canvas = document.createElement("canvas");
+      canvas.id = "sim-fireworks-canvas";
+      canvas.style.position = "fixed";
+      canvas.style.top = "0";
+      canvas.style.left = "0";
+      canvas.style.width = "100vw";
+      canvas.style.height = "100vh";
+      canvas.style.pointerEvents = "none";
+      canvas.style.zIndex = "99999";
+      document.body.appendChild(canvas);
+    }
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const ctx = canvas.getContext("2d");
+
+    const colors = ["#f59e0b", "#ef4444", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899", "#06b6d4", "#eab308"];
+    this.particles = [];
+
+    // Tạo 3 chùm pháo hoa nổ ở các vị trí khác nhau
+    const burstPoints = [
+      { x: canvas.width * 0.3, y: canvas.height * 0.35 },
+      { x: canvas.width * 0.5, y: canvas.height * 0.25 },
+      { x: canvas.width * 0.7, y: canvas.height * 0.35 }
+    ];
+
+    burstPoints.forEach(bp => {
+      for (let i = 0; i < 45; i++) {
+        const angle = (Math.PI * 2 * i) / 45;
+        const speed = Math.random() * 6 + 2;
+        this.particles.push({
+          x: bp.x,
+          y: bp.y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - Math.random() * 2,
+          size: Math.random() * 5 + 3,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          alpha: 1,
+          decay: Math.random() * 0.015 + 0.012,
+          gravity: 0.12
+        });
+      }
+    });
+
+    if (!this.isFireworksRunning) {
+      this.isFireworksRunning = true;
+      const animate = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += p.gravity;
+          p.alpha -= p.decay;
+
+          if (p.alpha <= 0) {
+            this.particles.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.globalAlpha = p.alpha;
+          ctx.fillStyle = p.color;
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        if (this.particles.length > 0) {
+          requestAnimationFrame(animate);
+        } else {
+          this.isFireworksRunning = false;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      };
+      requestAnimationFrame(animate);
     }
   }
 
@@ -233,6 +326,7 @@ class Simulation3D {
   }
 
   playSuccessFanfare() {
+    this.triggerFireworks();
     try {
       const ctx = this.audioCtx || new (window.AudioContext || window.webkitAudioContext)();
       const notes = [523.25, 659.25, 783.99, 1046.50];
@@ -334,6 +428,10 @@ class Simulation3D {
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="simulation3D.triggerFireworks()" class="btn bg-rose-500 hover:bg-rose-600 text-white text-xs py-2 px-3 rounded-xl border border-white/30 flex items-center gap-1.5 shadow-md hover:scale-105 transition-all" title="Bắn pháo hoa rực rỡ chúc mừng">
+              <span>🎆</span> <span>Pháo Hoa 3D</span>
+            </button>
+
             <button onclick="simulation3D.toggleBgm()" class="btn ${this.isBgmEnabled ? 'bg-emerald-400 text-slate-950 font-black' : 'bg-white/20 text-white'} text-xs py-2 px-3 rounded-xl border border-white/30 flex items-center gap-1.5 shadow-md hover:scale-105 transition-all">
               <span>${this.isBgmEnabled ? '🎵' : '🔇'}</span> 
               <span>${this.isBgmEnabled ? 'Nhạc: BẬT' : 'Nhạc: TẮT'}</span>
@@ -450,7 +548,7 @@ class Simulation3D {
   }
 
   // =========================================================================
-  // 1. MẠNG INTERNET & TRÌNH DUYỆT WEB 3D (INTERNET & CLOUD SIMULATOR)
+  // 1. MẠNG INTERNET & TRÌNH DUYỆT WEB 3D
   // =========================================================================
   renderInternet3DView() {
     return `
@@ -467,7 +565,6 @@ class Simulation3D {
           </button>
         </div>
 
-        <!-- SƠ ĐỒ DÒNG CHẢY DỮ LIỆU INTERNET 3D -->
         <div class="p-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl border-4 border-cyan-400 text-white shadow-2xl space-y-4">
           <div class="text-xs font-bold text-cyan-300 flex items-center justify-between border-b border-white/20 pb-2">
             <span>🌍 SƠ ĐỒ TRUYỀN TẢI DỮ LIỆU TOÀN CẦU</span>
@@ -475,28 +572,21 @@ class Simulation3D {
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center pt-2">
-            <!-- Nốt 1: Máy tính cá nhân -->
             <div class="p-4 bg-white/10 rounded-2xl border border-white/20 space-y-1">
               <span class="text-3xl block">💻</span>
               <h5 class="text-xs font-black text-amber-300">1. Máy Tính Học Sinh</h5>
               <p class="text-[10px] text-slate-300">Gửi yêu cầu trang web</p>
             </div>
-
-            <!-- Nốt 2: Router Wi-Fi -->
             <div class="p-4 bg-white/10 rounded-2xl border border-white/20 space-y-1">
               <span class="text-3xl block">📡</span>
               <h5 class="text-xs font-black text-cyan-300">2. Bộ Định Tuyến Wi-Fi</h5>
               <p class="text-[10px] text-slate-300">Phát sóng tín hiệu số</p>
             </div>
-
-            <!-- Nốt 3: Cáp quang & Đám mây -->
             <div class="p-4 bg-white/10 rounded-2xl border border-white/20 space-y-1">
               <span class="text-3xl block animate-spin">🌐</span>
               <h5 class="text-xs font-black text-emerald-300">3. Đám Mây Internet</h5>
               <p class="text-[10px] text-slate-300">Kết nối hàng triệu máy chủ</p>
             </div>
-
-            <!-- Nốt 4: Máy chủ Web Server -->
             <div class="p-4 bg-white/10 rounded-2xl border border-white/20 space-y-1">
               <span class="text-3xl block">🏢</span>
               <h5 class="text-xs font-black text-purple-300">4. Máy Chủ Google / Web</h5>
@@ -505,21 +595,18 @@ class Simulation3D {
           </div>
         </div>
 
-        <!-- MÔ PHỎNG TRÌNH DUYỆT WEB EXPLORER -->
         <div class="p-5 bg-white rounded-3xl border-2 border-slate-300 shadow-md space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-200 pb-3">
             <span class="text-emerald-600 font-bold text-xs flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-300">
               <span>🔒</span> <span>HTTPS An Toàn</span>
             </span>
             <input id="sim-web-url-input" type="text" value="${this.webBrowserUrl}" class="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-mono font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400">
-            <button onclick="simulation3D.navigateWebBrowser()" class="btn btn-primary btn-xs font-black bg-cyan-700 text-white">
-              🔍 Truy Cập
-            </button>
+            <button onclick="simulation3D.navigateWebBrowser()" class="btn btn-primary btn-xs font-black bg-cyan-700 text-white">🔍 Truy Cập</button>
           </div>
 
           <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 min-h-[140px] flex flex-col items-center justify-center text-center space-y-2">
             <span class="text-4xl block animate-float">🎓</span>
-            <h4 class="font-black text-slate-900 text-sm" id="sim-web-content-title">${this.webPageContent}</h4>
+            <h4 class="font-black text-slate-900 text-sm">${this.webPageContent}</h4>
             <p class="text-xs text-slate-500 max-w-md">Trang web bảo mật chuẩn quốc tế, cung cấp học liệu Tin học 3, 4, 5 tương tác trực tuyến.</p>
           </div>
         </div>
@@ -544,7 +631,7 @@ class Simulation3D {
   }
 
   // =========================================================================
-  // 2. ROBOT DỌN DẸP & VẼ TRANH HÌNH HỌC 3D (3D TURTLE / SCRATCH DRAWING)
+  // 2. ROBOT DỌN DẸP & VẼ TRANH HÌNH HỌC 3D
   // =========================================================================
   setRobotSubTab(tab) {
     this.robotSubTab = tab;
@@ -695,7 +782,6 @@ class Simulation3D {
     this.render("main-content-area");
   }
 
-  // === ROBOT VẼ TRANH HÌNH HỌC 3D ===
   renderRobotDrawView() {
     return `
       <div class="glass-card p-6 md:p-8 space-y-6 max-w-5xl mx-auto shadow-2xl">
@@ -708,7 +794,6 @@ class Simulation3D {
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Sàn Vẽ 3D -->
           <div class="lg:col-span-2 p-6 bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 rounded-3xl border-4 border-purple-400 text-white shadow-2xl min-h-[350px] flex flex-col items-center justify-center relative overflow-hidden">
             <div class="absolute top-3 left-3 text-[11px] font-bold text-purple-300">
               🖌️ SÀN VẼ NEON 3D • ROBOT PEN DOWN
@@ -730,7 +815,6 @@ class Simulation3D {
             `}
           </div>
 
-          <!-- Bộ Khối Lệnh Hình Học -->
           <div class="space-y-3">
             <span class="badge badge-purple font-black text-xs">🧩 CHỌN MẪU KHỐI LỆNH:</span>
 
@@ -856,6 +940,7 @@ class Simulation3D {
       this.render("main-content-area");
     } else {
       if (this.blitzInterval) clearInterval(this.blitzInterval);
+      this.playSuccessFanfare();
       this.speak(`Chúc mừng em đã hoàn thành thử thách đố vui an toàn với ${this.blitzScore} điểm!`);
       this.render("main-content-area");
     }
@@ -933,9 +1018,7 @@ class Simulation3D {
           <h3 class="text-2xl font-black text-slate-900">HOÀN THÀNH ĐỐ VUI AN TOÀN 10S!</h3>
           <p class="text-base font-black text-amber-600">Tổng điểm đạt được: <b>${this.blitzScore} / 100 Điểm</b></p>
           <p class="text-xs text-slate-600">Em đã đạt danh hiệu <b>SIÊU PHẢN XẠ AN TOÀN SỐ</b> xuất sắc!</p>
-          <button onclick="simulation3D.startBlitzQuiz()" class="btn btn-primary btn-md font-black bg-amber-600 text-white shadow-md">
-            🔄 Chơi Lại Thử Thách
-          </button>
+          <button onclick="simulation3D.startBlitzQuiz()" class="btn btn-primary btn-md font-black bg-amber-600 text-white shadow-md">🔄 Chơi Lại Thử Thách</button>
         </div>
       `;
     }
@@ -960,12 +1043,8 @@ class Simulation3D {
         </div>
 
         <div class="grid grid-cols-2 gap-4 pt-2">
-          <button onclick="simulation3D.answerBlitz('yes')" class="p-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all">
-            👍 ĐÚNG / NÊN LÀM
-          </button>
-          <button onclick="simulation3D.answerBlitz('no')" class="p-4 bg-rose-600 hover:bg-rose-700 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all">
-            ✋ SAI / KHÔNG NÊN
-          </button>
+          <button onclick="simulation3D.answerBlitz('yes')" class="p-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all">👍 ĐÚNG / NÊN LÀM</button>
+          <button onclick="simulation3D.answerBlitz('no')" class="p-4 bg-rose-600 hover:bg-rose-700 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all">✋ SAI / KHÔNG NÊN</button>
         </div>
       </div>
     `;
@@ -1098,6 +1177,7 @@ class Simulation3D {
   // CHỨNG CHỈ IN A4 & CÁC HÀM CŨ
   // =========================================================================
   openCertificateModal() {
+    this.triggerFireworks();
     const modal = document.getElementById("simulation-certificate-modal");
     const user = window.authService?.getUser() || { name: "Nguyễn Văn An", className: "3A" };
     const content = document.getElementById("simulation-certificate-content");
@@ -1161,7 +1241,6 @@ class Simulation3D {
     const toyItems = this.items.filter(i => this.itemLocations[i.id] === "shelf_toy");
     const techItems = this.items.filter(i => this.itemLocations[i.id] === "shelf_tech");
     const deskItems = this.items.filter(i => this.itemLocations[i.id] === "desk");
-    const totalOrganized = 10 - deskItems.length;
 
     return `
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1275,6 +1354,7 @@ class Simulation3D {
     });
     this.selectedItem = null;
     this.stopSpeedrun();
+    this.playSuccessFanfare();
     this.speak("Đã tự động sắp xếp toàn bộ 10 đồ vật!");
     this.render("main-content-area");
   }
