@@ -1,6 +1,6 @@
 /**
  * LECTURE PORTAL COMPONENT
- * Trung tâm Bài Giảng Điện Tử: Lọc SGK (KNTT/CD/CTST), AI Tóm tắt và Trình chiếu Video hoạt họa có thuyết minh giọng đọc
+ * Trung tâm Bài Giảng Điện Tử: Lọc SGK, AI Tóm tắt, Trình chiếu Video hoạt họa, Tùy chỉnh giọng đọc, Xuất Phiếu bài tập & Game Khởi động 3 phút
  */
 
 class LecturePortal {
@@ -10,13 +10,24 @@ class LecturePortal {
     this.searchQuery = "";
     this.lectures = [];
 
-    // Video Player State
+    // Video Player & Voice State
     this.activeVideoLecture = null;
     this.videoSlideFrames = [];
     this.currentSlideIndex = 0;
     this.isVideoPlaying = false;
     this.videoTimer = null;
     this.speechSynth = window.speechSynthesis || null;
+    this.voiceGender = "female"; // female | male
+    this.speechRate = 0.95; // 0.8 | 0.95 | 1.2
+    this.is3DFlipEnabled = true;
+
+    // Icebreaker Game State
+    this.icebreakerActive = false;
+    this.icebreakerScore = 0;
+    this.icebreakerTimer = 180;
+    this.icebreakerInterval = null;
+    this.icebreakerCurrentQ = 0;
+    this.icebreakerQuestions = [];
   }
 
   async render(containerId) {
@@ -37,7 +48,7 @@ class LecturePortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide trực tuyến, tóm tắt bài giảng bằng AI và xem Video hoạt họa thuyết minh giọng đọc</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide, Video hoạt họa thuyết minh AI, Xuất phiếu bài tập Word và Game Khởi động 3 phút</p>
           </div>
 
           ${isTeacher ? `
@@ -47,7 +58,7 @@ class LecturePortal {
           ` : `
             <div class="bg-white/15 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/30 text-center text-xs text-white">
               <span class="font-bold block text-amber-300">💡 Dành Cho Học Sinh:</span>
-              <span>Em có thể bấm 🎬 Xem Video hoạt họa hoặc 📥 Tải file về ôn tập!</span>
+              <span>Em có thể xem Video hoạt họa, làm Game Khởi động và tải Phiếu bài tập!</span>
             </div>
           `}
         </div>
@@ -177,23 +188,35 @@ class LecturePortal {
                   </div>
                 </div>
 
-                <!-- Hàng nút hành động đa năng: Video hoạt họa + AI tóm tắt + Trình chiếu + Tải về -->
+                <!-- Hàng nút hành động đa năng -->
                 <div class="space-y-2 pt-2 border-t border-slate-100">
+                  <!-- Hàng 1: Video hoạt họa + Game Khởi động 3 phút -->
                   <div class="grid grid-cols-2 gap-2">
                     <button onclick="lecturePortal.openSlideVideoPlayer('${l.id}')" class="btn btn-amber btn-sm font-black flex items-center justify-center gap-1 shadow-sm" title="Xem Video bài giảng hoạt họa có thuyết minh giọng đọc">
                       <span>🎬</span> <span>Video Hoạt Họa</span>
                     </button>
-                    <button onclick="lecturePortal.openAISummary('${l.id}')" class="btn btn-outline btn-sm font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200 flex items-center justify-center gap-1">
-                      <span>✨</span> <span>AI Tóm Tắt</span>
+                    <button onclick="lecturePortal.openIcebreakerGame('${l.id}')" class="btn btn-emerald btn-sm font-black flex items-center justify-center gap-1 shadow-sm" title="Trò chơi đố vui khởi động 3 phút đầu giờ">
+                      <span>⚡</span> <span>Khởi Động 3P</span>
                     </button>
                   </div>
 
-                  <div class="flex items-center justify-between gap-2">
+                  <!-- Hàng 2: AI Tóm Tắt + Phiếu Bài Tập Word -->
+                  <div class="grid grid-cols-2 gap-2">
+                    <button onclick="lecturePortal.openAISummary('${l.id}')" class="btn btn-outline btn-sm font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200 flex items-center justify-center gap-1">
+                      <span>✨</span> <span>AI Tóm Tắt</span>
+                    </button>
+                    <button onclick="lecturePortal.downloadWorksheet('${l.id}')" class="btn btn-outline btn-sm font-black text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 flex items-center justify-center gap-1" title="Tải Phiếu bài tập in ấn Word (.doc) cho học sinh">
+                      <span>📝</span> <span>Phiếu Bài Tập</span>
+                    </button>
+                  </div>
+
+                  <!-- Hàng 3: Trình chiếu + Tải PPT + Xóa -->
+                  <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
                     <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm">
                       <span>👁️</span> <span>Trình Chiếu</span>
                     </button>
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
-                      <span>📥</span> <span>Tải Về</span>
+                      <span>📥</span> <span>Tải PPT</span>
                     </button>
                     ${isTeacher ? `
                       <button onclick="lecturePortal.deleteLecture('${l.id}')" class="p-2 text-rose-600 hover:bg-rose-50 rounded-xl font-bold border border-rose-200" title="Xóa bài giảng">
@@ -210,26 +233,36 @@ class LecturePortal {
     `;
   }
 
-  // Chọn Khối Lớp
   selectGrade(grade) {
     this.currentGrade = grade;
     this.render("main-content-area");
   }
 
-  // Chọn Bộ Sách Giáo Khoa
   selectBookSeries(series) {
     this.currentBookSeries = series;
     this.render("main-content-area");
   }
 
-  // Tìm kiếm
   handleSearch(query) {
     this.searchQuery = query;
     this.render("main-content-area");
   }
 
   // =========================================================================
-  // 1. TÍNH NĂNG AI TÓM TẮT BÀI GIẢNG (AI SLIDE SUMMARY)
+  // 1. XUẤT PHIẾU BÀI TẬP IN (.DOC) CHO HỌC SINH
+  // =========================================================================
+  async downloadWorksheet(id) {
+    const lecture = await window.lectureService.getLectureById(id);
+    if (!lecture) return;
+
+    if (window.docExportService) {
+      window.docExportService.exportWorksheetDoc(lecture);
+      window.app.showToast(`📝 Đã tạo và tải Phiếu bài tập Word cho bài: ${lecture.title}!`, "success");
+    }
+  }
+
+  // =========================================================================
+  // 2. AI TÓM TẮT BÀI GIẢNG (AI SLIDE SUMMARY)
   // =========================================================================
   async openAISummary(id) {
     const lecture = await window.lectureService.getLectureById(id);
@@ -253,7 +286,6 @@ class LecturePortal {
             <span class="text-3xl">✨</span>
           </div>
 
-          <!-- Yêu Cầu Cần Đạt -->
           <div class="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 space-y-1.5">
             <h4 class="font-extrabold text-emerald-900 text-xs flex items-center gap-1.5">
               <span>🎯</span> <span>YÊU CẦU CẦN ĐẠT CỐT LÕI (MỤC TIÊU BÀI DẠY)</span>
@@ -263,7 +295,6 @@ class LecturePortal {
             </ul>
           </div>
 
-          <!-- Kiến Thức Trọng Tâm -->
           <div class="p-3.5 bg-amber-50 rounded-xl border border-amber-200 space-y-1.5">
             <h4 class="font-extrabold text-amber-900 text-xs flex items-center gap-1.5">
               <span>💡</span> <span>KIẾN THỨC TRỌNG TÂM CẦN GHI NHỚ</span>
@@ -273,7 +304,6 @@ class LecturePortal {
             </ul>
           </div>
 
-          <!-- Hoạt Động Thực Hành Đề Xuất -->
           <div class="p-3.5 bg-cyan-50 rounded-xl border border-cyan-200 space-y-1.5">
             <h4 class="font-extrabold text-cyan-900 text-xs flex items-center gap-1.5">
               <span>🚀</span> <span>GỢI Ý HOẠT ĐỘNG DẠY HỌC & THỰC HÀNH TƯƠNG TÁC</span>
@@ -297,7 +327,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // 2. TÍNH NĂNG SLIDE-TO-VIDEO: XEM VIDEO HOẠT HỌA & THUYẾT MINH GIỌNG ĐỌC AI
+  // 3. SLIDE-TO-VIDEO: CHỌN GIỌNG ĐỌC NAM/NỮ, TỐC ĐỘ VÀ HIỆU ỨNG 3D FLIP
   // =========================================================================
   async openSlideVideoPlayer(id) {
     const lecture = await window.lectureService.getLectureById(id);
@@ -322,6 +352,24 @@ class LecturePortal {
     if (modal) modal.classList.remove("active");
   }
 
+  setVoiceGender(gender) {
+    this.voiceGender = gender;
+    window.app.showToast(`🎙️ Đã chuyển sang Giọng đọc ${gender === 'female' ? 'Cô giáo (Nữ)' : 'Thầy giáo (Nam)'}!`, "info");
+    const frame = this.videoSlideFrames[this.currentSlideIndex];
+    if (frame) this.speakNarration(frame.narration);
+  }
+
+  setSpeechRate(rate) {
+    this.speechRate = parseFloat(rate);
+    window.app.showToast(`⚡ Tốc độ đọc: ${rate}x`, "info");
+  }
+
+  toggle3DFlip() {
+    this.is3DFlipEnabled = !this.is3DFlipEnabled;
+    window.app.showToast(`📖 Chế độ hiệu ứng 3D Lật Sách: ${this.is3DFlipEnabled ? 'BẬT' : 'TẮT'}`, "info");
+    this.renderVideoSlide();
+  }
+
   renderVideoSlide() {
     const frame = this.videoSlideFrames[this.currentSlideIndex];
     if (!frame) return;
@@ -333,23 +381,27 @@ class LecturePortal {
     if (progressText) progressText.innerText = `Trang ${this.currentSlideIndex + 1}/${this.videoSlideFrames.length}`;
     if (progressBar) progressBar.style.width = `${((this.currentSlideIndex + 1) / this.videoSlideFrames.length) * 100}%`;
 
+    const flipAnimClass = this.is3DFlipEnabled ? "animate-pop duration-500 transform-gpu" : "";
+
     if (screenContainer) {
-      screenContainer.className = `w-full h-full bg-gradient-to-br ${frame.color} text-white p-6 md:p-10 flex flex-col justify-between rounded-2xl shadow-2xl transition-all duration-700 relative overflow-hidden`;
+      screenContainer.className = `w-full h-full bg-gradient-to-br ${frame.color} text-white p-6 md:p-8 flex flex-col justify-between rounded-2xl shadow-2xl transition-all relative overflow-hidden ${flipAnimClass}`;
       screenContainer.innerHTML = `
-        <!-- Floating Decor -->
         <div class="absolute -right-10 -bottom-10 text-9xl opacity-10 select-none pointer-events-none">${frame.icon}</div>
 
-        <!-- Top Title -->
         <div class="space-y-1 relative z-10">
-          <div class="flex items-center gap-2">
-            <span class="text-3xl">${frame.icon}</span>
-            <span class="text-xs font-black tracking-widest uppercase bg-white/20 px-3 py-1 rounded-full backdrop-blur-md">${frame.heading}</span>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-3xl">${frame.icon}</span>
+              <span class="text-xs font-black tracking-widest uppercase bg-white/20 px-3 py-1 rounded-full backdrop-blur-md">${frame.heading}</span>
+            </div>
+            <span class="badge bg-black/30 text-amber-300 font-black text-[10px]">
+              ${this.is3DFlipEnabled ? '📖 3D Flip Active' : '📺 Flat Mode'}
+            </span>
           </div>
-          <h2 class="text-xl md:text-2xl font-black text-white pt-1">${frame.subtitle}</h2>
+          <h2 class="text-lg md:text-2xl font-black text-white pt-1">${frame.subtitle}</h2>
         </div>
 
-        <!-- Center Bullet Points -->
-        <div class="bg-black/25 backdrop-blur-md p-5 rounded-2xl border border-white/20 space-y-2.5 my-auto relative z-10">
+        <div class="bg-black/30 backdrop-blur-md p-4 md:p-5 rounded-2xl border border-white/20 space-y-2.5 my-auto relative z-10 shadow-inner">
           ${frame.bulletPoints.map(bp => `
             <div class="flex items-start gap-2.5 text-xs md:text-sm font-bold text-white/95">
               <span class="text-amber-300 mt-0.5">⭐</span>
@@ -358,37 +410,44 @@ class LecturePortal {
           `).join("")}
         </div>
 
-        <!-- Bottom Narration Script -->
-        <div class="p-3 bg-white/15 backdrop-blur-md rounded-xl border border-white/20 text-[11px] text-cyan-100 flex items-center gap-2 relative z-10">
-          <span class="text-base animate-pulse">🎙️</span>
-          <span><b>Lời Thầy Cô thuyết minh:</b> "${frame.narration}"</span>
+        <div class="p-3 bg-white/15 backdrop-blur-md rounded-xl border border-white/20 text-[11px] text-cyan-100 flex items-center justify-between gap-2 relative z-10">
+          <div class="flex items-center gap-2">
+            <span class="text-base animate-pulse">🎙️</span>
+            <span><b>Thuyết minh (${this.voiceGender === 'female' ? 'Cô Giáo' : 'Thầy Giáo'}):</b> "${frame.narration}"</span>
+          </div>
+          <button onclick="lecturePortal.speakNarration('${frame.narration.replace(/'/g, "\\'")}')" class="btn btn-outline btn-xs text-white border-white/40 hover:bg-white/20 shrink-0" title="Nghe lại lời thuyết minh">
+            🔊 Nghe Lại
+          </button>
         </div>
       `;
     }
 
-    // Đọc thuyết minh bằng Web Speech API
     this.speakNarration(frame.narration);
   }
 
-  // Phát giọng đọc thuyết minh tiếng Việt
   speakNarration(text) {
     if (!this.speechSynth) return;
     this.speechSynth.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "vi-VN";
-    utterance.rate = 0.95; // Tốc độ đọc chuẩn sư phạm
-    utterance.pitch = 1.0;
+    utterance.rate = this.speechRate;
+    utterance.pitch = this.voiceGender === "female" ? 1.2 : 0.85;
 
-    // Lấy giọng đọc tiếng Việt nếu trình duyệt hỗ trợ
     const voices = this.speechSynth.getVoices();
-    const viVoice = voices.find(v => v.lang.includes("vi") || v.lang.includes("VN"));
-    if (viVoice) utterance.voice = viVoice;
+    const viVoices = voices.filter(v => v.lang.includes("vi") || v.lang.includes("VN"));
+
+    if (viVoices.length > 0) {
+      if (this.voiceGender === "female") {
+        utterance.voice = viVoices.find(v => v.name.toLowerCase().includes("female") || v.name.toLowerCase().includes("hoaimy") || v.name.toLowerCase().includes("google")) || viVoices[0];
+      } else {
+        utterance.voice = viVoices.find(v => v.name.toLowerCase().includes("male") || v.name.toLowerCase().includes("an")) || viVoices[viVoices.length - 1];
+      }
+    }
 
     this.speechSynth.speak(utterance);
   }
 
-  // Bật/Tắt tự động chạy slide video
   togglePlayVideo() {
     this.isVideoPlaying = !this.isVideoPlaying;
     const btn = document.getElementById("btn-toggle-video-play");
@@ -414,7 +473,7 @@ class LecturePortal {
         if (btn) btn.innerHTML = "<span>🔄</span> <span>Phát Lại Từ Đầu</span>";
         window.app.showToast("🎉 Đã hoàn thành xem Video bài giảng hoạt họa!", "success");
       }
-    }, 9000); // 9 giây mỗi slide
+    }, 9500);
   }
 
   pauseVideo() {
@@ -437,7 +496,142 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // 3. TRÌNH CHIẾU ONLINE & TẢI VỀ
+  // 4. GAME KHỞI ĐỘNG NHANH 3 PHÚT (ICE-BREAKER MINIGAME)
+  // =========================================================================
+  async openIcebreakerGame(id) {
+    const lecture = await window.lectureService.getLectureById(id);
+    if (!lecture) return;
+
+    this.icebreakerScore = 0;
+    this.icebreakerTimer = 180;
+    this.icebreakerCurrentQ = 0;
+    if (this.icebreakerInterval) clearInterval(this.icebreakerInterval);
+
+    this.icebreakerQuestions = [
+      {
+        q: "⚡ Câu Đố 1: Thiết bị nào giúp em nhìn thấy chữ, tranh ảnh và video bài học?",
+        options: ["A. Chuột máy tính", "B. Màn hình", "C. Thân máy", "D. Bàn phím"],
+        correct: 1,
+        hint: "Thiết bị có mặt kính phát sáng!"
+      },
+      {
+        q: "⚡ Câu Đố 2: Trước khi rời khỏi phòng tin học, chúng mình cần làm gì để an toàn?",
+        options: ["A. Rút phích cắm nguồn giật mạnh", "B. Tắt máy tính đúng quy trình và xếp ghế gọn", "C. Để nguyên máy chạy", "D. Vứt rác trên bàn"],
+        correct: 1,
+        hint: "Bấm Start ➡️ Shut down và bảo quản máy!"
+      },
+      {
+        q: "⚡ Câu Đố 3: Phím F và J trên bàn phím có điểm gì đặc biệt để đặt ngón trỏ?",
+        options: ["A. Có gờ nổi nhỏ", "B. Có màu đỏ", "C. Có kích thước to gấp đôi", "D. Nằm ở hàng phím số"],
+        correct: 0,
+        hint: "Hai phím có gờ định vị hàng phím cơ sở!"
+      }
+    ];
+
+    const modal = document.getElementById("icebreaker-game-modal");
+    if (modal) modal.classList.add("active");
+
+    this.startIcebreakerTimer();
+    this.renderIcebreakerQuestion(lecture.title);
+  }
+
+  startIcebreakerTimer() {
+    const timerDisp = document.getElementById("icebreaker-timer-disp");
+    this.icebreakerInterval = setInterval(() => {
+      this.icebreakerTimer--;
+      const mins = Math.floor(this.icebreakerTimer / 60);
+      const secs = this.icebreakerTimer % 60;
+      if (timerDisp) timerDisp.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+      if (this.icebreakerTimer <= 0) {
+        clearInterval(this.icebreakerInterval);
+        this.finishIcebreaker();
+      }
+    }, 1000);
+  }
+
+  renderIcebreakerQuestion(lectureTitle) {
+    const container = document.getElementById("icebreaker-game-content");
+    const q = this.icebreakerQuestions[this.icebreakerCurrentQ];
+
+    if (!q) {
+      this.finishIcebreaker();
+      return;
+    }
+
+    if (container) {
+      container.innerHTML = `
+        <div class="space-y-5 animate-pop">
+          <div class="text-center space-y-1">
+            <span class="badge badge-emerald font-black">CÂU HỎI ${this.icebreakerCurrentQ + 1}/3</span>
+            <h3 class="text-lg font-black text-slate-900">${q.q}</h3>
+            <p class="text-xs text-slate-500 font-semibold">💡 Gợi ý: ${q.hint}</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            ${q.options.map((opt, idx) => `
+              <button onclick="lecturePortal.answerIcebreaker(${idx})" class="p-4 bg-slate-50 hover:bg-cyan-50 border-2 border-slate-200 hover:border-cyan-500 rounded-2xl font-bold text-xs text-slate-800 text-left transition-all hover:scale-102 flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-cyan-100 text-cyan-800 font-black text-xs flex items-center justify-center shrink-0">${['A', 'B', 'C', 'D'][idx]}</span>
+                <span>${opt}</span>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  answerIcebreaker(selectedIndex) {
+    const q = this.icebreakerQuestions[this.icebreakerCurrentQ];
+    if (selectedIndex === q.correct) {
+      this.icebreakerScore += 10;
+      window.app.showToast("🎉 Chính xác! +10 Điểm Khởi Động ⭐", "success");
+    } else {
+      window.app.showToast("Tiếc quá, chưa chính xác rồi!", "warning");
+    }
+
+    this.icebreakerCurrentQ++;
+    if (this.icebreakerCurrentQ < this.icebreakerQuestions.length) {
+      this.renderIcebreakerQuestion();
+    } else {
+      this.finishIcebreaker();
+    }
+  }
+
+  finishIcebreaker() {
+    if (this.icebreakerInterval) clearInterval(this.icebreakerInterval);
+    const container = document.getElementById("icebreaker-game-content");
+
+    if (container) {
+      container.innerHTML = `
+        <div class="text-center py-6 space-y-4 animate-pop">
+          <span class="text-6xl block">🏆</span>
+          <h3 class="text-2xl font-black text-slate-900">HOÀN THÀNH KHỞI ĐỘNG ĐẦU GIỜ!</h3>
+          <p class="text-xs text-slate-600">Cả lớp đã sẵn sàng năng lượng tích cực 100% để bước vào bài giảng chính thức!</p>
+          
+          <div class="inline-block p-4 bg-amber-50 rounded-2xl border border-amber-200">
+            <p class="text-xs font-bold text-amber-800">Tổng Điểm Khởi Động Đạt Được:</p>
+            <p class="text-3xl font-black text-amber-600">${this.icebreakerScore}/30 ⭐</p>
+          </div>
+
+          <div class="pt-3">
+            <button onclick="document.getElementById('icebreaker-game-modal').classList.remove('active')" class="btn btn-primary font-black btn-md px-8 shadow-lg">
+              🚀 Bắt Đầu Giảng Bài Ngay!
+            </button>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  closeIcebreakerModal() {
+    if (this.icebreakerInterval) clearInterval(this.icebreakerInterval);
+    const modal = document.getElementById("icebreaker-game-modal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  // =========================================================================
+  // 5. TRÌNH CHIẾU ONLINE & TẢI VỀ
   // =========================================================================
   async previewLecture(id) {
     const lecture = await window.lectureService.getLectureById(id);
