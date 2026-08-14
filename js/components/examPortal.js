@@ -1,20 +1,20 @@
 /**
  * EXAM PORTAL COMPONENT
  * Quản lý Menu KIỂM TRA & ĐÁNH GIÁ ĐỊNH KỲ:
- * - Làm bài thi trực tuyến tự chấm điểm (Online Test Runner)
- * - Hiệu ứng Pháo hoa & Âm thanh Vinh danh kèn Fanfare khi đạt điểm 9-10
- * - Lọc lịch sử làm bài theo từng lớp (3A, 3B, 4A, 4B, 5A, 5B) & Tên học sinh
- * - Gửi báo cáo kết quả thi về Zalo / Email Phụ huynh 1 chạm
- * - Tải Bảng đáp án & Biểu điểm riêng biệt (.doc)
- * - Thống kê phổ điểm & xếp loại học sinh theo Thông tư 27
- * - Trộn đề thi tự động 4 mã đề (101, 102, 103, 104) kèm ma trận đối chiếu
- * - Xuất Bảng Điểm Tổng Hợp Lớp (.doc / .xls)
- * - AI Tự Động Sinh Đề Theo Chủ Đề Bài Học GDPT 2018 (Chủ đề A..F)
- * - Tải lên, Chỉnh sửa, Đổi file, Xóa bỏ đề thi (Đồng bộ 100% Supabase)
+ * - Phân chia 3 Thư Mục Con Rõ Ràng:
+ *   📁 1. Thư mục: Kiểm tra môn Tin lớp 3
+ *   📁 2. Thư mục: Kiểm tra môn Tin lớp 4
+ *   📁 3. Thư mục: Kiểm tra môn Tin lớp 5
+ * - Chức năng Giáo viên Tải lên hoặc Xóa bỏ file trong từng thư mục
+ * - Đồng bộ 100% FE -> BE -> Supabase Cloud Database (public.exam_assessments)
+ * - Làm bài thi trực tuyến tự chấm điểm, Pháo hoa điểm 10 & Kèn Fanfare
+ * - Báo điểm Zalo Phụ huynh, Lọc theo lớp & AI Sinh đề theo chủ đề
+ * - Trộn 4 mã đề & Xuất đề Word, Đáp án chi tiết, Bảng điểm tổng hợp
  */
 
 class ExamPortal {
   constructor() {
+    this.selectedFolder = "all"; // 'all' | 3 | 4 | 5
     this.currentGrade = "all";
     this.currentExamType = "all";
     this.currentBookSeries = "all";
@@ -52,12 +52,19 @@ class ExamPortal {
     const isTeacher = user && (user.role === 'teacher' || user.role === 'admin');
     
     // Tải toàn bộ đề kiểm tra
-    let allExams = await window.examService.getAllExams(this.currentGrade, this.searchQuery, this.currentExamType, this.currentBookSeries);
+    const effectiveGrade = this.selectedFolder !== "all" ? this.selectedFolder : this.currentGrade;
+    let allExams = await window.examService.getAllExams(effectiveGrade, this.searchQuery, this.currentExamType, this.currentBookSeries);
     const favoriteIds = window.examService.getFavoriteIds();
     
-    // Đếm số lượng
+    // Đếm số lượng theo danh mục
     const myExamsCount = user ? allExams.filter(e => (e.createdByUsername === user.username) || (e.authorName === user.name) || user.role === 'admin').length : 0;
     const favoritesCount = allExams.filter(e => favoriteIds.includes(e.id)).length;
+
+    // Thống kê theo 3 thư mục con
+    const rawAll = await window.examService.getAllExams("all");
+    const countLop3 = rawAll.filter(e => e.grade === 3).length;
+    const countLop4 = rawAll.filter(e => e.grade === 4).length;
+    const countLop5 = rawAll.filter(e => e.grade === 5).length;
 
     if (this.currentTab === "my_exams" && user) {
       this.exams = allExams.filter(e => (e.createdByUsername === user.username) || (e.authorName === user.name) || user.role === 'admin');
@@ -77,7 +84,7 @@ class ExamPortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn Thông Tư 27/2020 & GDPT 2018</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">NGÂN HÀNG ĐỀ KIỂM TRA & ĐÁNH GIÁ</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Làm bài trực tuyến tự chấm, Pháo hoa điểm 10, Báo điểm Zalo, Lọc theo lớp & AI Sinh đề</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Hệ thống phân chia 3 Thư Mục Lớp 3 - Lớp 4 - Lớp 5, Đồng bộ 100% Supabase Cloud</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
@@ -91,17 +98,159 @@ class ExamPortal {
               <button onclick="examPortal.openAIGeneratorModal()" class="btn bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-black text-xs py-2.5 px-3.5 rounded-xl border border-white/30 flex items-center gap-1.5 shadow-lg hover:scale-105 transition-all" title="AI tự động sinh đề theo từng chủ đề A, B, C, D, E, F">
                 <span>✨</span> <span>AI Sinh Đề</span>
               </button>
-              <button onclick="examUploadModal.openModal(${this.currentGrade === 'all' ? 3 : this.currentGrade})" class="btn btn-amber btn-sm font-black shadow-xl flex items-center gap-1.5 shrink-0 hover:scale-105 transition-all">
+              <button onclick="examUploadModal.openModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-amber btn-sm font-black shadow-xl flex items-center gap-1.5 shrink-0 hover:scale-105 transition-all">
                 <span>📤</span> <span>Tải Đề Lên</span>
               </button>
             ` : `
               <div class="bg-white/15 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/30 text-center text-xs text-white">
                 <span class="font-bold block text-amber-300">💡 Dành Cho Học Sinh:</span>
-                <span>Em có thể bấm <b>'✍️ Thi Trực Tuyến'</b> để tự luyện tập và rinh sao pháo hoa!</span>
+                <span>Em hãy chọn đúng <b>Thư mục Khối Lớp</b> để làm bài thi trực tuyến!</span>
               </div>
             `}
           </div>
         </div>
+
+        <!-- =========================================================================
+             HỆ THỐNG 3 THƯ MỤC CON LỚN (3 SUB-FOLDERS: LỚP 3, LỚP 4, LỚP 5)
+             ========================================================================= -->
+        ${this.selectedFolder === "all" ? `
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                <span>📁 THƯ MỤC KIỂM TRA THEO KHỐI LỚP (GDPT 2018)</span>
+                <span class="badge badge-emerald text-[11px] font-black">3 Thư Mục</span>
+              </h3>
+              <span class="text-xs text-slate-500">Bấm vào thư mục để mở và quản lý tệp tin</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <!-- THƯ MỤC 1: KIỂM TRA MÔN TIN LỚP 3 -->
+              <div onclick="examPortal.enterFolder(3)" class="glass-card p-5 hover:border-blue-500 transition-all duration-300 shadow-md hover:shadow-2xl cursor-pointer group relative overflow-hidden bg-gradient-to-br from-blue-50/80 via-white to-indigo-50/50 border-2 ${this.selectedFolder === 3 ? 'border-blue-600 ring-2 ring-blue-300' : 'border-slate-200'}">
+                <div class="flex items-start justify-between">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all">
+                    📁
+                  </div>
+                  <span class="badge bg-blue-600 text-white font-black text-xs px-3 py-1">🎒 KHỐI LỚP 3</span>
+                </div>
+
+                <div class="mt-4 space-y-1.5">
+                  <h4 class="text-base font-black text-slate-900 group-hover:text-blue-700 transition-all flex items-center gap-1.5">
+                    <span>Kiểm Tra Môn Tin Lớp 3</span>
+                  </h4>
+                  <p class="text-xs text-slate-500 line-clamp-2">Đề kiểm tra 15 phút, Giữa kỳ, Cuối kỳ 1-2 & Ma trận đặc tả bộ sách KNTT, Cánh Diều, CTST.</p>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-bold text-slate-600">
+                  <span>📦 <b>${countLop3}</b> Tệp Đề Thi</span>
+                  <span class="text-blue-600 group-hover:translate-x-1 transition-all flex items-center gap-1">
+                    Mở thư mục ➔
+                  </span>
+                </div>
+              </div>
+
+              <!-- THƯ MỤC 2: KIỂM TRA MÔN TIN LỚP 4 -->
+              <div onclick="examPortal.enterFolder(4)" class="glass-card p-5 hover:border-amber-500 transition-all duration-300 shadow-md hover:shadow-2xl cursor-pointer group relative overflow-hidden bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50 border-2 ${this.selectedFolder === 4 ? 'border-amber-600 ring-2 ring-amber-300' : 'border-slate-200'}">
+                <div class="flex items-start justify-between">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-600 to-orange-600 text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all">
+                    📁
+                  </div>
+                  <span class="badge bg-amber-600 text-white font-black text-xs px-3 py-1">🚀 KHỐI LỚP 4</span>
+                </div>
+
+                <div class="mt-4 space-y-1.5">
+                  <h4 class="text-base font-black text-slate-900 group-hover:text-amber-700 transition-all flex items-center gap-1.5">
+                    <span>Kiểm Tra Môn Tin Lớp 4</span>
+                  </h4>
+                  <p class="text-xs text-slate-500 line-clamp-2">Phần cứng, phần mềm, cây thư mục, soạn thảo trình chiếu PowerPoint và quy tắc an toàn số.</p>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-bold text-slate-600">
+                  <span>📦 <b>${countLop4}</b> Tệp Đề Thi</span>
+                  <span class="text-amber-600 group-hover:translate-x-1 transition-all flex items-center gap-1">
+                    Mở thư mục ➔
+                  </span>
+                </div>
+              </div>
+
+              <!-- THƯ MỤC 3: KIỂM TRA MÔN TIN LỚP 5 -->
+              <div onclick="examPortal.enterFolder(5)" class="glass-card p-5 hover:border-emerald-500 transition-all duration-300 shadow-md hover:shadow-2xl cursor-pointer group relative overflow-hidden bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 border-2 ${this.selectedFolder === 5 ? 'border-emerald-600 ring-2 ring-emerald-300' : 'border-slate-200'}">
+                <div class="flex items-start justify-between">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all">
+                    📁
+                  </div>
+                  <span class="badge bg-emerald-600 text-white font-black text-xs px-3 py-1">⭐ KHỐI LỚP 5</span>
+                </div>
+
+                <div class="mt-4 space-y-1.5">
+                  <h4 class="text-base font-black text-slate-900 group-hover:text-emerald-700 transition-all flex items-center gap-1.5">
+                    <span>Kiểm Tra Môn Tin Lớp 5</span>
+                  </h4>
+                  <p class="text-xs text-slate-500 line-clamp-2">Mạng máy tính, tìm kiếm Internet, bảng tính Excel cơ bản và lập trình Scratch giải quyết bài toán.</p>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-bold text-slate-600">
+                  <span>📦 <b>${countLop5}</b> Tệp Đề Thi</span>
+                  <span class="text-emerald-600 group-hover:translate-x-1 transition-all flex items-center gap-1">
+                    Mở thư mục ➔
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ` : `
+          <!-- THANH BREADCRUMB & HEADER KHI ĐANG MỞ 1 THƯ MỤC CỤ THỂ -->
+          <div class="glass-card p-5 space-y-4 border-2 ${this.selectedFolder === 3 ? 'border-blue-500 bg-blue-50/40' : this.selectedFolder === 4 ? 'border-amber-500 bg-amber-50/40' : 'border-emerald-500 bg-emerald-50/40'}">
+            <!-- Breadcrumb Navigation -->
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-2 text-xs font-bold">
+                <button onclick="examPortal.enterFolder('all')" class="text-slate-500 hover:text-slate-900 flex items-center gap-1">
+                  <span>🏠 Ngân Hàng Đề</span>
+                </button>
+                <span class="text-slate-400">/</span>
+                <span class="text-slate-900 font-black flex items-center gap-1">
+                  <span>📁</span> <span>Kiểm Tra Môn Tin Lớp ${this.selectedFolder}</span>
+                </span>
+                <span class="badge ${this.selectedFolder === 3 ? 'bg-blue-600' : this.selectedFolder === 4 ? 'bg-amber-600' : 'bg-emerald-600'} text-white text-[10px] font-black">
+                  ${this.exams.length} Tệp Tin
+                </span>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button onclick="examPortal.enterFolder('all')" class="btn btn-outline btn-xs font-black bg-white shadow-sm flex items-center gap-1">
+                  <span>⬅️</span> <span>Quay Lại Tất Cả Thư Mục</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Header Thư Mục -->
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4 pt-2 border-t border-slate-200">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl ${this.selectedFolder === 3 ? 'bg-blue-600' : this.selectedFolder === 4 ? 'bg-amber-600' : 'bg-emerald-600'} text-white flex items-center justify-center text-2xl shadow-md">
+                  📁
+                </div>
+                <div>
+                  <h3 class="text-lg font-black text-slate-900">THƯ MỤC: KIỂM TRA MÔN TIN LỚP ${this.selectedFolder}</h3>
+                  <p class="text-xs text-slate-600">Toàn bộ đề thi, ma trận đặc tả & đáp án được lưu trữ và đồng bộ trên Supabase Cloud</p>
+                </div>
+              </div>
+
+              <!-- Quick action in folder -->
+              <div class="flex items-center gap-2 flex-wrap">
+                ${isTeacher ? `
+                  <button onclick="examUploadModal.openModal(${this.selectedFolder})" class="btn btn-emerald btn-sm font-black shadow flex items-center gap-1">
+                    <span>📤</span> <span>Tải Đề Vào Thư Mục Lớp ${this.selectedFolder}</span>
+                  </button>
+                  <button onclick="examPortal.quickAIGenerateForFolder(${this.selectedFolder})" class="btn btn-primary btn-sm font-black bg-purple-700 hover:bg-purple-800 text-white shadow flex items-center gap-1">
+                    <span>✨</span> <span>AI Sinh Đề Lớp ${this.selectedFolder}</span>
+                  </button>
+                ` : ''}
+                <button onclick="examPortal.exportClassGradebookDoc('${this.selectedFolder}A')" class="btn btn-outline btn-sm font-black bg-white text-slate-700 flex items-center gap-1 shadow-sm">
+                  <span>📊</span> <span>Bảng Điểm Lớp ${this.selectedFolder}A</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `}
 
         <!-- Thanh 3 Tab Chuyển Đổi: Tất Cả | Đề Của Tôi | Đề Yêu Thích -->
         <div class="flex items-center gap-2.5 border-b border-slate-200 pb-2 flex-wrap">
@@ -123,34 +272,34 @@ class ExamPortal {
           ` : ''}
         </div>
 
-        <!-- Thanh Bộ Lọc 3 Tầng: Khối Lớp + Loại Đề + 3 Bộ Sách Giáo Khoa -->
+        <!-- Thanh Bộ Lọc Kỳ Đánh Giá & Bộ Sách -->
         <div class="glass-card p-5 space-y-4">
-          <!-- Hàng 1: Lọc Khối Lớp & Tìm Kiếm -->
           <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <!-- Chọn nhanh thư mục / khối lớp -->
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs font-bold text-slate-500 mr-1">Khối Lớp:</span>
-              <button onclick="examPortal.selectGrade('all')" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${this.currentGrade === 'all' ? 'bg-cyan-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
-                Tất Cả Khối
+              <span class="text-xs font-bold text-slate-500 mr-1">Thư Mục:</span>
+              <button onclick="examPortal.enterFolder('all')" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${this.selectedFolder === 'all' ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                📂 Tất Cả Khối
               </button>
-              <button onclick="examPortal.selectGrade(3)" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${this.currentGrade === 3 ? 'bg-cyan-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
-                🎒 Lớp 3
+              <button onclick="examPortal.enterFolder(3)" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${this.selectedFolder === 3 ? 'bg-blue-600 text-white shadow-md' : 'bg-blue-50 text-blue-800 hover:bg-blue-100'}">
+                📁 Kiểm Tra Lớp 3 (${countLop3})
               </button>
-              <button onclick="examPortal.selectGrade(4)" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${this.currentGrade === 4 ? 'bg-cyan-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
-                🚀 Lớp 4
+              <button onclick="examPortal.enterFolder(4)" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${this.selectedFolder === 4 ? 'bg-amber-600 text-white shadow-md' : 'bg-amber-50 text-amber-800 hover:bg-amber-100'}">
+                📁 Kiểm Tra Lớp 4 (${countLop4})
               </button>
-              <button onclick="examPortal.selectGrade(5)" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${this.currentGrade === 5 ? 'bg-cyan-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
-                ⭐ Lớp 5
+              <button onclick="examPortal.enterFolder(5)" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${this.selectedFolder === 5 ? 'bg-emerald-600 text-white shadow-md' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'}">
+                📁 Kiểm Tra Lớp 5 (${countLop5})
               </button>
             </div>
 
             <!-- Ô Tìm Kiếm -->
-            <div class="relative w-full md:w-80">
-              <input type="text" id="exam-search-input" value="${this.searchQuery}" oninput="examPortal.handleSearch(this.value)" placeholder="Tìm đề kiểm tra, tác giả, nội dung..." class="form-control text-xs pl-9 font-medium">
+            <div class="relative w-full md:w-72">
+              <input type="text" id="exam-search-input" value="${this.searchQuery}" oninput="examPortal.handleSearch(this.value)" placeholder="Tìm đề thi, tác giả, nội dung..." class="form-control text-xs pl-9 font-medium">
               <span class="absolute left-3 top-2.5 text-slate-400">🔍</span>
             </div>
           </div>
 
-          <!-- Hàng 2: Lọc Theo Loại Đề Kiểm Tra -->
+          <!-- Lọc Theo Loại Đề Kiểm Tra -->
           <div class="flex items-center gap-2 flex-wrap pt-3 border-t border-slate-200/70">
             <span class="text-xs font-bold text-slate-500 mr-1">Kỳ Đánh Giá:</span>
             <button onclick="examPortal.selectExamType('all')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${this.currentExamType === 'all' ? 'bg-slate-800 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
@@ -176,9 +325,9 @@ class ExamPortal {
             </button>
           </div>
 
-          <!-- Hàng 3: Lọc Theo Bộ Sách Giáo Khoa -->
+          <!-- Lọc Theo Bộ Sách Giáo Khoa -->
           <div class="flex items-center gap-2 flex-wrap pt-3 border-t border-slate-200/70">
-            <span class="text-xs font-bold text-slate-500 mr-1">Bộ Sách Giáo Khoa:</span>
+            <span class="text-xs font-bold text-slate-500 mr-1">Bộ Sách:</span>
             <button onclick="examPortal.selectBookSeries('all')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${this.currentBookSeries === 'all' ? 'bg-slate-800 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
               Tất Cả Bộ Sách
             </button>
@@ -194,19 +343,19 @@ class ExamPortal {
           </div>
         </div>
 
-        <!-- Danh Sách Card Đề Kiểm Tra -->
+        <!-- Danh Sách Card Đề Kiểm Tra Trong Thư Mục -->
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <span>📝 DANH SÁCH ĐỀ KIỂM TRA</span>
-              <span class="badge badge-emerald font-black text-xs">${this.exams.length} Đề</span>
+              <span>📝 DANH SÁCH TỆP TIN TRONG ${this.selectedFolder === 'all' ? 'TẤT CẢ THƯ MỤC' : `THƯ MỤC LỚP ${this.selectedFolder}`}</span>
+              <span class="badge badge-emerald font-black text-xs">${this.exams.length} Tệp</span>
             </h3>
             ${isTeacher ? `
               <div class="flex items-center gap-2">
                 <button onclick="examPortal.openAIGeneratorModal()" class="btn btn-outline btn-xs font-black text-purple-800 border-purple-300 hover:bg-purple-50 flex items-center gap-1">
                   <span>✨</span> <span>AI Sinh Đề</span>
                 </button>
-                <button onclick="examUploadModal.openModal()" class="btn btn-outline btn-xs font-black text-emerald-800 border-emerald-300 hover:bg-emerald-50 flex items-center gap-1">
+                <button onclick="examUploadModal.openModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-outline btn-xs font-black text-emerald-800 border-emerald-300 hover:bg-emerald-50 flex items-center gap-1">
                   <span>➕</span> <span>Tải Đề Lên</span>
                 </button>
               </div>
@@ -219,20 +368,34 @@ class ExamPortal {
     `;
   }
 
+  // Chuyển / Mở Thư Mục
+  enterFolder(grade) {
+    this.selectedFolder = grade;
+    this.currentGrade = grade;
+    this.render("main-content-area");
+  }
+
+  // Nhanh AI Sinh đề cho khối lớp của thư mục
+  quickAIGenerateForFolder(grade) {
+    this.openAIGeneratorModal();
+    const gradeSelect = document.getElementById("ai-gen-grade");
+    if (gradeSelect) gradeSelect.value = grade;
+  }
+
   // Render lưới thẻ đề kiểm tra
   renderExamGrid(isTeacher, user) {
     if (this.exams.length === 0) {
       return `
         <div class="text-center py-16 glass-card space-y-3 text-slate-400">
-          <span class="text-6xl block mb-2">📝</span>
-          <p class="font-black text-slate-700 text-base">Chưa có đề kiểm tra nào trong mục này.</p>
-          <p class="text-xs text-slate-500">Thầy Cô hãy bấm nút <b>'Tải Lên Đề Mới'</b> hoặc <b>'AI Sinh Đề'</b> để tạo đề thi đầu tiên!</p>
+          <span class="text-6xl block mb-2">📁</span>
+          <p class="font-black text-slate-700 text-base">Thư mục này hiện chưa có tệp đề kiểm tra nào.</p>
+          <p class="text-xs text-slate-500">Thầy Cô hãy bấm nút <b>'Tải Đề Lên'</b> hoặc <b>'AI Sinh Đề'</b> để lưu trữ đề thi vào thư mục này!</p>
           ${isTeacher ? `
             <div class="flex items-center justify-center gap-2 mt-2">
-              <button onclick="examPortal.openAIGeneratorModal()" class="btn btn-primary btn-sm font-black">
-                ✨ AI Sinh Đề Tự Động
+              <button onclick="examPortal.quickAIGenerateForFolder(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-primary btn-sm font-black">
+                ✨ AI Sinh Đề Vào Thư Mục Này
               </button>
-              <button onclick="examUploadModal.openModal()" class="btn btn-emerald btn-sm font-black">
+              <button onclick="examUploadModal.openModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-emerald btn-sm font-black">
                 📤 Tải Lên Đề Mới
               </button>
             </div>
@@ -376,8 +539,7 @@ class ExamPortal {
   }
 
   selectGrade(grade) {
-    this.currentGrade = grade;
-    this.render("main-content-area");
+    this.enterFolder(grade);
   }
 
   selectExamType(type) {
@@ -404,7 +566,6 @@ class ExamPortal {
       if (!AudioContext) return;
       const ctx = new AudioContext();
 
-      // Hợp âm chiến thắng: C5 (523.25) -> E5 (659.25) -> G5 (783.99) -> C6 (1046.50)
       const notes = [
         { freq: 523.25, time: 0, dur: 0.15 },
         { freq: 659.25, time: 0.15, dur: 0.15 },
@@ -471,7 +632,7 @@ class ExamPortal {
       particles.forEach(p => {
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.4; // Trọng lực
+        p.vy += 0.4;
         p.rotation += p.vr;
         p.alpha -= 0.012;
 
@@ -658,7 +819,6 @@ class ExamPortal {
       durationSpentSeconds: durationSpent
     });
 
-    // Nếu đạt điểm 9-10 (Xuất sắc) -> Phát kèn Fanfare và Bắn pháo hoa Confetti!
     if (result.score >= 9.0) {
       this.playVictoryFanfare();
       this.launchConfetti();
@@ -1081,7 +1241,7 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
   }
 
   async executeAIGenerateExam() {
-    const grade = document.getElementById("ai-gen-grade")?.value || "3";
+    const grade = document.getElementById("ai-gen-grade")?.value || (this.selectedFolder !== 'all' ? this.selectedFolder : "3");
     const topicKey = document.getElementById("ai-gen-topic")?.value || "topic_a";
     const series = document.getElementById("ai-gen-series")?.value || "KNTT";
 
