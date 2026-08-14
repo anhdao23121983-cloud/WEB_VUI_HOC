@@ -1,7 +1,11 @@
 /**
  * EXAM PORTAL COMPONENT
  * Quản lý Menu KIỂM TRA & ĐÁNH GIÁ ĐỊNH KỲ:
- * Tải lên, Chỉnh sửa/Đổi file, Xóa bỏ đề thi (Đồng bộ Supabase), Lọc SGK, AI Ma trận Thông tư 27, Xuất đề thi Word
+ * - Làm bài thi trực tuyến tự chấm điểm (Online Test Runner)
+ * - Tải Bảng đáp án & Biểu điểm riêng biệt (.doc)
+ * - Thống kê phổ điểm & xếp loại học sinh theo Thông tư 27
+ * - Trộn đề thi tự động 4 mã đề (101, 102, 103, 104) kèm ma trận đối chiếu
+ * - Tải lên, Chỉnh sửa, Đổi file, Xóa bỏ đề thi (Đồng bộ 100% Supabase)
  */
 
 class ExamPortal {
@@ -16,6 +20,19 @@ class ExamPortal {
     // Delete state
     this.pendingDeleteId = null;
     this.pendingDeleteTitle = "";
+
+    // Online Test Runner State
+    this.activeRunnerExam = null;
+    this.runnerQuestions = [];
+    this.runnerCurrentIndex = 0;
+    this.runnerAnswers = {}; // { qIdx: selectedOptionIdx }
+    this.runnerTimerSeconds = 2100; // 35 phút
+    this.runnerTimerInterval = null;
+    this.runnerStartTime = 0;
+
+    // Shuffler State
+    this.currentShuffledData = null;
+    this.currentShuffledExam = null;
   }
 
   async render(containerId) {
@@ -51,18 +68,21 @@ class ExamPortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn Thông Tư 27/2020 & GDPT 2018</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">NGÂN HÀNG ĐỀ KIỂM TRA & ĐÁNH GIÁ</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Quản lý tải lên, chỉnh sửa, xóa bỏ đề kiểm tra 15P, Giữa kì, Cuối kì và Ma trận bản đặc tả chuẩn Bộ GD&ĐT</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Làm bài trực tuyến tự chấm, Trộn đề 4 mã, Xuất Word kèm Đáp án & Biểu điểm và Thống kê phổ điểm</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="examPortal.openAnalyticsModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-4 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md">
+              <span>📈</span> <span>Phổ Điểm</span>
+            </button>
             ${isTeacher ? `
               <button onclick="examUploadModal.openModal(${this.currentGrade === 'all' ? 3 : this.currentGrade})" class="btn btn-amber btn-lg font-black shadow-xl flex items-center gap-2 shrink-0 hover:scale-105 transition-all">
-                <span class="text-xl">📤</span> <span>Tải Lên Đề Kiểm Tra</span>
+                <span class="text-xl">📤</span> <span>Tải Lên Đề Mới</span>
               </button>
             ` : `
               <div class="bg-white/15 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/30 text-center text-xs text-white">
                 <span class="font-bold block text-amber-300">💡 Dành Cho Học Sinh:</span>
-                <span>Em có thể tải đề ôn tập, xem ma trận kiến thức và luyện tập trước kỳ kiểm tra!</span>
+                <span>Em có thể bấm <b>'✍️ Làm Bài Trực Tuyến'</b> để tự luyện tập và chấm điểm!</span>
               </div>
             `}
           </div>
@@ -186,7 +206,7 @@ class ExamPortal {
         <div class="text-center py-16 glass-card space-y-3 text-slate-400">
           <span class="text-6xl block mb-2">📝</span>
           <p class="font-black text-slate-700 text-base">Chưa có đề kiểm tra nào trong mục này.</p>
-          <p class="text-xs text-slate-500">Thầy Cô hãy bấm nút <b>'Tải Lên Đề Kiểm Tra'</b> để chia sẻ đề thi đầu tiên!</p>
+          <p class="text-xs text-slate-500">Thầy Cô hãy bấm nút <b>'Tải Lên Đề Mới'</b> để chia sẻ đề thi đầu tiên!</p>
           ${isTeacher ? `
             <button onclick="examUploadModal.openModal()" class="btn btn-emerald btn-sm font-black mt-2">
               📤 Tải Lên Ngay
@@ -272,20 +292,33 @@ class ExamPortal {
 
                 <!-- Hàng nút hành động đa năng -->
                 <div class="space-y-2 pt-2 border-t border-slate-100">
-                  <!-- Hàng 1: AI Ma Trận Thông Tư 27 + Xuất Đề Word (.doc) -->
+                  <!-- Hàng 1: Làm bài trực tuyến + Trộn đề 4 mã -->
                   <div class="grid grid-cols-2 gap-2">
-                    <button onclick="examPortal.openMatrixModal('${e.id}')" class="btn btn-outline btn-sm font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200 flex items-center justify-center gap-1" title="Xem phân tích Ma trận đề 4 mức độ nhận thức">
-                      <span>✨</span> <span>AI Ma Trận Đề</span>
+                    <button onclick="examPortal.startOnlineTest('${e.id}')" class="btn btn-amber btn-sm font-black flex items-center justify-center gap-1 shadow-sm" title="Làm bài trắc nghiệm trực tuyến có đếm giờ và tự chấm điểm">
+                      <span>✍️</span> <span>Thi Trực Tuyến</span>
                     </button>
-                    <button onclick="examPortal.downloadExamDoc('${e.id}')" class="btn btn-emerald btn-sm font-black flex items-center justify-center gap-1 shadow-sm" title="Tải đề kiểm tra bản Word chuẩn Bộ GD&ĐT">
-                      <span>📝</span> <span>Tải Đề Word</span>
+                    <button onclick="examPortal.openShufflerModal('${e.id}')" class="btn btn-outline btn-sm font-black text-purple-700 bg-purple-50 hover:bg-purple-100 border-purple-200 flex items-center justify-center gap-1" title="Tự động đảo câu hỏi tạo 4 mã đề 101, 102, 103, 104">
+                      <span>🔀</span> <span>Trộn 4 Mã Đề</span>
                     </button>
                   </div>
 
-                  <!-- Hàng 2: Xem Trực Tuyến + Sửa + Xóa -->
+                  <!-- Hàng 2: AI Ma Trận Thông Tư 27 + Tải Đáp Án Biểu Điểm Word -->
+                  <div class="grid grid-cols-2 gap-2">
+                    <button onclick="examPortal.openMatrixModal('${e.id}')" class="btn btn-outline btn-sm font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200 flex items-center justify-center gap-1" title="Xem phân tích Ma trận đề 4 mức độ nhận thức">
+                      <span>✨</span> <span>AI Ma Trận</span>
+                    </button>
+                    <button onclick="examPortal.downloadAnswerKeyDoc('${e.id}')" class="btn btn-outline btn-sm font-black text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 flex items-center justify-center gap-1" title="Tải bảng đáp án và hướng dẫn chấm chi tiết">
+                      <span>🔑</span> <span>Đáp Án & Barem</span>
+                    </button>
+                  </div>
+
+                  <!-- Hàng 3: Tải Đề Word + Xem Trực Tuyến + Sửa + Xóa -->
                   <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100">
-                    <button onclick="examPortal.previewExam('${e.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm">
-                      <span>👁️</span> <span>Xem Trực Tuyến</span>
+                    <button onclick="examPortal.downloadExamDoc('${e.id}')" class="btn btn-emerald btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Tải đề kiểm tra bản Word chuẩn Bộ GD&ĐT">
+                      <span>📝</span> <span>Tải Đề Word</span>
+                    </button>
+                    <button onclick="examPortal.previewExam('${e.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Xem đề thi online">
+                      <span>👁️</span> <span>Xem</span>
                     </button>
 
                     ${canManage ? `
@@ -337,6 +370,403 @@ class ExamPortal {
   handleSearch(query) {
     this.searchQuery = query;
     this.render("main-content-area");
+  }
+
+  // =========================================================================
+  // 1. LÀM BÀI THI TRỰC TUYẾN TỰ CHẤM ĐIỂM (ONLINE TEST RUNNER)
+  // =========================================================================
+  async startOnlineTest(id) {
+    const exam = await window.examService.getExamById(id);
+    if (!exam) return;
+
+    this.activeRunnerExam = exam;
+    this.runnerQuestions = window.examService.getOnlineExamQuestions(exam);
+    this.runnerCurrentIndex = 0;
+    this.runnerAnswers = {};
+    this.runnerTimerSeconds = (exam.durationMinutes || 35) * 60;
+    this.runnerStartTime = Date.now();
+
+    if (this.runnerTimerInterval) clearInterval(this.runnerTimerInterval);
+
+    const modal = document.getElementById("online-exam-runner-modal");
+    const titleDisp = document.getElementById("exam-runner-title-disp");
+    if (titleDisp) titleDisp.innerText = exam.title;
+
+    if (modal) modal.classList.add("active");
+
+    this.startRunnerCountdown();
+    this.renderRunnerQuestion();
+  }
+
+  startRunnerCountdown() {
+    const timerDisp = document.getElementById("exam-runner-timer-disp");
+    this.runnerTimerInterval = setInterval(() => {
+      this.runnerTimerSeconds--;
+      const mins = Math.floor(this.runnerTimerSeconds / 60);
+      const secs = this.runnerTimerSeconds % 60;
+      if (timerDisp) timerDisp.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+      if (this.runnerTimerSeconds <= 0) {
+        clearInterval(this.runnerTimerInterval);
+        this.submitOnlineTest();
+      }
+    }, 1000);
+  }
+
+  renderRunnerQuestion() {
+    const qContainer = document.getElementById("exam-runner-question-body");
+    const navTrack = document.getElementById("exam-runner-nav-track");
+    const q = this.runnerQuestions[this.runnerCurrentIndex];
+
+    if (!q || !qContainer) return;
+
+    // Render thanh số câu hỏi (1..7)
+    if (navTrack) {
+      navTrack.innerHTML = this.runnerQuestions.map((_, idx) => {
+        const isAnswered = this.runnerAnswers[idx] !== undefined;
+        const isCurrent = this.runnerCurrentIndex === idx;
+        return `
+          <button onclick="examPortal.jumpToQuestion(${idx})" class="w-8 h-8 rounded-xl font-black text-xs transition-all ${isCurrent ? 'bg-amber-500 text-slate-950 scale-110 shadow' : isAnswered ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+            ${idx + 1}
+          </button>
+        `;
+      }).join("");
+    }
+
+    const selectedOption = this.runnerAnswers[this.runnerCurrentIndex];
+
+    qContainer.innerHTML = `
+      <div class="space-y-4 animate-pop">
+        <div class="flex items-center justify-between">
+          <span class="badge badge-emerald font-black text-[11px]">CÂU HỎI ${this.runnerCurrentIndex + 1} / ${this.runnerQuestions.length}</span>
+          <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">${q.level} • 1.0 Điểm</span>
+        </div>
+
+        <h3 class="text-base md:text-lg font-black text-slate-900 leading-snug">${q.question}</h3>
+
+        <div class="grid grid-cols-1 gap-2.5 pt-2">
+          ${q.options.map((opt, oIdx) => {
+            const isSel = selectedOption === oIdx;
+            return `
+              <button onclick="examPortal.selectRunnerAnswer(${oIdx})" class="p-3.5 md:p-4 rounded-2xl border-2 text-left font-bold text-xs md:text-sm transition-all flex items-center gap-3 ${isSel ? 'border-emerald-600 bg-emerald-50 text-emerald-950 shadow-md scale-101' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'}">
+                <span class="w-7 h-7 rounded-full font-black text-xs flex items-center justify-center shrink-0 ${isSel ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}">
+                  ${['A', 'B', 'C', 'D'][oIdx]}
+                </span>
+                <span>${opt.replace(/^[A-D]\.\s*/, '')}</span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+
+        <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+          <button onclick="examPortal.prevRunnerQuestion()" ${this.runnerCurrentIndex === 0 ? 'disabled class="btn btn-outline btn-sm opacity-40"' : 'class="btn btn-outline btn-sm"'}>
+            ⬅️ Câu Trước
+          </button>
+          
+          <div class="flex items-center gap-2">
+            ${this.runnerCurrentIndex + 1 < this.runnerQuestions.length ? `
+              <button onclick="examPortal.nextRunnerQuestion()" class="btn btn-primary btn-sm font-black">
+                Câu Kế Tiếp ➡️
+              </button>
+            ` : `
+              <button onclick="examPortal.confirmSubmitTest()" class="btn btn-emerald btn-sm font-black shadow-lg">
+                🚀 Nộp Bài & Xem Điểm
+              </button>
+            `}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  selectRunnerAnswer(oIdx) {
+    this.runnerAnswers[this.runnerCurrentIndex] = oIdx;
+    this.renderRunnerQuestion();
+  }
+
+  jumpToQuestion(idx) {
+    this.runnerCurrentIndex = idx;
+    this.renderRunnerQuestion();
+  }
+
+  nextRunnerQuestion() {
+    if (this.runnerCurrentIndex + 1 < this.runnerQuestions.length) {
+      this.runnerCurrentIndex++;
+      this.renderRunnerQuestion();
+    }
+  }
+
+  prevRunnerQuestion() {
+    if (this.runnerCurrentIndex > 0) {
+      this.runnerCurrentIndex--;
+      this.renderRunnerQuestion();
+    }
+  }
+
+  confirmSubmitTest() {
+    const answeredCount = Object.keys(this.runnerAnswers).length;
+    if (answeredCount < this.runnerQuestions.length) {
+      if (!confirm(`Em mới trả lời ${answeredCount}/${this.runnerQuestions.length} câu hỏi. Em có chắc chắn muốn nộp bài thi ngay không?`)) {
+        return;
+      }
+    }
+    this.submitOnlineTest();
+  }
+
+  async submitOnlineTest() {
+    if (this.runnerTimerInterval) clearInterval(this.runnerTimerInterval);
+
+    let correctCount = 0;
+    this.runnerQuestions.forEach((q, idx) => {
+      if (this.runnerAnswers[idx] === q.correct) {
+        correctCount++;
+      }
+    });
+
+    const user = window.authService?.getUser() || { name: "Nguyễn Văn An" };
+    // Điểm trắc nghiệm (Tối đa 7đ) + Thực hành mẫu 3đ = Thang điểm 10
+    const rawScore = Number(((correctCount / this.runnerQuestions.length) * 7.0 + 3.0).toFixed(1));
+    const durationSpent = Math.floor((Date.now() - this.runnerStartTime) / 1000);
+
+    const result = await window.examService.submitExamAttempt({
+      examId: this.activeRunnerExam?.id,
+      examTitle: this.activeRunnerExam?.title,
+      studentName: user.name,
+      grade: this.activeRunnerExam?.grade,
+      score: rawScore,
+      durationSpentSeconds: durationSpent
+    });
+
+    const qContainer = document.getElementById("exam-runner-question-body");
+    const navTrack = document.getElementById("exam-runner-nav-track");
+    if (navTrack) navTrack.innerHTML = "";
+
+    if (qContainer) {
+      qContainer.innerHTML = `
+        <div class="text-center py-6 space-y-5 animate-pop">
+          <span class="text-6xl block">🏆</span>
+          <h3 class="text-2xl font-black text-slate-900">HOÀN THÀNH BÀI KIỂM TRA TRỰC TUYẾN!</h3>
+          <p class="text-xs text-slate-600">Bài thi của em đã được hệ thống tự động chấm và lưu vào sổ học bạ số!</p>
+
+          <div class="inline-block p-5 bg-gradient-to-br from-amber-50 to-emerald-50 rounded-3xl border-2 border-amber-300 shadow-md space-y-1">
+            <p class="text-xs font-bold text-slate-600">Kết Quả Điểm Số Đạt Được:</p>
+            <p class="text-4xl font-black text-emerald-700">${result.score} / 10 Điểm</p>
+            <p class="text-xs font-black text-indigo-800">Xếp Loại: ${result.classification}</p>
+            <p class="text-xs text-amber-600 font-bold">Thưởng: +${result.starsEarned} ⭐ Sao Vàng Vui Học!</p>
+          </div>
+
+          <!-- Chi tiết câu trả lời -->
+          <div class="text-left space-y-3 pt-3 border-t border-slate-200">
+            <h4 class="font-extrabold text-slate-800 text-xs">📖 BẢNG GIẢI THÍCH CHI TIẾT TỪNG CÂU:</h4>
+            <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+              ${this.runnerQuestions.map((q, idx) => {
+                const userAns = this.runnerAnswers[idx];
+                const isRight = userAns === q.correct;
+                return `
+                  <div class="p-3 rounded-xl border text-xs ${isRight ? 'bg-emerald-50 border-emerald-200 text-emerald-950' : 'bg-rose-50 border-rose-200 text-rose-950'}">
+                    <p class="font-bold">Câu ${idx + 1}: ${q.question}</p>
+                    <p class="text-[11px] mt-1">
+                      - Em chọn: <b>${userAns !== undefined ? ['A', 'B', 'C', 'D'][userAns] : 'Chưa trả lời'}</b> ${isRight ? '✅ Đúng' : `❌ Sai (Đáp án đúng: <b>${['A', 'B', 'C', 'D'][q.correct]}</b>)`}
+                    </p>
+                    <p class="text-[10px] text-slate-500 italic mt-0.5">💡 Giải thích: ${q.explanation}</p>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button onclick="examPortal.closeRunnerModal()" class="btn btn-primary font-black btn-md px-8 shadow-lg">
+              ✨ Hoàn Tất & Về Ngân Hàng Đề
+            </button>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  closeRunnerModal() {
+    if (this.runnerTimerInterval) clearInterval(this.runnerTimerInterval);
+    const modal = document.getElementById("online-exam-runner-modal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  // =========================================================================
+  // 2. XUẤT BẢNG ĐÁP ÁN & BIỂU ĐIỂM CHI TIẾT WORD
+  // =========================================================================
+  async downloadAnswerKeyDoc(id) {
+    const exam = await window.examService.getExamById(id);
+    if (!exam) return;
+
+    if (window.docExportService && window.docExportService.exportAnswerKeyDoc) {
+      window.docExportService.exportAnswerKeyDoc(exam);
+      window.app.showToast(`🔑 Đang tải xuống Đáp Án & Hướng Dẫn Chấm: ${exam.title}!`, "success");
+    }
+  }
+
+  // =========================================================================
+  // 3. BẢNG THỐNG KÊ & PHỔ ĐIỂM KIỂM TRA (ANALYTICS MODAL)
+  // =========================================================================
+  openAnalyticsModal() {
+    const data = window.examService.getScoreDistributionSummary();
+    const modal = document.getElementById("exam-analytics-modal");
+    const content = document.getElementById("exam-analytics-content");
+
+    if (content) {
+      content.innerHTML = `
+        <div class="space-y-6 text-xs text-slate-800 animate-pop">
+          <!-- 4 Thẻ KPI Phổ Điểm -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl">
+              <span class="text-2xl block mb-1">📝</span>
+              <p class="text-slate-500 font-bold text-[10px]">TỔNG LƯỢT THI</p>
+              <p class="text-xl font-black text-blue-700">${data.totalAttempts}</p>
+            </div>
+            <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl">
+              <span class="text-2xl block mb-1">🎯</span>
+              <p class="text-slate-500 font-bold text-[10px]">ĐIỂM TRUNG BÌNH</p>
+              <p class="text-xl font-black text-emerald-700">${data.avgScore}</p>
+            </div>
+            <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl">
+              <span class="text-2xl block mb-1">⭐</span>
+              <p class="text-slate-500 font-bold text-[10px]">HOÀN THÀNH TỐT (T)</p>
+              <p class="text-xl font-black text-amber-700">${data.countExcellent} (${Math.round((data.countExcellent / (data.totalAttempts || 1)) * 100)}%)</p>
+            </div>
+            <div class="p-3.5 bg-purple-50 border border-purple-200 rounded-2xl">
+              <span class="text-2xl block mb-1">🏅</span>
+              <p class="text-slate-500 font-bold text-[10px]">HOÀN THÀNH (H)</p>
+              <p class="text-xl font-black text-purple-700">${data.countPass}</p>
+            </div>
+          </div>
+
+          <!-- Biểu Đồ Thanh Phổ Điểm -->
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+            <h4 class="font-extrabold text-slate-800 text-xs flex items-center gap-1.5">
+              <span>📊</span> <span>BIỂU ĐỒ PHỔ ĐIỂM & TỶ LỆ XẾP LOẠI THEO THÔNG TƯ 27</span>
+            </h4>
+            <div class="space-y-2.5">
+              ${Object.entries(data.scoreBuckets).map(([label, count]) => {
+                const pct = data.totalAttempts > 0 ? (count / data.totalAttempts) * 100 : 0;
+                return `
+                  <div>
+                    <div class="flex justify-between text-[11px] font-bold text-slate-700 pb-1">
+                      <span>Mức Điểm: <b>${label}</b></span>
+                      <span>${count} Học sinh (${pct.toFixed(0)}%)</span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                      <div class="bg-gradient-to-r from-emerald-500 to-cyan-500 h-2.5 rounded-full transition-all duration-1000" style="width: ${pct}%"></div>
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+
+          <!-- Bảng Vinh Danh Học Sinh Điểm 10 -->
+          <div class="space-y-2">
+            <h4 class="font-extrabold text-slate-800 text-xs flex items-center gap-1.5">
+              <span>🌟</span> <span>VINH DANH HỌC SINH ĐẠT ĐIỂM XUẤT SẮC</span>
+            </h4>
+            <div class="space-y-1.5">
+              ${data.topStudents.map((st, idx) => `
+                <div class="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between shadow-sm">
+                  <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-amber-400 text-slate-900 font-black text-xs flex items-center justify-center">${idx + 1}</span>
+                    <span class="font-bold text-slate-900 text-xs">${st.studentName}</span>
+                    <span class="badge badge-cyan text-[10px]">Lớp ${st.grade || 3}</span>
+                  </div>
+                  <span class="badge badge-emerald font-black text-xs">⭐ ${st.score} Điểm (Xuất Sắc)</span>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (modal) modal.classList.add("active");
+  }
+
+  // =========================================================================
+  // 4. TRỘN ĐỀ THI TỰ ĐỘNG (AUTO EXAM SHUFFLER - 4 MÃ ĐỀ)
+  // =========================================================================
+  async openShufflerModal(id) {
+    const exam = await window.examService.getExamById(id);
+    if (!exam) return;
+
+    window.app.showToast("🔀 Đang hoán vị câu hỏi và sinh 4 mã đề (101, 102, 103, 104)...", "info");
+    const shuffledData = window.examService.shuffleExamVersions(exam);
+    this.currentShuffledData = shuffledData;
+    this.currentShuffledExam = exam;
+
+    const modal = document.getElementById("exam-shuffler-modal");
+    const content = document.getElementById("exam-shuffler-content");
+
+    if (content) {
+      content.innerHTML = `
+        <div class="space-y-5 text-xs text-slate-800 animate-pop">
+          <div class="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl border border-purple-200 flex items-start justify-between gap-3">
+            <div>
+              <span class="badge bg-purple-600 text-white font-black text-[10px]">AUTO EXAM SHUFFLER</span>
+              <h3 class="text-base font-black text-slate-900 mt-1">${exam.title}</h3>
+              <p class="text-[11px] text-purple-800 font-semibold">Đã tạo thành công 4 mã đề hoán vị: <b>101, 102, 103, 104</b> kèm bảng ma trận đáp án</p>
+            </div>
+            <span class="text-3xl">🔀</span>
+          </div>
+
+          <!-- Bảng Đáp Án Đối Chiếu 4 Mã Đề -->
+          <div class="space-y-2">
+            <h4 class="font-extrabold text-slate-900 text-xs">📋 BẢNG ĐÁP ÁN ĐỐI CHIẾU 4 MÃ ĐỀ IN ẤN:</h4>
+            <div class="overflow-x-auto">
+              <table class="w-full text-center border-collapse border border-slate-200 rounded-xl overflow-hidden text-xs">
+                <thead class="bg-slate-100 font-black text-slate-700">
+                  <tr>
+                    <th class="p-2.5 border border-slate-200">Câu Hỏi</th>
+                    <th class="p-2.5 border border-slate-200 text-blue-700">Mã Đề 101</th>
+                    <th class="p-2.5 border border-slate-200 text-amber-700">Mã Đề 102</th>
+                    <th class="p-2.5 border border-slate-200 text-emerald-700">Mã Đề 103</th>
+                    <th class="p-2.5 border border-slate-200 text-rose-700">Mã Đề 104</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 font-bold">
+                  ${shuffledData.answerMatrix.map(m => `
+                    <tr class="hover:bg-slate-50">
+                      <td class="p-2 border border-slate-200 font-bold text-slate-700">Câu ${m.questionNum}</td>
+                      <td class="p-2 border border-slate-200 text-blue-700 font-black bg-blue-50/50">${m.code101}</td>
+                      <td class="p-2 border border-slate-200 text-amber-700 font-black bg-amber-50/50">${m.code102}</td>
+                      <td class="p-2 border border-slate-200 text-emerald-700 font-black bg-emerald-50/50">${m.code103}</td>
+                      <td class="p-2 border border-slate-200 text-rose-700 font-black bg-rose-50/50">${m.code104}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Nút Tải Bộ 4 Mã Đề Word -->
+          <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+            <span class="text-[11px] text-slate-400">File Word bao gồm trang bảng đáp án + 4 đề thi riêng biệt</span>
+            <div class="flex items-center gap-2">
+              <button onclick="examPortal.downloadShuffledWordDoc()" class="btn btn-primary btn-sm font-black bg-purple-700 hover:bg-purple-800 text-white shadow-md">
+                📥 Tải Trọn Bộ 4 Mã Đề Word (.doc)
+              </button>
+              <button onclick="document.getElementById('exam-shuffler-modal').classList.remove('active')" class="btn btn-outline btn-sm font-bold">
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (modal) modal.classList.add("active");
+  }
+
+  downloadShuffledWordDoc() {
+    if (this.currentShuffledExam && this.currentShuffledData) {
+      window.docExportService.exportShuffledExamsDoc(this.currentShuffledExam, this.currentShuffledData);
+      window.app.showToast("📥 Đang tải xuống trọn bộ 4 mã đề thi hoán vị Word!", "success");
+    }
   }
 
   // =========================================================================

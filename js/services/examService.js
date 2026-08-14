@@ -357,106 +357,370 @@ class ExamService {
 
   // Ma trận mặc định
   generateDefaultMatrix(grade, examType) {
+  // 11. Lấy danh sách câu hỏi trắc nghiệm làm bài thi online
+  getOnlineExamQuestions(exam) {
+    const grade = exam?.grade || 3;
+    if (grade === 3) {
+      return [
+        {
+          id: "q1",
+          level: "Mức 1 (Nhận biết)",
+          question: "Thiết bị nào của máy tính để bàn giúp em nhìn thấy chữ, hình ảnh và kết quả làm việc?",
+          options: ["A. Chuột máy tính", "B. Bàn phím", "C. Màn hình", "D. Thân máy"],
+          correct: 2,
+          explanation: "Màn hình có mặt kính phát sáng hiển thị toàn bộ hình ảnh và bài học."
+        },
+        {
+          id: "q2",
+          level: "Mức 1 (Nhận biết)",
+          question: "Hai phím có gờ nổi giúp em định vị vị trí đặt ngón trỏ trên hàng phím cơ sở là:",
+          options: ["A. Phím G và H", "B. Phím F và J", "C. Phím A và L", "D. Phím D và K"],
+          correct: 1,
+          explanation: "Phím F (ngón trỏ tay trái) và J (ngón trỏ tay phải) có gờ định vị."
+        },
+        {
+          id: "q3",
+          level: "Mức 2 (Thông hiểu)",
+          question: "Để lưu bài vẽ đang làm vào máy tính, em sử dụng tổ hợp phím tắt nào?",
+          options: ["A. Ctrl + C", "B. Ctrl + V", "C. Ctrl + S", "D. Ctrl + Z"],
+          correct: 2,
+          explanation: "Tổ hợp phím Ctrl + S viết tắt của Save (Lưu tệp tin)."
+        },
+        {
+          id: "q4",
+          level: "Mức 2 (Thông hiểu)",
+          question: "Khi muốn xóa ký tự nằm ở bên trái con trỏ soạn thảo, em sử dụng phím nào?",
+          options: ["A. Phím Delete", "B. Phím Backspace (←)", "C. Phím Enter", "D. Phím Shift"],
+          correct: 1,
+          explanation: "Phím Backspace xóa ký tự bên trái, còn Delete xóa ký tự bên phải."
+        },
+        {
+          id: "q5",
+          level: "Mức 2 (Thông hiểu)",
+          question: "Trước khi rời khỏi phòng thực hành Tin học, hành động nào sau đây là ĐÚNG quy định?",
+          options: [
+            "A. Rút thẳng dây điện nguồn",
+            "B. Tắt máy đúng quy trình qua nút Start -> Shut down và xếp ghế gọn gàng",
+            "C. Để nguyên máy chạy",
+            "D. Mang đồ ăn vào phòng máy"
+          ],
+          correct: 1,
+          explanation: "Cần tắt máy đúng quy trình và bảo quản thiết bị phòng máy an toàn."
+        },
+        {
+          id: "q6",
+          level: "Mức 3 (Vận dụng)",
+          question: "Thư mục (Folder) trong máy tính có biểu tượng màu vàng hình kẹp giấy dùng để làm gì?",
+          options: [
+            "A. Dùng để xem video",
+            "B. Dùng để chứa và phân loại các tệp tin một cách khoa học",
+            "C. Dùng để xóa virus",
+            "D. Dùng để nghe nhạc"
+          ],
+          correct: 1,
+          explanation: "Thư mục giúp phân loại, sắp xếp tài liệu học tập gọn gàng, ngăn nắp."
+        },
+        {
+          id: "q7",
+          level: "Mức 3 (Vận dụng)",
+          question: "Thông tin cá nhân nào sau đây em TUYỆT ĐỐI KHÔNG được chia sẻ cho người lạ trên mạng?",
+          options: [
+            "A. Tên trò chơi yêu thích",
+            "B. Mật khẩu tài khoản, địa chỉ nhà và số điện thoại phụ huynh",
+            "C. Tên bài hát thiếu nhi",
+            "D. Màu sắc em thích"
+          ],
+          correct: 1,
+          explanation: "Bảo vệ mật khẩu và thông tin riêng tư để tránh nguy cơ mất an toàn số."
+        }
+      ];
+    } else if (grade === 4) {
+      return [
+        {
+          id: "q1",
+          level: "Mức 1",
+          question: "Bộ phận nào sau đây thuộc về Phần cứng (Hardware) của máy tính?",
+          options: ["A. Phần mềm Paint", "B. Chuột và Bàn phím", "C. Trò chơi Scratch", "D. Hệ điều hành Windows"],
+          correct: 1,
+          explanation: "Phần cứng là các thiết bị vật lý có thể nhìn và chạm vào được."
+        },
+        {
+          id: "q2",
+          level: "Mức 1",
+          question: "Để chọn toàn bộ văn bản hoặc hình ảnh, em sử dụng tổ hợp phím nào?",
+          options: ["A. Ctrl + A", "B. Ctrl + B", "C. Ctrl + I", "D. Ctrl + U"],
+          correct: 0,
+          explanation: "Ctrl + A viết tắt của Select All (Chọn tất cả)."
+        },
+        {
+          id: "q3",
+          level: "Mức 2",
+          question: "Tệp trình chiếu PowerPoint thường có phần mở rộng mặc định là gì?",
+          options: ["A. .docx", "B. .pptx", "C. .xlsx", "D. .mp3"],
+          correct: 1,
+          explanation: "Tệp PowerPoint có đuôi mở rộng là .pptx hoặc .ppt."
+        },
+        {
+          id: "q4",
+          level: "Mức 2",
+          question: "Trong cây thư mục, thư mục chứa các thư mục con khác bên trong gọi là gì?",
+          options: ["A. Thư mục gốc / Thư mục cha", "B. Tệp tin", "C. Ổ đĩa", "D. Phím tắt"],
+          correct: 0,
+          explanation: "Thư mục bao ngoài chứa các thư mục con gọi là Thư mục cha (Parent folder)."
+        },
+        {
+          id: "q5",
+          level: "Mức 2",
+          question: "Để chèn thêm một hình ảnh minh họa vào bài viết, em chọn thẻ lệnh nào?",
+          options: ["A. File", "B. Insert -> Pictures", "C. View", "D. Review"],
+          correct: 1,
+          explanation: "Thẻ Insert (Chèn) cho phép chèn tranh ảnh, bảng biểu và sơ đồ."
+        },
+        {
+          id: "q6",
+          level: "Mức 3",
+          question: "Khi gặp thông tin lạ hoặc tin nhắn đe dọa trên Internet, em nên làm gì đầu tiên?",
+          options: [
+            "A. Trả lời chửi bới lại",
+            "B. Thông báo ngay cho Bố Mẹ hoặc Thầy Cô giáo để được hỗ trợ",
+            "C. Chia sẻ cho các bạn cùng lớp",
+            "D. Giữ bí mật không nói với ai"
+          ],
+          correct: 1,
+          explanation: "Luôn tìm sự trợ giúp từ người lớn đáng tin cậy khi gặp rủi ro trên mạng."
+        },
+        {
+          id: "q7",
+          level: "Mức 3",
+          question: "Trong lập trình khối lệnh, lệnh 'Di chuyển 10 bước' giúp nhân vật làm gì?",
+          options: [
+            "A. Phát ra tiếng kêu",
+            "B. Tịnh tiến về phía trước 10 đơn vị bước",
+            "C. Đổi màu sắc",
+            "D. Xóa màn hình"
+          ],
+          correct: 1,
+          explanation: "Khối lệnh di chuyển thay đổi tọa độ vị trí của nhân vật theo hướng chỉ định."
+        }
+      ];
+    } else {
+      return [
+        {
+          id: "q1",
+          level: "Mức 1",
+          question: "Công cụ tìm kiếm thông tin phổ biến hàng đầu thế giới hiện nay là gì?",
+          options: ["A. Google", "B. Paint", "C. WordPad", "D. Calculator"],
+          correct: 0,
+          explanation: "Google là cỗ máy tìm kiếm dữ liệu trực tuyến phổ biến nhất."
+        },
+        {
+          id: "q2",
+          level: "Mức 1",
+          question: "Địa chỉ thư điện tử (Email) hợp lệ luôn có ký tự đặc biệt nào?",
+          options: ["A. Ký tự #", "B. Ký tự @", "C. Ký tự &", "D. Ký tự $"],
+          correct: 1,
+          explanation: "Địa chỉ email luôn có cấu trúc ten_nguoi_dung@ten_mien."
+        },
+        {
+          id: "q3",
+          level: "Mức 2",
+          question: "Trong bảng tính Excel, công thức tính tổng các ô từ A1 đến A5 là:",
+          options: ["A. =SUM(A1:A5)", "B. =TOTAL(A1:A5)", "C. =ADD(A1:A5)", "D. =PLUS(A1:A5)"],
+          correct: 0,
+          explanation: "Hàm =SUM(dải_ô) dùng để tính tổng các giá trị trong bảng tính."
+        },
+        {
+          id: "q4",
+          level: "Mức 2",
+          question: "Bản quyền phần mềm (Copyright) có ý nghĩa gì đối với người sáng tạo?",
+          options: [
+            "A. Ai cũng có quyền sao chép bán lại",
+            "B. Bảo vệ quyền sở hữu trí tuệ và quyền tác giả của người viết phần mềm",
+            "C. Làm cho phần mềm bị lỗi",
+            "D. Tự động xóa dữ liệu"
+          ],
+          correct: 1,
+          explanation: "Tôn trọng bản quyền là quy tắc đạo đức cốt lõi trong kỷ nguyên số."
+        },
+        {
+          id: "q5",
+          level: "Mức 2",
+          question: "Trong lập trình Scratch, khối lệnh 'Lặp lại 10 lần' thuộc nhóm lệnh nào?",
+          options: ["A. Chuyển động (Motion)", "B. Điều khiển (Control)", "C. Âm thanh (Sound)", "D. Sự kiện (Events)"],
+          correct: 1,
+          explanation: "Nhóm lệnh Điều khiển (Control) chứa các cấu trúc rẽ nhánh và vòng lặp."
+        },
+        {
+          id: "q6",
+          level: "Mức 3",
+          question: "Mật khẩu nào sau đây có độ an toàn và bảo mật MẠNH NHẤT?",
+          options: ["A. 123456", "B. abcdef", "C. AnhDao@2026!#", "D. 111111"],
+          correct: 2,
+          explanation: "Mật khẩu mạnh kết hợp chữ hoa, chữ thường, chữ số và ký tự đặc biệt."
+        },
+        {
+          id: "q7",
+          level: "Mức 3",
+          question: "Để tìm kiếm chính xác một cụm từ trên Google, em đặt cụm từ đó trong dấu gì?",
+          options: ["A. Dấu ngoặc kép \"...\"", "B. Dấu ngoặc đơn (...) ", "C. Dấu gạch chéo /.../", "D. Dấu chấm hỏi ?...?"],
+          correct: 0,
+          explanation: "Đặt từ khóa trong ngoặc kép giúp tìm kiếm nguyên văn cụm từ chính xác."
+        }
+      ];
+    }
+  }
+
+  // 12. Lưu kết quả thi trực tuyến của học sinh
+  async submitExamAttempt(attemptData) {
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (!db.exam_attempts) db.exam_attempts = [];
+
+    const attemptObj = {
+      id: "att_" + Date.now(),
+      examId: attemptData.examId,
+      examTitle: attemptData.examTitle,
+      studentName: attemptData.studentName || "Nguyễn Văn An",
+      grade: attemptData.grade || 3,
+      score: attemptData.score, // Thang điểm 10
+      totalScore: 10,
+      classification: attemptData.score >= 9 ? "Hoàn thành Tốt (T)" : attemptData.score >= 5 ? "Hoàn thành (H)" : "Chưa hoàn thành (C)",
+      starsEarned: attemptData.score >= 8 ? 20 : 10,
+      durationSpentSeconds: attemptData.durationSpentSeconds || 180,
+      submittedAt: new Date().toISOString()
+    };
+
+    db.exam_attempts.unshift(attemptObj);
+    localStorage.setItem("app_mock_db", JSON.stringify(db));
+
+    // Đồng bộ lên Supabase
+    if (window.supabaseService?.isReady()) {
+      try {
+        const client = window.supabaseService.client;
+        await client.from("student_progress").insert([{
+          student_name: attemptObj.studentName,
+          game_id: attemptObj.examId,
+          score: Math.round(attemptObj.score * 10),
+          stars_earned: attemptObj.starsEarned
+        }]);
+      } catch (e) {}
+    }
+
+    return attemptObj;
+  }
+
+  // 13. Tổng hợp số liệu Thống Kê & Phổ Điểm Kiểm Tra
+  getScoreDistributionSummary() {
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    const attempts = db.exam_attempts || [
+      { score: 10, grade: 3, studentName: "Nguyễn Văn An" },
+      { score: 9.5, grade: 3, studentName: "Lê Bảo Ngọc" },
+      { score: 9.0, grade: 3, studentName: "Trần Minh Quân" },
+      { score: 8.5, grade: 3, studentName: "Phạm Hoàng Long" },
+      { score: 8.0, grade: 4, studentName: "Đỗ Mai Anh" },
+      { score: 7.5, grade: 4, studentName: "Vũ Tuấn Kiệt" },
+      { score: 9.0, grade: 5, studentName: "Hoàng Gia Huy" },
+      { score: 10, grade: 5, studentName: "Bùi Phương Linh" }
+    ];
+
+    const totalAttempts = attempts.length;
+    let sumScore = 0;
+    let countExcellent = 0; // >= 9.0 (T)
+    let countPass = 0;      // 5.0 - 8.9 (H)
+    let countFail = 0;      // < 5.0 (C)
+
+    const scoreBuckets = { "9-10 (Giỏi)": 0, "7-8 (Khá)": 0, "5-6 (Đạt)": 0, "Dưới 5 (Chưa đạt)": 0 };
+
+    attempts.forEach(a => {
+      sumScore += a.score;
+      if (a.score >= 9.0) {
+        countExcellent++;
+        scoreBuckets["9-10 (Giỏi)"]++;
+      } else if (a.score >= 7.0) {
+        countPass++;
+        scoreBuckets["7-8 (Khá)"]++;
+      } else if (a.score >= 5.0) {
+        countPass++;
+        scoreBuckets["5-6 (Đạt)"]++;
+      } else {
+        countFail++;
+        scoreBuckets["Dưới 5 (Chưa đạt)"]++;
+      }
+    });
+
+    const avgScore = totalAttempts > 0 ? (sumScore / totalAttempts).toFixed(1) : "8.5";
+
     return {
-      standard: "Thông tư 27/2020/TT-BGDĐT",
-      levels: [
-        { level: "Mức 1 (Nhận biết)", percent: "40%", score: 4.0 },
-        { level: "Mức 2 (Thông hiểu)", percent: "30%", score: 3.0 },
-        { level: "Mức 3 (Vận dụng)", percent: "20%", score: 2.0 },
-        { level: "Mức 4 (Vận dụng cao)", percent: "10%", score: 1.0 }
-      ]
+      totalAttempts,
+      avgScore,
+      countExcellent,
+      countPass,
+      countFail,
+      scoreBuckets,
+      topStudents: attempts.filter(a => a.score >= 9.0).slice(0, 5)
     };
   }
 
-  // Danh sách đề thi mẫu ban đầu
-  getDefaultMockExams() {
-    return [
-      {
-        id: "exam_01",
-        title: "Đề Kiểm Tra Cuối Học Kỳ I - Tin Học Lớp 3 (Kèm Ma Trận & Bản Đặc Tả)",
-        grade: 3,
-        examType: "final_term_1",
-        bookSeries: "KNTT",
-        authorName: "Thầy Giáo Anh Đào",
-        createdByUsername: "anhdao",
-        schoolName: "Trường Tiểu Học Vui Học",
-        durationMinutes: 35,
-        totalScore: 10,
-        fileName: "De_Kiem_Tra_Cuoi_HK1_TinHoc3_KNTT.docx",
-        fileSizeText: "1.8 MB",
-        fileType: "docx",
-        fileUrl: "#",
-        downloadCount: 42,
-        viewCount: 156,
-        thumbnailColor: "from-blue-700 to-indigo-600",
-        description: "Đề kiểm tra đánh giá định kỳ Cuối HK1 lớp 3 bộ sách Kết Nối Tri Thức. Cấu trúc 7 điểm Trắc nghiệm + 3 điểm Thực hành gõ phím và vẽ Paint.",
-        createdAt: "2026-08-10T08:00:00.000Z"
-      },
-      {
-        id: "exam_02",
-        title: "Đề Kiểm Tra Giữa Học Kỳ I - Tin Học Lớp 4 (Cánh Diều)",
-        grade: 4,
-        examType: "mid_term_1",
-        bookSeries: "CD",
-        authorName: "Thầy Giáo Anh Đào",
-        createdByUsername: "anhdao",
-        schoolName: "Trường Tiểu Học Vui Học",
-        durationMinutes: 35,
-        totalScore: 10,
-        fileName: "De_Giua_HK1_TinHoc4_CanhDieu.docx",
-        fileSizeText: "2.3 MB",
-        fileType: "docx",
-        fileUrl: "#",
-        downloadCount: 38,
-        viewCount: 120,
-        thumbnailColor: "from-amber-600 to-orange-600",
-        description: "Đề kiểm tra định kỳ Giữa HK1 Tin học 4: Phần cứng và phần mềm, tạo cây thư mục và quy tắc an toàn thông tin.",
-        createdAt: "2026-08-11T09:30:00.000Z"
-      },
-      {
-        id: "exam_03",
-        title: "Bộ Ma Trận & Bản Đặc Tả Đề Kiểm Tra Cuối Học Kỳ II - Tin Học Lớp 5",
-        grade: 5,
-        examType: "matrix",
-        bookSeries: "CTST",
-        authorName: "Thầy Giáo Anh Đào",
-        createdByUsername: "anhdao",
-        schoolName: "Trường Tiểu Học Vui Học",
-        durationMinutes: 40,
-        totalScore: 10,
-        fileName: "Ma_Tran_Ban_Dac_Ta_TinHoc5_CTST.docx",
-        fileSizeText: "1.5 MB",
-        fileType: "docx",
-        fileUrl: "#",
-        downloadCount: 65,
-        viewCount: 230,
-        thumbnailColor: "from-emerald-700 to-teal-600",
-        description: "Bản đặc tả ma trận chuẩn 4 mức độ nhận thức theo Thông tư 27 và hướng dẫn chấm bài thực hành lập trình Scratch / Soạn thảo trình chiếu.",
-        createdAt: "2026-08-12T14:15:00.000Z"
-      },
-      {
-        id: "exam_04",
-        title: "Đề Kiểm Tra Thường Xuyên 15 Phút: Khám Phá Máy Tính (Lớp 3)",
-        grade: 3,
-        examType: "regular",
-        bookSeries: "KNTT",
-        authorName: "Thầy Giáo Anh Đào",
-        createdByUsername: "anhdao",
-        schoolName: "Trường Tiểu Học Vui Học",
-        durationMinutes: 15,
-        totalScore: 10,
-        fileName: "De_15P_KhamPhaMayTinh_Lop3.docx",
-        fileSizeText: "850 KB",
-        fileType: "docx",
-        fileUrl: "#",
-        downloadCount: 29,
-        viewCount: 95,
-        thumbnailColor: "from-purple-700 to-indigo-800",
-        description: "Bài kiểm tra nhanh 15 phút đầu giờ: 10 câu trắc nghiệm nhanh kiểm tra nhận biết bàn phím, chuột và màn hình.",
-        createdAt: "2026-08-13T10:00:00.000Z"
-      }
-    ];
+  // 14. Tự Động Trộn Đề Thi Tạo 4 Mã Đề (101, 102, 103, 104) Kèm Bảng Đáp Án Đối Chiếu
+  shuffleExamVersions(exam) {
+    const baseQuestions = this.getOnlineExamQuestions(exam);
+    const codes = [101, 102, 103, 104];
+    const shuffledVersions = [];
+    const answerMatrix = []; // Bảng đáp án đối chiếu
+
+    codes.forEach((code, codeIdx) => {
+      // Đảo thứ tự câu hỏi theo seed
+      const questionsClone = JSON.parse(JSON.stringify(baseQuestions));
+      const shuffledQ = questionsClone.sort(() => (Math.sin(codeIdx * 10 + 1) > 0 ? 1 : -1));
+
+      const codeAnswers = [];
+
+      shuffledQ.forEach((q, qIdx) => {
+        // Đảo ngẫu nhiên các phương án
+        const correctText = q.options[q.correct];
+        const optionsClone = [...q.options];
+        optionsClone.sort(() => (Math.cos(codeIdx * 5 + qIdx) > 0 ? 1 : -1));
+        const newCorrectIdx = optionsClone.indexOf(correctText);
+
+        q.options = optionsClone.map((opt, oIdx) => {
+          const clean = opt.replace(/^[A-D]\.\s*/, "");
+          return `${['A', 'B', 'C', 'D'][oIdx]}. ${clean}`;
+        });
+        q.correct = newCorrectIdx;
+
+        codeAnswers.push({
+          questionNum: qIdx + 1,
+          correctChar: ['A', 'B', 'C', 'D'][newCorrectIdx]
+        });
+      });
+
+      shuffledVersions.push({
+        code: code,
+        title: `${exam.title} (MÃ ĐỀ ${code})`,
+        grade: exam.grade,
+        questions: shuffledQ,
+        answers: codeAnswers
+      });
+    });
+
+    // Tạo bảng ma trận đối chiếu 4 mã
+    for (let i = 0; i < baseQuestions.length; i++) {
+      answerMatrix.push({
+        questionNum: i + 1,
+        code101: shuffledVersions[0].answers[i]?.correctChar || "A",
+        code102: shuffledVersions[1].answers[i]?.correctChar || "B",
+        code103: shuffledVersions[2].answers[i]?.correctChar || "C",
+        code104: shuffledVersions[3].answers[i]?.correctChar || "D"
+      });
+    }
+
+    return {
+      examTitle: exam.title,
+      grade: exam.grade,
+      shuffledVersions,
+      answerMatrix
+    };
   }
 }
 
 window.examService = new ExamService();
+

@@ -532,6 +532,305 @@ class DocExportService {
     URL.revokeObjectURL(url);
   }
 
+  // 4. Xuất Bảng Đáp Án & Hướng Dẫn Chấm Riêng Biệt (.doc)
+  exportAnswerKeyDoc(exam) {
+    const filename = `Dap_An_${this.slugify(exam.title || "De_Kiem_Tra_Tin_Hoc")}.doc`;
+
+    const htmlContent = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset="utf-8">
+        <title>Đáp Án: ${exam.title}</title>
+        <style>
+          body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.35;
+            color: #000;
+            margin: 15mm 15mm 15mm 20mm;
+          }
+          .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+          }
+          .header-table td {
+            vertical-align: top;
+            font-size: 11pt;
+          }
+          .title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 10px 0 3px 0;
+          }
+          .subtitle {
+            text-align: center;
+            font-size: 11pt;
+            font-style: italic;
+            margin-bottom: 15px;
+          }
+          table.ans-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 15px 0;
+          }
+          table.ans-table th, table.ans-table td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+            font-size: 11pt;
+            text-align: center;
+          }
+          table.ans-table th {
+            background-color: #f2f2f2;
+          }
+          h3 {
+            font-size: 12pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 14px;
+            margin-bottom: 4px;
+          }
+        </style>
+      </head>
+      <body>
+        <table class="header-table">
+          <tr>
+            <td style="width: 45%; text-align: center;">
+              <b>TRƯỜNG TIỂU HỌC VUI HỌC</b><br>
+              <b>TỔ CHUYÊN MÔN TIN HỌC</b>
+            </td>
+            <td style="width: 55%; text-align: center;">
+              <b>HƯỚNG DẪN CHẤM & BIỂU ĐIỂM CHI TIẾT</b><br>
+              <i>(Chuẩn Thông Tư 27/2020 & GDPT 2018)</i>
+            </td>
+          </tr>
+        </table>
+
+        <div class="title">ĐÁP ÁN & BIỂU ĐIỂM: ${exam.title}</div>
+        <div class="subtitle">Khối Lớp: ${exam.grade} • Thang điểm: 10.0 • Người ra đề: ${exam.authorName || 'Thầy Anh Đào'}</div>
+
+        <h3>PHẦN I: ĐÁP ÁN TRẮC NGHIỆM (7.0 ĐIỂM)</h3>
+        <p style="font-size: 11pt; font-style: italic;">Mỗi câu trả lời đúng học sinh được <b>1.0 điểm</b>:</p>
+
+        <table class="ans-table">
+          <tr>
+            <th>Câu Hỏi</th>
+            <th>Câu 1</th>
+            <th>Câu 2</th>
+            <th>Câu 3</th>
+            <th>Câu 4</th>
+            <th>Câu 5</th>
+            <th>Câu 6</th>
+            <th>Câu 7</th>
+          </tr>
+          <tr>
+            <td><b>Mức Độ</b></td>
+            <td>Mức 1</td>
+            <td>Mức 1</td>
+            <td>Mức 2</td>
+            <td>Mức 2</td>
+            <td>Mức 2</td>
+            <td>Mức 3</td>
+            <td>Mức 3</td>
+          </tr>
+          <tr style="background-color: #e6f7ff;">
+            <td><b>Đáp Án Đúng</b></td>
+            <td><b>C</b></td>
+            <td><b>B</b></td>
+            <td><b>C</b></td>
+            <td><b>B</b></td>
+            <td><b>B</b></td>
+            <td><b>B</b></td>
+            <td><b>B</b></td>
+          </tr>
+          <tr>
+            <td><b>Điểm</b></td>
+            <td>1.0đ</td>
+            <td>1.0đ</td>
+            <td>1.0đ</td>
+            <td>1.0đ</td>
+            <td>1.0đ</td>
+            <td>1.0đ</td>
+            <td>1.0đ</td>
+          </tr>
+        </table>
+
+        <h3>PHẦN II: HƯỚNG DẪN CHẤM THỰC HÀNH MÁY TÍNH (3.0 ĐIỂM)</h3>
+        <table class="ans-table" style="text-align: left;">
+          <tr>
+            <th style="width: 15%; text-align: center;">Câu</th>
+            <th style="width: 70%;">Tiêu Chí Đánh Giá Thao Tác & Yêu Cầu Cần Đạt</th>
+            <th style="width: 15%; text-align: center;">Điểm</th>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><b>Câu 8<br>(Mức 3)</b></td>
+            <td>
+              - Tạo đúng thư mục mang tên học sinh tại ổ đĩa D: (0.5đ)<br>
+              - Mở phần mềm Paint/Word và hoàn thành thao tác vẽ/soạn thảo đúng chủ đề (1.0đ)<br>
+              - Bố cục hài hòa, không thao tác sai lệch (0.5đ)
+            </td>
+            <td style="text-align: center;"><b>2.0 Điểm</b></td>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><b>Câu 9<br>(Mức 4)</b></td>
+            <td>
+              - Chèn biểu tượng/hình khối trang trí sáng tạo (0.5đ)<br>
+              - Lưu tệp đúng tên quy định <i>"BaiKiemTra_HoVaTen.png"</i> vào đúng thư mục đã tạo (0.5đ)
+            </td>
+            <td style="text-align: center;"><b>1.0 Điểm</b></td>
+          </tr>
+        </table>
+
+        <h3>QUY ĐỊNH XẾP LOẠI HỌC SINH THEO THÔNG TƯ 27/2020:</h3>
+        <p style="font-size: 11pt;">
+          • <b>Hoàn thành Tốt (T):</b> Tổng điểm đạt từ 9.0 đến 10.0 điểm.<br>
+          • <b>Hoàn thành (H):</b> Tổng điểm đạt từ 5.0 đến 8.9 điểm.<br>
+          • <b>Chưa hoàn thành (C):</b> Tổng điểm dưới 5.0 điểm (Cần giáo viên kèm cặp bồi dưỡng thêm).
+        </p>
+
+        <table style="width: 100%; margin-top: 30px;">
+          <tr>
+            <td style="width: 50%; text-align: center;">
+              <b>TỔ TRƯỞNG CHUYÊN MÔN</b><br><br><br><br>
+              <i>(Ký và ghi rõ họ tên)</i>
+            </td>
+            <td style="width: 50%; text-align: center;">
+              <b>GIÁO VIÊN RA ĐỀ</b><br><br><br><br>
+              <b>${exam.authorName || 'Thầy Giáo Anh Đào'}</b>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + htmlContent], {
+      type: 'application/msword'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // 5. Xuất Bộ 4 Mã Đề Thi Đã Trộn (101, 102, 103, 104) + Bảng Đáp Án Đối Chiếu (.doc)
+  exportShuffledExamsDoc(exam, shuffledData) {
+    const filename = `Bo_4_Ma_De_Tron_${this.slugify(exam.title || "De_Thi")}.doc`;
+
+    let htmlContent = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset="utf-8">
+        <title>Bộ 4 Mã Đề: ${exam.title}</title>
+        <style>
+          body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.35;
+            color: #000;
+            margin: 15mm 15mm 15mm 20mm;
+          }
+          .page-break { page-break-after: always; }
+          .header-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+          .header-table td { vertical-align: top; font-size: 11pt; }
+          .title { text-align: center; font-size: 14pt; font-weight: bold; text-transform: uppercase; margin: 10px 0 3px 0; }
+          .subtitle { text-align: center; font-size: 11pt; font-style: italic; margin-bottom: 12px; }
+          .student-box { width: 100%; border: 1px solid #000; border-collapse: collapse; margin: 10px 0 15px 0; }
+          .student-box td { border: 1px solid #000; padding: 6px 10px; font-size: 11pt; }
+          .q-item { margin-bottom: 10px; font-size: 11pt; }
+          .opt-grid { margin-left: 20px; font-size: 11pt; }
+          table.matrix-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+          table.matrix-table th, table.matrix-table td { border: 1px solid #000; padding: 6px 8px; font-size: 11pt; text-align: center; }
+          table.matrix-table th { background-color: #f2f2f2; }
+        </style>
+      </head>
+      <body>
+        <div class="title">BẢNG ĐÁP ÁN ĐỐI CHIẾU 4 MÃ ĐỀ THI</div>
+        <div class="subtitle">Đề thi: ${exam.title} • Lớp ${exam.grade}</div>
+
+        <table class="matrix-table">
+          <tr>
+            <th>Câu Hỏi</th>
+            <th>Mã Đề 101</th>
+            <th>Mã Đề 102</th>
+            <th>Mã Đề 103</th>
+            <th>Mã Đề 104</th>
+          </tr>
+          ${shuffledData.answerMatrix.map(m => `
+            <tr>
+              <td><b>Câu ${m.questionNum}</b></td>
+              <td style="font-weight: bold; color: #1e40af;">${m.code101}</td>
+              <td style="font-weight: bold; color: #b45309;">${m.code102}</td>
+              <td style="font-weight: bold; color: #047857;">${m.code103}</td>
+              <td style="font-weight: bold; color: #be123c;">${m.code104}</td>
+            </tr>
+          `).join("")}
+        </table>
+
+        <div class="page-break"></div>
+    `;
+
+    // Nối 4 mã đề
+    shuffledData.shuffledVersions.forEach((ver, vIdx) => {
+      htmlContent += `
+        <table class="header-table">
+          <tr>
+            <td style="width: 45%; text-align: center;">
+              <b>TRƯỜNG TIỂU HỌC VUI HỌC</b><br>
+              <b>TỔ TIN HỌC</b>
+            </td>
+            <td style="width: 55%; text-align: center;">
+              <b>ĐỀ KIỂM TRA ĐỊNH KỲ TIN HỌC ${exam.grade}</b><br>
+              <b style="font-size: 13pt; color: #b91c1c;">MÃ ĐỀ: ${ver.code}</b>
+            </td>
+          </tr>
+        </table>
+
+        <table class="student-box">
+          <tr>
+            <td>Họ và tên: .............................................................. Lớp: .............</td>
+            <td style="width: 30%; text-align: center;">Điểm: ......... / 10</td>
+          </tr>
+        </table>
+
+        <p style="font-weight: bold; text-transform: uppercase; font-size: 11pt;">PHẦN TRẮC NGHIỆM (7.0 ĐIỂM):</p>
+        ${ver.questions.map((q, qIdx) => `
+          <div class="q-item">
+            <b>Câu ${qIdx + 1}:</b> ${q.question}<br>
+            <div class="opt-grid">${q.options.join(" &nbsp;&nbsp;&nbsp;&nbsp; ")}</div>
+          </div>
+        `).join("")}
+
+        <p style="font-weight: bold; text-transform: uppercase; font-size: 11pt; margin-top: 15px;">PHẦN THỰC HÀNH MÁY TÍNH (3.0 ĐIỂM):</p>
+        <p style="font-size: 11pt;">Em hãy thực hiện thao tác vẽ tranh trên Paint hoặc lập trình theo yêu cầu của Thầy/Cô.</p>
+        
+        ${vIdx < shuffledData.shuffledVersions.length - 1 ? '<div class="page-break"></div>' : ''}
+      `;
+    });
+
+    htmlContent += `</body></html>`;
+
+    const blob = new Blob(['\ufeff' + htmlContent], {
+      type: 'application/msword'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   slugify(text) {
     return text.toString().toLowerCase()
       .normalize('NFD')
@@ -544,4 +843,5 @@ class DocExportService {
 }
 
 window.docExportService = new DocExportService();
+
 

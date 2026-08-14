@@ -1251,6 +1251,66 @@
     </div>
   </div>
 
+  <!-- MODAL 18: LÀM BÀI KIỂM TRA TRỰC TUYẾN TỰ CHẤM ĐIỂM (ONLINE TEST RUNNER MODAL) -->
+  <div id="online-exam-runner-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-2xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2 text-left">
+          <span class="text-2xl p-1.5 bg-amber-100 rounded-xl">✍️</span>
+          <div>
+            <h3 id="exam-runner-title-disp" class="text-base font-black text-slate-900">Làm Bài Kiểm Tra Trực Tuyến</h3>
+            <p class="text-[11px] text-slate-500 font-semibold">Tự động đếm giờ và chấm điểm thang 10 theo chuẩn TT 27</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span id="exam-runner-timer-disp" class="badge badge-amber font-mono font-black text-sm animate-pulse">35:00</span>
+          <button onclick="examPortal.closeRunnerModal()" class="text-slate-400 text-2xl font-bold">✕</button>
+        </div>
+      </div>
+
+      <!-- Thanh Track Số Thứ Tự Câu Hỏi (1..7) -->
+      <div id="exam-runner-nav-track" class="flex items-center gap-1.5 flex-wrap justify-center py-1"></div>
+
+      <!-- Khung Nội Dung Câu Hỏi & Các Lựa Chọn A-B-C-D -->
+      <div id="exam-runner-question-body" class="py-2"></div>
+    </div>
+  </div>
+
+  <!-- MODAL 19: THỐNG KÊ PHỔ ĐIỂM & XẾP LOẠI HỌC SINH (EXAM ANALYTICS MODAL) -->
+  <div id="exam-analytics-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-2xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-cyan-100 rounded-xl">📈</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900">PHỔ ĐIỂM & ĐÁNH GIÁ ĐỊNH KỲ</h3>
+            <p class="text-xs text-slate-500 font-semibold">Thống kê tỷ lệ xếp loại Hoàn thành Tốt (T), Hoàn thành (H), Chưa đạt (C)</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('exam-analytics-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+      <div id="exam-analytics-content" class="py-2"></div>
+    </div>
+  </div>
+
+  <!-- MODAL 20: TRỘN ĐỀ THI TỰ ĐỘNG 4 MÃ ĐỀ (EXAM SHUFFLER MODAL) -->
+  <div id="exam-shuffler-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-purple-100 rounded-xl">🔀</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900">TRỘN ĐỀ THI TỰ ĐỘNG (4 MÃ ĐỀ)</h3>
+            <p class="text-xs text-slate-500 font-semibold">Hoán vị câu hỏi & phương án, tạo 4 mã đề 101, 102, 103, 104 chống quay cóp</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('exam-shuffler-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+      <div id="exam-shuffler-content" class="py-2"></div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATIONS CONTAINER -->
   <div id="toast-container"></div>
 
