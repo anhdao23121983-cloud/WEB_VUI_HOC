@@ -1138,9 +1138,192 @@ class ExamService {
     }));
     return { success: true };
   }
+
+  // 29. Lấy dữ liệu Giấy Khen Vinh Danh Học Sinh (Honor Certificate)
+  getCertificateData(attemptId) {
+    const att = this.getAttemptById(attemptId);
+    if (!att) return null;
+
+    return {
+      id: att.id,
+      studentName: att.studentName || "Học Sinh Xuất Sắc",
+      className: att.className || "3A",
+      grade: att.grade || 3,
+      examTitle: att.examTitle,
+      score: att.score,
+      totalScore: 10,
+      classification: att.classification || "Hoàn thành Tốt (T)",
+      starsEarned: att.starsEarned || 20,
+      teacherComment: att.teacherComment || "Em nắm rất vững kiến thức và hoàn thành xuất sắc bài kiểm tra!",
+      submittedAt: att.submittedAt ? new Date(att.submittedAt).toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN')
+    };
+  }
+
+  // 30. Lấy toàn bộ Ngân Hàng Câu Hỏi Trắc Nghiệm Động (Dynamic Question Bank)
+  getAllQuestionBank(grade = 'all', searchQuery = "", levelFilter = 'all') {
+    let qb = JSON.parse(localStorage.getItem("exam_question_bank"));
+    if (!qb) {
+      qb = [
+        {
+          id: "qb_301",
+          grade: 3,
+          topic: "topic_a",
+          topicName: "Chủ đề A: Máy tính & Em",
+          level: "Mức 1",
+          question: "Thiết bị nào sau đây dùng để nhập chữ và số vào máy tính?",
+          options: ["A. Bàn phím (Keyboard)", "B. Màn hình (Monitor)", "C. Loa (Speaker)", "D. Chuột máy tính"],
+          correct: 0,
+          explanation: "Bàn phím là thiết bị thu nhận thông tin dạng ký tự và chữ số vào máy tính."
+        },
+        {
+          id: "qb_302",
+          grade: 3,
+          topic: "topic_a",
+          topicName: "Chủ đề A: Máy tính & Em",
+          level: "Mức 1",
+          question: "Thao tác 'Nháy đúp chuột trái' (Double click) có tác dụng gì?",
+          options: ["A. Xóa tệp tin", "B. Mở một phần mềm hoặc thư mục", "C. Tắt nguồn máy tính", "D. Đổi tên tệp tin"],
+          correct: 1,
+          explanation: "Nháy đúp chuột nhanh hai lần liên tiếp dùng để mở ứng dụng hoặc tệp tin."
+        },
+        {
+          id: "qb_303",
+          grade: 3,
+          topic: "topic_e",
+          topicName: "Chủ đề E: Ứng dụng Tin học (Paint)",
+          level: "Mức 2",
+          question: "Trong phần mềm Paint, công cụ nào dùng để tô màu cho hình vẽ khép kín?",
+          options: ["A. Cây bút chì (Pencil)", "B. Thùng sơn (Fill with color)", "C. Cục tẩy (Eraser)", "D. Kính lúp (Magnifier)"],
+          correct: 1,
+          explanation: "Biểu tượng Thùng sơn dùng để đổ màu vào các vùng hình vẽ khép kín."
+        },
+        {
+          id: "qb_401",
+          grade: 4,
+          topic: "topic_a",
+          topicName: "Chủ đề A: Phần cứng & Phần mềm",
+          level: "Mức 1",
+          question: "Bộ phận nào được coi là 'bộ não' điều khiển mọi hoạt động của máy tính?",
+          options: ["A. Bộ vi xử lý (CPU)", "B. Ổ cứng (Hard Drive)", "C. Bộ nhớ RAM", "D. Nguồn điện (Power)"],
+          correct: 0,
+          explanation: "CPU (Central Processing Unit) là bộ xử lý trung tâm xử lý dữ liệu của máy tính."
+        },
+        {
+          id: "qb_402",
+          grade: 4,
+          topic: "topic_c",
+          topicName: "Chủ đề C: Tổ chức lưu trữ thông tin",
+          level: "Mức 2",
+          question: "Cấu trúc lưu trữ dữ liệu trong máy tính có dạng hình gì?",
+          options: ["A. Cây thư mục (Folder Tree)", "B. Hình vòng tròn", "C. Hình tam giác", "D. Đường thẳng ngẫu nhiên"],
+          correct: 0,
+          explanation: "Dữ liệu được tổ chức theo hình cây thư mục gồm thư mục gốc, thư mục con và tệp tin."
+        },
+        {
+          id: "qb_501",
+          grade: 5,
+          topic: "topic_b",
+          topicName: "Chủ đề B: Mạng & Internet",
+          level: "Mức 1",
+          question: "Công cụ tìm kiếm thông tin phổ biến hàng đầu thế giới hiện nay là gì?",
+          options: ["A. Google", "B. Paint", "C. WordPad", "D. Calculator"],
+          correct: 0,
+          explanation: "Google là cỗ máy tìm kiếm dữ liệu trực tuyến lớn nhất thế giới."
+        },
+        {
+          id: "qb_502",
+          grade: 5,
+          topic: "topic_d",
+          topicName: "Chủ đề D: Đạo đức số & Bản quyền",
+          level: "Mức 2",
+          question: "Bản quyền phần mềm (Copyright) có ý nghĩa gì đối với người sáng tạo?",
+          options: [
+            "A. Ai cũng có quyền sao chép đem bán",
+            "B. Bảo vệ quyền sở hữu trí tuệ và công sức của tác giả phần mềm",
+            "C. Làm cho phần mềm bị lỗi",
+            "D. Tự động xóa dữ liệu"
+          ],
+          correct: 1,
+          explanation: "Tôn trọng bản quyền thể hiện văn hóa ứng xử văn minh trong không gian mạng."
+        },
+        {
+          id: "qb_503",
+          grade: 5,
+          topic: "topic_f",
+          topicName: "Chủ đề F: Lập trình Scratch",
+          level: "Mức 3",
+          question: "Trong phần mềm Scratch, để nhân vật di chuyển 50 bước em sử dụng khối lệnh nào?",
+          options: ["A. Move 50 steps", "B. Turn right 50 degrees", "C. Say Hello for 50 secs", "D. Change size by 50"],
+          correct: 0,
+          explanation: "Khối lệnh 'Move [số] steps' trong nhóm Motion dùng để di chuyển nhân vật."
+        }
+      ];
+      localStorage.setItem("exam_question_bank", JSON.stringify(qb));
+    }
+
+    let filtered = [...qb];
+    if (grade !== 'all') {
+      filtered = filtered.filter(q => q.grade === parseInt(grade));
+    }
+    if (levelFilter !== 'all') {
+      filtered = filtered.filter(q => q.level === levelFilter);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(item => 
+        item.question.toLowerCase().includes(q) || 
+        (item.topicName && item.topicName.toLowerCase().includes(q)) ||
+        item.options.some(o => o.toLowerCase().includes(q))
+      );
+    }
+
+    return filtered;
+  }
+
+  // 31. Thêm câu hỏi mới vào ngân hàng
+  addQuestionToBank(questionData) {
+    const qb = this.getAllQuestionBank('all');
+    const newQ = {
+      id: `qb_${Date.now()}`,
+      grade: parseInt(questionData.grade || 3),
+      topic: questionData.topic || "topic_a",
+      topicName: questionData.topicName || "Chủ đề A: Máy tính & Em",
+      level: questionData.level || "Mức 1",
+      question: questionData.question,
+      options: questionData.options,
+      correct: parseInt(questionData.correct || 0),
+      explanation: questionData.explanation || "Nội dung giải thích kiến thức bài học.",
+      createdAt: new Date().toISOString()
+    };
+
+    qb.unshift(newQ);
+    localStorage.setItem("exam_question_bank", JSON.stringify(qb));
+    return { success: true, question: newQ };
+  }
+
+  // 32. Chỉnh sửa câu hỏi trong ngân hàng
+  updateQuestionInBank(questionId, updates) {
+    const qb = this.getAllQuestionBank('all');
+    const idx = qb.findIndex(q => q.id === questionId);
+    if (idx !== -1) {
+      qb[idx] = { ...qb[idx], ...updates };
+      localStorage.setItem("exam_question_bank", JSON.stringify(qb));
+      return { success: true, question: qb[idx] };
+    }
+    return { success: false };
+  }
+
+  // 33. Xóa câu hỏi khỏi ngân hàng
+  deleteQuestionFromBank(questionId) {
+    let qb = this.getAllQuestionBank('all');
+    qb = qb.filter(q => q.id !== questionId);
+    localStorage.setItem("exam_question_bank", JSON.stringify(qb));
+    return { success: true };
+  }
 }
 
 window.examService = new ExamService();
+
 
 
 

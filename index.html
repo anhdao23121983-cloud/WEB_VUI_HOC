@@ -1477,6 +1477,43 @@
     </div>
   </div>
 
+  <!-- MODAL 28: THƯ VIỆN NGÂN HÀNG CÂU HỎI TRẮC NGHIỆM ĐỘNG (QUESTION BANK MODAL) -->
+  <div id="exam-question-bank-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-4xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-indigo-100 rounded-xl">📚</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+              <span>NGÂN HÀNG CÂU HỎI TRẮC NGHIỆM ĐỘNG</span>
+              <span class="badge badge-emerald text-[10px] font-black">GDPT 2018</span>
+            </h3>
+            <p class="text-xs text-slate-500 font-semibold">Quản lý, thêm, sửa, xóa câu hỏi trắc nghiệm Tin học 3, 4, 5 theo 4 mức độ nhận thức</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('exam-question-bank-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+      <div id="exam-question-bank-content" class="py-2"></div>
+    </div>
+  </div>
+
+  <!-- MODAL 29: GIẤY KHEN VINH DANH HỌC SINH ĐIỂM 10 (HONOR CERTIFICATE MODAL) -->
+  <div id="exam-certificate-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-amber-100 rounded-xl animate-bounce">🎖️</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900">GIẤY KHEN DANH DỰ THÀNH TÍCH XUẤT SẮC</h3>
+            <p class="text-xs text-slate-500 font-semibold">Tuyên dương kết quả kiểm tra định kỳ môn Tin học</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('exam-certificate-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+      <div id="exam-certificate-content" class="py-2"></div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATIONS CONTAINER -->
   <div id="toast-container"></div>
 

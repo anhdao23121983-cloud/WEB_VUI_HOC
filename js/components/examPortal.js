@@ -9,6 +9,8 @@
  * - 🖨️ In Hàng Loạt Toàn Bộ Đề Thi Ra Giấy 1 Lần Bấm (Batch Print Exams)
  * - 📡 Chế Độ Giám Thị Quan Sát Học Sinh Đang Thi Trực Tuyến (Live Exam Proctoring)
  * - 🚨 Phát Hiện & Cảnh Báo Học Sinh Chuyển Tab / Gian Lận (Anti-Cheat Detection)
+ * - 🎖️ In Giấy Khen Vinh Danh Học Sinh Đạt Điểm 9-10 Trực Tiếp Ra Giấy A4 (Honor Certificate)
+ * - 📚 Thư Viện Ngân Hàng Câu Hỏi Trắc Nghiệm Động (Dynamic Question Bank)
  * - 🔄 Đồng bộ 100% FE -> BE -> Supabase Cloud Database (public.exam_assessments)
  */
 
@@ -45,6 +47,15 @@ class ExamPortal {
     // Live Proctoring State
     this.proctorGrade = "all";
     this.proctorInterval = null;
+
+    // Question Bank State
+    this.qbGrade = "all";
+    this.qbLevel = "all";
+    this.qbSearch = "";
+    this.editingQuestionId = null;
+
+    // Certificate State
+    this.currentCertData = null;
 
     // Online Test Runner & Anti-Cheat State
     this.activeRunnerExam = null;
@@ -111,13 +122,16 @@ class ExamPortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn Thông Tư 27/2020 & GDPT 2018</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">NGÂN HÀNG ĐỀ KIỂM TRA & ĐÁNH GIÁ</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Giám thị trực tuyến Live Proctoring, Chống gian lận chuyển tab, Kéo thả & Khóa mật khẩu</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Giấy Khen Điểm 10 A4, Ngân Hàng Câu Hỏi Động, Giám Thị Live & Chống Gian Lận</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="examPortal.openQuestionBankModal(examPortal.selectedFolder)" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Mở thư viện ngân hàng câu hỏi trắc nghiệm">
+              <span>📚</span> <span>Ngân Hàng Câu Hỏi</span>
+            </button>
             ${isTeacher ? `
               <button onclick="examPortal.openLiveProctorModal(examPortal.selectedFolder)" class="btn bg-rose-600 hover:bg-rose-700 text-white font-black text-xs py-2.5 px-3.5 rounded-xl border border-white/30 flex items-center gap-1.5 shadow-lg animate-pulse hover:scale-105 transition-all" title="Giám thị quan sát màn hình học sinh đang làm bài thi thời gian thực">
-                <span>📡</span> <span>Giám Thị Trực Tuyến</span>
+                <span>📡</span> <span>Giám Thị Live</span>
               </button>
             ` : ''}
             <button onclick="examPortal.downloadFolderZip(examPortal.selectedFolder)" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Tải toàn bộ đề thi, đáp án và bảng điểm dạng tệp nén .zip">
@@ -326,6 +340,9 @@ class ExamPortal {
               </div>
 
               <div class="flex items-center gap-2 flex-wrap">
+                <button onclick="examPortal.openQuestionBankModal(${this.selectedFolder})" class="btn btn-outline btn-xs font-black bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50 shadow-sm flex items-center gap-1">
+                  <span>📚</span> <span>Ngân Hàng Câu Hỏi Lớp ${this.selectedFolder}</span>
+                </button>
                 <button onclick="examPortal.downloadFolderZip(${this.selectedFolder})" class="btn btn-outline btn-xs font-black bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50 shadow-sm flex items-center gap-1" title="Tải trọn bộ đề thi lớp này dạng tệp nén .zip">
                   <span>📦</span> <span>Tải Trọn Bộ Lớp ${this.selectedFolder} (.zip)</span>
                 </button>
@@ -334,7 +351,7 @@ class ExamPortal {
                 </button>
                 ${isTeacher ? `
                   <button onclick="examPortal.openLiveProctorModal(${this.selectedFolder})" class="btn bg-rose-600 hover:bg-rose-700 text-white font-bold btn-xs flex items-center gap-1 shadow">
-                    <span>📡</span> <span>Giám Thị Phòng Lớp ${this.selectedFolder}</span>
+                    <span>📡</span> <span>Giám Thị Lớp ${this.selectedFolder}</span>
                   </button>
                   <button onclick="examPortal.openFolderCustomizeModal(${this.selectedFolder})" class="btn btn-outline btn-xs font-bold bg-white text-slate-700 shadow-sm flex items-center gap-1">
                     <span>⚙️</span> <span>Tùy Chỉnh Thư Mục Này</span>
@@ -479,6 +496,9 @@ class ExamPortal {
             </h3>
             ${isTeacher ? `
               <div class="flex items-center gap-2">
+                <button onclick="examPortal.openQuestionBankModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 'all'})" class="btn btn-outline btn-xs font-bold text-indigo-700 bg-indigo-50 border-indigo-200 hover:bg-indigo-100 flex items-center gap-1">
+                  <span>📚</span> <span>Ngân Hàng Câu Hỏi</span>
+                </button>
                 <button onclick="examPortal.openLiveProctorModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 'all'})" class="btn btn-outline btn-xs font-bold text-rose-700 bg-rose-50 border-rose-200 hover:bg-rose-100 flex items-center gap-1">
                   <span>📡</span> <span>Giám Thị Live</span>
                 </button>
@@ -499,6 +519,469 @@ class ExamPortal {
         </div>
       </div>
     `;
+  }
+
+  // =========================================================================
+  // THƯ VIỆN NGÂN HÀNG CÂU HỎI TRẮC NGHIỆM ĐỘNG (QUESTION BANK MODAL)
+  // =========================================================================
+  openQuestionBankModal(grade = "all") {
+    this.qbGrade = grade;
+    this.editingQuestionId = null;
+
+    const modal = document.getElementById("exam-question-bank-modal");
+    if (modal) modal.classList.add("active");
+
+    this.renderQuestionBankContent();
+  }
+
+  renderQuestionBankContent() {
+    const content = document.getElementById("exam-question-bank-content");
+    if (!content) return;
+
+    const questions = window.examService.getAllQuestionBank(this.qbGrade, this.qbSearch, this.qbLevel);
+
+    content.innerHTML = `
+      <div class="space-y-4 text-xs text-slate-800 animate-pop">
+        <!-- Top Toolbar & Filter -->
+        <div class="flex flex-col md:flex-row items-center justify-between gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-bold text-slate-600 text-[11px]">Khối:</span>
+            ${['all', '3', '4', '5'].map(g => `
+              <button onclick="examPortal.qbGrade = '${g}'; examPortal.renderQuestionBankContent();" class="px-2.5 py-1 rounded-xl text-xs font-black transition-all ${this.qbGrade === g ? 'bg-indigo-700 text-white shadow' : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-200'}">
+                ${g === 'all' ? 'Tất Cả' : `Lớp ${g}`}
+              </button>
+            `).join("")}
+
+            <span class="font-bold text-slate-600 text-[11px] ml-2">Mức Độ:</span>
+            ${['all', 'Mức 1', 'Mức 2', 'Mức 3'].map(l => `
+              <button onclick="examPortal.qbLevel = '${l}'; examPortal.renderQuestionBankContent();" class="px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all ${this.qbLevel === l ? 'bg-amber-600 text-white shadow' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}">
+                ${l === 'all' ? 'Tất Cả Mức' : l}
+              </button>
+            `).join("")}
+          </div>
+
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <input type="text" value="${this.qbSearch}" oninput="examPortal.qbSearch = this.value; examPortal.renderQuestionBankContent();" placeholder="Tìm kiếm câu hỏi, chủ đề..." class="form-control text-xs py-1.5 pl-3 w-full md:w-60">
+            <button onclick="examPortal.openAddQuestionForm()" class="btn btn-primary btn-sm font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow shrink-0 flex items-center gap-1">
+              <span>➕</span> <span>Thêm Câu Hỏi</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Form Thêm / Sửa Câu Hỏi (Nếu mở) -->
+        <div id="qb-form-container" class="hidden p-4 bg-indigo-50 border-2 border-indigo-200 rounded-2xl space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 id="qb-form-title" class="text-sm font-black text-indigo-900">➕ THÊM CÂU HỎI TRẮC NGHIỆM MỚI</h4>
+            <button onclick="document.getElementById('qb-form-container').classList.add('hidden')" class="text-slate-400 font-bold hover:text-slate-700">✕ Đóng</button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">Khối Lớp:</label>
+              <select id="qb-input-grade" class="form-control text-xs font-bold">
+                <option value="3">Khối Lớp 3</option>
+                <option value="4">Khối Lớp 4</option>
+                <option value="5">Khối Lớp 5</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">Chủ Đề GDPT 2018:</label>
+              <select id="qb-input-topic" class="form-control text-xs font-bold">
+                <option value="topic_a">Chủ đề A: Máy tính & Em</option>
+                <option value="topic_b">Chủ đề B: Mạng & Internet</option>
+                <option value="topic_c">Chủ đề C: Tổ chức lưu trữ thông tin</option>
+                <option value="topic_d">Chủ đề D: Đạo đức số & Pháp luật</option>
+                <option value="topic_e">Chủ đề E: Ứng dụng tin học (Paint/Word/PPT)</option>
+                <option value="topic_f">Chủ đề F: Lập trình Scratch & Thuật toán</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">Mức Độ Nhận Thức (TT 27):</label>
+              <select id="qb-input-level" class="form-control text-xs font-bold">
+                <option value="Mức 1">Mức 1 (Nhận biết)</option>
+                <option value="Mức 2">Mức 2 (Thông hiểu)</option>
+                <option value="Mức 3">Mức 3 (Vận dụng)</option>
+                <option value="Mức 4">Mức 4 (Vận dụng cao)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Nội Dung Câu Hỏi:</label>
+            <textarea id="qb-input-question" rows="2" placeholder="Nhập câu hỏi trắc nghiệm..." class="form-control text-xs font-bold"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold text-blue-700 block mb-0.5">Đáp án A:</label>
+              <input type="text" id="qb-input-opt-a" placeholder="Nội dung đáp án A" class="form-control text-xs">
+            </div>
+            <div>
+              <label class="font-bold text-amber-700 block mb-0.5">Đáp án B:</label>
+              <input type="text" id="qb-input-opt-b" placeholder="Nội dung đáp án B" class="form-control text-xs">
+            </div>
+            <div>
+              <label class="font-bold text-emerald-700 block mb-0.5">Đáp án C:</label>
+              <input type="text" id="qb-input-opt-c" placeholder="Nội dung đáp án C" class="form-control text-xs">
+            </div>
+            <div>
+              <label class="font-bold text-rose-700 block mb-0.5">Đáp án D:</label>
+              <input type="text" id="qb-input-opt-d" placeholder="Nội dung đáp án D" class="form-control text-xs">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="font-bold text-emerald-800 block mb-1">Đáp Án Đúng:</label>
+              <select id="qb-input-correct" class="form-control text-xs font-black text-emerald-800">
+                <option value="0">A (Lựa chọn 1)</option>
+                <option value="1">B (Lựa chọn 2)</option>
+                <option value="2">C (Lựa chọn 3)</option>
+                <option value="3">D (Lựa chọn 4)</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">Lời Giải Thích / Barem Điểm:</label>
+              <input type="text" id="qb-input-explanation" placeholder="Giải thích vì sao đúng..." class="form-control text-xs">
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-indigo-200">
+            <button onclick="document.getElementById('qb-form-container').classList.add('hidden')" class="btn btn-outline btn-sm font-bold">Hủy</button>
+            <button onclick="examPortal.saveQuestionToBank()" class="btn btn-primary btn-sm font-black bg-indigo-700 hover:bg-indigo-800 text-white shadow">💾 Lưu Câu Hỏi</button>
+          </div>
+        </div>
+
+        <!-- Danh Sách Câu Hỏi Trong Ngân Hàng -->
+        <div class="space-y-3 max-h-96 overflow-y-auto pr-1">
+          <div class="flex items-center justify-between text-[11px] text-slate-500 font-bold px-1">
+            <span>Hiển thị <b>${questions.length}</b> câu hỏi trắc nghiệm</span>
+            <span class="text-indigo-600">Chuẩn khung chương trình GDPT 2018</span>
+          </div>
+
+          ${questions.length === 0 ? `
+            <div class="text-center py-10 glass-card text-slate-400 space-y-2">
+              <span class="text-4xl block">📚</span>
+              <p class="font-bold text-slate-600">Chưa có câu hỏi nào khớp với bộ lọc.</p>
+              <button onclick="examPortal.openAddQuestionForm()" class="btn btn-primary btn-xs font-bold mt-1">➕ Thêm Câu Hỏi Đầu Tiên</button>
+            </div>
+          ` : questions.map((q, idx) => `
+            <div class="p-3.5 bg-white border border-slate-200 rounded-2xl space-y-2 hover:border-indigo-400 transition-all shadow-sm">
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="badge badge-cyan text-[10px] font-black">LỚP ${q.grade}</span>
+                  <span class="badge badge-slate text-[10px] font-bold">${q.topicName || q.topic}</span>
+                  <span class="badge bg-amber-100 text-amber-900 text-[10px] font-black">${q.level}</span>
+                </div>
+
+                <div class="flex items-center gap-1 shrink-0">
+                  <button onclick="examPortal.openEditQuestionForm('${q.id}')" class="p-1.5 text-cyan-700 hover:bg-cyan-50 rounded-lg font-bold border border-cyan-200" title="Chỉnh sửa câu hỏi này">
+                    ✏️ Sửa
+                  </button>
+                  <button onclick="examPortal.deleteQuestionFromBank('${q.id}')" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg font-bold border border-rose-200" title="Xóa câu hỏi này">
+                    🗑️ Xóa
+                  </button>
+                </div>
+              </div>
+
+              <h5 class="text-xs md:text-sm font-black text-slate-900">Câu ${idx + 1}: ${q.question}</h5>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5 pt-1 text-xs">
+                ${q.options.map((opt, oIdx) => `
+                  <div class="p-2 rounded-xl border text-[11px] font-bold ${oIdx === q.correct ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-black' : 'bg-slate-50 border-slate-200 text-slate-700'}">
+                    <span>${opt}</span> ${oIdx === q.correct ? '✅ (Đáp án đúng)' : ''}
+                  </div>
+                `).join("")}
+              </div>
+
+              <p class="text-[10px] text-slate-500 italic pt-1 border-t border-slate-100">
+                💡 <b>Giải thích:</b> ${q.explanation || 'Không có ghi chú.'}
+              </p>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  openAddQuestionForm() {
+    this.editingQuestionId = null;
+    const form = document.getElementById("qb-form-container");
+    const title = document.getElementById("qb-form-title");
+    if (title) title.innerText = "➕ THÊM CÂU HỎI TRẮC NGHIỆM MỚI";
+
+    if (form) {
+      form.classList.remove("hidden");
+      document.getElementById("qb-input-question").value = "";
+      document.getElementById("qb-input-opt-a").value = "";
+      document.getElementById("qb-input-opt-b").value = "";
+      document.getElementById("qb-input-opt-c").value = "";
+      document.getElementById("qb-input-opt-d").value = "";
+      document.getElementById("qb-input-explanation").value = "";
+    }
+  }
+
+  openEditQuestionForm(qId) {
+    const qb = window.examService.getAllQuestionBank('all');
+    const q = qb.find(item => item.id === qId);
+    if (!q) return;
+
+    this.editingQuestionId = qId;
+    const form = document.getElementById("qb-form-container");
+    const title = document.getElementById("qb-form-title");
+    if (title) title.innerText = "✏️ CHỈNH SỬA CÂU HỎI TRẮC NGHIỆM";
+
+    if (form) {
+      form.classList.remove("hidden");
+      document.getElementById("qb-input-grade").value = q.grade;
+      document.getElementById("qb-input-topic").value = q.topic;
+      document.getElementById("qb-input-level").value = q.level;
+      document.getElementById("qb-input-question").value = q.question;
+      document.getElementById("qb-input-opt-a").value = q.options[0]?.replace(/^A\.\s*/, '') || "";
+      document.getElementById("qb-input-opt-b").value = q.options[1]?.replace(/^B\.\s*/, '') || "";
+      document.getElementById("qb-input-opt-c").value = q.options[2]?.replace(/^C\.\s*/, '') || "";
+      document.getElementById("qb-input-opt-d").value = q.options[3]?.replace(/^D\.\s*/, '') || "";
+      document.getElementById("qb-input-correct").value = q.correct;
+      document.getElementById("qb-input-explanation").value = q.explanation || "";
+    }
+  }
+
+  saveQuestionToBank() {
+    const grade = document.getElementById("qb-input-grade")?.value || 3;
+    const topic = document.getElementById("qb-input-topic")?.value || "topic_a";
+    const level = document.getElementById("qb-input-level")?.value || "Mức 1";
+    const question = document.getElementById("qb-input-question")?.value.trim();
+    const optA = document.getElementById("qb-input-opt-a")?.value.trim();
+    const optB = document.getElementById("qb-input-opt-b")?.value.trim();
+    const optC = document.getElementById("qb-input-opt-c")?.value.trim();
+    const optD = document.getElementById("qb-input-opt-d")?.value.trim();
+    const correct = parseInt(document.getElementById("qb-input-correct")?.value || 0);
+    const explanation = document.getElementById("qb-input-explanation")?.value.trim();
+
+    if (!question || !optA || !optB) {
+      window.app.showToast("Vui lòng nhập đầy đủ câu hỏi và các lựa chọn đáp án!", "warning");
+      return;
+    }
+
+    const topicSelect = document.getElementById("qb-input-topic");
+    const topicName = topicSelect?.options[topicSelect.selectedIndex]?.text || "Chủ đề A: Máy tính & Em";
+
+    const questionData = {
+      grade,
+      topic,
+      topicName,
+      level,
+      question,
+      options: [
+        `A. ${optA}`,
+        `B. ${optB}`,
+        `C. ${optC || 'Lựa chọn C'}`,
+        `D. ${optD || 'Lựa chọn D'}`
+      ],
+      correct,
+      explanation
+    };
+
+    if (this.editingQuestionId) {
+      window.examService.updateQuestionInBank(this.editingQuestionId, questionData);
+      window.app.showToast("✏️ Đã cập nhật câu hỏi thành công!", "success");
+    } else {
+      window.examService.addQuestionToBank(questionData);
+      window.app.showToast("🎉 Đã thêm câu hỏi mới vào Ngân Hàng Câu Hỏi!", "success");
+    }
+
+    document.getElementById("qb-form-container")?.classList.add("hidden");
+    this.renderQuestionBankContent();
+  }
+
+  deleteQuestionFromBank(qId) {
+    if (confirm("Thầy Cô có chắc chắn muốn xóa câu hỏi này khỏi Ngân Hàng Câu Hỏi?")) {
+      window.examService.deleteQuestionFromBank(qId);
+      window.app.showToast("🗑️ Đã xóa câu hỏi khỏi ngân hàng!", "info");
+      this.renderQuestionBankContent();
+    }
+  }
+
+  // =========================================================================
+  // IN GIẤY KHEN VINH DANH HỌC SINH ĐIỂM 10 (HONOR CERTIFICATE MODAL)
+  // =========================================================================
+  openCertificateModal(attemptId) {
+    const cert = window.examService.getCertificateData(attemptId);
+    if (!cert) return;
+
+    this.currentCertData = cert;
+    const modal = document.getElementById("exam-certificate-modal");
+    const content = document.getElementById("exam-certificate-content");
+
+    if (content) {
+      content.innerHTML = `
+        <div class="space-y-4 text-slate-800 animate-pop">
+          <!-- Khung Giấy Khen Chuẩn Hoàng Gia Khổ Ngang -->
+          <div id="printable-certificate-card" class="p-8 md:p-12 bg-amber-50/50 border-8 border-double border-amber-600 rounded-3xl shadow-2xl relative overflow-hidden text-center space-y-4 font-serif">
+            <!-- Background watermark -->
+            <div class="absolute -right-12 -bottom-12 opacity-10 pointer-events-none text-9xl">🏆</div>
+            <div class="absolute -left-12 -top-12 opacity-10 pointer-events-none text-9xl">⭐</div>
+
+            <!-- Header Quốc Hiệu -->
+            <div class="space-y-1">
+              <p class="text-xs uppercase font-bold tracking-widest text-slate-800">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+              <p class="text-[11px] font-bold text-slate-600 underline">Độc lập - Tự do - Hạnh phúc</p>
+            </div>
+
+            <!-- Tên Trường -->
+            <div class="pt-2">
+              <p class="text-xs font-extrabold uppercase tracking-wider text-cyan-900">BAN GIÁM HIỆU TRƯỜNG TIỂU HỌC VUI HỌC</p>
+              <h2 class="text-2xl md:text-3xl font-black text-amber-700 uppercase tracking-widest mt-1 drop-shadow-sm font-sans">
+                GIẤY KHEN DANH DỰ
+              </h2>
+              <p class="text-xs font-bold italic text-amber-900">Tuyên dương thành tích học tập xuất sắc</p>
+            </div>
+
+            <!-- Tên Học Sinh -->
+            <div class="py-2 space-y-1">
+              <p class="text-xs text-slate-600">Trao tặng cho em:</p>
+              <h3 class="text-2xl md:text-3xl font-black text-slate-900 uppercase font-sans tracking-wide">
+                ${cert.studentName}
+              </h3>
+              <p class="text-sm font-bold text-slate-700">Học sinh Lớp: <b>${cert.className}</b> • Khối Lớp ${cert.grade}</p>
+            </div>
+
+            <!-- Thành Tích & Điểm -->
+            <div class="max-w-xl mx-auto p-4 bg-white/80 rounded-2xl border border-amber-300 shadow-inner space-y-1">
+              <p class="text-xs font-bold text-emerald-800">
+                Đã đạt kết quả xuất sắc: <span class="text-lg font-black text-rose-600">${cert.score} / 10 Điểm</span> (${cert.classification})
+              </p>
+              <p class="text-[11px] text-slate-600 leading-relaxed italic">
+                Trong kỳ: "${cert.examTitle}"
+              </p>
+              <p class="text-[10px] text-amber-700 font-bold">Thưởng: +${cert.starsEarned} ⭐ Sao Vàng Vinh Danh</p>
+            </div>
+
+            <!-- Chữ Ký & Ngày Cấp -->
+            <div class="flex items-center justify-between pt-6 text-xs text-slate-700 font-sans">
+              <div class="text-center space-y-1">
+                <p class="font-bold">GIÁO VIÊN BỘ MÔN</p>
+                <div class="h-10"></div>
+                <p class="font-black text-slate-900">Thầy Anh Đào</p>
+              </div>
+
+              <div class="text-center space-y-1">
+                <p class="italic text-[11px]">Ngày ${cert.submittedAt}</p>
+                <p class="font-bold">HIỆU TRƯỞNG NHÀ TRƯỜNG</p>
+                <div class="h-10 flex items-center justify-center">
+                  <span class="badge bg-rose-600 text-white font-black text-[10px] px-2 py-0.5 rounded-full shadow">ĐÃ ĐÓNG DẤU ĐỎ</span>
+                </div>
+                <p class="font-black text-slate-900">TS. Nguyễn Văn Giáo</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nút In & Tải -->
+          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+            <span class="text-[11px] text-slate-400">Tự động định dạng khổ ngang A4 sắc nét</span>
+            <div class="flex items-center gap-2">
+              <button onclick="document.getElementById('exam-certificate-modal').classList.remove('active')" class="btn btn-outline btn-sm font-bold">
+                Đóng
+              </button>
+              <button onclick="examPortal.printCertificate()" class="btn btn-primary btn-sm font-black bg-amber-600 hover:bg-amber-700 text-white shadow-lg flex items-center gap-1.5">
+                <span>🖨️</span> <span>In Giấy Khen Ngay</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (modal) modal.classList.add("active");
+  }
+
+  printCertificate() {
+    const certCard = document.getElementById("printable-certificate-card");
+    if (!certCard) return;
+
+    const printWindow = window.open('', '_blank', 'width=1000,height=750');
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Giấy Khen Danh Dự - ${this.currentCertData?.studentName || 'Học Sinh'}</title>
+          <style>
+            @page {
+              size: A4 landscape;
+              margin: 10mm;
+            }
+            body {
+              font-family: 'Times New Roman', Times, serif;
+              margin: 0;
+              padding: 20px;
+              background: #fff;
+              color: #000;
+            }
+            .cert-box {
+              border: 10px double #b45309;
+              padding: 35px 40px;
+              text-align: center;
+              border-radius: 20px;
+              background-color: #fffdfa;
+            }
+            h2 { font-family: Arial, sans-serif; font-size: 26pt; color: #b45309; margin: 10px 0 5px 0; letter-spacing: 2px; }
+            h3 { font-family: Arial, sans-serif; font-size: 24pt; margin: 10px 0; }
+            .score-box { border: 1px solid #d97706; background-color: #fff; padding: 12px; border-radius: 10px; margin: 15px auto; max-width: 650px; font-size: 13pt; }
+            .sign-table { width: 100%; margin-top: 30px; }
+            .sign-table td { width: 50%; vertical-align: top; text-align: center; font-family: Arial, sans-serif; font-size: 11pt; }
+          </style>
+        </head>
+        <body>
+          <div class="cert-box">
+            <p style="font-size: 11pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+            <p style="font-size: 10pt; font-style: italic; text-decoration: underline; margin-top: 0;">Độc lập - Tự do - Hạnh phúc</p>
+            <br>
+            <p style="font-size: 12pt; font-weight: bold; text-transform: uppercase; color: #0f766e; margin-bottom: 2px;">BAN GIÁM HIỆU TRƯỜNG TIỂU HỌC VUI HỌC</p>
+            <h2>GIẤY KHEN DANH DỰ</h2>
+            <p style="font-size: 11pt; font-style: italic;">Tuyên dương thành tích học tập xuất sắc</p>
+            <br>
+            <p style="font-size: 12pt;">Trao tặng cho em:</p>
+            <h3>${this.currentCertData?.studentName}</h3>
+            <p style="font-size: 13pt; font-weight: bold;">Học sinh Lớp: ${this.currentCertData?.className} • Khối Lớp ${this.currentCertData?.grade}</p>
+            
+            <div class="score-box">
+              <p style="margin: 0; font-weight: bold; color: #047857;">
+                Đã đạt kết quả xuất sắc: <span style="font-size: 16pt; color: #b91c1c;">${this.currentCertData?.score} / 10 Điểm</span> (${this.currentCertData?.classification})
+              </p>
+              <p style="margin: 5px 0 0 0; font-style: italic; font-size: 11pt; color: #475569;">
+                Trong kỳ: "${this.currentCertData?.examTitle}"
+              </p>
+            </div>
+
+            <table class="sign-table">
+              <tr>
+                <td>
+                  <b>GIÁO VIÊN BỘ MÔN</b>
+                  <br><br><br><br>
+                  <b>Thầy Anh Đào</b>
+                </td>
+                <td>
+                  <i>Ngày ${this.currentCertData?.submittedAt}</i><br>
+                  <b>HIỆU TRƯỞNG NHÀ TRƯỜNG</b>
+                  <br><br><br><br>
+                  <b>TS. Nguyễn Văn Giáo</b>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <script>
+            window.onload = function() {
+              setTimeout(function() { window.print(); }, 400);
+            };
+          </script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
   }
 
   // =========================================================================
@@ -759,7 +1242,9 @@ class ExamPortal {
                             🛑 Thu
                           </button>
                         ` : `
-                          <span class="text-[11px] font-black text-emerald-700">10.0đ</span>
+                          <button onclick="examPortal.openCertificateModal('att_01')" class="px-2 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded font-black text-[10px] border border-amber-200" title="In Giấy Khen">
+                            🎖️ Khen
+                          </button>
                         `}
                       </div>
                     </td>
@@ -1642,8 +2127,13 @@ class ExamPortal {
           </div>
 
           <div class="flex items-center justify-center gap-2 pt-2 flex-wrap">
+            ${result.score >= 9.0 ? `
+              <button onclick="examPortal.openCertificateModal('${result.id}')" class="btn btn-primary font-black btn-md bg-amber-600 hover:bg-amber-700 text-white shadow-lg flex items-center gap-1.5 animate-bounce">
+                <span>🎖️</span> <span>Nhận Giấy Khen Điểm 10 Danh Dự</span>
+              </button>
+            ` : ''}
             <button onclick="examPortal.openParentReportModal('${result.id}')" class="btn btn-outline btn-md font-black text-emerald-800 border-emerald-300 hover:bg-emerald-50 flex items-center gap-1.5 shadow">
-              <span>📱</span> <span>Báo Điểm Về Zalo / Phụ Huynh</span>
+              <span>📱</span> <span>Báo Điểm Về Zalo</span>
             </button>
             <button onclick="examPortal.closeRunnerModal()" class="btn btn-primary font-black btn-md px-6 shadow-lg">
               ✨ Hoàn Tất & Về Ngân Hàng Đề
@@ -1838,7 +2328,7 @@ class ExamPortal {
   }
 
   // =========================================================================
-  // 5. XEM LẠI LỊCH SỬ LÀM BÀI THEO LỚP & XUẤT BẢNG ĐIỂM
+  // 5. XEM LẠI LỊCH SỬ LÀM BÀI THEO LỚP & XUẤT BẢNG ĐIỂM & IN GIẤY KHEN
   // =========================================================================
   openHistoryModal() {
     const history = window.examService.getExamHistory({
@@ -1886,6 +2376,7 @@ class ExamPortal {
                   <th class="p-3 text-center">Điểm Số</th>
                   <th class="p-3 text-center">Xếp Loại</th>
                   <th class="p-3 text-center">Vi Phạm</th>
+                  <th class="p-3 text-center">Giấy Khen</th>
                   <th class="p-3 text-center">Báo Điểm</th>
                   <th class="p-3 text-center">Xóa</th>
                 </tr>
@@ -1893,7 +2384,7 @@ class ExamPortal {
               <tbody class="divide-y divide-slate-200 font-medium">
                 ${history.length === 0 ? `
                   <tr>
-                    <td colspan="8" class="p-8 text-center text-slate-400 font-bold">Không tìm thấy lượt làm bài nào trong lớp này.</td>
+                    <td colspan="9" class="p-8 text-center text-slate-400 font-bold">Không tìm thấy lượt làm bài nào trong lớp này.</td>
                   </tr>
                 ` : history.map((h, idx) => `
                   <tr class="hover:bg-slate-50">
@@ -1912,8 +2403,17 @@ class ExamPortal {
                       `}
                     </td>
                     <td class="p-3 text-center">
+                      ${h.score >= 9.0 ? `
+                        <button onclick="examPortal.openCertificateModal('${h.id}')" class="btn btn-outline btn-xs font-black text-amber-800 border-amber-300 hover:bg-amber-50 flex items-center gap-1 mx-auto" title="In Giấy khen điểm 10">
+                          <span>🎖️</span> <span>Khen</span>
+                        </button>
+                      ` : `
+                        <span class="text-slate-300 text-[10px]">-</span>
+                      `}
+                    </td>
+                    <td class="p-3 text-center">
                       <button onclick="examPortal.openParentReportModal('${h.id}')" class="btn btn-outline btn-xs font-black text-emerald-800 border-emerald-300 hover:bg-emerald-50 flex items-center gap-1 mx-auto" title="Gửi kết quả kiểm tra cho Phụ huynh qua Zalo">
-                        <span>📱</span> <span>Báo Zalo</span>
+                        <span>📱</span> <span>Zalo</span>
                       </button>
                     </td>
                     <td class="p-3 text-center">
