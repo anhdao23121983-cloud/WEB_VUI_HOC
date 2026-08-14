@@ -327,11 +327,9 @@ class DocExportService {
     URL.revokeObjectURL(url);
   }
 
-  // 3. Xuất file Đề Kiểm Tra Word (.doc) chuẩn Thông tư 27 kèm Ma Trận & Thang Điểm
-  exportExamDoc(exam) {
-    const filename = `${this.slugify(exam.title || "De_Kiem_Tra_Tin_Hoc")}.doc`;
-
-    const htmlContent = `
+  // 3. Xây dựng nội dung HTML Đề Kiểm Tra Word (.doc)
+  buildExamDocHtml(exam) {
+    return `
       <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
       <head>
         <meta charset="utf-8">
@@ -344,54 +342,15 @@ class DocExportService {
             color: #000;
             margin: 15mm 15mm 15mm 20mm;
           }
-          .header-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-          }
-          .header-table td {
-            vertical-align: top;
-            font-size: 11pt;
-          }
-          .student-box {
-            width: 100%;
-            border: 1px solid #000;
-            border-collapse: collapse;
-            margin: 10px 0 15px 0;
-          }
-          .student-box td {
-            border: 1px solid #000;
-            padding: 6px 10px;
-            font-size: 11pt;
-          }
-          .title {
-            text-align: center;
-            font-size: 14pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin: 10px 0 3px 0;
-          }
-          .subtitle {
-            text-align: center;
-            font-size: 11pt;
-            font-style: italic;
-            margin-bottom: 12px;
-          }
-          h3 {
-            font-size: 12pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-top: 12px;
-            margin-bottom: 4px;
-          }
-          .question-item {
-            margin-bottom: 10px;
-            font-size: 11pt;
-          }
-          .option-grid {
-            margin-left: 20px;
-            font-size: 11pt;
-          }
+          .header-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+          .header-table td { vertical-align: top; font-size: 11pt; }
+          .student-box { width: 100%; border: 1px solid #000; border-collapse: collapse; margin: 10px 0 15px 0; }
+          .student-box td { border: 1px solid #000; padding: 6px 10px; font-size: 11pt; }
+          .title { text-align: center; font-size: 14pt; font-weight: bold; text-transform: uppercase; margin: 10px 0 3px 0; }
+          .subtitle { text-align: center; font-size: 11pt; font-style: italic; margin-bottom: 12px; }
+          h3 { font-size: 12pt; font-weight: bold; text-transform: uppercase; margin-top: 12px; margin-bottom: 4px; }
+          .question-item { margin-bottom: 10px; font-size: 11pt; }
+          .option-grid { margin-left: 20px; font-size: 11pt; }
         </style>
       </head>
       <body>
@@ -411,7 +370,7 @@ class DocExportService {
         </table>
 
         <div class="title">${exam.title}</div>
-        <div class="subtitle">Môn: Tin học - Khối Lớp ${exam.grade} • Thời gian làm bài: ${exam.durationMinutes || 35} phút (Không kể thời gian phát đề)</div>
+        <div class="subtitle">Môn: Tin học - Khối Lớp ${exam.grade} • Thời gian làm bài: ${exam.durationMinutes || 35} phút</div>
 
         <table class="student-box">
           <tr>
@@ -456,57 +415,57 @@ class DocExportService {
         </div>
 
         <div class="question-item">
-          <b>Câu 3 (Mức 2):</b> Để lưu lại bài vẽ hoặc văn bản đang làm vào máy tính, em nhấn tổ hợp phím nào?<br>
+          <b>Câu 3 (Mức 2):</b> Đâu là thao tác đúng để mở một phần mềm hoặc tệp bài tập trên màn hình nền (Desktop)?<br>
           <div class="option-grid">
-            A. Ctrl + C &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            B. Ctrl + V &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            C. Ctrl + S &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            D. Ctrl + Z
+            A. Nháy nút phải chuột một lần &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            B. Nháy nút trái chuột một lần<br>
+            C. Nháy đúp chuột (nhấp chuột nhanh 2 lần liên tiếp) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            D. Kéo thả chuột
           </div>
         </div>
 
         <div class="question-item">
-          <b>Câu 4 (Mức 2):</b> Khi muốn xóa ký tự nằm ở bên trái con trỏ soạn thảo, em sử dụng phím nào?<br>
+          <b>Câu 4 (Mức 2):</b> Khi ngồi học với máy tính, tư thế nào sau đây là an toàn và tốt cho mắt nhất?<br>
           <div class="option-grid">
-            A. Phím Delete &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            B. Phím Backspace &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            C. Phím Enter &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            D. Phím Shift
+            A. Ngồi cúi sát mắt vào màn hình &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            B. Lưng thẳng, mắt ngang tầm màn hình cách 50-70cm<br>
+            C. Ngồi vắt chéo chân, phòng học tối &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            D. Tựa hẳn cằm vào bàn phím
           </div>
         </div>
 
         <div class="question-item">
-          <b>Câu 5 (Mức 2):</b> Trước khi rời khỏi phòng thực hành Tin học, hành động nào sau đây là ĐÚNG quy định?<br>
+          <b>Câu 5 (Mức 2):</b> Biểu tượng nào sau đây đại diện cho phần mềm luyện gõ 10 ngón hoặc vẽ tranh Paint?<br>
           <div class="option-grid">
-            A. Rút thẳng dây điện nguồn &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            B. Tắt máy đúng quy trình qua nút Start -> Shut down và xếp ghế gọn gàng<br>
-            C. Để nguyên máy hoạt động &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            D. Mang đồ ăn vào phòng máy
+            A. Con chuột máy tính &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            B. Bảng màu vẽ và cây cọ nét vẽ<br>
+            C. Thùng rác Recycle Bin &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            D. Biểu tượng thư mục màu vàng
           </div>
         </div>
 
         <div class="question-item">
-          <b>Câu 6 (Mức 3):</b> Thư mục (Folder) trong máy tính có biểu tượng màu gì đặc trưng và dùng để làm gì?<br>
+          <b>Câu 6 (Mức 3):</b> Khi phát hiện dây điện nguồn máy tính bị hở hoặc có mùi khét, em cần làm gì đầu tiên?<br>
           <div class="option-grid">
-            A. Màu xanh lá cây, dùng để vẽ tranh &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            B. Màu vàng hình kẹp giấy, dùng để chứa và phân loại các tệp tin<br>
-            C. Màu đỏ, dùng để xóa dữ liệu &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            D. Màu tím, dùng để nghe nhạc
+            A. Lấy tay kéo mạnh dây điện ra &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            B. Báo ngay cho Thầy/Cô giáo hoặc người lớn xử lý<br>
+            C. Lấy nước đổ vào dây điện &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            D. Tiếp tục ngồi chơi trò chơi
           </div>
         </div>
 
         <div class="question-item">
-          <b>Câu 7 (Mức 3):</b> Thông tin cá nhân nào sau đây em TUYỆT ĐỐI KHÔNG được chia sẻ cho người lạ trên Internet?<br>
+          <b>Câu 7 (Mức 3):</b> Cây thư mục trên máy tính có lợi ích chính là gì?<br>
           <div class="option-grid">
-            A. Tên trò chơi yêu thích &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            B. Mật khẩu tài khoản, địa chỉ nhà và số điện thoại phụ huynh<br>
-            C. Tên bài hát thiếu nhi &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            D. Màu sắc em thích
+            A. Giúp máy tính khởi động nhanh hơn &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            B. Giúp sắp xếp và tìm kiếm tệp tin khoa học, nhanh chóng<br>
+            C. Giúp vẽ tranh đẹp hơn &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            D. Giúp gõ văn bản tự động
           </div>
         </div>
 
         <h3>PHẦN II: THỰC HÀNH TRÊN MÁY TÍNH (3.0 ĐIỂM)</h3>
-        <p style="font-size: 11pt; margin-top: 2px;">
+        <p style="font-size: 11pt; line-height: 1.5;">
           <b>Câu 8 (Mức 3 - 2.0 điểm):</b> Em hãy mở phần mềm Paint (hoặc Word), tạo một thư mục mang tên em tại ổ đĩa D: và vẽ/soạn thảo một bức tranh ngôi trường mơ ước.<br>
           <b>Câu 9 (Mức 4 - 1.0 điểm):</b> Chèn biểu tượng hoặc trang trí màu sắc hài hòa, lưu tệp với tên <i>"BaiKiemTra_HoVaTen.png"</i> vào thư mục vừa tạo.
         </p>
@@ -517,6 +476,12 @@ class DocExportService {
       </body>
       </html>
     `;
+  }
+
+  // Xuất file Đề Kiểm Tra Word (.doc)
+  exportExamDoc(exam) {
+    const filename = `${this.slugify(exam.title || "De_Kiem_Tra_Tin_Hoc")}.doc`;
+    const htmlContent = this.buildExamDocHtml(exam);
 
     const blob = new Blob(['\ufeff' + htmlContent], {
       type: 'application/msword'
@@ -532,66 +497,23 @@ class DocExportService {
     URL.revokeObjectURL(url);
   }
 
-  // 4. Xuất Bảng Đáp Án & Hướng Dẫn Chấm Riêng Biệt (.doc)
-  exportAnswerKeyDoc(exam) {
-    const filename = `Dap_An_${this.slugify(exam.title || "De_Kiem_Tra_Tin_Hoc")}.doc`;
-
-    const htmlContent = `
+  // 4. Xây dựng nội dung HTML Bảng Đáp Án & Hướng Dẫn Chấm
+  buildAnswerKeyDocHtml(exam) {
+    return `
       <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
       <head>
         <meta charset="utf-8">
         <title>Đáp Án: ${exam.title}</title>
         <style>
-          body {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 13pt;
-            line-height: 1.35;
-            color: #000;
-            margin: 15mm 15mm 15mm 20mm;
-          }
-          .header-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-          }
-          .header-table td {
-            vertical-align: top;
-            font-size: 11pt;
-          }
-          .title {
-            text-align: center;
-            font-size: 14pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin: 10px 0 3px 0;
-          }
-          .subtitle {
-            text-align: center;
-            font-size: 11pt;
-            font-style: italic;
-            margin-bottom: 15px;
-          }
-          table.ans-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0 15px 0;
-          }
-          table.ans-table th, table.ans-table td {
-            border: 1px solid #000;
-            padding: 6px 8px;
-            font-size: 11pt;
-            text-align: center;
-          }
-          table.ans-table th {
-            background-color: #f2f2f2;
-          }
-          h3 {
-            font-size: 12pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-top: 14px;
-            margin-bottom: 4px;
-          }
+          body { font-family: 'Times New Roman', Times, serif; font-size: 13pt; line-height: 1.35; color: #000; margin: 15mm 15mm 15mm 20mm; }
+          .header-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+          .header-table td { vertical-align: top; font-size: 11pt; }
+          .title { text-align: center; font-size: 14pt; font-weight: bold; text-transform: uppercase; margin: 10px 0 3px 0; }
+          .subtitle { text-align: center; font-size: 11pt; font-style: italic; margin-bottom: 15px; }
+          table.ans-table { width: 100%; border-collapse: collapse; margin: 10px 0 15px 0; }
+          table.ans-table th, table.ans-table td { border: 1px solid #000; padding: 6px 8px; font-size: 11pt; text-align: center; }
+          table.ans-table th { background-color: #f2f2f2; }
+          h3 { font-size: 12pt; font-weight: bold; text-transform: uppercase; margin-top: 14px; margin-bottom: 4px; }
         </style>
       </head>
       <body>
@@ -599,31 +521,33 @@ class DocExportService {
           <tr>
             <td style="width: 45%; text-align: center;">
               <b>TRƯỜNG TIỂU HỌC VUI HỌC</b><br>
-              <b>TỔ CHUYÊN MÔN TIN HỌC</b>
+              <b>TỔ CHUYÊN MÔN TIN HỌC</b><br>
+              <hr style="width: 50%; margin: 2px auto; border: 0.5px solid #000;">
             </td>
             <td style="width: 55%; text-align: center;">
-              <b>HƯỚNG DẪN CHẤM & BIỂU ĐIỂM CHI TIẾT</b><br>
-              <i>(Chuẩn Thông Tư 27/2020 & GDPT 2018)</i>
+              <b>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</b><br>
+              <b>Độc lập - Tự do - Hạnh phúc</b><br>
+              <hr style="width: 60%; margin: 2px auto; border: 0.5px solid #000;">
             </td>
           </tr>
         </table>
 
-        <div class="title">ĐÁP ÁN & BIỂU ĐIỂM: ${exam.title}</div>
-        <div class="subtitle">Khối Lớp: ${exam.grade} • Thang điểm: 10.0 • Người ra đề: ${exam.authorName || 'Thầy Anh Đào'}</div>
+        <div class="title">ĐÁP ÁN & HƯỚNG DẪN CHẤM ĐỀ KIỂM TRA ĐỊNH KỲ</div>
+        <div class="subtitle">${exam.title} (Khối Lớp ${exam.grade})</div>
 
-        <h3>PHẦN I: ĐÁP ÁN TRẮC NGHIỆM (7.0 ĐIỂM)</h3>
-        <p style="font-size: 11pt; font-style: italic;">Mỗi câu trả lời đúng học sinh được <b>1.0 điểm</b>:</p>
+        <h3>PHẦN I: ĐÁP ÁN TRẮC NGHIỆM KHÁCH QUAN (7.0 ĐIỂM)</h3>
+        <p style="font-size: 11pt; font-style: italic; margin-top: 0;">Mỗi câu trả lời đúng được 1.0 điểm:</p>
 
         <table class="ans-table">
-          <tr>
-            <th>Câu Hỏi</th>
-            <th>Câu 1</th>
-            <th>Câu 2</th>
-            <th>Câu 3</th>
-            <th>Câu 4</th>
-            <th>Câu 5</th>
-            <th>Câu 6</th>
-            <th>Câu 7</th>
+          <tr style="background-color: #f8fafc; font-weight: bold;">
+            <td style="width: 16%;">Câu Hỏi</td>
+            <td style="width: 12%;">Câu 1</td>
+            <td style="width: 12%;">Câu 2</td>
+            <td style="width: 12%;">Câu 3</td>
+            <td style="width: 12%;">Câu 4</td>
+            <td style="width: 12%;">Câu 5</td>
+            <td style="width: 12%;">Câu 6</td>
+            <td style="width: 12%;">Câu 7</td>
           </tr>
           <tr>
             <td><b>Mức Độ</b></td>
@@ -644,16 +568,6 @@ class DocExportService {
             <td><b>B</b></td>
             <td><b>B</b></td>
             <td><b>B</b></td>
-          </tr>
-          <tr>
-            <td><b>Điểm</b></td>
-            <td>1.0đ</td>
-            <td>1.0đ</td>
-            <td>1.0đ</td>
-            <td>1.0đ</td>
-            <td>1.0đ</td>
-            <td>1.0đ</td>
-            <td>1.0đ</td>
           </tr>
         </table>
 
@@ -705,11 +619,6 @@ class DocExportService {
       </body>
       </html>
     `;
-
-    const blob = new Blob(['\ufeff' + htmlContent], {
-      type: 'application/msword'
-    });
-
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -931,6 +840,89 @@ class DocExportService {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  }
+
+  // 8. TẢI TRỌN BỘ TẤT CẢ ĐỀ THI TRONG THƯ MỤC VỀ MÁY 1 CHẠM (.ZIP)
+  async exportFolderZip(grade) {
+    const effectiveGrade = grade !== 'all' ? parseInt(grade) : 'all';
+    const exams = await window.examService.getAllExams(effectiveGrade);
+
+    if (!exams || exams.length === 0) {
+      window.app.showToast("Thư mục này hiện không có đề thi nào để nén zip!", "warning");
+      return;
+    }
+
+    if (typeof JSZip === 'undefined') {
+      window.app.showToast("Đang tải các file đề thi lần lượt...", "info");
+      for (const exam of exams) {
+        this.exportExamDoc(exam);
+      }
+      return;
+    }
+
+    window.app.showToast(`📦 Đang đóng gói trọn bộ ${exams.length} đề thi & đáp án vào tệp nén Zip...`, "info");
+
+    const zip = new JSZip();
+    const folderExam = zip.folder("1_De_Kiem_Tra_Word");
+    const folderKey = zip.folder("2_Dap_An_Va_Huong_Dan_Cham");
+    const folderGradebook = zip.folder("3_Bang_Diem_Mau");
+
+    exams.forEach((exam, idx) => {
+      const slug = this.slugify(exam.title || `De_${idx + 1}`);
+      const examDoc = this.buildExamDocHtml(exam);
+      const keyDoc = this.buildAnswerKeyDocHtml(exam);
+
+      folderExam.file(`De_${idx + 1}_${slug}.doc`, '\ufeff' + examDoc);
+      folderKey.file(`Dap_An_De_${idx + 1}_${slug}.doc`, '\ufeff' + keyDoc);
+    });
+
+    // Thêm bảng điểm mẫu
+    const targetClass = grade !== 'all' ? `${grade}A` : "3A";
+    const history = window.examService.getExamHistory({ className: targetClass });
+    const gradebookDoc = this.buildGradebookDocHtml ? this.buildGradebookDocHtml(targetClass, grade !== 'all' ? grade : 3, history) : "";
+    if (gradebookDoc) {
+      folderGradebook.file(`Bang_Diem_Tong_Hop_Lop_${targetClass}_TinHoc.doc`, '\ufeff' + gradebookDoc);
+    }
+
+    // Thêm tệp hướng dẫn README
+    const folderTitle = grade !== 'all' ? `KHỐI LỚP ${grade}` : "TẤT CẢ CÁC KHỐI 3-4-5";
+    const readmeContent = `===================================================================
+TRƯỜNG TIỂU HỌC VUI HỌC - HỌC LIỆU SỐ TIN HỌC TIỂU HỌC
+BỘ ĐỀ KIỂM TRA ĐỊNH KỲ MÔN TIN HỌC (${folderTitle})
+Quy chuẩn: Thông tư 27/2020/TT-BGDĐT & Chương trình GDPT 2018
+Tác giả / Giáo viên: Thầy Giáo Anh Đào
+Ngày đóng gói: ${new Date().toLocaleDateString('vi-VN')}
+Tổng số đề kiểm tra: ${exams.length} tệp
+===================================================================
+
+CẤU TRÚC THƯ MỤC:
+📁 1_De_Kiem_Tra_Word:
+   Chứa các đề kiểm tra định kỳ (15 phút, Giữa kỳ, Cuối kỳ) định dạng Microsoft Word (.doc),
+   có sẵn khung ghi họ tên học sinh, điểm số và lời nhận xét của giáo viên.
+
+📁 2_Dap_An_Va_Huong_Dan_Cham:
+   Chứa bảng ma trận đáp án trắc nghiệm khách quan và barem hướng dẫn chấm thực hành máy tính chi tiết.
+
+📁 3_Bang_Diem_Mau:
+   Chứa bảng tổng hợp kết quả đánh giá theo lớp, phân loại Hoàn thành Tốt (T), Hoàn thành (H), Chưa hoàn thành (C).
+
+Chúc Thầy Cô và các em học sinh có những tiết học Tin học thật vui vẻ và hiệu quả!`;
+
+    zip.file("README_Huong_Dan_Su_Dung.txt", readmeContent);
+
+    const blob = await zip.generateAsync({ type: "blob" });
+    const zipName = grade !== 'all' ? `Tron_Bo_De_Kiem_Tra_Tin_Hoc_Lop_${grade}.zip` : `Tron_Bo_De_Kiem_Tra_Tin_Hoc_Tieu_Hoc.zip`;
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = zipName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    window.app.showToast(`🎉 Đã tải xuống thành công tệp nén ${zipName}!`, "success");
   }
 
   slugify(text) {

@@ -96,6 +96,9 @@ class ExamPortal {
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="examPortal.downloadFolderZip(examPortal.selectedFolder)" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Tải toàn bộ đề thi, đáp án và bảng điểm dạng tệp nén .zip">
+              <span>📦</span> <span>Tải Trọn Bộ (.zip)</span>
+            </button>
             <button onclick="examPortal.openHistoryModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Xem lại lịch sử làm bài theo từng lớp">
               <span>📜</span> <span>Lịch Sử Thi & Lớp</span>
             </button>
@@ -128,7 +131,7 @@ class ExamPortal {
                 <span>📁 THƯ MỤC KIỂM TRA THEO KHỐI LỚP (GDPT 2018)</span>
                 <span class="badge badge-emerald text-[11px] font-black">3 Thư Mục</span>
               </h3>
-              <span class="text-xs text-slate-500">Thầy Cô có thể bấm ⚙️ để tùy chỉnh Tên, Icon và Màu sắc</span>
+              <span class="text-xs text-slate-500">Thầy Cô có thể bấm ⚙️ tùy chỉnh hoặc 📦 tải trọn bộ Zip</span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -160,9 +163,14 @@ class ExamPortal {
 
                 <div class="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-bold text-slate-600">
                   <span>📦 <b>${countLop3}</b> Tệp Đề Thi</span>
-                  <button onclick="examPortal.enterFolder(3)" class="text-blue-600 font-black group-hover:translate-x-1 transition-all flex items-center gap-1">
-                    Mở thư mục ➔
-                  </button>
+                  <div class="flex items-center gap-2">
+                    <button onclick="event.stopPropagation(); examPortal.downloadFolderZip(3)" class="text-indigo-600 hover:text-indigo-800 font-black flex items-center gap-1 text-[11px] bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-200 shadow-sm" title="Tải trọn bộ đề thi Lớp 3 dạng Zip">
+                      📦 Zip
+                    </button>
+                    <button onclick="examPortal.enterFolder(3)" class="text-blue-600 font-black group-hover:translate-x-1 transition-all flex items-center gap-1">
+                      Mở ➔
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -194,9 +202,14 @@ class ExamPortal {
 
                 <div class="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-bold text-slate-600">
                   <span>📦 <b>${countLop4}</b> Tệp Đề Thi</span>
-                  <button onclick="examPortal.enterFolder(4)" class="text-amber-600 font-black group-hover:translate-x-1 transition-all flex items-center gap-1">
-                    Mở thư mục ➔
-                  </button>
+                  <div class="flex items-center gap-2">
+                    <button onclick="event.stopPropagation(); examPortal.downloadFolderZip(4)" class="text-amber-700 hover:text-amber-900 font-black flex items-center gap-1 text-[11px] bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200 shadow-sm" title="Tải trọn bộ đề thi Lớp 4 dạng Zip">
+                      📦 Zip
+                    </button>
+                    <button onclick="examPortal.enterFolder(4)" class="text-amber-600 font-black group-hover:translate-x-1 transition-all flex items-center gap-1">
+                      Mở ➔
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -228,9 +241,14 @@ class ExamPortal {
 
                 <div class="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-bold text-slate-600">
                   <span>📦 <b>${countLop5}</b> Tệp Đề Thi</span>
-                  <button onclick="examPortal.enterFolder(5)" class="text-emerald-600 font-black group-hover:translate-x-1 transition-all flex items-center gap-1">
-                    Mở thư mục ➔
-                  </button>
+                  <div class="flex items-center gap-2">
+                    <button onclick="event.stopPropagation(); examPortal.downloadFolderZip(5)" class="text-emerald-700 hover:text-emerald-900 font-black flex items-center gap-1 text-[11px] bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 shadow-sm" title="Tải trọn bộ đề thi Lớp 5 dạng Zip">
+                      📦 Zip
+                    </button>
+                    <button onclick="examPortal.enterFolder(5)" class="text-emerald-600 font-black group-hover:translate-x-1 transition-all flex items-center gap-1">
+                      Mở ➔
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -254,6 +272,9 @@ class ExamPortal {
               </div>
 
               <div class="flex items-center gap-2">
+                <button onclick="examPortal.downloadFolderZip(${this.selectedFolder})" class="btn btn-outline btn-xs font-black bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50 shadow-sm flex items-center gap-1" title="Tải trọn bộ đề thi lớp này dạng tệp nén .zip">
+                  <span>📦</span> <span>Tải Trọn Bộ Lớp ${this.selectedFolder} (.zip)</span>
+                </button>
                 ${isTeacher ? `
                   <button onclick="examPortal.openFolderCustomizeModal(${this.selectedFolder})" class="btn btn-outline btn-xs font-bold bg-white text-slate-700 shadow-sm flex items-center gap-1">
                     <span>⚙️</span> <span>Tùy Chỉnh Thư Mục Này</span>
@@ -1640,6 +1661,16 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
       window.app.showToast("Không thể xóa đề kiểm tra, vui lòng thử lại!", "error");
     }
   }
+
+  // TẢI TRỌN BỘ TẤT CẢ ĐỀ THI TRONG THƯ MỤC VỀ MÁY 1 CHẠM (.ZIP)
+  downloadFolderZip(grade = "all") {
+    if (window.docExportService && window.docExportService.exportFolderZip) {
+      window.docExportService.exportFolderZip(grade);
+    } else {
+      window.app.showToast("Dịch vụ nén Zip đang khởi tạo, vui lòng thử lại sau 1 giây!", "warning");
+    }
+  }
 }
 
 window.examPortal = new ExamPortal();
+
