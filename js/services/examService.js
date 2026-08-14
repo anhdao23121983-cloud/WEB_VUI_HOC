@@ -592,6 +592,8 @@ class ExamService {
       teacherComment: attemptData.score >= 9 ? "Em nắm rất vững kiến thức, thực hành thành thạo và hoàn thành xuất sắc bài thi!" : attemptData.score >= 7 ? "Em làm bài tốt, cần rèn luyện thêm kỹ năng thao tác nhanh hơn." : "Em cần chú ý ôn tập thêm phần lý thuyết và quy tắc an toàn số.",
       starsEarned: attemptData.score >= 8 ? 20 : 10,
       durationSpentSeconds: attemptData.durationSpentSeconds || 180,
+      tabSwitchCount: attemptData.tabSwitchCount || 0,
+      isForceSubmitted: Boolean(attemptData.isForceSubmitted),
       submittedAt: new Date().toISOString()
     };
 
@@ -1001,9 +1003,145 @@ class ExamService {
       password: password || "123456"
     });
   }
+
+  // 25. Lấy danh sách học sinh đang thi trực tuyến thời gian thực (Live Exam Proctoring)
+  getLiveProctorList(grade = 'all') {
+    let proctorDB = JSON.parse(sessionStorage.getItem("live_exam_proctors"));
+    if (!proctorDB) {
+      proctorDB = [
+        {
+          id: "proc_01",
+          studentName: "Nguyễn Văn An",
+          className: "3A",
+          grade: 3,
+          examTitle: "Đề Kiểm Tra Cuối Học Kỳ I - Tin Học Lớp 3 (KNTT)",
+          answeredCount: 5,
+          totalQuestions: 7,
+          timeLeftSeconds: 1420,
+          tabSwitchCount: 0,
+          status: "active", // active | warning | idle | submitted
+          statusText: "🟢 Đang làm bài tích cực",
+          score: null
+        },
+        {
+          id: "proc_02",
+          studentName: "Lê Bảo Ngọc",
+          className: "3A",
+          grade: 3,
+          examTitle: "Đề Kiểm Tra Cuối Học Kỳ I - Tin Học Lớp 3 (KNTT)",
+          answeredCount: 6,
+          totalQuestions: 7,
+          timeLeftSeconds: 1180,
+          tabSwitchCount: 1,
+          status: "warning",
+          statusText: "⚠️ Đã chuyển tab (1 lần)",
+          score: null
+        },
+        {
+          id: "proc_03",
+          studentName: "Trần Minh Quân",
+          className: "3A",
+          grade: 3,
+          examTitle: "Đề Kiểm Tra Cuối Học Kỳ I - Tin Học Lớp 3 (KNTT)",
+          answeredCount: 7,
+          totalQuestions: 7,
+          timeLeftSeconds: 0,
+          tabSwitchCount: 0,
+          status: "submitted",
+          statusText: "🏁 Đã nộp bài (10.0đ)",
+          score: 10.0
+        },
+        {
+          id: "proc_04",
+          studentName: "Phạm Hoàng Long",
+          className: "3B",
+          grade: 3,
+          examTitle: "Đề Kiểm Tra Cuối Học Kỳ I - Tin Học Lớp 3 (KNTT)",
+          answeredCount: 4,
+          totalQuestions: 7,
+          timeLeftSeconds: 1650,
+          tabSwitchCount: 0,
+          status: "active",
+          statusText: "🟢 Đang làm bài tích cực",
+          score: null
+        },
+        {
+          id: "proc_05",
+          studentName: "Đỗ Mai Anh",
+          className: "4A",
+          grade: 4,
+          examTitle: "Đề Kiểm Tra Giữa Học Kỳ I - Tin Học Lớp 4 (Cánh Diều)",
+          answeredCount: 3,
+          totalQuestions: 7,
+          timeLeftSeconds: 1800,
+          tabSwitchCount: 2,
+          status: "warning",
+          statusText: "🚨 CẢNH BÁO: Chuyển tab (2 lần)",
+          score: null
+        },
+        {
+          id: "proc_06",
+          studentName: "Hoàng Gia Huy",
+          className: "5A",
+          grade: 5,
+          examTitle: "Bộ Ma Trận & Đề Kiểm Tra Cuối HK2 - Lớp 5 (CTST)",
+          answeredCount: 6,
+          totalQuestions: 7,
+          timeLeftSeconds: 950,
+          tabSwitchCount: 0,
+          status: "active",
+          statusText: "🟢 Đang làm bài tích cực",
+          score: null
+        }
+      ];
+      sessionStorage.setItem("live_exam_proctors", JSON.stringify(proctorDB));
+    }
+
+    if (grade !== 'all') {
+      return proctorDB.filter(p => p.grade === parseInt(grade));
+    }
+    return proctorDB;
+  }
+
+  // 26. Cộng thêm thời gian làm bài cho học sinh
+  addExtraTimeToStudent(studentId, extraMinutes = 5) {
+    const proctorDB = JSON.parse(sessionStorage.getItem("live_exam_proctors")) || [];
+    const st = proctorDB.find(p => p.id === studentId);
+    if (st) {
+      st.timeLeftSeconds += extraMinutes * 60;
+      sessionStorage.setItem("live_exam_proctors", JSON.stringify(proctorDB));
+      return { success: true, newTime: st.timeLeftSeconds };
+    }
+    return { success: false };
+  }
+
+  // 27. Thu bài thi sớm đối với học sinh vi phạm
+  forceSubmitStudentExam(studentId) {
+    const proctorDB = JSON.parse(sessionStorage.getItem("live_exam_proctors")) || [];
+    const st = proctorDB.find(p => p.id === studentId);
+    if (st) {
+      st.status = "submitted";
+      st.statusText = "🛑 Bị thu bài sớm (Vi phạm)";
+      st.score = 6.0;
+      st.timeLeftSeconds = 0;
+      sessionStorage.setItem("live_exam_proctors", JSON.stringify(proctorDB));
+      return { success: true };
+    }
+    return { success: false };
+  }
+
+  // 28. Gửi thông báo / lời nhắc toàn phòng thi
+  broadcastProctorAnnouncement(message) {
+    sessionStorage.setItem("proctor_broadcast_msg", JSON.stringify({
+      message,
+      sentAt: new Date().toISOString()
+    }));
+    return { success: true };
+  }
 }
 
 window.examService = new ExamService();
+
 
 
 

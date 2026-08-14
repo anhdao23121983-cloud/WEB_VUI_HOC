@@ -7,6 +7,8 @@
  * - 🖐️ Kéo Thả Đề Thi Để Di Chuyển Giữa Các Thư Mục (Drag & Drop Move Exams)
  * - 🔐 Khóa Thư Mục Bằng Mật Khẩu Trước Giờ Kiểm Tra (Lock Folder with Password)
  * - 🖨️ In Hàng Loạt Toàn Bộ Đề Thi Ra Giấy 1 Lần Bấm (Batch Print Exams)
+ * - 📡 Chế Độ Giám Thị Quan Sát Học Sinh Đang Thi Trực Tuyến (Live Exam Proctoring)
+ * - 🚨 Phát Hiện & Cảnh Báo Học Sinh Chuyển Tab / Gian Lận (Anti-Cheat Detection)
  * - 🔄 Đồng bộ 100% FE -> BE -> Supabase Cloud Database (public.exam_assessments)
  */
 
@@ -40,7 +42,11 @@ class ExamPortal {
     // Batch Print State
     this.batchPrintGrade = 3;
 
-    // Online Test Runner State
+    // Live Proctoring State
+    this.proctorGrade = "all";
+    this.proctorInterval = null;
+
+    // Online Test Runner & Anti-Cheat State
     this.activeRunnerExam = null;
     this.runnerQuestions = [];
     this.runnerCurrentIndex = 0;
@@ -48,6 +54,10 @@ class ExamPortal {
     this.runnerTimerSeconds = 2100; // 35 phút
     this.runnerTimerInterval = null;
     this.runnerStartTime = 0;
+    this.tabSwitchCount = 0;
+    this.isAntiCheatListening = false;
+    this.boundVisibilityHandler = null;
+    this.boundBlurHandler = null;
 
     // Shuffler State
     this.currentShuffledData = null;
@@ -101,10 +111,15 @@ class ExamPortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn Thông Tư 27/2020 & GDPT 2018</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">NGÂN HÀNG ĐỀ KIỂM TRA & ĐÁNH GIÁ</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Phân chia 3 Thư Mục Lớp 3 - 4 - 5, Kéo thả chuyển thư mục, Khóa mật khẩu & In hàng loạt</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Giám thị trực tuyến Live Proctoring, Chống gian lận chuyển tab, Kéo thả & Khóa mật khẩu</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
+            ${isTeacher ? `
+              <button onclick="examPortal.openLiveProctorModal(examPortal.selectedFolder)" class="btn bg-rose-600 hover:bg-rose-700 text-white font-black text-xs py-2.5 px-3.5 rounded-xl border border-white/30 flex items-center gap-1.5 shadow-lg animate-pulse hover:scale-105 transition-all" title="Giám thị quan sát màn hình học sinh đang làm bài thi thời gian thực">
+                <span>📡</span> <span>Giám Thị Trực Tuyến</span>
+              </button>
+            ` : ''}
             <button onclick="examPortal.downloadFolderZip(examPortal.selectedFolder)" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Tải toàn bộ đề thi, đáp án và bảng điểm dạng tệp nén .zip">
               <span>📦</span> <span>Tải Trọn Bộ (.zip)</span>
             </button>
@@ -318,6 +333,9 @@ class ExamPortal {
                   <span>🖨️</span> <span>In Hàng Loạt</span>
                 </button>
                 ${isTeacher ? `
+                  <button onclick="examPortal.openLiveProctorModal(${this.selectedFolder})" class="btn bg-rose-600 hover:bg-rose-700 text-white font-bold btn-xs flex items-center gap-1 shadow">
+                    <span>📡</span> <span>Giám Thị Phòng Lớp ${this.selectedFolder}</span>
+                  </button>
                   <button onclick="examPortal.openFolderCustomizeModal(${this.selectedFolder})" class="btn btn-outline btn-xs font-bold bg-white text-slate-700 shadow-sm flex items-center gap-1">
                     <span>⚙️</span> <span>Tùy Chỉnh Thư Mục Này</span>
                   </button>
@@ -461,6 +479,9 @@ class ExamPortal {
             </h3>
             ${isTeacher ? `
               <div class="flex items-center gap-2">
+                <button onclick="examPortal.openLiveProctorModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 'all'})" class="btn btn-outline btn-xs font-bold text-rose-700 bg-rose-50 border-rose-200 hover:bg-rose-100 flex items-center gap-1">
+                  <span>📡</span> <span>Giám Thị Live</span>
+                </button>
                 <button onclick="examPortal.openBatchPrintModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-outline btn-xs font-bold text-slate-700 bg-white border-slate-300 flex items-center gap-1">
                   <span>🖨️</span> <span>In Hàng Loạt</span>
                 </button>
@@ -599,6 +620,248 @@ class ExamPortal {
     if (res.success) {
       window.app.showToast(`🎉 Đã di chuyển đề thi vào Thư Mục Khối Lớp ${targetGrade} thành công!`, "success");
       this.render("main-content-area");
+    }
+  }
+
+  // =========================================================================
+  // CHẾ ĐỘ GIÁM THỊ PHÒNG THI TRỰC TUYẾN (LIVE EXAM PROCTORING DASHBOARD)
+  // =========================================================================
+  openLiveProctorModal(grade = "all") {
+    this.proctorGrade = grade;
+    const modal = document.getElementById("exam-live-proctor-modal");
+    if (modal) modal.classList.add("active");
+
+    this.renderLiveProctorContent();
+
+    if (this.proctorInterval) clearInterval(this.proctorInterval);
+    this.proctorInterval = setInterval(() => {
+      this.renderLiveProctorContent();
+    }, 3000);
+  }
+
+  closeLiveProctorModal() {
+    if (this.proctorInterval) clearInterval(this.proctorInterval);
+    const modal = document.getElementById("exam-live-proctor-modal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  renderLiveProctorContent() {
+    const content = document.getElementById("exam-live-proctor-content");
+    if (!content) return;
+
+    const list = window.examService.getLiveProctorList(this.proctorGrade);
+
+    content.innerHTML = `
+      <div class="space-y-4 text-xs text-slate-800 animate-pop">
+        <!-- Top Stats Banner -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl">
+            <span class="font-bold text-slate-500 text-[10px] block">ĐANG DỰ THI</span>
+            <span class="text-xl font-black text-blue-700">${list.filter(s => s.status !== 'submitted').length} Học sinh</span>
+          </div>
+          <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+            <span class="font-bold text-slate-500 text-[10px] block">ĐÃ NỘP BÀI</span>
+            <span class="text-xl font-black text-emerald-700">${list.filter(s => s.status === 'submitted').length} Học sinh</span>
+          </div>
+          <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl">
+            <span class="font-bold text-slate-500 text-[10px] block">CẢNH BÁO CHUYỂN TAB</span>
+            <span class="text-xl font-black text-amber-700">${list.filter(s => s.tabSwitchCount > 0).length} Trường hợp</span>
+          </div>
+          <div class="p-3 bg-purple-50 border border-purple-200 rounded-xl">
+            <span class="font-bold text-slate-500 text-[10px] block">TỰ ĐỘNG LÀM MỚI</span>
+            <span class="text-xs font-black text-purple-700 flex items-center justify-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Live 3s
+            </span>
+          </div>
+        </div>
+
+        <!-- Filter & Broadcast bar -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="font-bold text-slate-600 text-[11px]">Khối Lớp:</span>
+            ${['all', '3', '4', '5'].map(g => `
+              <button onclick="examPortal.proctorGrade = '${g}'; examPortal.renderLiveProctorContent();" class="px-2.5 py-1 rounded-lg text-xs font-black transition-all ${this.proctorGrade === g ? 'bg-cyan-700 text-white shadow' : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-200'}">
+                ${g === 'all' ? 'Tất Cả' : `Khối Lớp ${g}`}
+              </button>
+            `).join("")}
+          </div>
+
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <input type="text" id="proctor-broadcast-input" placeholder="Nhập lời nhắc gửi toàn phòng..." class="form-control text-xs py-1.5 pl-3">
+            <button onclick="examPortal.sendBroadcastMsg()" class="btn btn-primary btn-xs font-black shrink-0 bg-blue-600 hover:bg-blue-700">
+              🔔 Gửi Nhắc Nhở
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Table -->
+        <div class="overflow-x-auto border border-slate-200 rounded-xl max-h-72 overflow-y-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-slate-100 text-slate-700 font-black text-[11px] sticky top-0">
+              <tr>
+                <th class="p-2.5">Học Sinh</th>
+                <th class="p-2.5 text-center">Lớp</th>
+                <th class="p-2.5">Tiến Độ Làm Bài</th>
+                <th class="p-2.5 text-center">Thời Gian</th>
+                <th class="p-2.5 text-center">Chuyển Tab</th>
+                <th class="p-2.5">Trạng Thái Giám Thị</th>
+                <th class="p-2.5 text-center">Hành Động</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 font-medium">
+              ${list.length === 0 ? `
+                <tr>
+                  <td colspan="7" class="p-6 text-center text-slate-400 font-bold">Hiện không có học sinh nào đang làm bài trong khối này.</td>
+                </tr>
+              ` : list.map(s => {
+                const mins = Math.floor(s.timeLeftSeconds / 60);
+                const secs = s.timeLeftSeconds % 60;
+                const timeText = s.timeLeftSeconds > 0 ? `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}` : 'Hết giờ';
+                const pct = Math.round((s.answeredCount / s.totalQuestions) * 100);
+
+                return `
+                  <tr class="hover:bg-slate-50">
+                    <td class="p-2.5 font-bold text-slate-900">${s.studentName}</td>
+                    <td class="p-2.5 text-center"><span class="badge badge-cyan text-[10px] font-black">${s.className}</span></td>
+                    <td class="p-2.5">
+                      <div class="space-y-1">
+                        <div class="flex justify-between text-[10px] font-bold text-slate-600">
+                          <span>${s.answeredCount}/${s.totalQuestions} Câu</span>
+                          <span>${pct}%</span>
+                        </div>
+                        <div class="w-28 bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                          <div class="bg-emerald-500 h-1.5 rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="p-2.5 text-center font-mono font-bold text-indigo-700">${timeText}</td>
+                    <td class="p-2.5 text-center">
+                      ${s.tabSwitchCount > 0 ? `
+                        <span class="badge bg-rose-100 text-rose-800 text-[10px] font-black animate-pulse">
+                          ⚠️ ${s.tabSwitchCount} Lần
+                        </span>
+                      ` : `
+                        <span class="text-slate-400 text-[11px]">0</span>
+                      `}
+                    </td>
+                    <td class="p-2.5">
+                      <span class="text-[11px] font-bold ${s.status === 'warning' ? 'text-rose-700' : s.status === 'submitted' ? 'text-emerald-700' : 'text-slate-700'}">
+                        ${s.statusText}
+                      </span>
+                    </td>
+                    <td class="p-2.5 text-center">
+                      <div class="flex items-center justify-center gap-1">
+                        ${s.status !== 'submitted' ? `
+                          <button onclick="examPortal.addExtraTimeForStudent('${s.id}')" class="px-2 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded font-black text-[10px] border border-emerald-200" title="Cộng thêm 5 phút">
+                            +5p
+                          </button>
+                          <button onclick="examPortal.forceSubmitStudent('${s.id}', '${s.studentName}')" class="px-2 py-0.5 bg-rose-50 hover:bg-rose-100 text-rose-800 rounded font-black text-[10px] border border-rose-200" title="Thu bài thi ngay">
+                            🛑 Thu
+                          </button>
+                        ` : `
+                          <span class="text-[11px] font-black text-emerald-700">10.0đ</span>
+                        `}
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  sendBroadcastMsg() {
+    const input = document.getElementById("proctor-broadcast-input");
+    const msg = input?.value.trim();
+    if (!msg) return;
+
+    window.examService.broadcastProctorAnnouncement(msg);
+    if (input) input.value = "";
+    window.app.showToast(`📢 Đã phát thông báo toàn phòng thi: "${msg}"!`, "success");
+  }
+
+  addExtraTimeForStudent(studentId) {
+    window.examService.addExtraTimeToStudent(studentId, 5);
+    window.app.showToast("⏱️ Đã cộng thêm +5 phút làm bài cho học sinh!", "info");
+    this.renderLiveProctorContent();
+  }
+
+  forceSubmitStudent(studentId, studentName) {
+    if (confirm(`Thầy Cô có chắc chắn muốn THU BÀI THI SỚM của học sinh ${studentName}?`)) {
+      window.examService.forceSubmitStudentExam(studentId);
+      window.app.showToast(`🛑 Đã thu bài thi sớm của ${studentName}!`, "warning");
+      this.renderLiveProctorContent();
+    }
+  }
+
+  // =========================================================================
+  // PHÁT HIỆN & CẢNH BÁO HỌC SINH CHUYỂN TAB / GIAN LẬN (ANTI-CHEAT DETECTION)
+  // =========================================================================
+  playWarningBeep() {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    } catch (e) {}
+  }
+
+  handleVisibilityChange() {
+    if (document.hidden && this.activeRunnerExam) {
+      this.triggerAntiCheatViolation();
+    }
+  }
+
+  handleWindowBlur() {
+    if (this.activeRunnerExam) {
+      this.triggerAntiCheatViolation();
+    }
+  }
+
+  triggerAntiCheatViolation() {
+    this.tabSwitchCount++;
+    this.playWarningBeep();
+
+    const banner = document.getElementById("exam-anti-cheat-banner");
+    if (banner) {
+      banner.innerHTML = `
+        <div class="p-3 bg-rose-600 text-white rounded-xl shadow-lg flex items-center justify-between gap-2 animate-bounce">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🚨</span>
+            <div>
+              <p class="font-black text-xs">CẢNH BÁO VI PHẠM: Em vừa rời khỏi màn hình bài thi (Lần ${this.tabSwitchCount}/3)!</p>
+              <p class="text-[10px] text-rose-100">Nếu chuyển tab quá 3 lần, hệ thống sẽ tự động thu bài và báo cho Giám thị!</p>
+            </div>
+          </div>
+          <span class="badge bg-white text-rose-700 font-black text-xs">Lần ${this.tabSwitchCount}</span>
+        </div>
+      `;
+      banner.classList.remove("hidden");
+    }
+
+    window.app.showToast(`🚨 Cảnh báo chuyển tab (Lần ${this.tabSwitchCount}/3)!`, "error");
+
+    if (this.tabSwitchCount >= 3) {
+      alert("⚠️ Em đã vi phạm chuyển tab 3 lần. Hệ thống tự động thu bài thi và gửi báo cáo cho Thầy/Cô giám thị!");
+      this.submitOnlineTest(true);
     }
   }
 
@@ -953,7 +1216,7 @@ class ExamPortal {
                 <div class="space-y-2 pt-2 border-t border-slate-100">
                   <!-- Hàng 1: Làm bài trực tuyến + Trộn đề 4 mã -->
                   <div class="grid grid-cols-2 gap-2">
-                    <button onclick="examPortal.startOnlineTest('${e.id}')" class="btn btn-amber btn-sm font-black flex items-center justify-center gap-1 shadow-sm" title="Làm bài trắc nghiệm trực tuyến có đếm giờ và tự chấm điểm">
+                    <button onclick="examPortal.startOnlineTest('${e.id}')" class="btn btn-amber btn-sm font-black flex items-center justify-center gap-1 shadow-sm" title="Làm bài trắc nghiệm trực tuyến có đếm giờ, tự chấm điểm và chống gian lận">
                       <span>✍️</span> <span>Thi Trực Tuyến</span>
                     </button>
                     <button onclick="examPortal.openShufflerModal('${e.id}')" class="btn btn-outline btn-sm font-black text-purple-700 bg-purple-50 hover:bg-purple-100 border-purple-200 flex items-center justify-center gap-1" title="Tự động đảo câu hỏi tạo 4 mã đề 101, 102, 103, 104">
@@ -1127,7 +1390,7 @@ class ExamPortal {
   }
 
   // =========================================================================
-  // 1. LÀM BÀI THI TRỰC TUYẾN TỰ CHẤM ĐIỂM (ONLINE TEST RUNNER)
+  // 1. LÀM BÀI THI TRỰC TUYẾN TỰ CHẤM ĐIỂM (ONLINE TEST RUNNER + ANTI-CHEAT)
   // =========================================================================
   async startOnlineTest(id) {
     const exam = await window.examService.getExamById(id);
@@ -1139,12 +1402,25 @@ class ExamPortal {
     this.runnerAnswers = {};
     this.runnerTimerSeconds = (exam.durationMinutes || 35) * 60;
     this.runnerStartTime = Date.now();
+    this.tabSwitchCount = 0;
 
     if (this.runnerTimerInterval) clearInterval(this.runnerTimerInterval);
+
+    // Kích hoạt lắng nghe Chống Gian Lận (Anti-Cheat)
+    if (!this.isAntiCheatListening) {
+      this.boundVisibilityHandler = this.handleVisibilityChange.bind(this);
+      this.boundBlurHandler = this.handleWindowBlur.bind(this);
+      document.addEventListener("visibilitychange", this.boundVisibilityHandler);
+      window.addEventListener("blur", this.boundBlurHandler);
+      this.isAntiCheatListening = true;
+    }
 
     const modal = document.getElementById("online-exam-runner-modal");
     const titleDisp = document.getElementById("exam-runner-title-disp");
     if (titleDisp) titleDisp.innerText = exam.title;
+
+    const banner = document.getElementById("exam-anti-cheat-banner");
+    if (banner) banner.classList.add("hidden");
 
     if (modal) modal.classList.add("active");
 
@@ -1190,9 +1466,26 @@ class ExamPortal {
 
     qContainer.innerHTML = `
       <div class="space-y-4 animate-pop">
+        <!-- Anti-cheat Banner placeholder -->
+        <div id="exam-anti-cheat-banner" class="${this.tabSwitchCount > 0 ? '' : 'hidden'}">
+          <div class="p-3 bg-rose-600 text-white rounded-xl shadow-lg flex items-center justify-between gap-2 animate-bounce">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🚨</span>
+              <div>
+                <p class="font-black text-xs">CẢNH BÁO VI PHẠM: Em vừa rời khỏi màn hình bài thi (Lần ${this.tabSwitchCount}/3)!</p>
+                <p class="text-[10px] text-rose-100">Nếu chuyển tab quá 3 lần, hệ thống sẽ tự động thu bài và báo cho Giám thị!</p>
+              </div>
+            </div>
+            <span class="badge bg-white text-rose-700 font-black text-xs">Lần ${this.tabSwitchCount}</span>
+          </div>
+        </div>
+
         <div class="flex items-center justify-between">
           <span class="badge badge-emerald font-black text-[11px]">CÂU HỎI ${this.runnerCurrentIndex + 1} / ${this.runnerQuestions.length}</span>
-          <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">${q.level} • 1.0 Điểm</span>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">🛡️ Chống chuyển tab: Bật</span>
+            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">${q.level} • 1.0 Điểm</span>
+          </div>
         </div>
 
         <h3 class="text-base md:text-lg font-black text-slate-900 leading-snug">${q.question}</h3>
@@ -1266,8 +1559,15 @@ class ExamPortal {
     this.submitOnlineTest();
   }
 
-  async submitOnlineTest() {
+  async submitOnlineTest(isForce = false) {
     if (this.runnerTimerInterval) clearInterval(this.runnerTimerInterval);
+
+    // Gỡ bỏ sự kiện chống gian lận khi kết thúc
+    if (this.isAntiCheatListening) {
+      document.removeEventListener("visibilitychange", this.boundVisibilityHandler);
+      window.removeEventListener("blur", this.boundBlurHandler);
+      this.isAntiCheatListening = false;
+    }
 
     let correctCount = 0;
     this.runnerQuestions.forEach((q, idx) => {
@@ -1277,7 +1577,10 @@ class ExamPortal {
     });
 
     const user = window.authService?.getUser() || { name: "Nguyễn Văn An", class: "3A" };
-    const rawScore = Number(((correctCount / this.runnerQuestions.length) * 7.0 + 3.0).toFixed(1));
+    let rawScore = Number(((correctCount / this.runnerQuestions.length) * 7.0 + 3.0).toFixed(1));
+    if (isForce) {
+      rawScore = Math.min(rawScore, 6.0); // Bị trừ điểm do gian lận
+    }
     const durationSpent = Math.floor((Date.now() - this.runnerStartTime) / 1000);
 
     const result = await window.examService.submitExamAttempt({
@@ -1287,10 +1590,12 @@ class ExamPortal {
       className: user.class || (this.activeRunnerExam?.grade === 3 ? "3A" : this.activeRunnerExam?.grade === 4 ? "4A" : "5A"),
       grade: this.activeRunnerExam?.grade,
       score: rawScore,
-      durationSpentSeconds: durationSpent
+      durationSpentSeconds: durationSpent,
+      tabSwitchCount: this.tabSwitchCount,
+      isForceSubmitted: isForce
     });
 
-    if (result.score >= 9.0) {
+    if (result.score >= 9.0 && !isForce) {
       this.playVictoryFanfare();
       this.launchConfetti();
     }
@@ -1302,15 +1607,18 @@ class ExamPortal {
     if (qContainer) {
       qContainer.innerHTML = `
         <div class="text-center py-6 space-y-5 animate-pop">
-          <span class="text-6xl block ${result.score >= 9 ? 'animate-bounce' : ''}">${result.score >= 9 ? '🏆' : '🎉'}</span>
-          <h3 class="text-2xl font-black text-slate-900">HOÀN THÀNH BÀI KIỂM TRA TRỰC TUYẾN!</h3>
-          <p class="text-xs text-slate-600">Bài thi của em đã được hệ thống tự động chấm và lưu vào sổ học bạ số!</p>
+          <span class="text-6xl block ${result.score >= 9 ? 'animate-bounce' : ''}">${isForce ? '⚠️' : result.score >= 9 ? '🏆' : '🎉'}</span>
+          <h3 class="text-2xl font-black text-slate-900">${isForce ? 'BÀI THI ĐÃ BỊ THU SỚM DO VI PHẠM' : 'HOÀN THÀNH BÀI KIỂM TRA TRỰC TUYẾN!'}</h3>
+          <p class="text-xs text-slate-600">${isForce ? 'Hệ thống đã tự động thu bài vì em vi phạm chuyển tab quá 3 lần.' : 'Bài thi của em đã được hệ thống tự động chấm và lưu vào sổ học bạ số!'}</p>
 
           <div class="inline-block p-5 bg-gradient-to-br from-amber-50 to-emerald-50 rounded-3xl border-2 border-amber-300 shadow-md space-y-1">
             <p class="text-xs font-bold text-slate-600">Kết Quả Điểm Số Đạt Được:</p>
-            <p class="text-4xl font-black text-emerald-700">${result.score} / 10 Điểm</p>
+            <p class="text-4xl font-black ${isForce ? 'text-rose-700' : 'text-emerald-700'}">${result.score} / 10 Điểm</p>
             <p class="text-xs font-black text-indigo-800">Xếp Loại: ${result.classification}</p>
             <p class="text-xs text-amber-600 font-bold">Thưởng: +${result.starsEarned} ⭐ Sao Vàng Vui Học!</p>
+            ${this.tabSwitchCount > 0 ? `
+              <p class="text-[11px] font-bold text-rose-700 pt-1">⚠️ Số lần chuyển tab ghi nhận: ${this.tabSwitchCount} lần</p>
+            ` : ''}
           </div>
 
           <!-- Chi tiết câu trả lời -->
@@ -1348,6 +1656,11 @@ class ExamPortal {
 
   closeRunnerModal() {
     if (this.runnerTimerInterval) clearInterval(this.runnerTimerInterval);
+    if (this.isAntiCheatListening) {
+      document.removeEventListener("visibilitychange", this.boundVisibilityHandler);
+      window.removeEventListener("blur", this.boundBlurHandler);
+      this.isAntiCheatListening = false;
+    }
     const modal = document.getElementById("online-exam-runner-modal");
     if (modal) modal.classList.remove("active");
   }
@@ -1572,6 +1885,7 @@ class ExamPortal {
                   <th class="p-3">Tên Đề Thi</th>
                   <th class="p-3 text-center">Điểm Số</th>
                   <th class="p-3 text-center">Xếp Loại</th>
+                  <th class="p-3 text-center">Vi Phạm</th>
                   <th class="p-3 text-center">Báo Điểm</th>
                   <th class="p-3 text-center">Xóa</th>
                 </tr>
@@ -1579,7 +1893,7 @@ class ExamPortal {
               <tbody class="divide-y divide-slate-200 font-medium">
                 ${history.length === 0 ? `
                   <tr>
-                    <td colspan="7" class="p-8 text-center text-slate-400 font-bold">Không tìm thấy lượt làm bài nào trong lớp này.</td>
+                    <td colspan="8" class="p-8 text-center text-slate-400 font-bold">Không tìm thấy lượt làm bài nào trong lớp này.</td>
                   </tr>
                 ` : history.map((h, idx) => `
                   <tr class="hover:bg-slate-50">
@@ -1588,6 +1902,15 @@ class ExamPortal {
                     <td class="p-3 font-semibold text-slate-700 line-clamp-1 max-w-[200px]">${h.examTitle}</td>
                     <td class="p-3 text-center font-black text-emerald-700 text-sm">${h.score} / 10</td>
                     <td class="p-3 text-center"><span class="badge ${h.score >= 9 ? 'badge-amber' : 'badge-emerald'} text-[10px] font-black">${h.classification}</span></td>
+                    <td class="p-3 text-center">
+                      ${h.tabSwitchCount > 0 ? `
+                        <span class="badge bg-rose-100 text-rose-800 text-[10px] font-bold" title="Học sinh rời khỏi tab ${h.tabSwitchCount} lần">
+                          ⚠️ ${h.tabSwitchCount} lần
+                        </span>
+                      ` : `
+                        <span class="text-slate-400 text-[10px]">Không</span>
+                      `}
+                    </td>
                     <td class="p-3 text-center">
                       <button onclick="examPortal.openParentReportModal('${h.id}')" class="btn btn-outline btn-xs font-black text-emerald-800 border-emerald-300 hover:bg-emerald-50 flex items-center gap-1 mx-auto" title="Gửi kết quả kiểm tra cho Phụ huynh qua Zalo">
                         <span>📱</span> <span>Báo Zalo</span>

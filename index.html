@@ -1457,6 +1457,26 @@
     </div>
   </div>
 
+  <!-- MODAL 27: CHẾ ĐỘ GIÁM THỊ PHÒNG THI TRỰC TUYẾN (LIVE EXAM PROCTORING MODAL) -->
+  <div id="exam-live-proctor-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-4xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-rose-100 rounded-xl animate-pulse">📡</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+              <span>BẢNG ĐIỀU KHIỂN GIÁM THỊ TRỰC TUYẾN</span>
+              <span class="badge bg-rose-600 text-white text-[10px] font-black">LIVE PROCTOR</span>
+            </h3>
+            <p class="text-xs text-slate-500 font-semibold">Theo dõi màn hình, tiến độ và cảnh báo gian lận của học sinh theo thời gian thực</p>
+          </div>
+        </div>
+        <button onclick="examPortal.closeLiveProctorModal()" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+      <div id="exam-live-proctor-content" class="py-2"></div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATIONS CONTAINER -->
   <div id="toast-container"></div>
 
