@@ -1389,6 +1389,23 @@
     </div>
   </div>
 
+  <!-- MODAL 23: GỬI BÁO CÁO ĐIỂM SỐ VỀ ZALO / PHỤ HUYNH (PARENT REPORT MODAL) -->
+  <div id="exam-parent-report-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-emerald-100 rounded-xl">📱</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900">BÁO ĐIỂM VỀ ZALO PHỤ HUYNH</h3>
+            <p class="text-xs text-slate-500 font-semibold">Tự động soạn tin nhắn thông báo kết quả kiểm tra định kỳ</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('exam-parent-report-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+      <div id="exam-parent-report-content" class="py-2"></div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATIONS CONTAINER -->
   <div id="toast-container"></div>
 

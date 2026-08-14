@@ -2,12 +2,14 @@
  * EXAM PORTAL COMPONENT
  * Quản lý Menu KIỂM TRA & ĐÁNH GIÁ ĐỊNH KỲ:
  * - Làm bài thi trực tuyến tự chấm điểm (Online Test Runner)
+ * - Hiệu ứng Pháo hoa & Âm thanh Vinh danh kèn Fanfare khi đạt điểm 9-10
+ * - Lọc lịch sử làm bài theo từng lớp (3A, 3B, 4A, 4B, 5A, 5B) & Tên học sinh
+ * - Gửi báo cáo kết quả thi về Zalo / Email Phụ huynh 1 chạm
  * - Tải Bảng đáp án & Biểu điểm riêng biệt (.doc)
  * - Thống kê phổ điểm & xếp loại học sinh theo Thông tư 27
  * - Trộn đề thi tự động 4 mã đề (101, 102, 103, 104) kèm ma trận đối chiếu
- * - Xem lại Lịch sử làm bài thi & Nhật ký chấm điểm của từng học sinh
- * - Xuất Bảng Điểm Tổng Hợp Lớp (.doc / .xls) nộp BGH & vào sổ điểm
- * - AI Tự Động Sinh Đề Kiểm Tra Theo Từng Chủ Đề GDPT 2018 (Chủ đề A..F)
+ * - Xuất Bảng Điểm Tổng Hợp Lớp (.doc / .xls)
+ * - AI Tự Động Sinh Đề Theo Chủ Đề Bài Học GDPT 2018 (Chủ đề A..F)
  * - Tải lên, Chỉnh sửa, Đổi file, Xóa bỏ đề thi (Đồng bộ 100% Supabase)
  */
 
@@ -19,6 +21,10 @@ class ExamPortal {
     this.currentTab = "all"; // 'all' | 'my_exams' | 'favorites'
     this.searchQuery = "";
     this.exams = [];
+
+    // History filter state
+    this.historyClass = "all"; // 'all' | '3A' | '3B' | '4A' | '4B' | '5A' | '5B'
+    this.historySearch = "";
 
     // Delete state
     this.pendingDeleteId = null;
@@ -71,12 +77,12 @@ class ExamPortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn Thông Tư 27/2020 & GDPT 2018</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">NGÂN HÀNG ĐỀ KIỂM TRA & ĐÁNH GIÁ</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Làm bài trực tuyến tự chấm, AI Tạo đề theo chủ đề, Trộn 4 mã đề, Lịch sử thi & Xuất bảng điểm</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Làm bài trực tuyến tự chấm, Pháo hoa điểm 10, Báo điểm Zalo, Lọc theo lớp & AI Sinh đề</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
-            <button onclick="examPortal.openHistoryModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Xem lại lịch sử làm bài và điểm số của học sinh">
-              <span>📜</span> <span>Lịch Sử Thi</span>
+            <button onclick="examPortal.openHistoryModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Xem lại lịch sử làm bài theo từng lớp">
+              <span>📜</span> <span>Lịch Sử Thi & Lớp</span>
             </button>
             <button onclick="examPortal.openAnalyticsModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Xem phổ điểm và tỷ lệ xếp loại T-H-C">
               <span>📈</span> <span>Phổ Điểm</span>
@@ -91,7 +97,7 @@ class ExamPortal {
             ` : `
               <div class="bg-white/15 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/30 text-center text-xs text-white">
                 <span class="font-bold block text-amber-300">💡 Dành Cho Học Sinh:</span>
-                <span>Em có thể bấm <b>'✍️ Thi Trực Tuyến'</b> để tự luyện tập và chấm điểm!</span>
+                <span>Em có thể bấm <b>'✍️ Thi Trực Tuyến'</b> để tự luyện tập và rinh sao pháo hoa!</span>
               </div>
             `}
           </div>
@@ -390,6 +396,105 @@ class ExamPortal {
   }
 
   // =========================================================================
+  // ÂM THANH KÈN VINH DANH (WEB AUDIO API FANFARE) & PHÁO HOA RỰC RỠ
+  // =========================================================================
+  playVictoryFanfare() {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+
+      // Hợp âm chiến thắng: C5 (523.25) -> E5 (659.25) -> G5 (783.99) -> C6 (1046.50)
+      const notes = [
+        { freq: 523.25, time: 0, dur: 0.15 },
+        { freq: 659.25, time: 0.15, dur: 0.15 },
+        { freq: 783.99, time: 0.30, dur: 0.20 },
+        { freq: 1046.50, time: 0.50, dur: 0.60 }
+      ];
+
+      notes.forEach(n => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(n.freq, ctx.currentTime + n.time);
+
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + n.time);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n.time + n.dur);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(ctx.currentTime + n.time);
+        osc.stop(ctx.currentTime + n.time + n.dur);
+      });
+    } catch (e) {}
+  }
+
+  launchConfetti() {
+    const canvas = document.createElement("canvas");
+    canvas.style.position = "fixed";
+    canvas.style.top = "0";
+    canvas.style.left = "0";
+    canvas.style.width = "100vw";
+    canvas.style.height = "100vh";
+    canvas.style.pointerEvents = "none";
+    canvas.style.zIndex = "99999";
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ["#f59e0b", "#10b981", "#3b82f6", "#ec4899", "#8b5cf6", "#ef4444"];
+    const particles = [];
+
+    for (let i = 0; i < 90; i++) {
+      particles.push({
+        x: canvas.width / 2 + (Math.random() - 0.5) * 200,
+        y: canvas.height / 2,
+        vx: (Math.random() - 0.5) * 16,
+        vy: (Math.random() - 0.8) * 18,
+        size: Math.random() * 8 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * 360,
+        vr: (Math.random() - 0.5) * 10,
+        alpha: 1
+      });
+    }
+
+    let frame = 0;
+    const animate = () => {
+      frame++;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.4; // Trọng lực
+        p.rotation += p.vr;
+        p.alpha -= 0.012;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        ctx.restore();
+      });
+
+      if (frame < 90) {
+        requestAnimationFrame(animate);
+      } else {
+        if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      }
+    };
+
+    animate();
+  }
+
+  // =========================================================================
   // 1. LÀM BÀI THI TRỰC TUYẾN TỰ CHẤM ĐIỂM (ONLINE TEST RUNNER)
   // =========================================================================
   async startOnlineTest(id) {
@@ -539,7 +644,7 @@ class ExamPortal {
       }
     });
 
-    const user = window.authService?.getUser() || { name: "Nguyễn Văn An" };
+    const user = window.authService?.getUser() || { name: "Nguyễn Văn An", class: "3A" };
     const rawScore = Number(((correctCount / this.runnerQuestions.length) * 7.0 + 3.0).toFixed(1));
     const durationSpent = Math.floor((Date.now() - this.runnerStartTime) / 1000);
 
@@ -547,10 +652,17 @@ class ExamPortal {
       examId: this.activeRunnerExam?.id,
       examTitle: this.activeRunnerExam?.title,
       studentName: user.name,
+      className: user.class || "3A",
       grade: this.activeRunnerExam?.grade,
       score: rawScore,
       durationSpentSeconds: durationSpent
     });
+
+    // Nếu đạt điểm 9-10 (Xuất sắc) -> Phát kèn Fanfare và Bắn pháo hoa Confetti!
+    if (result.score >= 9.0) {
+      this.playVictoryFanfare();
+      this.launchConfetti();
+    }
 
     const qContainer = document.getElementById("exam-runner-question-body");
     const navTrack = document.getElementById("exam-runner-nav-track");
@@ -559,7 +671,7 @@ class ExamPortal {
     if (qContainer) {
       qContainer.innerHTML = `
         <div class="text-center py-6 space-y-5 animate-pop">
-          <span class="text-6xl block">🏆</span>
+          <span class="text-6xl block ${result.score >= 9 ? 'animate-bounce' : ''}">${result.score >= 9 ? '🏆' : '🎉'}</span>
           <h3 class="text-2xl font-black text-slate-900">HOÀN THÀNH BÀI KIỂM TRA TRỰC TUYẾN!</h3>
           <p class="text-xs text-slate-600">Bài thi của em đã được hệ thống tự động chấm và lưu vào sổ học bạ số!</p>
 
@@ -573,7 +685,7 @@ class ExamPortal {
           <!-- Chi tiết câu trả lời -->
           <div class="text-left space-y-3 pt-3 border-t border-slate-200">
             <h4 class="font-extrabold text-slate-800 text-xs">📖 BẢNG GIẢI THÍCH CHI TIẾT TỪNG CÂU:</h4>
-            <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+            <div class="space-y-2 max-h-52 overflow-y-auto pr-1">
               ${this.runnerQuestions.map((q, idx) => {
                 const userAns = this.runnerAnswers[idx];
                 const isRight = userAns === q.correct;
@@ -590,8 +702,11 @@ class ExamPortal {
             </div>
           </div>
 
-          <div class="pt-2">
-            <button onclick="examPortal.closeRunnerModal()" class="btn btn-primary font-black btn-md px-8 shadow-lg">
+          <div class="flex items-center justify-center gap-2 pt-2 flex-wrap">
+            <button onclick="examPortal.openParentReportModal('${result.id}')" class="btn btn-outline btn-md font-black text-emerald-800 border-emerald-300 hover:bg-emerald-50 flex items-center gap-1.5 shadow">
+              <span>📱</span> <span>Báo Điểm Về Zalo / Phụ Huynh</span>
+            </button>
+            <button onclick="examPortal.closeRunnerModal()" class="btn btn-primary font-black btn-md px-6 shadow-lg">
               ✨ Hoàn Tất & Về Ngân Hàng Đề
             </button>
           </div>
@@ -779,48 +894,74 @@ class ExamPortal {
   }
 
   // =========================================================================
-  // 5. XEM LẠI LỊCH SỬ LÀM BÀI THI & XUẤT BẢNG ĐIỂM LỚP
+  // 5. XEM LẠI LỊCH SỬ LÀM BÀI THEO LỚP & XUẤT BẢNG ĐIỂM
   // =========================================================================
-  openHistoryModal(studentUsername = null) {
-    const history = window.examService.getExamHistory(studentUsername);
+  openHistoryModal() {
+    const history = window.examService.getExamHistory({
+      className: this.historyClass,
+      searchQuery: this.historySearch
+    });
+
     const modal = document.getElementById("exam-history-modal");
     const content = document.getElementById("exam-history-content");
 
     if (content) {
       content.innerHTML = `
         <div class="space-y-4 text-xs text-slate-800 animate-pop">
-          <div class="flex items-center justify-between flex-wrap gap-2">
-            <div class="flex items-center gap-2">
-              <span class="badge badge-emerald font-black text-xs">TỔNG CỘNG: ${history.length} LƯỢT THI</span>
-              <span class="text-[11px] text-slate-500">Ghi nhận tiến độ làm bài thời gian thực</span>
+          <!-- Thanh lọc Lớp & Tìm kiếm Học sinh -->
+          <div class="flex flex-col md:flex-row items-center justify-between gap-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="font-bold text-slate-500 text-[11px]">Chọn Lớp:</span>
+              ${['all', '3A', '3B', '4A', '4B', '5A', '5B'].map(cls => `
+                <button onclick="examPortal.selectHistoryClass('${cls}')" class="px-2.5 py-1 rounded-xl text-xs font-black transition-all ${this.historyClass === cls ? 'bg-cyan-700 text-white shadow' : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-200'}">
+                  ${cls === 'all' ? 'Tất Cả' : `Lớp ${cls}`}
+                </button>
+              `).join("")}
             </div>
-            <button onclick="examPortal.exportClassGradebookDoc('3A')" class="btn btn-emerald btn-xs font-black flex items-center gap-1 shadow">
-              <span>📊</span> <span>Xuất Bảng Điểm Lớp (.doc)</span>
-            </button>
+
+            <div class="flex items-center gap-2 w-full md:w-auto">
+              <input type="text" value="${this.historySearch}" oninput="examPortal.handleHistorySearch(this.value)" placeholder="Tìm tên học sinh, đề thi..." class="form-control text-xs py-1.5 pl-3">
+              <button onclick="examPortal.exportClassGradebookDoc(examPortal.historyClass === 'all' ? '3A' : examPortal.historyClass)" class="btn btn-emerald btn-sm font-black flex items-center gap-1 shadow shrink-0" title="Xuất bảng điểm lớp hiện tại ra file Word">
+                <span>📊</span> <span>Xuất Điểm ${this.historyClass === 'all' ? 'Lớp 3A' : `Lớp ${this.historyClass}`}</span>
+              </button>
+            </div>
           </div>
 
-          <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+          <div class="flex items-center justify-between text-[11px] text-slate-500 font-bold px-1">
+            <span>Hiển thị <b>${history.length}</b> lượt làm bài kiểm tra</span>
+            <span class="text-amber-600 font-black">⭐ Đánh giá định kỳ theo TT 27/2020</span>
+          </div>
+
+          <div class="overflow-x-auto border border-slate-200 rounded-2xl max-h-80 overflow-y-auto">
             <table class="w-full text-left border-collapse text-xs">
-              <thead class="bg-slate-100 text-slate-700 font-black text-[11px]">
+              <thead class="bg-slate-100 text-slate-700 font-black text-[11px] sticky top-0">
                 <tr>
                   <th class="p-3">Học Sinh</th>
+                  <th class="p-3 text-center">Lớp</th>
                   <th class="p-3">Tên Đề Thi</th>
-                  <th class="p-3 text-center">Khối</th>
                   <th class="p-3 text-center">Điểm Số</th>
                   <th class="p-3 text-center">Xếp Loại</th>
-                  <th class="p-3 text-center">Thời Gian</th>
-                  <th class="p-3 text-center">Thao Tác</th>
+                  <th class="p-3 text-center">Báo Điểm</th>
+                  <th class="p-3 text-center">Xóa</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200 font-medium">
-                ${history.map((h, idx) => `
+                ${history.length === 0 ? `
+                  <tr>
+                    <td colspan="7" class="p-8 text-center text-slate-400 font-bold">Không tìm thấy lượt làm bài nào trong lớp này.</td>
+                  </tr>
+                ` : history.map((h, idx) => `
                   <tr class="hover:bg-slate-50">
                     <td class="p-3 font-bold text-slate-900">${h.studentName}</td>
-                    <td class="p-3 font-semibold text-slate-700 line-clamp-1 max-w-[220px]">${h.examTitle}</td>
-                    <td class="p-3 text-center"><span class="badge badge-cyan text-[10px]">Lớp ${h.grade}</span></td>
+                    <td class="p-3 text-center"><span class="badge badge-cyan text-[10px] font-black">${h.className || '3A'}</span></td>
+                    <td class="p-3 font-semibold text-slate-700 line-clamp-1 max-w-[200px]">${h.examTitle}</td>
                     <td class="p-3 text-center font-black text-emerald-700 text-sm">${h.score} / 10</td>
                     <td class="p-3 text-center"><span class="badge ${h.score >= 9 ? 'badge-amber' : 'badge-emerald'} text-[10px] font-black">${h.classification}</span></td>
-                    <td class="p-3 text-center text-[10px] text-slate-400">${Math.floor((h.durationSpentSeconds || 120) / 60)}p ${((h.durationSpentSeconds || 120) % 60)}s</td>
+                    <td class="p-3 text-center">
+                      <button onclick="examPortal.openParentReportModal('${h.id}')" class="btn btn-outline btn-xs font-black text-emerald-800 border-emerald-300 hover:bg-emerald-50 flex items-center gap-1 mx-auto" title="Gửi kết quả kiểm tra cho Phụ huynh qua Zalo">
+                        <span>📱</span> <span>Báo Zalo</span>
+                      </button>
+                    </td>
                     <td class="p-3 text-center">
                       <button onclick="examPortal.deleteAttemptRecord('${h.id}')" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="Xóa lượt thi này">
                         🗑️
@@ -838,6 +979,16 @@ class ExamPortal {
     if (modal) modal.classList.add("active");
   }
 
+  selectHistoryClass(className) {
+    this.historyClass = className;
+    this.openHistoryModal();
+  }
+
+  handleHistorySearch(query) {
+    this.historySearch = query;
+    this.openHistoryModal();
+  }
+
   deleteAttemptRecord(attemptId) {
     if (confirm("Thầy Cô có chắc chắn muốn xóa bản ghi kết quả thi này?")) {
       window.examService.deleteExamHistory(attemptId);
@@ -847,7 +998,7 @@ class ExamPortal {
   }
 
   exportClassGradebookDoc(className = "3A") {
-    const history = window.examService.getExamHistory();
+    const history = window.examService.getExamHistory({ className: className === 'all' ? '3A' : className });
     if (window.docExportService?.exportGradebookExcelDoc) {
       window.docExportService.exportGradebookExcelDoc(className, 3, history);
       window.app.showToast(`📊 Đang tải xuống Bảng Điểm Tổng Hợp Lớp ${className}!`, "success");
@@ -855,7 +1006,74 @@ class ExamPortal {
   }
 
   // =========================================================================
-  // 6. AI TỰ ĐỘNG SINH ĐỀ KIỂM TRA THEO TỪNG CHỦ ĐỀ GDPT 2018
+  // 6. GỬI THÔNG BÁO BÁO ĐIỂM VỀ ZALO / EMAIL PHỤ HUYNH
+  // =========================================================================
+  openParentReportModal(attemptId) {
+    const att = window.examService.getAttemptById(attemptId);
+    if (!att) return;
+
+    const messageTemplate = `🏫 TRƯỜNG TIỂU HỌC VUI HỌC - THÔNG BÁO KẾT QUẢ KIỂM TRA ĐỊNH KỲ
+👨‍🎓 Kính gửi Quý Phụ huynh em: ${att.studentName} - Lớp: ${att.className || '3A'}
+📝 Bài kiểm tra: ${att.examTitle}
+🎯 Điểm số đạt được: ${att.score} / 10 Điểm
+🏅 Xếp loại theo TT 27/2020: ${att.classification}
+⭐ Phần thưởng: +${att.starsEarned || 20} Sao Vàng Vui Học
+💬 Nhận xét của Thầy/Cô: ${att.teacherComment || 'Em nắm rất vững kiến thức lý thuyết và thực hành máy tính xuất sắc!'}
+------------------------------------
+Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà trường!`;
+
+    const modal = document.getElementById("exam-parent-report-modal");
+    const content = document.getElementById("exam-parent-report-content");
+
+    if (content) {
+      content.innerHTML = `
+        <div class="space-y-4 text-xs text-slate-800 animate-pop">
+          <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="badge badge-emerald font-black text-[10px]">PHIẾU BÁO ĐIỂM ĐỊNH KỲ</span>
+              <span class="font-bold text-slate-600">Lớp: <b>${att.className || '3A'}</b></span>
+            </div>
+            <h3 class="text-base font-black text-slate-900">${att.studentName}</h3>
+            <p class="text-emerald-800 font-bold">🎯 Điểm: <b>${att.score}/10</b> • ${att.classification}</p>
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Mẫu Tin Nhắn Báo Điểm Tự Động (Gửi Zalo / SMS):</label>
+            <textarea id="parent-report-text" rows="8" class="form-control text-xs font-mono leading-relaxed p-3">${messageTemplate}</textarea>
+          </div>
+
+          <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-200 flex-wrap">
+            <span class="text-[11px] text-slate-400">Thầy Cô bấm sao chép và dán vào Zalo nhóm lớp</span>
+            <div class="flex items-center gap-2">
+              <button onclick="examPortal.copyParentReportText()" class="btn btn-outline btn-sm font-black text-cyan-800 border-cyan-300 hover:bg-cyan-50 flex items-center gap-1">
+                <span>📋</span> <span>Sao Chép Tin Nhắn</span>
+              </button>
+              <a href="https://zalo.me" target="_blank" class="btn btn-primary btn-sm font-black bg-blue-600 hover:bg-blue-700 text-white shadow-md flex items-center gap-1">
+                <span>📲</span> <span>Mở Zalo Web / App</span>
+              </a>
+              <button onclick="document.getElementById('exam-parent-report-modal').classList.remove('active')" class="btn btn-outline btn-sm font-bold">
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (modal) modal.classList.add("active");
+  }
+
+  copyParentReportText() {
+    const textarea = document.getElementById("parent-report-text");
+    if (textarea) {
+      textarea.select();
+      navigator.clipboard.writeText(textarea.value);
+      window.app.showToast("📋 Đã sao chép nội dung báo điểm! Thầy Cô hãy dán vào Zalo Phụ huynh.", "success");
+    }
+  }
+
+  // =========================================================================
+  // 7. AI TỰ ĐỘNG SINH ĐỀ KIỂM TRA THEO TỪNG CHỦ ĐỀ GDPT 2018
   // =========================================================================
   openAIGeneratorModal() {
     const modal = document.getElementById("ai-exam-generator-modal");

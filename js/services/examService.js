@@ -575,15 +575,21 @@ class ExamService {
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     if (!db.exam_attempts) db.exam_attempts = [];
 
+    const user = window.authService?.getUser();
+    const studentClass = attemptData.className || user?.class || (attemptData.grade === 3 ? "3A" : attemptData.grade === 4 ? "4A" : "5A");
+
     const attemptObj = {
       id: "att_" + Date.now(),
       examId: attemptData.examId,
       examTitle: attemptData.examTitle,
-      studentName: attemptData.studentName || "Nguyễn Văn An",
+      studentName: attemptData.studentName || user?.name || "Nguyễn Văn An",
+      studentUsername: user?.username || "hs3a01",
+      className: studentClass,
       grade: attemptData.grade || 3,
       score: attemptData.score, // Thang điểm 10
       totalScore: 10,
       classification: attemptData.score >= 9 ? "Hoàn thành Tốt (T)" : attemptData.score >= 5 ? "Hoàn thành (H)" : "Chưa hoàn thành (C)",
+      teacherComment: attemptData.score >= 9 ? "Em nắm rất vững kiến thức, thực hành thành thạo và hoàn thành xuất sắc bài thi!" : attemptData.score >= 7 ? "Em làm bài tốt, cần rèn luyện thêm kỹ năng thao tác nhanh hơn." : "Em cần chú ý ôn tập thêm phần lý thuyết và quy tắc an toàn số.",
       starsEarned: attemptData.score >= 8 ? 20 : 10,
       durationSpentSeconds: attemptData.durationSpentSeconds || 180,
       submittedAt: new Date().toISOString()
@@ -721,18 +727,21 @@ class ExamService {
     };
   }
 
-  // 15. Lấy danh sách lịch sử thi của học sinh
-  getExamHistory(studentUsername = null) {
+  // 15. Lấy danh sách lịch sử thi của học sinh (Hỗ trợ lọc theo lớp, từ khóa, học sinh)
+  getExamHistory(filter = {}) {
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     let attempts = db.exam_attempts || [
       {
         id: "att_01",
         examTitle: "Đề Kiểm Tra Cuối Học Kỳ I - Tin Học Lớp 3 (KNTT)",
         studentName: "Nguyễn Văn An",
+        studentUsername: "hs3a01",
+        className: "3A",
         grade: 3,
         score: 10.0,
         totalScore: 10,
         classification: "Hoàn thành Tốt (T)",
+        teacherComment: "Em nắm rất vững kiến thức lý thuyết và thực hành vẽ tranh trên Paint rất sáng tạo!",
         starsEarned: 20,
         durationSpentSeconds: 145,
         submittedAt: "2026-08-14T08:30:00.000Z"
@@ -741,10 +750,13 @@ class ExamService {
         id: "att_02",
         examTitle: "Đề Kiểm Tra Giữa Học Kỳ I - Tin Học Lớp 4 (Cánh Diều)",
         studentName: "Lê Bảo Ngọc",
+        studentUsername: "hs4a02",
+        className: "4A",
         grade: 4,
         score: 8.5,
         totalScore: 10,
         classification: "Hoàn thành (H)",
+        teacherComment: "Em làm bài tốt, cần chú ý ôn thêm thao tác chèn hình ảnh trên PowerPoint.",
         starsEarned: 15,
         durationSpentSeconds: 210,
         submittedAt: "2026-08-14T09:15:00.000Z"
@@ -753,21 +765,71 @@ class ExamService {
         id: "att_03",
         examTitle: "Đề Kiểm Tra Thường Xuyên 15 Phút: Khám Phá Máy Tính",
         studentName: "Trần Minh Quân",
+        studentUsername: "hs3a03",
+        className: "3A",
         grade: 3,
         score: 9.0,
         totalScore: 10,
         classification: "Hoàn thành Tốt (T)",
+        teacherComment: "Nhận biết các bộ phận máy tính và gõ phím đúng quy tắc rất tốt!",
         starsEarned: 20,
         durationSpentSeconds: 95,
         submittedAt: "2026-08-14T10:00:00.000Z"
+      },
+      {
+        id: "att_04",
+        examTitle: "Đề Kiểm Tra Cuối Học Kỳ I - Tin Học Lớp 3 (KNTT)",
+        studentName: "Phạm Hoàng Long",
+        studentUsername: "hs3b01",
+        className: "3B",
+        grade: 3,
+        score: 9.5,
+        totalScore: 10,
+        classification: "Hoàn thành Tốt (T)",
+        teacherComment: "Bài thực hành Paint xuất sắc, thao tác chuột rất chuẩn xác!",
+        starsEarned: 20,
+        durationSpentSeconds: 160,
+        submittedAt: "2026-08-14T10:30:00.000Z"
+      },
+      {
+        id: "att_05",
+        examTitle: "Bộ Ma Trận & Đề Kiểm Tra Cuối HK2 - Lớp 5 (CTST)",
+        studentName: "Hoàng Gia Huy",
+        studentUsername: "hs5a01",
+        className: "5A",
+        grade: 5,
+        score: 10.0,
+        totalScore: 10,
+        classification: "Hoàn thành Tốt (T)",
+        teacherComment: "Lập trình Scratch xuất sắc, giải quyết bài toán nhanh và chuẩn xác!",
+        starsEarned: 20,
+        durationSpentSeconds: 230,
+        submittedAt: "2026-08-14T11:00:00.000Z"
       }
     ];
 
-    if (studentUsername) {
-      attempts = attempts.filter(a => a.studentName.toLowerCase().includes(studentUsername.toLowerCase()));
+    if (typeof filter === 'string') {
+      attempts = attempts.filter(a => a.studentName.toLowerCase().includes(filter.toLowerCase()) || (a.studentUsername && a.studentUsername.toLowerCase().includes(filter.toLowerCase())));
+    } else if (typeof filter === 'object' && filter !== null) {
+      if (filter.className && filter.className !== 'all') {
+        attempts = attempts.filter(a => (a.className || "3A") === filter.className);
+      }
+      if (filter.grade && filter.grade !== 'all') {
+        attempts = attempts.filter(a => a.grade === parseInt(filter.grade));
+      }
+      if (filter.searchQuery) {
+        const q = filter.searchQuery.toLowerCase();
+        attempts = attempts.filter(a => a.studentName.toLowerCase().includes(q) || a.examTitle.toLowerCase().includes(q));
+      }
     }
 
     return attempts;
+  }
+
+  // Lấy 1 bản ghi bài thi theo ID
+  getAttemptById(id) {
+    const history = this.getExamHistory();
+    return history.find(h => h.id === id);
   }
 
   // 16. Xóa 1 bản ghi lịch sử làm bài (Reset lượt thi)
