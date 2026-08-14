@@ -327,6 +327,211 @@ class DocExportService {
     URL.revokeObjectURL(url);
   }
 
+  // 3. Xuất file Đề Kiểm Tra Word (.doc) chuẩn Thông tư 27 kèm Ma Trận & Thang Điểm
+  exportExamDoc(exam) {
+    const filename = `${this.slugify(exam.title || "De_Kiem_Tra_Tin_Hoc")}.doc`;
+
+    const htmlContent = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset="utf-8">
+        <title>${exam.title}</title>
+        <style>
+          body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.35;
+            color: #000;
+            margin: 15mm 15mm 15mm 20mm;
+          }
+          .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+          }
+          .header-table td {
+            vertical-align: top;
+            font-size: 11pt;
+          }
+          .student-box {
+            width: 100%;
+            border: 1px solid #000;
+            border-collapse: collapse;
+            margin: 10px 0 15px 0;
+          }
+          .student-box td {
+            border: 1px solid #000;
+            padding: 6px 10px;
+            font-size: 11pt;
+          }
+          .title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 10px 0 3px 0;
+          }
+          .subtitle {
+            text-align: center;
+            font-size: 11pt;
+            font-style: italic;
+            margin-bottom: 12px;
+          }
+          h3 {
+            font-size: 12pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 12px;
+            margin-bottom: 4px;
+          }
+          .question-item {
+            margin-bottom: 10px;
+            font-size: 11pt;
+          }
+          .option-grid {
+            margin-left: 20px;
+            font-size: 11pt;
+          }
+        </style>
+      </head>
+      <body>
+        <table class="header-table">
+          <tr>
+            <td style="width: 45%; text-align: center;">
+              <b>TRƯỜNG TIỂU HỌC VUI HỌC</b><br>
+              <b>TỔ CHUYÊN MÔN TIN HỌC</b><br>
+              <hr style="width: 50%; margin: 2px auto; border: 0.5px solid #000;">
+            </td>
+            <td style="width: 55%; text-align: center;">
+              <b>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</b><br>
+              <b>Độc lập - Tự do - Hạnh phúc</b><br>
+              <hr style="width: 60%; margin: 2px auto; border: 0.5px solid #000;">
+            </td>
+          </tr>
+        </table>
+
+        <div class="title">${exam.title}</div>
+        <div class="subtitle">Môn: Tin học - Khối Lớp ${exam.grade} • Thời gian làm bài: ${exam.durationMinutes || 35} phút (Không kể thời gian phát đề)</div>
+
+        <table class="student-box">
+          <tr>
+            <td style="width: 65%;">
+              <b>Họ và tên học sinh:</b> ............................................................................<br>
+              <b>Lớp:</b> ................... &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>Ngày kiểm tra:</b> ...... / ...... / 202...
+            </td>
+            <td style="width: 35%; text-align: center;">
+              <b>ĐIỂM SỐ</b><br><br>
+              <b style="font-size: 16pt;">........ / 10</b>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <b>Lời nhận xét của Thầy/Cô giáo:</b><br>
+              ...................................................................................................................................................................................
+            </td>
+          </tr>
+        </table>
+
+        <h3>PHẦN I: TRẮC NGHIỆM KHÁCH QUAN (7.0 ĐIỂM)</h3>
+        <p style="font-size: 11pt; font-style: italic; margin-top: 0;">Em hãy khoanh tròn vào chữ cái đặt trước câu trả lời đúng nhất (Mỗi câu đúng được 1.0 điểm):</p>
+
+        <div class="question-item">
+          <b>Câu 1 (Mức 1):</b> Thiết bị nào của máy tính giúp em nhìn thấy kết quả làm việc, hình ảnh và video bài học?<br>
+          <div class="option-grid">
+            A. Chuột máy tính &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            B. Bàn phím &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            C. Màn hình &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            D. Thân máy
+          </div>
+        </div>
+
+        <div class="question-item">
+          <b>Câu 2 (Mức 1):</b> Hai phím nào sau đây có gờ nổi giúp em định vị vị trí đặt ngón trỏ trên hàng phím cơ sở?<br>
+          <div class="option-grid">
+            A. Phím G và H &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            B. Phím F và J &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            C. Phím A và L &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            D. Phím D và K
+          </div>
+        </div>
+
+        <div class="question-item">
+          <b>Câu 3 (Mức 2):</b> Để lưu lại bài vẽ hoặc văn bản đang làm vào máy tính, em nhấn tổ hợp phím nào?<br>
+          <div class="option-grid">
+            A. Ctrl + C &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            B. Ctrl + V &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            C. Ctrl + S &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            D. Ctrl + Z
+          </div>
+        </div>
+
+        <div class="question-item">
+          <b>Câu 4 (Mức 2):</b> Khi muốn xóa ký tự nằm ở bên trái con trỏ soạn thảo, em sử dụng phím nào?<br>
+          <div class="option-grid">
+            A. Phím Delete &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            B. Phím Backspace &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            C. Phím Enter &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            D. Phím Shift
+          </div>
+        </div>
+
+        <div class="question-item">
+          <b>Câu 5 (Mức 2):</b> Trước khi rời khỏi phòng thực hành Tin học, hành động nào sau đây là ĐÚNG quy định?<br>
+          <div class="option-grid">
+            A. Rút thẳng dây điện nguồn &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            B. Tắt máy đúng quy trình qua nút Start -> Shut down và xếp ghế gọn gàng<br>
+            C. Để nguyên máy hoạt động &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            D. Mang đồ ăn vào phòng máy
+          </div>
+        </div>
+
+        <div class="question-item">
+          <b>Câu 6 (Mức 3):</b> Thư mục (Folder) trong máy tính có biểu tượng màu gì đặc trưng và dùng để làm gì?<br>
+          <div class="option-grid">
+            A. Màu xanh lá cây, dùng để vẽ tranh &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            B. Màu vàng hình kẹp giấy, dùng để chứa và phân loại các tệp tin<br>
+            C. Màu đỏ, dùng để xóa dữ liệu &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            D. Màu tím, dùng để nghe nhạc
+          </div>
+        </div>
+
+        <div class="question-item">
+          <b>Câu 7 (Mức 3):</b> Thông tin cá nhân nào sau đây em TUYỆT ĐỐI KHÔNG được chia sẻ cho người lạ trên Internet?<br>
+          <div class="option-grid">
+            A. Tên trò chơi yêu thích &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            B. Mật khẩu tài khoản, địa chỉ nhà và số điện thoại phụ huynh<br>
+            C. Tên bài hát thiếu nhi &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            D. Màu sắc em thích
+          </div>
+        </div>
+
+        <h3>PHẦN II: THỰC HÀNH TRÊN MÁY TÍNH (3.0 ĐIỂM)</h3>
+        <p style="font-size: 11pt; margin-top: 2px;">
+          <b>Câu 8 (Mức 3 - 2.0 điểm):</b> Em hãy mở phần mềm Paint (hoặc Word), tạo một thư mục mang tên em tại ổ đĩa D: và vẽ/soạn thảo một bức tranh ngôi trường mơ ước.<br>
+          <b>Câu 9 (Mức 4 - 1.0 điểm):</b> Chèn biểu tượng hoặc trang trí màu sắc hài hòa, lưu tệp với tên <i>"BaiKiemTra_HoVaTen.png"</i> vào thư mục vừa tạo.
+        </p>
+
+        <p style="text-align: center; font-style: italic; margin-top: 20px; font-size: 11pt;">
+          --- HẾT (Cán bộ coi thi không giải thích gì thêm) ---
+        </p>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + htmlContent], {
+      type: 'application/msword'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   slugify(text) {
     return text.toString().toLowerCase()
       .normalize('NFD')
@@ -339,3 +544,4 @@ class DocExportService {
 }
 
 window.docExportService = new DocExportService();
+

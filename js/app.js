@@ -71,6 +71,9 @@ class Application {
     } else if (route === "lectures") {
       document.getElementById("portal-view")?.classList.remove("hidden");
       window.lecturePortal.render("main-content-area");
+    } else if (route === "exams") {
+      document.getElementById("portal-view")?.classList.remove("hidden");
+      window.examPortal.render("main-content-area");
     } else {
       document.getElementById("landing-view")?.classList.remove("hidden");
     }
