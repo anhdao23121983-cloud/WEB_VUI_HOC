@@ -1,10 +1,8 @@
 /**
  * EXAM PORTAL COMPONENT
  * Quản lý Menu KIỂM TRA & ĐÁNH GIÁ ĐỊNH KỲ:
- * - Phân chia 3 Thư Mục Con Rõ Ràng:
- *   📁 1. Thư mục: Kiểm tra môn Tin lớp 3
- *   📁 2. Thư mục: Kiểm tra môn Tin lớp 4
- *   📁 3. Thư mục: Kiểm tra môn Tin lớp 5
+ * - Phân chia 3 Thư Mục Con Rõ Ràng (Lớp 3, Lớp 4, Lớp 5)
+ * - Tùy chỉnh Tên, Icon, Màu Sắc & Mô tả cho từng Thư Mục Con (Customize Folder Appearance)
  * - Chức năng Giáo viên Tải lên hoặc Xóa bỏ file trong từng thư mục
  * - Đồng bộ 100% FE -> BE -> Supabase Cloud Database (public.exam_assessments)
  * - Làm bài thi trực tuyến tự chấm điểm, Pháo hoa điểm 10 & Kèn Fanfare
@@ -29,6 +27,9 @@ class ExamPortal {
     // Delete state
     this.pendingDeleteId = null;
     this.pendingDeleteTitle = "";
+
+    // Folder Customization State
+    this.customizingGrade = 3;
 
     // Online Test Runner State
     this.activeRunnerExam = null;
@@ -66,6 +67,11 @@ class ExamPortal {
     const countLop4 = rawAll.filter(e => e.grade === 4).length;
     const countLop5 = rawAll.filter(e => e.grade === 5).length;
 
+    // Lấy cấu hình tùy chỉnh của 3 thư mục
+    const cfg3 = window.examService.getFolderConfig(3);
+    const cfg4 = window.examService.getFolderConfig(4);
+    const cfg5 = window.examService.getFolderConfig(5);
+
     if (this.currentTab === "my_exams" && user) {
       this.exams = allExams.filter(e => (e.createdByUsername === user.username) || (e.authorName === user.name) || user.role === 'admin');
     } else if (this.currentTab === "favorites") {
@@ -73,6 +79,8 @@ class ExamPortal {
     } else {
       this.exams = allExams;
     }
+
+    const currentFolderCfg = this.selectedFolder !== "all" ? window.examService.getFolderConfig(this.selectedFolder) : null;
 
     container.innerHTML = `
       <div class="space-y-6 animate-pop">
@@ -84,7 +92,7 @@ class ExamPortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn Thông Tư 27/2020 & GDPT 2018</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">NGÂN HÀNG ĐỀ KIỂM TRA & ĐÁNH GIÁ</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Hệ thống phân chia 3 Thư Mục Lớp 3 - Lớp 4 - Lớp 5, Đồng bộ 100% Supabase Cloud</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Hệ thống phân chia 3 Thư Mục Lớp 3 - 4 - 5, Tùy chỉnh màu sắc nhận diện & Đồng bộ Supabase</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
@@ -111,7 +119,7 @@ class ExamPortal {
         </div>
 
         <!-- =========================================================================
-             HỆ THỐNG 3 THƯ MỤC CON LỚN (3 SUB-FOLDERS: LỚP 3, LỚP 4, LỚP 5)
+             HỆ THỐNG 3 THƯ MỤC CON (CÓ TÙY CHỈNH TÊN, ICON & MÀU SẮC)
              ========================================================================= -->
         ${this.selectedFolder === "all" ? `
           <div class="space-y-3">
@@ -120,86 +128,116 @@ class ExamPortal {
                 <span>📁 THƯ MỤC KIỂM TRA THEO KHỐI LỚP (GDPT 2018)</span>
                 <span class="badge badge-emerald text-[11px] font-black">3 Thư Mục</span>
               </h3>
-              <span class="text-xs text-slate-500">Bấm vào thư mục để mở và quản lý tệp tin</span>
+              <span class="text-xs text-slate-500">Thầy Cô có thể bấm ⚙️ để tùy chỉnh Tên, Icon và Màu sắc</span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <!-- THƯ MỤC 1: KIỂM TRA MÔN TIN LỚP 3 -->
-              <div onclick="examPortal.enterFolder(3)" class="glass-card p-5 hover:border-blue-500 transition-all duration-300 shadow-md hover:shadow-2xl cursor-pointer group relative overflow-hidden bg-gradient-to-br from-blue-50/80 via-white to-indigo-50/50 border-2 ${this.selectedFolder === 3 ? 'border-blue-600 ring-2 ring-blue-300' : 'border-slate-200'}">
+              <!-- THƯ MỤC 1: LỚP 3 -->
+              <div class="glass-card p-5 hover:border-blue-500 transition-all duration-300 shadow-md hover:shadow-2xl group relative overflow-hidden bg-gradient-to-br ${cfg3.bgLight || 'from-blue-50/80 via-white to-indigo-50/50'} border-2 ${this.selectedFolder === 3 ? 'border-blue-600 ring-2 ring-blue-300' : (cfg3.borderColor || 'border-slate-200')}">
                 <div class="flex items-start justify-between">
-                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all">
-                    📁
+                  <div onclick="examPortal.enterFolder(3)" class="w-14 h-14 rounded-2xl bg-gradient-to-br ${cfg3.colorGradient || 'from-blue-600 to-indigo-700'} text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all cursor-pointer">
+                    ${cfg3.icon || '📁'}
                   </div>
-                  <span class="badge bg-blue-600 text-white font-black text-xs px-3 py-1">🎒 KHỐI LỚP 3</span>
+                  
+                  <div class="flex items-center gap-1.5">
+                    <span class="badge bg-gradient-to-r ${cfg3.colorGradient || 'from-blue-600 to-indigo-700'} text-white font-black text-xs px-2.5 py-0.5">
+                      ${cfg3.badgeText || '🎒 KHỐI LỚP 3'}
+                    </span>
+                    ${isTeacher ? `
+                      <button onclick="event.stopPropagation(); examPortal.openFolderCustomizeModal(3)" class="p-1.5 bg-white/80 hover:bg-white text-slate-600 hover:text-slate-900 rounded-xl border border-slate-200 shadow-sm transition-all hover:scale-110" title="Tùy chỉnh Tên, Icon & Màu sắc thư mục này">
+                        ⚙️
+                      </button>
+                    ` : ''}
+                  </div>
                 </div>
 
-                <div class="mt-4 space-y-1.5">
+                <div onclick="examPortal.enterFolder(3)" class="mt-4 space-y-1.5 cursor-pointer">
                   <h4 class="text-base font-black text-slate-900 group-hover:text-blue-700 transition-all flex items-center gap-1.5">
-                    <span>Kiểm Tra Môn Tin Lớp 3</span>
+                    <span>${cfg3.title}</span>
                   </h4>
-                  <p class="text-xs text-slate-500 line-clamp-2">Đề kiểm tra 15 phút, Giữa kỳ, Cuối kỳ 1-2 & Ma trận đặc tả bộ sách KNTT, Cánh Diều, CTST.</p>
+                  <p class="text-xs text-slate-500 line-clamp-2">${cfg3.description}</p>
                 </div>
 
                 <div class="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-bold text-slate-600">
                   <span>📦 <b>${countLop3}</b> Tệp Đề Thi</span>
-                  <span class="text-blue-600 group-hover:translate-x-1 transition-all flex items-center gap-1">
+                  <button onclick="examPortal.enterFolder(3)" class="text-blue-600 font-black group-hover:translate-x-1 transition-all flex items-center gap-1">
                     Mở thư mục ➔
-                  </span>
+                  </button>
                 </div>
               </div>
 
-              <!-- THƯ MỤC 2: KIỂM TRA MÔN TIN LỚP 4 -->
-              <div onclick="examPortal.enterFolder(4)" class="glass-card p-5 hover:border-amber-500 transition-all duration-300 shadow-md hover:shadow-2xl cursor-pointer group relative overflow-hidden bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50 border-2 ${this.selectedFolder === 4 ? 'border-amber-600 ring-2 ring-amber-300' : 'border-slate-200'}">
+              <!-- THƯ MỤC 2: LỚP 4 -->
+              <div class="glass-card p-5 hover:border-amber-500 transition-all duration-300 shadow-md hover:shadow-2xl group relative overflow-hidden bg-gradient-to-br ${cfg4.bgLight || 'from-amber-50/80 via-white to-orange-50/50'} border-2 ${this.selectedFolder === 4 ? 'border-amber-600 ring-2 ring-amber-300' : (cfg4.borderColor || 'border-slate-200')}">
                 <div class="flex items-start justify-between">
-                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-600 to-orange-600 text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all">
-                    📁
+                  <div onclick="examPortal.enterFolder(4)" class="w-14 h-14 rounded-2xl bg-gradient-to-br ${cfg4.colorGradient || 'from-amber-600 to-orange-600'} text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all cursor-pointer">
+                    ${cfg4.icon || '📁'}
                   </div>
-                  <span class="badge bg-amber-600 text-white font-black text-xs px-3 py-1">🚀 KHỐI LỚP 4</span>
+
+                  <div class="flex items-center gap-1.5">
+                    <span class="badge bg-gradient-to-r ${cfg4.colorGradient || 'from-amber-600 to-orange-600'} text-white font-black text-xs px-2.5 py-0.5">
+                      ${cfg4.badgeText || '🚀 KHỐI LỚP 4'}
+                    </span>
+                    ${isTeacher ? `
+                      <button onclick="event.stopPropagation(); examPortal.openFolderCustomizeModal(4)" class="p-1.5 bg-white/80 hover:bg-white text-slate-600 hover:text-slate-900 rounded-xl border border-slate-200 shadow-sm transition-all hover:scale-110" title="Tùy chỉnh Tên, Icon & Màu sắc thư mục này">
+                        ⚙️
+                      </button>
+                    ` : ''}
+                  </div>
                 </div>
 
-                <div class="mt-4 space-y-1.5">
+                <div onclick="examPortal.enterFolder(4)" class="mt-4 space-y-1.5 cursor-pointer">
                   <h4 class="text-base font-black text-slate-900 group-hover:text-amber-700 transition-all flex items-center gap-1.5">
-                    <span>Kiểm Tra Môn Tin Lớp 4</span>
+                    <span>${cfg4.title}</span>
                   </h4>
-                  <p class="text-xs text-slate-500 line-clamp-2">Phần cứng, phần mềm, cây thư mục, soạn thảo trình chiếu PowerPoint và quy tắc an toàn số.</p>
+                  <p class="text-xs text-slate-500 line-clamp-2">${cfg4.description}</p>
                 </div>
 
                 <div class="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-bold text-slate-600">
                   <span>📦 <b>${countLop4}</b> Tệp Đề Thi</span>
-                  <span class="text-amber-600 group-hover:translate-x-1 transition-all flex items-center gap-1">
+                  <button onclick="examPortal.enterFolder(4)" class="text-amber-600 font-black group-hover:translate-x-1 transition-all flex items-center gap-1">
                     Mở thư mục ➔
-                  </span>
+                  </button>
                 </div>
               </div>
 
-              <!-- THƯ MỤC 3: KIỂM TRA MÔN TIN LỚP 5 -->
-              <div onclick="examPortal.enterFolder(5)" class="glass-card p-5 hover:border-emerald-500 transition-all duration-300 shadow-md hover:shadow-2xl cursor-pointer group relative overflow-hidden bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 border-2 ${this.selectedFolder === 5 ? 'border-emerald-600 ring-2 ring-emerald-300' : 'border-slate-200'}">
+              <!-- THƯ MỤC 3: LỚP 5 -->
+              <div class="glass-card p-5 hover:border-emerald-500 transition-all duration-300 shadow-md hover:shadow-2xl group relative overflow-hidden bg-gradient-to-br ${cfg5.bgLight || 'from-emerald-50/80 via-white to-teal-50/50'} border-2 ${this.selectedFolder === 5 ? 'border-emerald-600 ring-2 ring-emerald-300' : (cfg5.borderColor || 'border-slate-200')}">
                 <div class="flex items-start justify-between">
-                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all">
-                    📁
+                  <div onclick="examPortal.enterFolder(5)" class="w-14 h-14 rounded-2xl bg-gradient-to-br ${cfg5.colorGradient || 'from-emerald-600 to-teal-600'} text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all cursor-pointer">
+                    ${cfg5.icon || '📁'}
                   </div>
-                  <span class="badge bg-emerald-600 text-white font-black text-xs px-3 py-1">⭐ KHỐI LỚP 5</span>
+
+                  <div class="flex items-center gap-1.5">
+                    <span class="badge bg-gradient-to-r ${cfg5.colorGradient || 'from-emerald-600 to-teal-600'} text-white font-black text-xs px-2.5 py-0.5">
+                      ${cfg5.badgeText || '⭐ KHỐI LỚP 5'}
+                    </span>
+                    ${isTeacher ? `
+                      <button onclick="event.stopPropagation(); examPortal.openFolderCustomizeModal(5)" class="p-1.5 bg-white/80 hover:bg-white text-slate-600 hover:text-slate-900 rounded-xl border border-slate-200 shadow-sm transition-all hover:scale-110" title="Tùy chỉnh Tên, Icon & Màu sắc thư mục này">
+                        ⚙️
+                      </button>
+                    ` : ''}
+                  </div>
                 </div>
 
-                <div class="mt-4 space-y-1.5">
+                <div onclick="examPortal.enterFolder(5)" class="mt-4 space-y-1.5 cursor-pointer">
                   <h4 class="text-base font-black text-slate-900 group-hover:text-emerald-700 transition-all flex items-center gap-1.5">
-                    <span>Kiểm Tra Môn Tin Lớp 5</span>
+                    <span>${cfg5.title}</span>
                   </h4>
-                  <p class="text-xs text-slate-500 line-clamp-2">Mạng máy tính, tìm kiếm Internet, bảng tính Excel cơ bản và lập trình Scratch giải quyết bài toán.</p>
+                  <p class="text-xs text-slate-500 line-clamp-2">${cfg5.description}</p>
                 </div>
 
                 <div class="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-bold text-slate-600">
                   <span>📦 <b>${countLop5}</b> Tệp Đề Thi</span>
-                  <span class="text-emerald-600 group-hover:translate-x-1 transition-all flex items-center gap-1">
+                  <button onclick="examPortal.enterFolder(5)" class="text-emerald-600 font-black group-hover:translate-x-1 transition-all flex items-center gap-1">
                     Mở thư mục ➔
-                  </span>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         ` : `
           <!-- THANH BREADCRUMB & HEADER KHI ĐANG MỞ 1 THƯ MỤC CỤ THỂ -->
-          <div class="glass-card p-5 space-y-4 border-2 ${this.selectedFolder === 3 ? 'border-blue-500 bg-blue-50/40' : this.selectedFolder === 4 ? 'border-amber-500 bg-amber-50/40' : 'border-emerald-500 bg-emerald-50/40'}">
+          <div class="glass-card p-5 space-y-4 border-2 ${currentFolderCfg.borderColor || 'border-blue-500'} bg-gradient-to-r ${currentFolderCfg.bgLight || 'from-blue-50/50 via-white to-indigo-50/50'}">
             <!-- Breadcrumb Navigation -->
             <div class="flex items-center justify-between flex-wrap gap-2">
               <div class="flex items-center gap-2 text-xs font-bold">
@@ -208,14 +246,19 @@ class ExamPortal {
                 </button>
                 <span class="text-slate-400">/</span>
                 <span class="text-slate-900 font-black flex items-center gap-1">
-                  <span>📁</span> <span>Kiểm Tra Môn Tin Lớp ${this.selectedFolder}</span>
+                  <span>${currentFolderCfg.icon || '📁'}</span> <span>${currentFolderCfg.title}</span>
                 </span>
-                <span class="badge ${this.selectedFolder === 3 ? 'bg-blue-600' : this.selectedFolder === 4 ? 'bg-amber-600' : 'bg-emerald-600'} text-white text-[10px] font-black">
+                <span class="badge bg-gradient-to-r ${currentFolderCfg.colorGradient || 'from-blue-600 to-indigo-700'} text-white text-[10px] font-black">
                   ${this.exams.length} Tệp Tin
                 </span>
               </div>
 
               <div class="flex items-center gap-2">
+                ${isTeacher ? `
+                  <button onclick="examPortal.openFolderCustomizeModal(${this.selectedFolder})" class="btn btn-outline btn-xs font-bold bg-white text-slate-700 shadow-sm flex items-center gap-1">
+                    <span>⚙️</span> <span>Tùy Chỉnh Thư Mục Này</span>
+                  </button>
+                ` : ''}
                 <button onclick="examPortal.enterFolder('all')" class="btn btn-outline btn-xs font-black bg-white shadow-sm flex items-center gap-1">
                   <span>⬅️</span> <span>Quay Lại Tất Cả Thư Mục</span>
                 </button>
@@ -223,14 +266,14 @@ class ExamPortal {
             </div>
 
             <!-- Header Thư Mục -->
-            <div class="flex flex-col md:flex-row items-center justify-between gap-4 pt-2 border-t border-slate-200">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4 pt-2 border-t border-slate-200/80">
               <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-2xl ${this.selectedFolder === 3 ? 'bg-blue-600' : this.selectedFolder === 4 ? 'bg-amber-600' : 'bg-emerald-600'} text-white flex items-center justify-center text-2xl shadow-md">
-                  📁
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br ${currentFolderCfg.colorGradient || 'from-blue-600 to-indigo-700'} text-white flex items-center justify-center text-2xl shadow-md">
+                  ${currentFolderCfg.icon || '📁'}
                 </div>
                 <div>
-                  <h3 class="text-lg font-black text-slate-900">THƯ MỤC: KIỂM TRA MÔN TIN LỚP ${this.selectedFolder}</h3>
-                  <p class="text-xs text-slate-600">Toàn bộ đề thi, ma trận đặc tả & đáp án được lưu trữ và đồng bộ trên Supabase Cloud</p>
+                  <h3 class="text-lg font-black text-slate-900">${currentFolderCfg.title}</h3>
+                  <p class="text-xs text-slate-600">${currentFolderCfg.description}</p>
                 </div>
               </div>
 
@@ -238,7 +281,7 @@ class ExamPortal {
               <div class="flex items-center gap-2 flex-wrap">
                 ${isTeacher ? `
                   <button onclick="examUploadModal.openModal(${this.selectedFolder})" class="btn btn-emerald btn-sm font-black shadow flex items-center gap-1">
-                    <span>📤</span> <span>Tải Đề Vào Thư Mục Lớp ${this.selectedFolder}</span>
+                    <span>📤</span> <span>Tải Đề Vào Thư Mục Này</span>
                   </button>
                   <button onclick="examPortal.quickAIGenerateForFolder(${this.selectedFolder})" class="btn btn-primary btn-sm font-black bg-purple-700 hover:bg-purple-800 text-white shadow flex items-center gap-1">
                     <span>✨</span> <span>AI Sinh Đề Lớp ${this.selectedFolder}</span>
@@ -282,13 +325,13 @@ class ExamPortal {
                 📂 Tất Cả Khối
               </button>
               <button onclick="examPortal.enterFolder(3)" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${this.selectedFolder === 3 ? 'bg-blue-600 text-white shadow-md' : 'bg-blue-50 text-blue-800 hover:bg-blue-100'}">
-                📁 Kiểm Tra Lớp 3 (${countLop3})
+                ${cfg3.icon || '📁'} ${cfg3.title} (${countLop3})
               </button>
               <button onclick="examPortal.enterFolder(4)" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${this.selectedFolder === 4 ? 'bg-amber-600 text-white shadow-md' : 'bg-amber-50 text-amber-800 hover:bg-amber-100'}">
-                📁 Kiểm Tra Lớp 4 (${countLop4})
+                ${cfg4.icon || '📁'} ${cfg4.title} (${countLop4})
               </button>
               <button onclick="examPortal.enterFolder(5)" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${this.selectedFolder === 5 ? 'bg-emerald-600 text-white shadow-md' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'}">
-                📁 Kiểm Tra Lớp 5 (${countLop5})
+                ${cfg5.icon || '📁'} ${cfg5.title} (${countLop5})
               </button>
             </div>
 
@@ -347,7 +390,7 @@ class ExamPortal {
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <span>📝 DANH SÁCH TỆP TIN TRONG ${this.selectedFolder === 'all' ? 'TẤT CẢ THƯ MỤC' : `THƯ MỤC LỚP ${this.selectedFolder}`}</span>
+              <span>📝 DANH SÁCH TỆP TIN TRONG ${this.selectedFolder === 'all' ? 'TẤT CẢ THƯ MỤC' : currentFolderCfg.title.toUpperCase()}</span>
               <span class="badge badge-emerald font-black text-xs">${this.exams.length} Tệp</span>
             </h3>
             ${isTeacher ? `
@@ -380,6 +423,150 @@ class ExamPortal {
     this.openAIGeneratorModal();
     const gradeSelect = document.getElementById("ai-gen-grade");
     if (gradeSelect) gradeSelect.value = grade;
+  }
+
+  // =========================================================================
+  // TÙY CHỈNH GIAO DIỆN THƯ MỤC (CUSTOMIZE FOLDER MODAL)
+  // =========================================================================
+  openFolderCustomizeModal(grade) {
+    this.customizingGrade = grade;
+    const cfg = window.examService.getFolderConfig(grade);
+
+    const modal = document.getElementById("exam-folder-customize-modal");
+    const content = document.getElementById("exam-folder-customize-content");
+
+    const palettes = [
+      { id: "blue", name: "🔵 Xanh Đại Dương", grad: "from-blue-600 to-indigo-700", border: "border-blue-500", bgLight: "from-blue-50/80 via-white to-indigo-50/50" },
+      { id: "amber", name: "🟠 Cam Hổ Phách", grad: "from-amber-600 to-orange-600", border: "border-amber-500", bgLight: "from-amber-50/80 via-white to-orange-50/50" },
+      { id: "emerald", name: "🟢 Ngọc Lục Bảo", grad: "from-emerald-600 to-teal-600", border: "border-emerald-500", bgLight: "from-emerald-50/80 via-white to-teal-50/50" },
+      { id: "purple", name: "🟣 Tím Hoàng Gia", grad: "from-purple-600 to-indigo-700", border: "border-purple-500", bgLight: "from-purple-50/80 via-white to-indigo-50/50" },
+      { id: "rose", name: "🔴 Đỏ Hồng Ruby", grad: "from-rose-600 to-pink-600", border: "border-rose-500", bgLight: "from-rose-50/80 via-white to-pink-50/50" },
+      { id: "cyan", name: "🔷 Xanh Lam Cyan", grad: "from-cyan-600 to-blue-700", border: "border-cyan-500", bgLight: "from-cyan-50/80 via-white to-blue-50/50" }
+    ];
+
+    const emojis = ["📁", "🎒", "🚀", "⭐", "💻", "🏆", "📚", "🎯", "💡", "🛡️", "🎨", "🧩", "📖", "🕹️"];
+
+    if (content) {
+      content.innerHTML = `
+        <div class="space-y-4 text-xs text-slate-800 animate-pop">
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+            <span class="font-bold text-slate-600">Đang tùy chỉnh: <b>Khối Lớp ${grade}</b></span>
+            <button onclick="examPortal.resetFolderToDefault(${grade})" class="btn btn-outline btn-xs font-bold text-slate-600 hover:bg-slate-200">
+              🔄 Khôi Phục Mặc Định
+            </button>
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">1. Tên Thư Mục Hiển Thị:</label>
+            <input type="text" id="cust-folder-title" value="${cfg.title}" class="form-control text-xs font-bold">
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">2. Biểu Tượng Icon (Emoji):</label>
+            <div class="flex items-center gap-2 flex-wrap">
+              ${emojis.map(emo => `
+                <button type="button" onclick="examPortal.selectFolderEmoji('${emo}')" class="w-9 h-9 rounded-xl text-lg flex items-center justify-center border-2 transition-all hover:scale-110 ${cfg.icon === emo ? 'border-cyan-600 bg-cyan-50 shadow-md' : 'border-slate-200 bg-white'} emoji-btn" data-emoji="${emo}">
+                  ${emo}
+                </button>
+              `).join("")}
+            </div>
+            <input type="hidden" id="cust-folder-icon" value="${cfg.icon || '📁'}">
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">3. Tông Màu Sắc Nhận Diện (Gradient):</label>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+              ${palettes.map(pal => `
+                <button type="button" onclick="examPortal.selectFolderPalette('${pal.grad}', '${pal.border}', '${pal.bgLight}')" class="p-2.5 rounded-xl border-2 text-left font-bold text-[11px] transition-all flex items-center gap-2 palette-btn ${cfg.colorGradient === pal.grad ? 'border-slate-900 shadow-md scale-102' : 'border-slate-200 bg-white'}" data-grad="${pal.grad}">
+                  <span class="w-5 h-5 rounded-lg bg-gradient-to-br ${pal.grad} shrink-0 shadow-inner"></span>
+                  <span class="line-clamp-1">${pal.name}</span>
+                </button>
+              `).join("")}
+            </div>
+            <input type="hidden" id="cust-folder-grad" value="${cfg.colorGradient}">
+            <input type="hidden" id="cust-folder-border" value="${cfg.borderColor}">
+            <input type="hidden" id="cust-folder-bglight" value="${cfg.bgLight}">
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">4. Mô Tả Ghi Chú Thư Mục:</label>
+            <textarea id="cust-folder-desc" rows="2" class="form-control text-xs font-medium">${cfg.description}</textarea>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+            <button onclick="document.getElementById('exam-folder-customize-modal').classList.remove('active')" class="btn btn-outline btn-sm font-bold">
+              Hủy Bỏ
+            </button>
+            <button onclick="examPortal.saveFolderCustomization()" class="btn btn-primary btn-sm font-black bg-cyan-700 hover:bg-cyan-800 text-white shadow-md flex items-center gap-1">
+              <span>💾</span> <span>Lưu Cấu Hình Thư Mục</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    if (modal) modal.classList.add("active");
+  }
+
+  selectFolderEmoji(emoji) {
+    const input = document.getElementById("cust-folder-icon");
+    if (input) input.value = emoji;
+
+    document.querySelectorAll(".emoji-btn").forEach(btn => {
+      if (btn.getAttribute("data-emoji") === emoji) {
+        btn.classList.add("border-cyan-600", "bg-cyan-50", "shadow-md");
+        btn.classList.remove("border-slate-200", "bg-white");
+      } else {
+        btn.classList.remove("border-cyan-600", "bg-cyan-50", "shadow-md");
+        btn.classList.add("border-slate-200", "bg-white");
+      }
+    });
+  }
+
+  selectFolderPalette(grad, border, bgLight) {
+    document.getElementById("cust-folder-grad").value = grad;
+    document.getElementById("cust-folder-border").value = border;
+    document.getElementById("cust-folder-bglight").value = bgLight;
+
+    document.querySelectorAll(".palette-btn").forEach(btn => {
+      if (btn.getAttribute("data-grad") === grad) {
+        btn.classList.add("border-slate-900", "shadow-md", "scale-102");
+        btn.classList.remove("border-slate-200");
+      } else {
+        btn.classList.remove("border-slate-900", "shadow-md", "scale-102");
+        btn.classList.add("border-slate-200");
+      }
+    });
+  }
+
+  saveFolderCustomization() {
+    const grade = this.customizingGrade;
+    const title = document.getElementById("cust-folder-title")?.value.trim() || `Kiểm Tra Môn Tin Lớp ${grade}`;
+    const icon = document.getElementById("cust-folder-icon")?.value || "📁";
+    const colorGradient = document.getElementById("cust-folder-grad")?.value || "from-blue-600 to-indigo-700";
+    const borderColor = document.getElementById("cust-folder-border")?.value || "border-blue-500";
+    const bgLight = document.getElementById("cust-folder-bglight")?.value || "from-blue-50/80 via-white to-indigo-50/50";
+    const description = document.getElementById("cust-folder-desc")?.value.trim() || "";
+
+    window.examService.saveFolderConfig(grade, {
+      title,
+      icon,
+      colorGradient,
+      borderColor,
+      bgLight,
+      description
+    });
+
+    document.getElementById("exam-folder-customize-modal")?.classList.remove("active");
+    window.app.showToast(`🎨 Đã lưu tùy chỉnh diện mạo cho Thư mục Lớp ${grade} thành công!`, "success");
+    this.render("main-content-area");
+  }
+
+  resetFolderToDefault(grade) {
+    window.examService.resetFolderConfig(grade);
+    document.getElementById("exam-folder-customize-modal")?.classList.remove("active");
+    window.app.showToast(`🔄 Đã khôi phục cài đặt mặc định cho Thư mục Lớp ${grade}!`, "info");
+    this.render("main-content-area");
   }
 
   // Render lưới thẻ đề kiểm tra
@@ -813,7 +1000,7 @@ class ExamPortal {
       examId: this.activeRunnerExam?.id,
       examTitle: this.activeRunnerExam?.title,
       studentName: user.name,
-      className: user.class || "3A",
+      className: user.class || (this.activeRunnerExam?.grade === 3 ? "3A" : this.activeRunnerExam?.grade === 4 ? "4A" : "5A"),
       grade: this.activeRunnerExam?.grade,
       score: rawScore,
       durationSpentSeconds: durationSpent

@@ -875,7 +875,67 @@ class ExamService {
     const uploadRes = await this.uploadExam(newExam);
     return uploadRes;
   }
+
+  // 18. Lấy cấu hình tùy chỉnh Thư mục con (Tên, Icon, Màu sắc, Mô tả)
+  getFolderConfig(grade) {
+    const defaultConfigs = {
+      3: {
+        title: "Kiểm Tra Môn Tin Lớp 3",
+        icon: "📁",
+        badgeText: "🎒 KHỐI LỚP 3",
+        colorGradient: "from-blue-600 to-indigo-700",
+        borderColor: "border-blue-500",
+        bgLight: "from-blue-50/80 via-white to-indigo-50/50",
+        description: "Đề kiểm tra 15 phút, Giữa kỳ, Cuối kỳ 1-2 & Ma trận đặc tả bộ sách KNTT, Cánh Diều, CTST."
+      },
+      4: {
+        title: "Kiểm Tra Môn Tin Lớp 4",
+        icon: "📁",
+        badgeText: "🚀 KHỐI LỚP 4",
+        colorGradient: "from-amber-600 to-orange-600",
+        borderColor: "border-amber-500",
+        bgLight: "from-amber-50/80 via-white to-orange-50/50",
+        description: "Phần cứng, phần mềm, cây thư mục, soạn thảo trình chiếu PowerPoint và quy tắc an toàn số."
+      },
+      5: {
+        title: "Kiểm Tra Môn Tin Lớp 5",
+        icon: "📁",
+        badgeText: "⭐ KHỐI LỚP 5",
+        colorGradient: "from-emerald-600 to-teal-600",
+        borderColor: "border-emerald-500",
+        bgLight: "from-emerald-50/80 via-white to-teal-50/50",
+        description: "Mạng máy tính, tìm kiếm Internet, bảng tính Excel cơ bản và lập trình Scratch giải quyết bài toán."
+      }
+    };
+
+    try {
+      const saved = JSON.parse(localStorage.getItem("exam_folder_configs")) || {};
+      return { ...defaultConfigs[grade], ...(saved[grade] || {}) };
+    } catch (e) {
+      return defaultConfigs[grade];
+    }
+  }
+
+  // 19. Lưu cấu hình tùy chỉnh Thư mục con
+  saveFolderConfig(grade, config) {
+    const saved = JSON.parse(localStorage.getItem("exam_folder_configs")) || {};
+    saved[grade] = {
+      ...(saved[grade] || {}),
+      ...config
+    };
+    localStorage.setItem("exam_folder_configs", JSON.stringify(saved));
+    return this.getFolderConfig(grade);
+  }
+
+  // 20. Khôi phục mặc định Thư mục con
+  resetFolderConfig(grade) {
+    const saved = JSON.parse(localStorage.getItem("exam_folder_configs")) || {};
+    delete saved[grade];
+    localStorage.setItem("exam_folder_configs", JSON.stringify(saved));
+    return this.getFolderConfig(grade);
+  }
 }
 
 window.examService = new ExamService();
+
 
