@@ -238,13 +238,89 @@ const MOCK_DATABASE = {
     { rank: 3, name: "Nguyễn Văn An", class: "3A", stars: 180, badge: "🥉 Tân Binh Công Nghệ", avatar: "👦" },
     { rank: 4, name: "Phạm Hoàng Bách", class: "3B", stars: 150, badge: "⭐ Ngôi Sao Chăm Chỉ", avatar: "🤖" },
     { rank: 5, name: "Vũ Bảo Châu", class: "4A", stars: 130, badge: "⭐ Thần Đồng Gõ Phím", avatar: "👩‍🎨" }
+  ],
+
+  // 6. KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT SLIDES
+  lectures: [
+    {
+      id: "lec_01",
+      title: "Bài Giảng Điện Tử: Khám Phá Máy Tính Để Bàn",
+      grade: 3,
+      topicName: "Chủ đề A: Máy tính và em",
+      lessonId: "L3_02",
+      authorName: "Thầy Giáo Anh Đào",
+      schoolName: "Trường Tiểu Học Vui Học",
+      fileName: "BaiGiang_TinHoc3_KhamPhaMayTinh.pptx",
+      fileSizeText: "6.8 MB",
+      fileType: "pptx",
+      fileUrl: "https://view.officeapps.live.com/op/view.aspx?src=https://file-examples.com/storage/fe59972322649b1a5905d6a/2017/08/file_example_PPTX_250kB.pptx",
+      slideCount: 22,
+      downloadCount: 145,
+      viewCount: 520,
+      thumbnailColor: "from-blue-600 to-cyan-500",
+      description: "Bài giảng PowerPoint thiết kế hoạt họa sinh động 4 bộ phận máy tính: Thân máy, Màn hình, Bàn phím, Chuột."
+    },
+    {
+      id: "lec_02",
+      title: "Bài Giảng Điện Tử: Em Tập Sử Dụng Chuột Máy Tính",
+      grade: 3,
+      topicName: "Chủ đề A: Máy tính và em",
+      lessonId: "L3_03",
+      authorName: "Thầy Giáo Anh Đào",
+      schoolName: "Trường Tiểu Học Vui Học",
+      fileName: "BaiGiang_TinHoc3_TapSuDungChuot.pptx",
+      fileSizeText: "4.5 MB",
+      fileType: "pptx",
+      fileUrl: "https://view.officeapps.live.com/op/view.aspx?src=https://file-examples.com/storage/fe59972322649b1a5905d6a/2017/08/file_example_PPTX_250kB.pptx",
+      slideCount: 18,
+      downloadCount: 98,
+      viewCount: 380,
+      thumbnailColor: "from-emerald-600 to-teal-500",
+      description: "Hình ảnh hướng dẫn thực hành cầm chuột bằng tay phải, nháy đơn, nháy kép và kéo thả đối tượng."
+    },
+    {
+      id: "lec_03",
+      title: "Bài Giảng Điện Tử: Phần Cứng & Phần Mềm Máy Tính",
+      grade: 4,
+      topicName: "Chủ đề A: Máy tính và em",
+      lessonId: "L4_01",
+      authorName: "Thầy Giáo Anh Đào",
+      schoolName: "Trường Tiểu Học Vui Học",
+      fileName: "BaiGiang_TinHoc4_PhanCungPhanMem.pptx",
+      fileSizeText: "8.2 MB",
+      fileType: "pptx",
+      fileUrl: "https://view.officeapps.live.com/op/view.aspx?src=https://file-examples.com/storage/fe59972322649b1a5905d6a/2017/08/file_example_PPTX_250kB.pptx",
+      slideCount: 26,
+      downloadCount: 180,
+      viewCount: 640,
+      thumbnailColor: "from-amber-500 to-orange-600",
+      description: "Trực quan hóa sự khác biệt giữa phần cứng vật lý và các phần mềm ứng dụng trong đời sống."
+    },
+    {
+      id: "lec_04",
+      title: "Bài Giảng Điện Tử: Tìm Kiếm Thông Tin An Toàn Trên Internet",
+      grade: 5,
+      topicName: "Chủ đề C: Tổ chức lưu trữ và tìm kiếm",
+      lessonId: "L5_01",
+      authorName: "Thầy Giáo Anh Đào",
+      schoolName: "Trường Tiểu Học Vui Học",
+      fileName: "BaiGiang_TinHoc5_TimKiemInternet.pptx",
+      fileSizeText: "5.7 MB",
+      fileType: "pptx",
+      fileUrl: "https://view.officeapps.live.com/op/view.aspx?src=https://file-examples.com/storage/fe59972322649b1a5905d6a/2017/08/file_example_PPTX_250kB.pptx",
+      slideCount: 24,
+      downloadCount: 210,
+      viewCount: 890,
+      thumbnailColor: "from-purple-600 to-indigo-600",
+      description: "Kỹ năng tra cứu thông tin bằng từ khóa chính xác và bảo vệ an toàn thông tin cá nhân trên mạng."
+    }
   ]
 };
 
 // Khởi tạo LocalStorage nếu chưa có hoặc cập nhật thêm trường mới
 try {
   const existing = JSON.parse(localStorage.getItem("app_mock_db"));
-  if (!existing || !existing.quizzes) {
+  if (!existing || !existing.lectures) {
     localStorage.setItem("app_mock_db", JSON.stringify(MOCK_DATABASE));
   }
 } catch (e) {
