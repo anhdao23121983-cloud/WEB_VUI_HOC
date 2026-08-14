@@ -1,6 +1,6 @@
 /**
  * LECTURE PORTAL COMPONENT
- * Quản lý Bài Giảng Điện Tử: Tải lên, Xóa bỏ bài giảng (Đồng bộ FE-BE-Supabase), Lọc SGK, AI Tóm tắt, Video hoạt họa, Phiếu bài tập & Game Khởi động
+ * Quản lý Bài Giảng Điện Tử: Tải lên, Chỉnh sửa/Đổi file, Xóa bỏ, Bảng vẽ Bút dạ quang/Phấn trắng, Thống kê Analytics, Lọc SGK, Video hoạt họa, Phiếu bài tập & Game Khởi động
  */
 
 class LecturePortal {
@@ -33,6 +33,13 @@ class LecturePortal {
     // Delete Confirmation State
     this.pendingDeleteId = null;
     this.pendingDeleteTitle = "";
+
+    // Drawing Canvas State
+    this.isDrawingActive = false;
+    this.drawTool = "highlighter"; // 'highlighter' | 'red_pen' | 'chalk' | 'eraser'
+    this.isPainting = false;
+    this.activeCanvas = null;
+    this.activeCtx = null;
   }
 
   async render(containerId) {
@@ -64,19 +71,24 @@ class LecturePortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Quản lý tải lên, chỉnh sửa, xóa bỏ bài giảng của giáo viên và đồng bộ trực tiếp lên Supabase Cloud</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Quản lý tải lên, chỉnh sửa, đổi file, xóa bỏ bài giảng của giáo viên và đồng bộ trực tiếp lên Supabase Cloud</p>
           </div>
 
-          ${isTeacher ? `
-            <button onclick="lectureUploadModal.openModal(${this.currentGrade === 'all' ? 3 : this.currentGrade})" class="btn btn-amber btn-lg font-black shadow-xl flex items-center gap-2 shrink-0 hover:scale-105 transition-all">
-              <span class="text-xl">📤</span> <span>Tải Lên Bài Giảng Mới</span>
-            </button>
-          ` : `
-            <div class="bg-white/15 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/30 text-center text-xs text-white">
-              <span class="font-bold block text-amber-300">💡 Dành Cho Học Sinh:</span>
-              <span>Em có thể xem Video hoạt họa, làm Game Khởi động và tải Phiếu bài tập!</span>
-            </div>
-          `}
+          <div class="flex items-center gap-2 flex-wrap">
+            ${isTeacher ? `
+              <button onclick="lecturePortal.openAnalyticsModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-4 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md">
+                <span>📈</span> <span>Thống Kê</span>
+              </button>
+              <button onclick="lectureUploadModal.openModal(${this.currentGrade === 'all' ? 3 : this.currentGrade})" class="btn btn-amber btn-lg font-black shadow-xl flex items-center gap-2 shrink-0 hover:scale-105 transition-all">
+                <span class="text-xl">📤</span> <span>Tải Lên Bài Giảng</span>
+              </button>
+            ` : `
+              <div class="bg-white/15 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/30 text-center text-xs text-white">
+                <span class="font-bold block text-amber-300">💡 Dành Cho Học Sinh:</span>
+                <span>Em có thể xem Video hoạt họa, làm Game Khởi động và tải Phiếu bài tập!</span>
+              </div>
+            `}
+          </div>
         </div>
 
         <!-- Thanh Tab Chuyển Đổi: Tất Cả Bài Giảng vs Bài Giảng Của Tôi -->
@@ -87,7 +99,7 @@ class LecturePortal {
               <span class="badge ${this.currentTab === 'all' ? 'bg-white/25 text-white' : 'badge-slate'} text-[10px]">${allLectures.length}</span>
             </button>
             <button onclick="lecturePortal.switchTab('my_lectures')" class="px-5 py-2.5 rounded-2xl font-black text-xs transition-all flex items-center gap-2 ${this.currentTab === 'my_lectures' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}">
-              <span>👨‍🏫 Bài Giảng Của Tôi (Quản Lý & Xóa)</span>
+              <span>👨‍🏫 Bài Giảng Của Tôi (Quản Lý, Sửa & Xóa)</span>
               <span class="badge ${this.currentTab === 'my_lectures' ? 'bg-white/25 text-white' : 'badge-amber'} text-[10px]">${myLecturesCount}</span>
             </button>
           </div>
@@ -185,7 +197,7 @@ class LecturePortal {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         ${this.lectures.map(l => {
           const sInfo = seriesLabels[l.bookSeries] || seriesLabels["KNTT"];
-          const canDelete = user && (user.role === 'admin' || user.username === l.createdByUsername || user.name === l.authorName || isTeacher);
+          const canManage = user && (user.role === 'admin' || user.username === l.createdByUsername || user.name === l.authorName || isTeacher);
 
           return `
             <div class="glass-card overflow-hidden hover:border-cyan-500 transition-all duration-300 shadow-md hover:shadow-xl flex flex-col justify-between group relative">
@@ -248,15 +260,19 @@ class LecturePortal {
                     </button>
                   </div>
 
-                  <!-- Hàng 3: Trình chiếu + Tải PPT + Xóa -->
-                  <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
+                  <!-- Hàng 3: Trình chiếu + Tải PPT + Sửa + Xóa -->
+                  <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100">
                     <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm">
                       <span>👁️</span> <span>Trình Chiếu</span>
                     </button>
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
                       <span>📥</span> <span>Tải PPT</span>
                     </button>
-                    ${canDelete ? `
+
+                    ${canManage ? `
+                      <button onclick="lectureUploadModal.openEditModal('${l.id}')" class="p-2 text-cyan-700 hover:bg-cyan-100 rounded-xl font-bold border border-cyan-200 transition-all hover:scale-105" title="Chỉnh sửa thông tin & đổi file PowerPoint">
+                        ✏️
+                      </button>
                       <button onclick="lecturePortal.openDeleteConfirmModal('${l.id}', '${l.title.replace(/'/g, "\\'")}')" class="p-2 text-rose-600 hover:bg-rose-100 rounded-xl font-bold border border-rose-200 transition-all hover:scale-105" title="Xóa bỏ bài giảng này khỏi hệ thống & Supabase">
                         🗑️
                       </button>
@@ -290,6 +306,208 @@ class LecturePortal {
   handleSearch(query) {
     this.searchQuery = query;
     this.render("main-content-area");
+  }
+
+  // =========================================================================
+  // BẢNG VẼ BÚT DẠ QUANG & PHẤN TRẮNG TRÊN SLIDE (DRAWING CANVAS)
+  // =========================================================================
+  toggleDrawingMode(canvasId) {
+    this.isDrawingActive = !this.isDrawingActive;
+    const canvas = document.getElementById(canvasId);
+    const toolbar = document.getElementById("drawing-toolbar-" + canvasId);
+
+    if (canvas) {
+      canvas.style.pointerEvents = this.isDrawingActive ? "auto" : "none";
+      if (this.isDrawingActive) {
+        this.initCanvas(canvas);
+      }
+    }
+
+    if (toolbar) {
+      if (this.isDrawingActive) toolbar.classList.remove("hidden");
+      else toolbar.classList.add("hidden");
+    }
+
+    window.app.showToast(`🎨 Bút vẽ trên slide: ${this.isDrawingActive ? 'BẬT (Nhấp và vẽ)' : 'TẮT'}`, "info");
+  }
+
+  initCanvas(canvas) {
+    this.activeCanvas = canvas;
+    this.activeCtx = canvas.getContext("2d");
+    
+    // Tự động điều chỉnh kích thước canvas theo khung cha
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+
+    // Gắn sự kiện chuột & cảm ứng
+    canvas.onmousedown = (e) => this.startPaint(e);
+    canvas.onmousemove = (e) => this.drawPaint(e);
+    canvas.onmouseup = () => this.stopPaint();
+    canvas.onmouseleave = () => this.stopPaint();
+
+    canvas.ontouchstart = (e) => this.startPaint(e.touches[0]);
+    canvas.ontouchmove = (e) => this.drawPaint(e.touches[0]);
+    canvas.ontouchend = () => this.stopPaint();
+  }
+
+  setDrawTool(tool) {
+    this.drawTool = tool;
+    window.app.showToast(`🖌️ Đã chọn: ${tool === 'highlighter' ? 'Bút Dạ Quang Vàng' : tool === 'red_pen' ? 'Bút Đỏ Giảng Bài' : tool === 'chalk' ? 'Bút Phấn Trắng' : 'Tẩy Xóa'}`, "info");
+  }
+
+  startPaint(e) {
+    if (!this.isDrawingActive || !this.activeCtx) return;
+    this.isPainting = true;
+    const rect = this.activeCanvas.getBoundingClientRect();
+    this.activeCtx.beginPath();
+    this.activeCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+  }
+
+  drawPaint(e) {
+    if (!this.isPainting || !this.activeCtx) return;
+    const rect = this.activeCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (this.drawTool === "highlighter") {
+      this.activeCtx.strokeStyle = "rgba(255, 235, 59, 0.45)";
+      this.activeCtx.lineWidth = 18;
+      this.activeCtx.lineCap = "round";
+      this.activeCtx.globalCompositeOperation = "source-over";
+    } else if (this.drawTool === "red_pen") {
+      this.activeCtx.strokeStyle = "#ef4444";
+      this.activeCtx.lineWidth = 4;
+      this.activeCtx.lineCap = "round";
+      this.activeCtx.globalCompositeOperation = "source-over";
+    } else if (this.drawTool === "chalk") {
+      this.activeCtx.strokeStyle = "#ffffff";
+      this.activeCtx.lineWidth = 4;
+      this.activeCtx.lineCap = "round";
+      this.activeCtx.globalCompositeOperation = "source-over";
+    } else if (this.drawTool === "eraser") {
+      this.activeCtx.lineWidth = 24;
+      this.activeCtx.globalCompositeOperation = "destination-out";
+    }
+
+    this.activeCtx.lineTo(x, y);
+    this.activeCtx.stroke();
+  }
+
+  stopPaint() {
+    this.isPainting = false;
+  }
+
+  clearCanvas(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      window.app.showToast("🧹 Đã xóa sạch nét vẽ trên màn hình!", "info");
+    }
+  }
+
+  // =========================================================================
+  // THỐNG KÊ ANALYTICS LƯỢT XEM & LƯỢT TẢI BÀI GIẢNG
+  // =========================================================================
+  async openAnalyticsModal() {
+    const data = await window.lectureService.getAnalyticsSummary();
+    const modal = document.getElementById("lecture-analytics-modal");
+    const content = document.getElementById("lec-analytics-content");
+
+    if (content) {
+      content.innerHTML = `
+        <div class="space-y-6 text-xs text-slate-800 animate-pop">
+          <!-- 4 Thẻ KPI Tóm Tắt -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl">
+              <span class="text-2xl block mb-1">📚</span>
+              <p class="text-slate-500 font-bold text-[10px]">TỔNG BÀI GIẢNG</p>
+              <p class="text-xl font-black text-blue-700">${data.totalLectures}</p>
+            </div>
+            <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl">
+              <span class="text-2xl block mb-1">👁️</span>
+              <p class="text-slate-500 font-bold text-[10px]">TỔNG LƯỢT XEM</p>
+              <p class="text-xl font-black text-emerald-700">${data.totalViews}</p>
+            </div>
+            <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl">
+              <span class="text-2xl block mb-1">📥</span>
+              <p class="text-slate-500 font-bold text-[10px]">TỔNG LƯỢT TẢI</p>
+              <p class="text-xl font-black text-amber-700">${data.totalDownloads}</p>
+            </div>
+            <div class="p-3.5 bg-purple-50 border border-purple-200 rounded-2xl">
+              <span class="text-2xl block mb-1">⭐</span>
+              <p class="text-slate-500 font-bold text-[10px]">TƯƠNG TÁC TB</p>
+              <p class="text-xl font-black text-purple-700">${Math.round((data.totalViews + data.totalDownloads) / (data.totalLectures || 1))}</p>
+            </div>
+          </div>
+
+          <!-- Phân Bố Theo Khối Lớp -->
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+            <h4 class="font-extrabold text-slate-800 text-xs flex items-center gap-1.5">
+              <span>🎒</span> <span>PHÂN BỐ BÀI GIẢNG & LƯỢT HỌC THEO KHỐI LỚP</span>
+            </h4>
+            <div class="space-y-2">
+              <div>
+                <div class="flex justify-between text-[11px] font-bold text-slate-700 pb-1">
+                  <span>Khối Lớp 3 (${data.gradeStats[3].count} bài)</span>
+                  <span>${data.gradeStats[3].views} xem • ${data.gradeStats[3].downloads} tải</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                  <div class="bg-cyan-600 h-2 rounded-full" style="width: ${data.totalLectures ? (data.gradeStats[3].count / data.totalLectures) * 100 : 0}%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-[11px] font-bold text-slate-700 pb-1">
+                  <span>Khối Lớp 4 (${data.gradeStats[4].count} bài)</span>
+                  <span>${data.gradeStats[4].views} xem • ${data.gradeStats[4].downloads} tải</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                  <div class="bg-amber-500 h-2 rounded-full" style="width: ${data.totalLectures ? (data.gradeStats[4].count / data.totalLectures) * 100 : 0}%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-[11px] font-bold text-slate-700 pb-1">
+                  <span>Khối Lớp 5 (${data.gradeStats[5].count} bài)</span>
+                  <span>${data.gradeStats[5].views} xem • ${data.gradeStats[5].downloads} tải</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                  <div class="bg-purple-600 h-2 rounded-full" style="width: ${data.totalLectures ? (data.gradeStats[5].count / data.totalLectures) * 100 : 0}%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Bài Giảng Phổ Biến Nhất -->
+          <div class="space-y-2">
+            <h4 class="font-extrabold text-slate-800 text-xs flex items-center gap-1.5">
+              <span>🏆</span> <span>TOP BÀI GIẢNG ĐƯỢC HỌC SINH ÔN TẬP NHIỀU NHẤT</span>
+            </h4>
+            <div class="space-y-1.5">
+              ${data.topLectures.map((l, idx) => `
+                <div class="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between shadow-sm">
+                  <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full ${idx === 0 ? 'bg-amber-400 text-slate-900' : 'bg-slate-100 text-slate-600'} font-black text-xs flex items-center justify-center">${idx + 1}</span>
+                    <div>
+                      <p class="font-bold text-slate-900 text-xs">${l.title}</p>
+                      <p class="text-[10px] text-slate-500">Lớp ${l.grade} • Tác giả: ${l.authorName}</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span class="badge badge-cyan text-[10px] font-bold">👁️ ${l.viewCount || 0}</span>
+                    <span class="badge badge-amber text-[10px] font-bold">📥 ${l.downloadCount || 0}</span>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (modal) modal.classList.add("active");
   }
 
   // =========================================================================

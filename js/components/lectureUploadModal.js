@@ -1,14 +1,18 @@
 /**
- * LECTURE UPLOAD MODAL COMPONENT
- * Giao diện dành cho Giáo viên để Tải lên Bài giảng PowerPoint (.pptx / .ppt / .pdf / link trình chiếu)
+ * LECTURE UPLOAD & EDIT MODAL COMPONENT
+ * Giao diện dành cho Giáo viên để Tải lên, Chỉnh sửa thông tin & Đổi file PowerPoint mới
  */
 
 class LectureUploadModal {
   constructor() {
     this.selectedFile = null;
     this.selectedFileDataUrl = null;
+    this.isEditMode = false;
+    this.editingLectureId = null;
+    this.existingLecture = null;
   }
 
+  // Mở modal tạo mới
   openModal(defaultGrade = 3) {
     const user = window.authService?.getUser();
     if (!user || (user.role !== 'teacher' && user.role !== 'admin')) {
@@ -16,15 +20,29 @@ class LectureUploadModal {
       return;
     }
 
+    this.isEditMode = false;
+    this.editingLectureId = null;
+    this.existingLecture = null;
     this.selectedFile = null;
     this.selectedFileDataUrl = null;
 
     const modal = document.getElementById("lecture-upload-modal");
     if (!modal) return;
 
-    // Reset form
+    const titleModal = document.getElementById("lec-modal-title");
+    if (titleModal) titleModal.innerText = "TẢI LÊN BÀI GIẢNG ĐIỆN TỬ";
+
+    const btnSubmit = document.getElementById("btn-submit-lecture-upload");
+    if (btnSubmit) btnSubmit.innerHTML = "🚀 Tải Lên & Công Khai";
+
     const gradeSelect = document.getElementById("lec-grade-input");
     if (gradeSelect) gradeSelect.value = defaultGrade;
+
+    const seriesSelect = document.getElementById("lec-series-input");
+    if (seriesSelect) seriesSelect.value = "KNTT";
+
+    const topicInput = document.getElementById("lec-topic-input");
+    if (topicInput) topicInput.value = "Chủ đề A: Máy tính và em";
 
     const titleInput = document.getElementById("lec-title-input");
     if (titleInput) titleInput.value = "";
@@ -41,9 +59,61 @@ class LectureUploadModal {
     modal.classList.add("active");
   }
 
+  // Mở modal chỉnh sửa & thay đổi file PowerPoint
+  async openEditModal(lectureId) {
+    const lecture = await window.lectureService.getLectureById(lectureId);
+    if (!lecture) return;
+
+    this.isEditMode = true;
+    this.editingLectureId = lectureId;
+    this.existingLecture = lecture;
+    this.selectedFile = null;
+    this.selectedFileDataUrl = null;
+
+    const modal = document.getElementById("lecture-upload-modal");
+    if (!modal) return;
+
+    const titleModal = document.getElementById("lec-modal-title");
+    if (titleModal) titleModal.innerText = "CHỈNH SỬA & ĐỔI FILE BÀI GIẢNG";
+
+    const btnSubmit = document.getElementById("btn-submit-lecture-upload");
+    if (btnSubmit) btnSubmit.innerHTML = "💾 Lưu Thay Đổi";
+
+    const titleInput = document.getElementById("lec-title-input");
+    if (titleInput) titleInput.value = lecture.title;
+
+    const gradeSelect = document.getElementById("lec-grade-input");
+    if (gradeSelect) gradeSelect.value = lecture.grade;
+
+    const seriesSelect = document.getElementById("lec-series-input");
+    if (seriesSelect) seriesSelect.value = lecture.bookSeries || "KNTT";
+
+    const topicInput = document.getElementById("lec-topic-input");
+    if (topicInput) topicInput.value = lecture.topicName || "Chủ đề A: Máy tính và em";
+
+    const descInput = document.getElementById("lec-desc-input");
+    if (descInput) descInput.value = lecture.description || "";
+
+    const linkInput = document.getElementById("lec-link-input");
+    if (linkInput) linkInput.value = lecture.fileUrl.startsWith("http") ? lecture.fileUrl : "";
+
+    const filePreview = document.getElementById("lec-file-preview-info");
+    const fileNameDisp = document.getElementById("lec-file-name-disp");
+    const fileSizeDisp = document.getElementById("lec-file-size-disp");
+
+    if (fileNameDisp) fileNameDisp.innerText = lecture.fileName + " (File hiện tại)";
+    if (fileSizeDisp) fileSizeDisp.innerText = lecture.fileSizeText || "5.2 MB";
+    if (filePreview) filePreview.classList.remove("hidden");
+
+    modal.classList.add("active");
+  }
+
   closeModal() {
     const modal = document.getElementById("lecture-upload-modal");
     if (modal) modal.classList.remove("active");
+    this.isEditMode = false;
+    this.editingLectureId = null;
+    this.existingLecture = null;
     this.selectedFile = null;
     this.selectedFileDataUrl = null;
   }
@@ -59,18 +129,17 @@ class LectureUploadModal {
     const fileSizeDisp = document.getElementById("lec-file-size-disp");
 
     const sizeMb = (file.size / (1024 * 1024)).toFixed(1) + " MB";
-    if (fileNameDisp) fileNameDisp.innerText = file.name;
+    if (fileNameDisp) fileNameDisp.innerText = file.name + " (File mới thay thế)";
     if (fileSizeDisp) fileSizeDisp.innerText = sizeMb;
     if (filePreview) filePreview.classList.remove("hidden");
 
-    // Tự động điền tiêu đề từ tên file nếu chưa nhập
+    // Tự động điền tiêu đề từ tên file nếu đang tạo mới và chưa nhập
     const titleInput = document.getElementById("lec-title-input");
-    if (titleInput && !titleInput.value) {
+    if (!this.isEditMode && titleInput && !titleInput.value) {
       const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
       titleInput.value = `Bài Giảng: ${cleanName}`;
     }
 
-    // Đọc data URL
     const reader = new FileReader();
     reader.onload = (e) => {
       this.selectedFileDataUrl = e.target.result;
@@ -86,24 +155,63 @@ class LectureUploadModal {
     const topic = document.getElementById("lec-topic-input")?.value || "Chủ đề A: Máy tính và em";
     const desc = document.getElementById("lec-desc-input")?.value || "";
     const linkUrl = document.getElementById("lec-link-input")?.value || "";
-    const user = window.authService?.getUser() || { name: "Thầy Giáo Anh Đào" };
+    const user = window.authService?.getUser() || { username: "anhdao", name: "Thầy Giáo Anh Đào" };
 
     if (!title.trim()) {
       window.app.showToast("Vui lòng nhập Tiêu đề bài giảng điện tử!", "warning");
       return;
     }
 
-    if (!this.selectedFile && !linkUrl.trim()) {
+    if (!this.isEditMode && !this.selectedFile && !linkUrl.trim()) {
       window.app.showToast("Vui lòng chọn file PowerPoint (.pptx / .pdf) hoặc dán link bài giảng!", "warning");
       return;
     }
 
     const btnSubmit = document.getElementById("btn-submit-lecture-upload");
     if (btnSubmit) {
-      btnSubmit.innerHTML = "⏳ Đang tải lên và đồng bộ Supabase...";
+      btnSubmit.innerHTML = "⏳ Đang xử lý và đồng bộ Supabase...";
       btnSubmit.classList.add("pointer-events-none");
     }
 
+    // CHẾ ĐỘ CHỈNH SỬA (EDIT MODE)
+    if (this.isEditMode && this.editingLectureId) {
+      const updatePayload = {
+        title: title,
+        grade: grade,
+        bookSeries: series,
+        topicName: topic,
+        description: desc,
+        authorName: user.name
+      };
+
+      if (this.selectedFile) {
+        updatePayload.fileName = this.selectedFile.name;
+        updatePayload.fileSizeText = (this.selectedFile.size / (1024 * 1024)).toFixed(1) + " MB";
+        updatePayload.fileType = this.selectedFile.name.split('.').pop().toLowerCase();
+        updatePayload.fileUrl = this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
+        updatePayload.slideCount = Math.floor(Math.random() * 10) + 16;
+      } else if (linkUrl.trim() && linkUrl !== this.existingLecture?.fileUrl) {
+        updatePayload.fileUrl = linkUrl.trim();
+      }
+
+      const res = await window.lectureService.updateLecture(this.editingLectureId, updatePayload);
+
+      if (btnSubmit) {
+        btnSubmit.innerHTML = "💾 Lưu Thay Đổi";
+        btnSubmit.classList.remove("pointer-events-none");
+      }
+
+      if (res.success) {
+        window.app.showToast("🎉 Đã cập nhật thông tin và file bài giảng thành công!", "success");
+        this.closeModal();
+        if (window.lecturePortal) window.lecturePortal.render("main-content-area");
+      } else {
+        window.app.showToast("Không thể cập nhật bài giảng, vui lòng thử lại!", "error");
+      }
+      return;
+    }
+
+    // CHẾ ĐỘ TẠO MỚI (CREATE MODE)
     let fileUrl = linkUrl.trim();
     let fileName = "BaiGiang_TinHoc.pptx";
     let fileSizeText = "5.5 MB";
@@ -122,6 +230,7 @@ class LectureUploadModal {
       bookSeries: series,
       topicName: topic,
       authorName: user.name,
+      createdByUsername: user.username,
       fileName: fileName,
       fileSizeText: fileSizeText,
       fileType: fileType,

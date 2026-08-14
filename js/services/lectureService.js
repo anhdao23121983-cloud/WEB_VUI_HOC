@@ -180,7 +180,66 @@ class LectureService {
     return { success: true, lecture: lectureObj };
   }
 
-  // 5. Xóa bài giảng điện tử (Xóa cả LocalStorage và Supabase Cloud)
+  // 5. Cập nhật / Chỉnh sửa bài giảng và thay thế file PowerPoint (Đồng bộ Supabase)
+  async updateLecture(id, updateData) {
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    let updatedObj = null;
+
+    if (db.lectures) {
+      const idx = db.lectures.findIndex(l => l.id === id);
+      if (idx >= 0) {
+        db.lectures[idx] = {
+          ...db.lectures[idx],
+          title: updateData.title || db.lectures[idx].title,
+          grade: parseInt(updateData.grade) || db.lectures[idx].grade,
+          bookSeries: updateData.bookSeries || db.lectures[idx].bookSeries,
+          topicName: updateData.topicName || db.lectures[idx].topicName,
+          description: updateData.description !== undefined ? updateData.description : db.lectures[idx].description,
+          authorName: updateData.authorName || db.lectures[idx].authorName,
+          updatedAt: new Date().toISOString()
+        };
+
+        if (updateData.fileName) db.lectures[idx].fileName = updateData.fileName;
+        if (updateData.fileSizeText) db.lectures[idx].fileSizeText = updateData.fileSizeText;
+        if (updateData.fileType) db.lectures[idx].fileType = updateData.fileType;
+        if (updateData.fileUrl) db.lectures[idx].fileUrl = updateData.fileUrl;
+        if (updateData.slideCount) db.lectures[idx].slideCount = parseInt(updateData.slideCount);
+
+        updatedObj = db.lectures[idx];
+        localStorage.setItem("app_mock_db", JSON.stringify(db));
+      }
+    }
+
+    // Đồng bộ lên Supabase Cloud
+    if (window.supabaseService?.isReady()) {
+      try {
+        const client = window.supabaseService.client;
+        const payload = {
+          title: updateData.title,
+          grade_level: parseInt(updateData.grade),
+          book_series: updateData.bookSeries,
+          topic_name: updateData.topicName,
+          description: updateData.description,
+          author_name: updateData.authorName,
+          updated_at: new Date().toISOString()
+        };
+
+        if (updateData.fileName) payload.file_name = updateData.fileName;
+        if (updateData.fileSizeText) payload.file_size_text = updateData.fileSizeText;
+        if (updateData.fileType) payload.file_type = updateData.fileType;
+        if (updateData.fileUrl) payload.file_url = updateData.fileUrl;
+        if (updateData.slideCount) payload.slide_count = parseInt(updateData.slideCount);
+
+        await client.from("lecture_slides").update(payload).eq("id", id);
+      } catch (err) {
+        console.warn("Lỗi cập nhật bài giảng lên Supabase:", err);
+      }
+    }
+
+    return { success: true, lecture: updatedObj };
+  }
+
+  // 6. Xóa bài giảng điện tử (Xóa cả LocalStorage và Supabase Cloud)
   async deleteLecture(id) {
     // 1. Xóa trong LocalStorage
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
@@ -203,6 +262,43 @@ class LectureService {
     }
 
     return { success: true };
+  }
+
+  // 7. Tổng hợp số liệu thống kê lượt xem, lượt tải theo khối lớp và bộ sách
+  async getAnalyticsSummary() {
+    const all = await this.getAllLectures();
+    const totalLectures = all.length;
+    let totalViews = 0;
+    let totalDownloads = 0;
+
+    const gradeStats = { 3: { count: 0, views: 0, downloads: 0 }, 4: { count: 0, views: 0, downloads: 0 }, 5: { count: 0, views: 0, downloads: 0 } };
+    const seriesStats = { "KNTT": 0, "CD": 0, "CTST": 0 };
+
+    all.forEach(l => {
+      totalViews += (l.viewCount || 0);
+      totalDownloads += (l.downloadCount || 0);
+
+      const g = l.grade || 3;
+      if (gradeStats[g]) {
+        gradeStats[g].count++;
+        gradeStats[g].views += (l.viewCount || 0);
+        gradeStats[g].downloads += (l.downloadCount || 0);
+      }
+
+      const s = l.bookSeries || "KNTT";
+      seriesStats[s] = (seriesStats[s] || 0) + 1;
+    });
+
+    const topLectures = [...all].sort((a, b) => (b.viewCount + b.downloadCount) - (a.viewCount + a.downloadCount)).slice(0, 5);
+
+    return {
+      totalLectures,
+      totalViews,
+      totalDownloads,
+      gradeStats,
+      seriesStats,
+      topLectures
+    };
   }
 
   // 5. Tăng lượt xem / tải

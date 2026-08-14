@@ -720,14 +720,14 @@
     </div>
   </div>
 
-  <!-- MODAL 6: TẢI LÊN BÀI GIẢNG ĐIỆN TỬ POWERPOINT (LECTURE UPLOAD MODAL) -->
+  <!-- MODAL 6: TẢI LÊN & CHỈNH SỬA BÀI GIẢNG ĐIỆN TỬ POWERPOINT -->
   <div id="lecture-upload-modal" class="modal-backdrop">
     <div class="modal-content p-6 md:p-8 max-w-xl space-y-5 animate-pop">
       <div class="flex items-center justify-between pb-3 border-b border-slate-200">
         <div class="flex items-center gap-3">
           <span class="text-3xl p-2 bg-amber-100 text-amber-800 rounded-2xl">📊</span>
           <div>
-            <h3 class="text-lg md:text-xl font-black text-slate-900">TẢI LÊN BÀI GIẢNG ĐIỆN TỬ</h3>
+            <h3 id="lec-modal-title" class="text-lg md:text-xl font-black text-slate-900">TẢI LÊN BÀI GIẢNG ĐIỆN TỬ</h3>
             <p class="text-xs text-slate-500 font-semibold">Đồng bộ file trình chiếu PowerPoint (.pptx / .pdf) lên Supabase</p>
           </div>
         </div>
@@ -765,7 +765,7 @@
 
         <!-- Khung Chọn File PowerPoint Từ Máy Tính -->
         <div class="space-y-2">
-          <label class="form-label font-bold text-slate-700">Chọn File PowerPoint từ Máy Tính (.pptx, .ppt, .pdf):</label>
+          <label class="form-label font-bold text-slate-700">Chọn hoặc Đổi File PowerPoint từ Máy Tính (.pptx, .ppt, .pdf):</label>
           <div class="p-5 bg-slate-50 border-2 border-dashed border-cyan-400 rounded-2xl text-center space-y-2 hover:bg-cyan-50/50 transition-all cursor-pointer relative">
             <input type="file" id="lec-file-input" accept=".pptx,.ppt,.pdf,.odp" onchange="lectureUploadModal.handleFileSelect(event)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
             <span class="text-4xl block">📁</span>
@@ -782,7 +782,7 @@
                 <p id="lec-file-size-disp" class="text-[10px] text-emerald-700 font-semibold">5.2 MB</p>
               </div>
             </div>
-            <span class="badge badge-emerald font-black text-[10px]">Đã sẵn sàng tải lên</span>
+            <span class="badge badge-emerald font-black text-[10px]">Đã sẵn sàng</span>
           </div>
         </div>
 
@@ -807,7 +807,7 @@
     </div>
   </div>
 
-  <!-- MODAL 7: TRÌNH CHIẾU BÀI GIẢNG ĐIỆN TỬ TRỰC TUYẾN (LECTURE PREVIEW MODAL) -->
+  <!-- MODAL 7: TRÌNH CHIẾU BÀI GIẢNG ĐIỆN TỬ TRỰC TUYẾN & BẢNG VẼ BÚT DẠ QUANG (LECTURE PREVIEW MODAL) -->
   <div id="lecture-preview-modal" class="modal-backdrop">
     <div class="modal-content p-4 md:p-6 max-w-5xl h-[88vh] flex flex-col space-y-3 animate-pop">
       <div class="flex items-center justify-between pb-2 border-b border-slate-200 shrink-0">
@@ -815,18 +815,41 @@
           <span class="text-2xl p-1.5 bg-amber-100 rounded-xl">📊</span>
           <div>
             <h3 id="lec-preview-title" class="text-base font-black text-slate-900">Trình Chiếu Bài Giảng Điện Tử</h3>
-            <p class="text-[11px] text-cyan-700 font-bold">Chế Độ Xem & Trình Chiếu Trực Tuyến Tương Tác</p>
+            <p class="text-[11px] text-cyan-700 font-bold">Chế Độ Xem, Bút Vẽ Trực Quan & Trình Chiếu Trực Tuyến</p>
           </div>
         </div>
-        <button onclick="lecturePortal.closePreviewModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+
+        <!-- Toolbar Bút Vẽ Giảng Bài -->
+        <div class="flex items-center gap-2">
+          <button onclick="lecturePortal.toggleDrawingMode('lec-preview-canvas')" class="btn btn-amber btn-xs font-black shadow-sm flex items-center gap-1">
+            <span>🎨</span> <span>Bút Vẽ Slide</span>
+          </button>
+          <button onclick="lecturePortal.closePreviewModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+        </div>
       </div>
 
+      <!-- Floating Toolbar Khi Bật Bút Vẽ -->
+      <div id="drawing-toolbar-lec-preview-canvas" class="hidden p-2 bg-slate-900 text-white rounded-xl border border-slate-700 flex items-center justify-between gap-2 shadow-xl shrink-0 text-xs">
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-slate-400 font-bold mr-1">🖌️ Công cụ vẽ:</span>
+          <button onclick="lecturePortal.setDrawTool('highlighter')" class="px-2.5 py-1 rounded-lg font-bold bg-amber-400 text-slate-900 shadow">✨ Bút Dạ Quang Vàng</button>
+          <button onclick="lecturePortal.setDrawTool('red_pen')" class="px-2.5 py-1 rounded-lg font-bold bg-rose-600 text-white shadow">🔴 Bút Đỏ</button>
+          <button onclick="lecturePortal.setDrawTool('chalk')" class="px-2.5 py-1 rounded-lg font-bold bg-white text-slate-900 shadow">⚪ Phấn Trắng</button>
+          <button onclick="lecturePortal.setDrawTool('eraser')" class="px-2.5 py-1 rounded-lg font-bold bg-slate-700 text-slate-200">🧹 Tẩy Xóa</button>
+        </div>
+        <button onclick="lecturePortal.clearCanvas('lec-preview-canvas')" class="px-2.5 py-1 rounded-lg font-bold bg-rose-950 text-rose-300 border border-rose-800 hover:bg-rose-900">
+          🗑️ Xóa Hết Nét Vẽ
+        </button>
+      </div>
+
+      <!-- Khung Chiếu Chứa Iframe và Canvas Vẽ -->
       <div class="flex-1 bg-slate-900 rounded-2xl overflow-hidden shadow-inner relative flex items-center justify-center">
         <iframe id="lec-preview-iframe" class="w-full h-full border-0" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+        <canvas id="lec-preview-canvas" class="absolute inset-0 z-20 pointer-events-none w-full h-full"></canvas>
       </div>
 
       <div class="flex items-center justify-between pt-2 border-t border-slate-200 shrink-0 text-xs">
-        <span class="text-slate-500 font-semibold">💡 Thầy Cô có thể nhấn phím F11 hoặc nút phóng to trên slide để trình chiếu toàn màn hình.</span>
+        <span class="text-slate-500 font-semibold">💡 Thầy Cô có thể bấm <b>'🎨 Bút Vẽ Slide'</b> để khoanh tròn, gạch chân từ khóa trực tiếp lên màn hình giảng dạy.</span>
         <button onclick="lecturePortal.closePreviewModal()" class="btn btn-outline btn-sm">Đóng Trình Chiếu</button>
       </div>
     </div>
@@ -843,6 +866,23 @@
         <button onclick="document.getElementById('lecture-ai-summary-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
       </div>
       <div id="lec-ai-summary-content" class="mt-4"></div>
+    </div>
+  </div>
+
+  <!-- MODAL 12: THỐNG KÊ ANALYTICS LƯỢT XEM & LƯỢT TẢI (LECTURE ANALYTICS MODAL) -->
+  <div id="lecture-analytics-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-2xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-cyan-100 rounded-xl">📈</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900">THỐNG KÊ TƯƠNG TÁC BÀI GIẢNG ĐIỆN TỬ</h3>
+            <p class="text-xs text-slate-500 font-semibold">Báo cáo lượt xem, lượt tải và mức độ yêu thích của học sinh</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('lecture-analytics-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+      <div id="lec-analytics-content" class="py-2"></div>
     </div>
   </div>
 
