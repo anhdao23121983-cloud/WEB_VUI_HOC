@@ -1423,6 +1423,40 @@
     </div>
   </div>
 
+  <!-- MODAL 25: MỞ KHÓA MẬT KHẨU THƯ MỤC TRƯỚC GIỜ THI (FOLDER LOCK MODAL) -->
+  <div id="exam-folder-lock-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-md space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-rose-100 rounded-xl">🔐</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900">MẬT KHẨU MỞ THƯ MỤC</h3>
+            <p class="text-xs text-slate-500 font-semibold">Khóa bảo vệ đề thi trước tiết kiểm tra</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('exam-folder-lock-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+      <div id="exam-folder-lock-content" class="py-2"></div>
+    </div>
+  </div>
+
+  <!-- MODAL 26: IN HÀNG LOẠT TOÀN BỘ ĐỀ THI RA MÁY IN (BATCH PRINT MODAL) -->
+  <div id="exam-batch-print-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-lg space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-emerald-100 rounded-xl">🖨️</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900">IN HÀNG LOẠT ĐỀ THI & ĐÁP ÁN</h3>
+            <p class="text-xs text-slate-500 font-semibold">Định dạng A4 chuẩn Bộ GD&ĐT xuất thẳng máy in</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('exam-batch-print-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+      <div id="exam-batch-print-content" class="py-2"></div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATIONS CONTAINER -->
   <div id="toast-container"></div>
 

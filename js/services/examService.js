@@ -934,8 +934,76 @@ class ExamService {
     localStorage.setItem("exam_folder_configs", JSON.stringify(saved));
     return this.getFolderConfig(grade);
   }
+
+  // 21. Di chuyển đề thi sang thư mục khối lớp khác (Kéo thả Drag & Drop)
+  async moveExamToFolder(examId, targetGrade) {
+    const targetG = parseInt(targetGrade);
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (db.exams) {
+      const ex = db.exams.find(e => e.id === examId);
+      if (ex) {
+        ex.grade = targetG;
+        localStorage.setItem("app_mock_db", JSON.stringify(db));
+      }
+    }
+
+    // Đồng bộ lên Supabase nếu có kết nối
+    try {
+      if (window.supabaseClient) {
+        await window.supabaseClient
+          .from('exam_assessments')
+          .update({ grade_level: targetG })
+          .eq('id', examId);
+      }
+    } catch (e) {
+      console.warn("Supabase moveExam sync warning:", e);
+    }
+
+    return { success: true, targetGrade: targetG };
+  }
+
+  // 22. Kiểm tra trạng thái khóa thư mục đối với người dùng
+  isFolderLockedForUser(grade) {
+    const user = window.authService?.getUser();
+    if (user && (user.role === 'teacher' || user.role === 'admin')) {
+      return false; // Giáo viên và Admin không bị chặn
+    }
+
+    const cfg = this.getFolderConfig(grade);
+    if (!cfg || !cfg.isLocked) return false;
+
+    // Kiểm tra xem đã mở khóa trong phiên hiện tại chưa
+    const unlockedFolders = JSON.parse(sessionStorage.getItem("unlocked_exam_folders")) || [];
+    return !unlockedFolders.includes(parseInt(grade));
+  }
+
+  // 23. Mở khóa thư mục bằng mật khẩu trong phiên làm việc
+  unlockFolderSession(grade, inputPassword) {
+    const cfg = this.getFolderConfig(grade);
+    const correctPassword = cfg.password || "123456";
+
+    if (inputPassword === correctPassword) {
+      const unlockedFolders = JSON.parse(sessionStorage.getItem("unlocked_exam_folders")) || [];
+      if (!unlockedFolders.includes(parseInt(grade))) {
+        unlockedFolders.push(parseInt(grade));
+        sessionStorage.setItem("unlocked_exam_folders", JSON.stringify(unlockedFolders));
+      }
+      return { success: true };
+    }
+
+    return { success: false, error: "Mật khẩu không chính xác!" };
+  }
+
+  // 24. Đổi trạng thái khóa và mật khẩu thư mục
+  toggleFolderLock(grade, isLocked, password = "") {
+    return this.saveFolderConfig(grade, {
+      isLocked: Boolean(isLocked),
+      password: password || "123456"
+    });
+  }
 }
 
 window.examService = new ExamService();
+
 
 

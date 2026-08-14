@@ -1,13 +1,13 @@
 /**
  * EXAM PORTAL COMPONENT
  * Quản lý Menu KIỂM TRA & ĐÁNH GIÁ ĐỊNH KỲ:
- * - Phân chia 3 Thư Mục Con Rõ Ràng (Lớp 3, Lớp 4, Lớp 5)
- * - Tùy chỉnh Tên, Icon, Màu Sắc & Mô tả cho từng Thư Mục Con (Customize Folder Appearance)
- * - Chức năng Giáo viên Tải lên hoặc Xóa bỏ file trong từng thư mục
- * - Đồng bộ 100% FE -> BE -> Supabase Cloud Database (public.exam_assessments)
- * - Làm bài thi trực tuyến tự chấm điểm, Pháo hoa điểm 10 & Kèn Fanfare
- * - Báo điểm Zalo Phụ huynh, Lọc theo lớp & AI Sinh đề theo chủ đề
- * - Trộn 4 mã đề & Xuất đề Word, Đáp án chi tiết, Bảng điểm tổng hợp
+ * - 📁 3 Thư Mục Con (Lớp 3, Lớp 4, Lớp 5)
+ * - 🎨 Tùy chỉnh Tên, Icon, Màu Sắc & Mô tả
+ * - 📦 Tải Trọn Bộ Tất Cả Đề Thi Trong Thư Mục Về Máy 1 Chạm (.zip)
+ * - 🖐️ Kéo Thả Đề Thi Để Di Chuyển Giữa Các Thư Mục (Drag & Drop Move Exams)
+ * - 🔐 Khóa Thư Mục Bằng Mật Khẩu Trước Giờ Kiểm Tra (Lock Folder with Password)
+ * - 🖨️ In Hàng Loạt Toàn Bộ Đề Thi Ra Giấy 1 Lần Bấm (Batch Print Exams)
+ * - 🔄 Đồng bộ 100% FE -> BE -> Supabase Cloud Database (public.exam_assessments)
  */
 
 class ExamPortal {
@@ -30,6 +30,15 @@ class ExamPortal {
 
     // Folder Customization State
     this.customizingGrade = 3;
+
+    // Folder Lock State
+    this.unlockingGrade = null;
+
+    // Drag & Drop State
+    this.draggedExamId = null;
+
+    // Batch Print State
+    this.batchPrintGrade = 3;
 
     // Online Test Runner State
     this.activeRunnerExam = null;
@@ -92,12 +101,15 @@ class ExamPortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn Thông Tư 27/2020 & GDPT 2018</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">NGÂN HÀNG ĐỀ KIỂM TRA & ĐÁNH GIÁ</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Hệ thống phân chia 3 Thư Mục Lớp 3 - 4 - 5, Tùy chỉnh màu sắc nhận diện & Đồng bộ Supabase</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Phân chia 3 Thư Mục Lớp 3 - 4 - 5, Kéo thả chuyển thư mục, Khóa mật khẩu & In hàng loạt</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
             <button onclick="examPortal.downloadFolderZip(examPortal.selectedFolder)" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Tải toàn bộ đề thi, đáp án và bảng điểm dạng tệp nén .zip">
               <span>📦</span> <span>Tải Trọn Bộ (.zip)</span>
+            </button>
+            <button onclick="examPortal.openBatchPrintModal(examPortal.selectedFolder)" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="In toàn bộ đề thi và đáp án ra giấy máy in">
+              <span>🖨️</span> <span>In Hàng Loạt</span>
             </button>
             <button onclick="examPortal.openHistoryModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Xem lại lịch sử làm bài theo từng lớp">
               <span>📜</span> <span>Lịch Sử Thi & Lớp</span>
@@ -122,7 +134,7 @@ class ExamPortal {
         </div>
 
         <!-- =========================================================================
-             HỆ THỐNG 3 THƯ MỤC CON (CÓ TÙY CHỈNH TÊN, ICON & MÀU SẮC)
+             HỆ THỐNG 3 THƯ MỤC CON (HỖ TRỢ KÉO THẢ DROP TARGET & KHÓA MẬT KHẨU)
              ========================================================================= -->
         ${this.selectedFolder === "all" ? `
           <div class="space-y-3">
@@ -131,15 +143,20 @@ class ExamPortal {
                 <span>📁 THƯ MỤC KIỂM TRA THEO KHỐI LỚP (GDPT 2018)</span>
                 <span class="badge badge-emerald text-[11px] font-black">3 Thư Mục</span>
               </h3>
-              <span class="text-xs text-slate-500">Thầy Cô có thể bấm ⚙️ tùy chỉnh hoặc 📦 tải trọn bộ Zip</span>
+              <span class="text-xs text-slate-500">Thầy Cô có thể <b>Kéo thả đề thi</b> vào thư mục để chuyển khối lớp</span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
               <!-- THƯ MỤC 1: LỚP 3 -->
-              <div class="glass-card p-5 hover:border-blue-500 transition-all duration-300 shadow-md hover:shadow-2xl group relative overflow-hidden bg-gradient-to-br ${cfg3.bgLight || 'from-blue-50/80 via-white to-indigo-50/50'} border-2 ${this.selectedFolder === 3 ? 'border-blue-600 ring-2 ring-blue-300' : (cfg3.borderColor || 'border-slate-200')}">
+              <div id="folder-drop-zone-3" 
+                   ondragover="examPortal.handleFolderDragOver(event, 3)" 
+                   ondragleave="examPortal.handleFolderDragLeave(event, 3)" 
+                   ondrop="examPortal.handleFolderDrop(event, 3)"
+                   class="glass-card p-5 hover:border-blue-500 transition-all duration-300 shadow-md hover:shadow-2xl group relative overflow-hidden bg-gradient-to-br ${cfg3.bgLight || 'from-blue-50/80 via-white to-indigo-50/50'} border-2 ${this.selectedFolder === 3 ? 'border-blue-600 ring-2 ring-blue-300' : (cfg3.borderColor || 'border-slate-200')}">
                 <div class="flex items-start justify-between">
-                  <div onclick="examPortal.enterFolder(3)" class="w-14 h-14 rounded-2xl bg-gradient-to-br ${cfg3.colorGradient || 'from-blue-600 to-indigo-700'} text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all cursor-pointer">
+                  <div onclick="examPortal.enterFolder(3)" class="w-14 h-14 rounded-2xl bg-gradient-to-br ${cfg3.colorGradient || 'from-blue-600 to-indigo-700'} text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all cursor-pointer relative">
                     ${cfg3.icon || '📁'}
+                    ${cfg3.isLocked ? '<span class="absolute -top-1 -right-1 text-xs bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center shadow">🔒</span>' : ''}
                   </div>
                   
                   <div class="flex items-center gap-1.5">
@@ -147,6 +164,9 @@ class ExamPortal {
                       ${cfg3.badgeText || '🎒 KHỐI LỚP 3'}
                     </span>
                     ${isTeacher ? `
+                      <button onclick="event.stopPropagation(); examPortal.toggleFolderLockQuick(3)" class="p-1.5 bg-white/80 hover:bg-white text-slate-600 hover:text-slate-900 rounded-xl border border-slate-200 shadow-sm transition-all hover:scale-110" title="${cfg3.isLocked ? 'Thư mục đang khóa. Bấm để mở khóa' : 'Thư mục đang mở. Bấm để khóa mật khẩu'}">
+                        ${cfg3.isLocked ? '🔒' : '🔓'}
+                      </button>
                       <button onclick="event.stopPropagation(); examPortal.openFolderCustomizeModal(3)" class="p-1.5 bg-white/80 hover:bg-white text-slate-600 hover:text-slate-900 rounded-xl border border-slate-200 shadow-sm transition-all hover:scale-110" title="Tùy chỉnh Tên, Icon & Màu sắc thư mục này">
                         ⚙️
                       </button>
@@ -157,6 +177,7 @@ class ExamPortal {
                 <div onclick="examPortal.enterFolder(3)" class="mt-4 space-y-1.5 cursor-pointer">
                   <h4 class="text-base font-black text-slate-900 group-hover:text-blue-700 transition-all flex items-center gap-1.5">
                     <span>${cfg3.title}</span>
+                    ${cfg3.isLocked ? '<span class="badge bg-rose-100 text-rose-800 text-[10px] font-bold">Đã Khóa</span>' : ''}
                   </h4>
                   <p class="text-xs text-slate-500 line-clamp-2">${cfg3.description}</p>
                 </div>
@@ -175,10 +196,15 @@ class ExamPortal {
               </div>
 
               <!-- THƯ MỤC 2: LỚP 4 -->
-              <div class="glass-card p-5 hover:border-amber-500 transition-all duration-300 shadow-md hover:shadow-2xl group relative overflow-hidden bg-gradient-to-br ${cfg4.bgLight || 'from-amber-50/80 via-white to-orange-50/50'} border-2 ${this.selectedFolder === 4 ? 'border-amber-600 ring-2 ring-amber-300' : (cfg4.borderColor || 'border-slate-200')}">
+              <div id="folder-drop-zone-4" 
+                   ondragover="examPortal.handleFolderDragOver(event, 4)" 
+                   ondragleave="examPortal.handleFolderDragLeave(event, 4)" 
+                   ondrop="examPortal.handleFolderDrop(event, 4)"
+                   class="glass-card p-5 hover:border-amber-500 transition-all duration-300 shadow-md hover:shadow-2xl group relative overflow-hidden bg-gradient-to-br ${cfg4.bgLight || 'from-amber-50/80 via-white to-orange-50/50'} border-2 ${this.selectedFolder === 4 ? 'border-amber-600 ring-2 ring-amber-300' : (cfg4.borderColor || 'border-slate-200')}">
                 <div class="flex items-start justify-between">
-                  <div onclick="examPortal.enterFolder(4)" class="w-14 h-14 rounded-2xl bg-gradient-to-br ${cfg4.colorGradient || 'from-amber-600 to-orange-600'} text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all cursor-pointer">
+                  <div onclick="examPortal.enterFolder(4)" class="w-14 h-14 rounded-2xl bg-gradient-to-br ${cfg4.colorGradient || 'from-amber-600 to-orange-600'} text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all cursor-pointer relative">
                     ${cfg4.icon || '📁'}
+                    ${cfg4.isLocked ? '<span class="absolute -top-1 -right-1 text-xs bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center shadow">🔒</span>' : ''}
                   </div>
 
                   <div class="flex items-center gap-1.5">
@@ -186,6 +212,9 @@ class ExamPortal {
                       ${cfg4.badgeText || '🚀 KHỐI LỚP 4'}
                     </span>
                     ${isTeacher ? `
+                      <button onclick="event.stopPropagation(); examPortal.toggleFolderLockQuick(4)" class="p-1.5 bg-white/80 hover:bg-white text-slate-600 hover:text-slate-900 rounded-xl border border-slate-200 shadow-sm transition-all hover:scale-110" title="${cfg4.isLocked ? 'Thư mục đang khóa. Bấm để mở khóa' : 'Thư mục đang mở. Bấm để khóa mật khẩu'}">
+                        ${cfg4.isLocked ? '🔒' : '🔓'}
+                      </button>
                       <button onclick="event.stopPropagation(); examPortal.openFolderCustomizeModal(4)" class="p-1.5 bg-white/80 hover:bg-white text-slate-600 hover:text-slate-900 rounded-xl border border-slate-200 shadow-sm transition-all hover:scale-110" title="Tùy chỉnh Tên, Icon & Màu sắc thư mục này">
                         ⚙️
                       </button>
@@ -196,6 +225,7 @@ class ExamPortal {
                 <div onclick="examPortal.enterFolder(4)" class="mt-4 space-y-1.5 cursor-pointer">
                   <h4 class="text-base font-black text-slate-900 group-hover:text-amber-700 transition-all flex items-center gap-1.5">
                     <span>${cfg4.title}</span>
+                    ${cfg4.isLocked ? '<span class="badge bg-rose-100 text-rose-800 text-[10px] font-bold">Đã Khóa</span>' : ''}
                   </h4>
                   <p class="text-xs text-slate-500 line-clamp-2">${cfg4.description}</p>
                 </div>
@@ -214,10 +244,15 @@ class ExamPortal {
               </div>
 
               <!-- THƯ MỤC 3: LỚP 5 -->
-              <div class="glass-card p-5 hover:border-emerald-500 transition-all duration-300 shadow-md hover:shadow-2xl group relative overflow-hidden bg-gradient-to-br ${cfg5.bgLight || 'from-emerald-50/80 via-white to-teal-50/50'} border-2 ${this.selectedFolder === 5 ? 'border-emerald-600 ring-2 ring-emerald-300' : (cfg5.borderColor || 'border-slate-200')}">
+              <div id="folder-drop-zone-5" 
+                   ondragover="examPortal.handleFolderDragOver(event, 5)" 
+                   ondragleave="examPortal.handleFolderDragLeave(event, 5)" 
+                   ondrop="examPortal.handleFolderDrop(event, 5)"
+                   class="glass-card p-5 hover:border-emerald-500 transition-all duration-300 shadow-md hover:shadow-2xl group relative overflow-hidden bg-gradient-to-br ${cfg5.bgLight || 'from-emerald-50/80 via-white to-teal-50/50'} border-2 ${this.selectedFolder === 5 ? 'border-emerald-600 ring-2 ring-emerald-300' : (cfg5.borderColor || 'border-slate-200')}">
                 <div class="flex items-start justify-between">
-                  <div onclick="examPortal.enterFolder(5)" class="w-14 h-14 rounded-2xl bg-gradient-to-br ${cfg5.colorGradient || 'from-emerald-600 to-teal-600'} text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all cursor-pointer">
+                  <div onclick="examPortal.enterFolder(5)" class="w-14 h-14 rounded-2xl bg-gradient-to-br ${cfg5.colorGradient || 'from-emerald-600 to-teal-600'} text-white flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all cursor-pointer relative">
                     ${cfg5.icon || '📁'}
+                    ${cfg5.isLocked ? '<span class="absolute -top-1 -right-1 text-xs bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center shadow">🔒</span>' : ''}
                   </div>
 
                   <div class="flex items-center gap-1.5">
@@ -225,6 +260,9 @@ class ExamPortal {
                       ${cfg5.badgeText || '⭐ KHỐI LỚP 5'}
                     </span>
                     ${isTeacher ? `
+                      <button onclick="event.stopPropagation(); examPortal.toggleFolderLockQuick(5)" class="p-1.5 bg-white/80 hover:bg-white text-slate-600 hover:text-slate-900 rounded-xl border border-slate-200 shadow-sm transition-all hover:scale-110" title="${cfg5.isLocked ? 'Thư mục đang khóa. Bấm để mở khóa' : 'Thư mục đang mở. Bấm để khóa mật khẩu'}">
+                        ${cfg5.isLocked ? '🔒' : '🔓'}
+                      </button>
                       <button onclick="event.stopPropagation(); examPortal.openFolderCustomizeModal(5)" class="p-1.5 bg-white/80 hover:bg-white text-slate-600 hover:text-slate-900 rounded-xl border border-slate-200 shadow-sm transition-all hover:scale-110" title="Tùy chỉnh Tên, Icon & Màu sắc thư mục này">
                         ⚙️
                       </button>
@@ -235,6 +273,7 @@ class ExamPortal {
                 <div onclick="examPortal.enterFolder(5)" class="mt-4 space-y-1.5 cursor-pointer">
                   <h4 class="text-base font-black text-slate-900 group-hover:text-emerald-700 transition-all flex items-center gap-1.5">
                     <span>${cfg5.title}</span>
+                    ${cfg5.isLocked ? '<span class="badge bg-rose-100 text-rose-800 text-[10px] font-bold">Đã Khóa</span>' : ''}
                   </h4>
                   <p class="text-xs text-slate-500 line-clamp-2">${cfg5.description}</p>
                 </div>
@@ -271,9 +310,12 @@ class ExamPortal {
                 </span>
               </div>
 
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <button onclick="examPortal.downloadFolderZip(${this.selectedFolder})" class="btn btn-outline btn-xs font-black bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50 shadow-sm flex items-center gap-1" title="Tải trọn bộ đề thi lớp này dạng tệp nén .zip">
                   <span>📦</span> <span>Tải Trọn Bộ Lớp ${this.selectedFolder} (.zip)</span>
+                </button>
+                <button onclick="examPortal.openBatchPrintModal(${this.selectedFolder})" class="btn btn-outline btn-xs font-black bg-white text-slate-800 border-slate-200 hover:bg-slate-50 shadow-sm flex items-center gap-1" title="In toàn bộ đề thi của lớp này ra máy in">
+                  <span>🖨️</span> <span>In Hàng Loạt</span>
                 </button>
                 ${isTeacher ? `
                   <button onclick="examPortal.openFolderCustomizeModal(${this.selectedFolder})" class="btn btn-outline btn-xs font-bold bg-white text-slate-700 shadow-sm flex items-center gap-1">
@@ -293,7 +335,10 @@ class ExamPortal {
                   ${currentFolderCfg.icon || '📁'}
                 </div>
                 <div>
-                  <h3 class="text-lg font-black text-slate-900">${currentFolderCfg.title}</h3>
+                  <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                    <span>${currentFolderCfg.title}</span>
+                    ${currentFolderCfg.isLocked ? '<span class="badge bg-rose-600 text-white text-[10px] font-bold">🔒 Khóa Mật Khẩu</span>' : ''}
+                  </h3>
                   <p class="text-xs text-slate-600">${currentFolderCfg.description}</p>
                 </div>
               </div>
@@ -416,6 +461,9 @@ class ExamPortal {
             </h3>
             ${isTeacher ? `
               <div class="flex items-center gap-2">
+                <button onclick="examPortal.openBatchPrintModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-outline btn-xs font-bold text-slate-700 bg-white border-slate-300 flex items-center gap-1">
+                  <span>🖨️</span> <span>In Hàng Loạt</span>
+                </button>
                 <button onclick="examPortal.openAIGeneratorModal()" class="btn btn-outline btn-xs font-black text-purple-800 border-purple-300 hover:bg-purple-50 flex items-center gap-1">
                   <span>✨</span> <span>AI Sinh Đề</span>
                 </button>
@@ -432,11 +480,205 @@ class ExamPortal {
     `;
   }
 
-  // Chuyển / Mở Thư Mục
+  // =========================================================================
+  // MỞ / CHUYỂN THƯ MỤC (KIỂM TRA KHÓA MẬT KHẨU)
+  // =========================================================================
   enterFolder(grade) {
+    if (grade !== "all") {
+      const isLocked = window.examService.isFolderLockedForUser(grade);
+      if (isLocked) {
+        this.openFolderLockModal(grade);
+        return;
+      }
+    }
+
     this.selectedFolder = grade;
     this.currentGrade = grade;
     this.render("main-content-area");
+  }
+
+  openFolderLockModal(grade) {
+    this.unlockingGrade = grade;
+    const cfg = window.examService.getFolderConfig(grade);
+
+    const modal = document.getElementById("exam-folder-lock-modal");
+    const content = document.getElementById("exam-folder-lock-content");
+
+    if (content) {
+      content.innerHTML = `
+        <div class="space-y-4 text-xs text-slate-800 animate-pop text-center py-2">
+          <span class="text-5xl block animate-bounce">🔐</span>
+          <h3 class="text-lg font-black text-slate-900">${cfg.title} ĐANG ĐƯỢC TẠM KHÓA</h3>
+          <p class="text-xs text-slate-600">Thầy/Cô giáo đã tạm khóa thư mục đề thi này trước giờ kiểm tra. Em hãy nhập mã mật khẩu do Thầy/Cô cung cấp để mở đề!</p>
+
+          <div class="max-w-xs mx-auto space-y-2">
+            <input type="password" id="folder-unlock-password-input" placeholder="Nhập mật khẩu (ví dụ: 123456)..." class="form-control text-center text-sm font-black tracking-widest py-2">
+            <p id="folder-unlock-error-msg" class="text-rose-600 font-bold text-[11px] hidden">Mật khẩu không chính xác, em hãy hỏi lại Thầy/Cô!</p>
+          </div>
+
+          <div class="flex items-center justify-center gap-2 pt-2">
+            <button onclick="document.getElementById('exam-folder-lock-modal').classList.remove('active')" class="btn btn-outline btn-sm font-bold">
+              Quay Lại
+            </button>
+            <button onclick="examPortal.confirmUnlockFolder()" class="btn btn-primary btn-sm font-black bg-cyan-700 hover:bg-cyan-800 text-white shadow-md">
+              🔓 Mở Khóa Thư Mục
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    if (modal) modal.classList.add("active");
+  }
+
+  confirmUnlockFolder() {
+    const input = document.getElementById("folder-unlock-password-input")?.value.trim();
+    const errorMsg = document.getElementById("folder-unlock-error-msg");
+    const grade = this.unlockingGrade;
+
+    if (!grade) return;
+
+    const res = window.examService.unlockFolderSession(grade, input);
+    if (res.success) {
+      document.getElementById("exam-folder-lock-modal")?.classList.remove("active");
+      window.app.showToast(`🔓 Đã mở khóa thành công Thư mục Lớp ${grade}!`, "success");
+      this.selectedFolder = grade;
+      this.currentGrade = grade;
+      this.render("main-content-area");
+    } else {
+      if (errorMsg) errorMsg.classList.remove("hidden");
+    }
+  }
+
+  toggleFolderLockQuick(grade) {
+    const cfg = window.examService.getFolderConfig(grade);
+    const newLock = !cfg.isLocked;
+    window.examService.toggleFolderLock(grade, newLock, cfg.password || "123456");
+    window.app.showToast(newLock ? `🔒 Đã khóa thư mục Lớp ${grade} (Mật khẩu: ${cfg.password || '123456'})!` : `🔓 Đã mở khóa tự do cho thư mục Lớp ${grade}!`, "info");
+    this.render("main-content-area");
+  }
+
+  // =========================================================================
+  // KÉO THẢ ĐỀ THI ĐỂ DI CHUYỂN GIỮA CÁC THƯ MỤC (DRAG & DROP)
+  // =========================================================================
+  handleExamDragStart(event, examId) {
+    this.draggedExamId = examId;
+    event.dataTransfer.setData("text/plain", examId);
+    event.dataTransfer.effectAllowed = "move";
+  }
+
+  handleFolderDragOver(event, targetGrade) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    const zone = document.getElementById(`folder-drop-zone-${targetGrade}`);
+    if (zone) {
+      zone.classList.add("ring-4", "ring-emerald-400", "scale-105", "bg-emerald-100/70");
+    }
+  }
+
+  handleFolderDragLeave(event, targetGrade) {
+    const zone = document.getElementById(`folder-drop-zone-${targetGrade}`);
+    if (zone) {
+      zone.classList.remove("ring-4", "ring-emerald-400", "scale-105", "bg-emerald-100/70");
+    }
+  }
+
+  async handleFolderDrop(event, targetGrade) {
+    event.preventDefault();
+    const zone = document.getElementById(`folder-drop-zone-${targetGrade}`);
+    if (zone) {
+      zone.classList.remove("ring-4", "ring-emerald-400", "scale-105", "bg-emerald-100/70");
+    }
+
+    const examId = event.dataTransfer.getData("text/plain") || this.draggedExamId;
+    if (!examId) return;
+
+    window.app.showToast(`🚚 Đang chuyển đề thi sang Thư mục Lớp ${targetGrade}...`, "info");
+    const res = await window.examService.moveExamToFolder(examId, targetGrade);
+
+    if (res.success) {
+      window.app.showToast(`🎉 Đã di chuyển đề thi vào Thư Mục Khối Lớp ${targetGrade} thành công!`, "success");
+      this.render("main-content-area");
+    }
+  }
+
+  // =========================================================================
+  // IN HÀNG LOẠT TOÀN BỘ ĐỀ THI RA GIẤY (BATCH PRINT MODAL)
+  // =========================================================================
+  openBatchPrintModal(grade = 3) {
+    this.batchPrintGrade = grade !== 'all' ? grade : 3;
+    const modal = document.getElementById("exam-batch-print-modal");
+    const content = document.getElementById("exam-batch-print-content");
+
+    if (content) {
+      content.innerHTML = `
+        <div class="space-y-4 text-xs text-slate-800 animate-pop">
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="badge badge-emerald font-black text-[10px]">CHỌN KHỐI LỚP CẦN IN</span>
+              <span class="font-bold text-slate-600">Định dạng: <b>Khổ giấy A4 Chuẩn</b></span>
+            </div>
+            <div class="flex items-center gap-2 pt-2">
+              <button onclick="examPortal.selectBatchPrintGrade(3)" class="btn btn-xs ${this.batchPrintGrade === 3 ? 'btn-primary' : 'btn-outline'} font-bold">Khối Lớp 3</button>
+              <button onclick="examPortal.selectBatchPrintGrade(4)" class="btn btn-xs ${this.batchPrintGrade === 4 ? 'btn-primary' : 'btn-outline'} font-bold">Khối Lớp 4</button>
+              <button onclick="examPortal.selectBatchPrintGrade(5)" class="btn btn-xs ${this.batchPrintGrade === 5 ? 'btn-primary' : 'btn-outline'} font-bold">Khối Lớp 5</button>
+              <button onclick="examPortal.selectBatchPrintGrade('all')" class="btn btn-xs ${this.batchPrintGrade === 'all' ? 'btn-primary' : 'btn-outline'} font-bold">Tất Cả Khối</button>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="font-bold text-slate-700 block">Tùy Chọn Nội Dung Bản In:</label>
+            <div class="space-y-2 bg-white p-3 rounded-xl border border-slate-200">
+              <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+                <input type="checkbox" id="batch-opt-exam" checked class="form-checkbox text-emerald-600 rounded">
+                <span>📝 Đề Kiểm Tra Chuẩn Bộ GD&ĐT (Có khung điểm & Lời nhận xét)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+                <input type="checkbox" id="batch-opt-key" checked class="form-checkbox text-indigo-600 rounded">
+                <span>🔑 Bảng Ma Trận Đáp Án & Hướng Dẫn Chấm Thực Hành</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+                <input type="checkbox" id="batch-opt-gradebook" checked class="form-checkbox text-cyan-600 rounded">
+                <span>📊 Bảng Tổng Hợp Kết Quả Đánh Giá Lớp Học (Sổ điểm mẫu)</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+            <span class="text-[11px] text-slate-400">Tự động chèn ngắt trang A4 giữa các đề thi</span>
+            <div class="flex items-center gap-2">
+              <button onclick="document.getElementById('exam-batch-print-modal').classList.remove('active')" class="btn btn-outline btn-sm font-bold">
+                Hủy
+              </button>
+              <button onclick="examPortal.executeBatchPrint()" class="btn btn-primary btn-sm font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow flex items-center gap-1">
+                <span>🖨️</span> <span>Bắt Đầu In Ngay</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (modal) modal.classList.add("active");
+  }
+
+  selectBatchPrintGrade(grade) {
+    this.batchPrintGrade = grade;
+    this.openBatchPrintModal(grade);
+  }
+
+  executeBatchPrint() {
+    const printExams = document.getElementById("batch-opt-exam")?.checked;
+    const printAnswerKeys = document.getElementById("batch-opt-key")?.checked;
+    const printGradebook = document.getElementById("batch-opt-gradebook")?.checked;
+
+    document.getElementById("exam-batch-print-modal")?.classList.remove("active");
+
+    window.docExportService.batchPrintFolderExams(this.batchPrintGrade, {
+      printExams,
+      printAnswerKeys,
+      printGradebook
+    });
   }
 
   // Nhanh AI Sinh đề cho khối lớp của thư mục
@@ -509,6 +751,18 @@ class ExamPortal {
             <input type="hidden" id="cust-folder-bglight" value="${cfg.bgLight}">
           </div>
 
+          <!-- Tùy Chọn Khóa Mật Khẩu Thư Mục -->
+          <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-2">
+            <label class="flex items-center gap-2 font-bold text-slate-800 cursor-pointer">
+              <input type="checkbox" id="cust-folder-locked" ${cfg.isLocked ? 'checked' : ''} onchange="document.getElementById('cust-folder-pass-box').classList.toggle('hidden', !this.checked)" class="form-checkbox text-amber-600 rounded">
+              <span>🔒 Khóa Thư Mục Bằng Mật Khẩu (Dành cho trước giờ kiểm tra)</span>
+            </label>
+            <div id="cust-folder-pass-box" class="${cfg.isLocked ? '' : 'hidden'} pt-1">
+              <label class="text-[11px] font-bold text-slate-600 block mb-1">Mật khẩu mở thư mục:</label>
+              <input type="text" id="cust-folder-password" value="${cfg.password || '123456'}" placeholder="Nhập mật khẩu (ví dụ: 123456)" class="form-control text-xs font-bold tracking-wider">
+            </div>
+          </div>
+
           <div>
             <label class="font-bold text-slate-700 block mb-1">4. Mô Tả Ghi Chú Thư Mục:</label>
             <textarea id="cust-folder-desc" rows="2" class="form-control text-xs font-medium">${cfg.description}</textarea>
@@ -567,6 +821,8 @@ class ExamPortal {
     const colorGradient = document.getElementById("cust-folder-grad")?.value || "from-blue-600 to-indigo-700";
     const borderColor = document.getElementById("cust-folder-border")?.value || "border-blue-500";
     const bgLight = document.getElementById("cust-folder-bglight")?.value || "from-blue-50/80 via-white to-indigo-50/50";
+    const isLocked = document.getElementById("cust-folder-locked")?.checked;
+    const password = document.getElementById("cust-folder-password")?.value.trim() || "123456";
     const description = document.getElementById("cust-folder-desc")?.value.trim() || "";
 
     window.examService.saveFolderConfig(grade, {
@@ -575,6 +831,8 @@ class ExamPortal {
       colorGradient,
       borderColor,
       bgLight,
+      isLocked,
+      password,
       description
     });
 
@@ -590,14 +848,14 @@ class ExamPortal {
     this.render("main-content-area");
   }
 
-  // Render lưới thẻ đề kiểm tra
+  // Render lưới thẻ đề kiểm tra (Có hỗ trợ Kéo Thả draggable)
   renderExamGrid(isTeacher, user) {
     if (this.exams.length === 0) {
       return `
         <div class="text-center py-16 glass-card space-y-3 text-slate-400">
           <span class="text-6xl block mb-2">📁</span>
           <p class="font-black text-slate-700 text-base">Thư mục này hiện chưa có tệp đề kiểm tra nào.</p>
-          <p class="text-xs text-slate-500">Thầy Cô hãy bấm nút <b>'Tải Đề Lên'</b> hoặc <b>'AI Sinh Đề'</b> để lưu trữ đề thi vào thư mục này!</p>
+          <p class="text-xs text-slate-500">Thầy Cô hãy bấm nút <b>'Tải Đề Lên'</b> hoặc <b>kéo thả đề thi</b> vào đây!</p>
           ${isTeacher ? `
             <div class="flex items-center justify-center gap-2 mt-2">
               <button onclick="examPortal.quickAIGenerateForFolder(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-primary btn-sm font-black">
@@ -636,7 +894,9 @@ class ExamPortal {
           const isFav = window.examService.isFavorite(e.id);
 
           return `
-            <div class="glass-card overflow-hidden hover:border-emerald-500 transition-all duration-300 shadow-md hover:shadow-xl flex flex-col justify-between group relative">
+            <div draggable="true" 
+                 ondragstart="examPortal.handleExamDragStart(event, '${e.id}')"
+                 class="glass-card overflow-hidden hover:border-emerald-500 transition-all duration-300 shadow-md hover:shadow-xl flex flex-col justify-between group relative cursor-grab active:cursor-grabbing">
               <!-- Header Gradient Thumbnail -->
               <div class="p-5 bg-gradient-to-br ${e.thumbnailColor || 'from-blue-700 to-indigo-600'} text-white space-y-2 relative">
                 <div class="flex items-center justify-between gap-1 flex-wrap">
@@ -663,7 +923,10 @@ class ExamPortal {
                 <div class="flex items-center gap-3 pt-2">
                   <span class="text-4xl filter drop-shadow-md group-hover:scale-110 transition-all">📝</span>
                   <div>
-                    <p class="text-[11px] font-bold text-cyan-100 uppercase tracking-wider">Thang điểm ${e.totalScore || 10} • TT 27/2020</p>
+                    <p class="text-[11px] font-bold text-cyan-100 uppercase tracking-wider flex items-center gap-1">
+                      <span>Thang điểm ${e.totalScore || 10} • TT 27</span>
+                      <span class="text-[10px] bg-white/20 px-1.5 py-0.2 rounded" title="Kéo thẻ này vào thư mục khác để chuyển khối lớp">⠿ Kéo</span>
+                    </p>
                     <h4 class="font-black text-base text-white leading-snug line-clamp-2">${e.title}</h4>
                   </div>
                 </div>
@@ -1511,7 +1774,7 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
                   <th class="p-3 border border-slate-200">Nội Dung Yêu Cầu Cần Đạt</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-200 font-medium text-slate-700">
+              <tbody class="divide-y border-slate-200 font-medium text-slate-700">
                 ${matrix.levels.map(lvl => `
                   <tr class="hover:bg-slate-50 transition-all">
                     <td class="p-3 font-bold border border-slate-200 text-slate-900">${lvl.level}</td>
@@ -1673,4 +1936,3 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
 }
 
 window.examPortal = new ExamPortal();
-

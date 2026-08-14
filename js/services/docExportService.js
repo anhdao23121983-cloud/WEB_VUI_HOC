@@ -921,8 +921,123 @@ Chúc Thầy Cô và các em học sinh có những tiết học Tin học thậ
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
     window.app.showToast(`🎉 Đã tải xuống thành công tệp nén ${zipName}!`, "success");
+  }
+
+  // 9. IN HÀNG LOẠT TOÀN BỘ ĐỀ THI RA GIẤY 1 LẦN BẤM (BATCH PRINT)
+  async batchPrintFolderExams(grade, options = { printExams: true, printAnswerKeys: true, printGradebook: true }) {
+    const effectiveGrade = grade !== 'all' ? parseInt(grade) : 'all';
+    const exams = await window.examService.getAllExams(effectiveGrade);
+
+    if (!exams || exams.length === 0) {
+      window.app.showToast("Thư mục này hiện không có đề thi nào để in ấn!", "warning");
+      return;
+    }
+
+    window.app.showToast(`🖨️ Đang chuẩn bị bản in cho ${exams.length} đề thi...`, "info");
+
+    let printHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>In Hàng Loạt Đề Kiểm Tra Tin Học - Khối Lớp ${grade}</title>
+        <style>
+          @page {
+            size: A4;
+            margin: 15mm 15mm 15mm 20mm;
+          }
+          body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.35;
+            color: #000;
+            background: #fff;
+            margin: 0;
+            padding: 10px;
+          }
+          .page-break {
+            page-break-after: always;
+            break-after: page;
+            clear: both;
+          }
+          .header-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+          .header-table td { vertical-align: top; font-size: 11pt; }
+          .student-box { width: 100%; border: 1px solid #000; border-collapse: collapse; margin: 10px 0 15px 0; }
+          .student-box td { border: 1px solid #000; padding: 6px 10px; font-size: 11pt; }
+          .title { text-align: center; font-size: 14pt; font-weight: bold; text-transform: uppercase; margin: 10px 0 3px 0; }
+          .subtitle { text-align: center; font-size: 11pt; font-style: italic; margin-bottom: 12px; }
+          h3 { font-size: 12pt; font-weight: bold; text-transform: uppercase; margin-top: 12px; margin-bottom: 4px; }
+          .question-item { margin-bottom: 10px; font-size: 11pt; }
+          .option-grid { margin-left: 20px; font-size: 11pt; }
+          table.ans-table, table.grade-table { width: 100%; border-collapse: collapse; margin: 10px 0 15px 0; }
+          table.ans-table th, table.ans-table td, table.grade-table th, table.grade-table td { border: 1px solid #000; padding: 6px 8px; font-size: 11pt; }
+          table.ans-table th, table.grade-table th { background-color: #f2f2f2; text-align: center; }
+          @media screen {
+            body { max-width: 800px; margin: 20px auto; border: 1px solid #ccc; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+            .page-break { border-bottom: 3px dashed #999; margin: 40px 0; padding-bottom: 20px; }
+          }
+        </style>
+      </head>
+      <body>
+    `;
+
+    // 1. Nối tất cả đề thi
+    if (options.printExams !== false) {
+      exams.forEach((exam, idx) => {
+        const bodyContent = this.buildExamDocHtml(exam)
+          .replace(/<\/?(html|head|meta|title|style|body)[^>]*>/gi, '')
+          .trim();
+        printHtml += `<div class="exam-sheet">${bodyContent}</div>`;
+        if (idx < exams.length - 1 || options.printAnswerKeys || options.printGradebook) {
+          printHtml += `<div class="page-break"></div>`;
+        }
+      });
+    }
+
+    // 2. Nối tất cả đáp án
+    if (options.printAnswerKeys !== false) {
+      exams.forEach((exam, idx) => {
+        const keyContent = this.buildAnswerKeyDocHtml(exam)
+          .replace(/<\/?(html|head|meta|title|style|body)[^>]*>/gi, '')
+          .trim();
+        printHtml += `<div class="ans-sheet">${keyContent}</div>`;
+        if (idx < exams.length - 1 || options.printGradebook) {
+          printHtml += `<div class="page-break"></div>`;
+        }
+      });
+    }
+
+    // 3. Nối bảng điểm mẫu
+    if (options.printGradebook !== false) {
+      const targetClass = grade !== 'all' ? `${grade}A` : "3A";
+      const history = window.examService.getExamHistory({ className: targetClass });
+      const gradebookContent = this.buildGradebookDocHtml(targetClass, grade !== 'all' ? grade : 3, history)
+        .replace(/<\/?(html|head|meta|title|style|body)[^>]*>/gi, '')
+        .trim();
+      printHtml += `<div class="gradebook-sheet">${gradebookContent}</div>`;
+    }
+
+    printHtml += `
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 400);
+          };
+        </script>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank', 'width=900,height=750');
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(printHtml);
+      printWindow.document.close();
+    } else {
+      window.app.showToast("Trình duyệt đang chặn cửa sổ in (Pop-up), vui lòng cho phép để in đề thi!", "warning");
+    }
   }
 
   slugify(text) {
