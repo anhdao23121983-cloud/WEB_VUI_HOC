@@ -1006,7 +1006,69 @@
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATIONS CONTAINER -->
+  <!-- MODAL 13: ĐỒNG HỒ ĐẾM NGƯỢC HOẠT ĐỘNG NHÓM (GROUP WORK TIMER MODAL) -->
+  <div id="group-timer-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-lg space-y-5 animate-pop text-center">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+        <div class="flex items-center gap-2 text-left">
+          <span class="text-2xl p-1.5 bg-amber-100 rounded-xl">⏱️</span>
+          <div>
+            <h3 class="text-base font-black text-slate-900">ĐỒNG HỒ HOẠT ĐỘNG NHÓM</h3>
+            <p class="text-[11px] text-slate-500 font-semibold">Kiểm soát thời gian thảo luận & thực hành trên lớp</p>
+          </div>
+        </div>
+        <button onclick="lecturePortal.closeGroupTimerModal()" class="text-slate-400 text-2xl font-bold">✕</button>
+      </div>
+
+      <!-- Khung Hiển Thị Đồng Hồ Số Siêu Lớn & Vòng Tiến Trình -->
+      <div id="group-timer-clock-box" class="py-6 px-4 bg-slate-950 text-white rounded-3xl border-4 border-amber-400 shadow-2xl space-y-3 relative overflow-hidden">
+        <div class="flex items-center justify-center gap-2">
+          <span class="text-amber-400 text-xs font-black tracking-widest uppercase bg-amber-400/20 px-3 py-0.5 rounded-full animate-pulse">
+            FOCUS MODE • GDPT 2018
+          </span>
+        </div>
+
+        <div class="text-6xl md:text-7xl font-black font-mono text-amber-400 tracking-wider drop-shadow-md select-none">
+          <span id="group-timer-clock-disp">03:00</span>
+        </div>
+
+        <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+          <div id="group-timer-progress-ring" class="bg-gradient-to-r from-amber-400 to-emerald-400 h-3 rounded-full transition-all duration-1000" style="width: 100%"></div>
+        </div>
+      </div>
+
+      <!-- Các Nút Chọn Nhanh Thời Gian (Preset Buttons) -->
+      <div class="space-y-2">
+        <label class="form-label font-bold text-slate-700 text-xs">Chọn Nhanh Mốc Thời Gian Thảo Luận:</label>
+        <div class="grid grid-cols-5 gap-2">
+          <button onclick="lecturePortal.setGroupTimerMinutes(1)" class="p-2 bg-slate-100 hover:bg-amber-100 hover:border-amber-400 border border-slate-200 rounded-xl text-xs font-black text-slate-800 transition-all">1 Phút</button>
+          <button onclick="lecturePortal.setGroupTimerMinutes(2)" class="p-2 bg-slate-100 hover:bg-amber-100 hover:border-amber-400 border border-slate-200 rounded-xl text-xs font-black text-slate-800 transition-all">2 Phút</button>
+          <button onclick="lecturePortal.setGroupTimerMinutes(3)" class="p-2 bg-cyan-100 hover:bg-cyan-200 border border-cyan-400 rounded-xl text-xs font-black text-cyan-900 transition-all">3 Phút</button>
+          <button onclick="lecturePortal.setGroupTimerMinutes(5)" class="p-2 bg-slate-100 hover:bg-amber-100 hover:border-amber-400 border border-slate-200 rounded-xl text-xs font-black text-slate-800 transition-all">5 Phút</button>
+          <button onclick="lecturePortal.setGroupTimerMinutes(10)" class="p-2 bg-slate-100 hover:bg-amber-100 hover:border-amber-400 border border-slate-200 rounded-xl text-xs font-black text-slate-800 transition-all">10 Phút</button>
+        </div>
+      </div>
+
+      <!-- Điều Khiển Bắt Đầu / Tạm Dừng / Nhạc Nền / Reset -->
+      <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-200 flex-wrap">
+        <div class="flex items-center gap-1.5">
+          <button id="btn-toggle-group-timer" onclick="lecturePortal.toggleGroupTimer()" class="btn btn-amber btn-md font-black shadow-lg">
+            <span>▶️</span> <span>Bắt Đầu Đếm Giờ</span>
+          </button>
+          <button onclick="lecturePortal.resetGroupTimer()" class="btn btn-outline btn-md font-bold" title="Đặt lại thời gian">
+            🔄 Đặt Lại
+          </button>
+          <button onclick="lecturePortal.addTimerSeconds(60)" class="btn btn-outline btn-sm font-bold" title="Cộng thêm 1 phút">
+            +1P
+          </button>
+        </div>
+
+        <button id="btn-toggle-lofi-timer" onclick="lecturePortal.toggleLofiMusic()" class="btn btn-outline btn-sm font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200">
+          <span>🎵 Nhạc Lofi: BẬT</span>
+        </button>
+      </div>
+    </div>
+  </div>
   <div id="toast-container"></div>
 
   <!-- ==========================================================================

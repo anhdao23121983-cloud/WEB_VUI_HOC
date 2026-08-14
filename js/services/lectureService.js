@@ -79,19 +79,55 @@ class LectureService {
     return list;
   }
 
-  // 2. Lấy danh sách bài giảng của riêng giáo viên đang đăng nhập
+  // 2. Lấy danh sách ID bài giảng yêu thích
+  getFavoriteIds() {
+    const user = window.authService?.getUser();
+    const key = user ? `app_fav_lectures_${user.username}` : "app_fav_lectures_guest";
+    try {
+      return JSON.parse(localStorage.getItem(key)) || ["lec_01"];
+    } catch (e) {
+      return ["lec_01"];
+    }
+  }
+
+  // 3. Kiểm tra 1 bài giảng có được yêu thích hay không
+  isFavorite(id) {
+    const favs = this.getFavoriteIds();
+    return favs.includes(id);
+  }
+
+  // 4. Bật/Tắt yêu thích bài giảng (Toggle Favorite)
+  toggleFavorite(id) {
+    const user = window.authService?.getUser();
+    const key = user ? `app_fav_lectures_${user.username}` : "app_fav_lectures_guest";
+    let favs = this.getFavoriteIds();
+    let isFavNow = false;
+
+    if (favs.includes(id)) {
+      favs = favs.filter(favId => favId !== id);
+      isFavNow = false;
+    } else {
+      favs.push(id);
+      isFavNow = true;
+    }
+
+    localStorage.setItem(key, JSON.stringify(favs));
+    return isFavNow;
+  }
+
+  // 5. Lấy danh sách bài giảng của riêng giáo viên đang đăng nhập
   async getMyLectures(username) {
     const all = await this.getAllLectures();
     return all.filter(l => (l.createdByUsername === username) || (l.authorName && l.authorName.toLowerCase().includes(username.toLowerCase())));
   }
 
-  // 3. Lấy thông tin 1 bài giảng theo ID
+  // 6. Lấy thông tin 1 bài giảng theo ID
   async getLectureById(id) {
     const all = await this.getAllLectures();
     return all.find(l => l.id === id);
   }
 
-  // 4. Tải lên và lưu bài giảng mới (Đồng bộ FE -> BE -> Supabase Cloud)
+  // 7. Tải lên và lưu bài giảng mới (Đồng bộ FE -> BE -> Supabase Cloud)
   async uploadLecture(lectureData) {
     const user = window.authService?.getUser() || { username: "anhdao", name: "Thầy Giáo Anh Đào", school: "Trường Tiểu Học" };
     const lectureId = lectureData.id || ("lec_" + Date.now());

@@ -1,13 +1,13 @@
 /**
  * LECTURE PORTAL COMPONENT
- * Quản lý Bài Giảng Điện Tử: Tải lên, Chỉnh sửa/Đổi file, Xóa bỏ, Bảng vẽ Bút dạ quang/Phấn trắng, Thống kê Analytics, Lọc SGK, Video hoạt họa, Phiếu bài tập & Game Khởi động
+ * Quản lý Bài Giảng Điện Tử: Yêu thích (Bookmark ⭐), Đồng hồ Nhóm 1-10P có Nhạc Lofi & Chuông báo, Chỉnh sửa, Bảng vẽ Canvas & Thống kê
  */
 
 class LecturePortal {
   constructor() {
     this.currentGrade = "all";
     this.currentBookSeries = "all";
-    this.currentTab = "all"; // 'all' | 'my_lectures'
+    this.currentTab = "all"; // 'all' | 'my_lectures' | 'favorites'
     this.searchQuery = "";
     this.lectures = [];
 
@@ -40,6 +40,15 @@ class LecturePortal {
     this.isPainting = false;
     this.activeCanvas = null;
     this.activeCtx = null;
+
+    // Group Work Timer State
+    this.groupTimerSeconds = 180; // 3 phút mặc định
+    this.groupTimerInitial = 180;
+    this.groupTimerInterval = null;
+    this.isGroupTimerRunning = false;
+    this.isLofiMusicOn = true;
+    this.audioCtx = null;
+    this.lofiOscillator = null;
   }
 
   async render(containerId) {
@@ -51,12 +60,16 @@ class LecturePortal {
     
     // Tải toàn bộ bài giảng
     let allLectures = await window.lectureService.getAllLectures(this.currentGrade, this.searchQuery, this.currentBookSeries);
+    const favoriteIds = window.lectureService.getFavoriteIds();
     
-    // Đếm số bài giảng của tôi
+    // Đếm số lượng theo danh mục
     const myLecturesCount = user ? allLectures.filter(l => (l.createdByUsername === user.username) || (l.authorName === user.name) || user.role === 'admin').length : 0;
+    const favoritesCount = allLectures.filter(l => favoriteIds.includes(l.id)).length;
 
     if (this.currentTab === "my_lectures" && user) {
       this.lectures = allLectures.filter(l => (l.createdByUsername === user.username) || (l.authorName === user.name) || user.role === 'admin');
+    } else if (this.currentTab === "favorites") {
+      this.lectures = allLectures.filter(l => favoriteIds.includes(l.id));
     } else {
       this.lectures = allLectures;
     }
@@ -71,10 +84,13 @@ class LecturePortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Quản lý tải lên, chỉnh sửa, đổi file, xóa bỏ bài giảng của giáo viên và đồng bộ trực tiếp lên Supabase Cloud</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide, Video hoạt họa thuyết minh AI, Đồng hồ nhóm 1-10P có nhạc Lofi và Đánh dấu Yêu thích</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="lecturePortal.openGroupTimerModal()" class="btn bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs py-2.5 px-4 rounded-xl shadow-lg flex items-center gap-1.5 hover:scale-105 transition-all">
+              <span class="text-base">⏱️</span> <span>Đồng Hồ Nhóm</span>
+            </button>
             ${isTeacher ? `
               <button onclick="lecturePortal.openAnalyticsModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-4 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md">
                 <span>📈</span> <span>Thống Kê</span>
@@ -85,25 +101,31 @@ class LecturePortal {
             ` : `
               <div class="bg-white/15 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/30 text-center text-xs text-white">
                 <span class="font-bold block text-amber-300">💡 Dành Cho Học Sinh:</span>
-                <span>Em có thể xem Video hoạt họa, làm Game Khởi động và tải Phiếu bài tập!</span>
+                <span>Em có thể xem Video hoạt họa, làm Game Khởi động và lưu Bài Giảng Yêu Thích!</span>
               </div>
             `}
           </div>
         </div>
 
-        <!-- Thanh Tab Chuyển Đổi: Tất Cả Bài Giảng vs Bài Giảng Của Tôi -->
-        ${isTeacher ? `
-          <div class="flex items-center gap-3 border-b border-slate-200 pb-2">
-            <button onclick="lecturePortal.switchTab('all')" class="px-5 py-2.5 rounded-2xl font-black text-xs transition-all flex items-center gap-2 ${this.currentTab === 'all' ? 'bg-cyan-700 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}">
-              <span>📂 Tất Cả Bài Giảng</span>
-              <span class="badge ${this.currentTab === 'all' ? 'bg-white/25 text-white' : 'badge-slate'} text-[10px]">${allLectures.length}</span>
-            </button>
-            <button onclick="lecturePortal.switchTab('my_lectures')" class="px-5 py-2.5 rounded-2xl font-black text-xs transition-all flex items-center gap-2 ${this.currentTab === 'my_lectures' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}">
-              <span>👨‍🏫 Bài Giảng Của Tôi (Quản Lý, Sửa & Xóa)</span>
+        <!-- Thanh 3 Tab Chuyển Đổi: Tất Cả | Bài Giảng Của Tôi | Bài Giảng Yêu Thích -->
+        <div class="flex items-center gap-2.5 border-b border-slate-200 pb-2 flex-wrap">
+          <button onclick="lecturePortal.switchTab('all')" class="px-4 py-2 rounded-2xl font-black text-xs transition-all flex items-center gap-2 ${this.currentTab === 'all' ? 'bg-cyan-700 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}">
+            <span>📂 Tất Cả Bài Giảng</span>
+            <span class="badge ${this.currentTab === 'all' ? 'bg-white/25 text-white' : 'badge-slate'} text-[10px]">${allLectures.length}</span>
+          </button>
+          
+          <button onclick="lecturePortal.switchTab('favorites')" class="px-4 py-2 rounded-2xl font-black text-xs transition-all flex items-center gap-2 ${this.currentTab === 'favorites' ? 'bg-rose-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}">
+            <span>⭐ Bài Giảng Yêu Thích</span>
+            <span class="badge ${this.currentTab === 'favorites' ? 'bg-white/25 text-white' : 'badge-rose'} text-[10px]">${favoritesCount}</span>
+          </button>
+
+          ${isTeacher ? `
+            <button onclick="lecturePortal.switchTab('my_lectures')" class="px-4 py-2 rounded-2xl font-black text-xs transition-all flex items-center gap-2 ${this.currentTab === 'my_lectures' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}">
+              <span>👨‍🏫 Bài Giảng Của Tôi</span>
               <span class="badge ${this.currentTab === 'my_lectures' ? 'bg-white/25 text-white' : 'badge-amber'} text-[10px]">${myLecturesCount}</span>
             </button>
-          </div>
-        ` : ''}
+          ` : ''}
+        </div>
 
         <!-- Thanh Bộ Lọc Kép: Khối Lớp + 3 Bộ Sách Giáo Khoa + Ô Tìm Kiếm -->
         <div class="glass-card p-5 space-y-4">
@@ -176,8 +198,8 @@ class LecturePortal {
       return `
         <div class="text-center py-16 glass-card space-y-3 text-slate-400">
           <span class="text-6xl block mb-2">📊</span>
-          <p class="font-black text-slate-700 text-base">Chưa có bài giảng điện tử nào trong mục này.</p>
-          <p class="text-xs text-slate-500">Thầy Cô hãy bấm nút <b>'Tải Lên Bài Giảng Mới'</b> để tải lên file PowerPoint đầu tiên!</p>
+          <p class="font-black text-slate-700 text-base">Chưa có bài giảng nào trong mục này.</p>
+          <p class="text-xs text-slate-500">Thầy Cô và các em hãy bấm vào biểu tượng ⭐ trên bài giảng để lưu vào mục Yêu thích!</p>
           ${isTeacher ? `
             <button onclick="lectureUploadModal.openModal()" class="btn btn-primary btn-sm font-black mt-2">
               📤 Tải Lên Ngay
@@ -198,6 +220,7 @@ class LecturePortal {
         ${this.lectures.map(l => {
           const sInfo = seriesLabels[l.bookSeries] || seriesLabels["KNTT"];
           const canManage = user && (user.role === 'admin' || user.username === l.createdByUsername || user.name === l.authorName || isTeacher);
+          const isFav = window.lectureService.isFavorite(l.id);
 
           return `
             <div class="glass-card overflow-hidden hover:border-cyan-500 transition-all duration-300 shadow-md hover:shadow-xl flex flex-col justify-between group relative">
@@ -207,9 +230,16 @@ class LecturePortal {
                   <span class="badge ${sInfo.bg} text-white font-black text-[10px] uppercase backdrop-blur-sm">
                     ${sInfo.name} • Lớp ${l.grade}
                   </span>
-                  <span class="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-sm">
-                    ${l.slideCount || 20} Slide
-                  </span>
+                  
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                      ${l.slideCount || 20} Slide
+                    </span>
+                    <!-- Nút Bookmark Yêu thích ⭐ -->
+                    <button onclick="lecturePortal.toggleFavorite('${l.id}')" class="p-1 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-sm transition-all hover:scale-110" title="${isFav ? 'Bỏ lưu bài giảng yêu thích' : 'Lưu vào bài giảng yêu thích'}">
+                      <span class="text-sm">${isFav ? '⭐' : '🤍'}</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div class="flex items-center gap-3 pt-2">
@@ -287,7 +317,14 @@ class LecturePortal {
     `;
   }
 
-  // Chuyển Tab (Tất cả vs Bài giảng của tôi)
+  // Đánh dấu yêu thích bài giảng
+  toggleFavorite(id) {
+    const isFav = window.lectureService.toggleFavorite(id);
+    window.app.showToast(isFav ? "⭐ Đã thêm bài giảng vào mục Yêu Thích!" : "Đã xóa khỏi mục Yêu Thích!", "info");
+    this.render("main-content-area");
+  }
+
+  // Chuyển Tab (Tất cả vs Bài giảng của tôi vs Yêu thích)
   switchTab(tab) {
     this.currentTab = tab;
     this.render("main-content-area");
@@ -306,6 +343,174 @@ class LecturePortal {
   handleSearch(query) {
     this.searchQuery = query;
     this.render("main-content-area");
+  }
+
+  // =========================================================================
+  // ĐỒNG HỒ ĐẾM NGƯỢC HOẠT ĐỘNG NHÓM (GROUP WORK TIMER 1-10 PHÚT)
+  // =========================================================================
+  openGroupTimerModal() {
+    const modal = document.getElementById("group-timer-modal");
+    if (modal) modal.classList.add("active");
+    this.updateTimerDisplay();
+  }
+
+  closeGroupTimerModal() {
+    this.pauseGroupTimer();
+    const modal = document.getElementById("group-timer-modal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  setGroupTimerMinutes(minutes) {
+    this.pauseGroupTimer();
+    this.groupTimerSeconds = minutes * 60;
+    this.groupTimerInitial = this.groupTimerSeconds;
+    this.updateTimerDisplay();
+    window.app.showToast(`⏱️ Đã đặt đồng hồ nhóm: ${minutes} Phút!`, "info");
+  }
+
+  addTimerSeconds(seconds) {
+    this.groupTimerSeconds += seconds;
+    this.groupTimerInitial = Math.max(this.groupTimerInitial, this.groupTimerSeconds);
+    this.updateTimerDisplay();
+  }
+
+  toggleGroupTimer() {
+    if (this.isGroupTimerRunning) {
+      this.pauseGroupTimer();
+    } else {
+      this.startGroupTimer();
+    }
+  }
+
+  startGroupTimer() {
+    if (this.groupTimerSeconds <= 0) return;
+    this.isGroupTimerRunning = true;
+    const btn = document.getElementById("btn-toggle-group-timer");
+    if (btn) btn.innerHTML = "<span>⏸️</span> <span>Tạm Dừng</span>";
+
+    if (this.isLofiMusicOn) {
+      this.startLofiAmbientMusic();
+    }
+
+    if (this.groupTimerInterval) clearInterval(this.groupTimerInterval);
+    this.groupTimerInterval = setInterval(() => {
+      this.groupTimerSeconds--;
+      this.updateTimerDisplay();
+
+      if (this.groupTimerSeconds <= 0) {
+        this.finishGroupTimer();
+      }
+    }, 1000);
+  }
+
+  pauseGroupTimer() {
+    this.isGroupTimerRunning = false;
+    if (this.groupTimerInterval) clearInterval(this.groupTimerInterval);
+    const btn = document.getElementById("btn-toggle-group-timer");
+    if (btn) btn.innerHTML = "<span>▶️</span> <span>Bắt Đầu Đếm Giờ</span>";
+    this.stopLofiAmbientMusic();
+  }
+
+  resetGroupTimer() {
+    this.pauseGroupTimer();
+    this.groupTimerSeconds = this.groupTimerInitial || 180;
+    this.updateTimerDisplay();
+  }
+
+  updateTimerDisplay() {
+    const mins = Math.floor(this.groupTimerSeconds / 60);
+    const secs = this.groupTimerSeconds % 60;
+    const timeStr = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+    const disp = document.getElementById("group-timer-clock-disp");
+    const ring = document.getElementById("group-timer-progress-ring");
+
+    if (disp) disp.innerText = timeStr;
+
+    if (ring && this.groupTimerInitial > 0) {
+      const percent = (this.groupTimerSeconds / this.groupTimerInitial) * 100;
+      ring.style.width = `${percent}%`;
+    }
+  }
+
+  finishGroupTimer() {
+    this.pauseGroupTimer();
+    this.playBellChime();
+    window.app.showToast("🔔 HẾT GIỜ HOẠT ĐỘNG NHÓM! Các nhóm hãy tổng kết kết quả thảo luận!", "warning");
+
+    const clockBox = document.getElementById("group-timer-clock-box");
+    if (clockBox) {
+      clockBox.classList.add("animate-bounce");
+      setTimeout(() => clockBox.classList.remove("animate-bounce"), 4000);
+    }
+  }
+
+  toggleLofiMusic() {
+    this.isLofiMusicOn = !this.isLofiMusicOn;
+    const btn = document.getElementById("btn-toggle-lofi-timer");
+    if (btn) {
+      btn.innerHTML = this.isLofiMusicOn ? "<span>🎵 Nhạc Lofi: BẬT</span>" : "<span>🔇 Nhạc Lofi: TẮT</span>";
+    }
+    if (this.isGroupTimerRunning) {
+      if (this.isLofiMusicOn) this.startLofiAmbientMusic();
+      else this.stopLofiAmbientMusic();
+    }
+  }
+
+  startLofiAmbientMusic() {
+    try {
+      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      const filter = this.audioCtx.createBiquadFilter();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(220, this.audioCtx.currentTime); // Nốt A3 dịu nhẹ
+
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(400, this.audioCtx.currentTime);
+
+      gain.gain.setValueAtTime(0.04, this.audioCtx.currentTime);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.audioCtx.destination);
+
+      osc.start();
+      this.lofiOscillator = osc;
+    } catch (e) {}
+  }
+
+  stopLofiAmbientMusic() {
+    if (this.lofiOscillator) {
+      try {
+        this.lofiOscillator.stop();
+        this.lofiOscillator.disconnect();
+      } catch (e) {}
+      this.lofiOscillator = null;
+    }
+  }
+
+  playBellChime() {
+    try {
+      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+
+      const now = this.audioCtx.currentTime;
+      [880, 1174, 1760].forEach((freq, i) => {
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.frequency.setValueAtTime(freq, now + i * 0.15);
+        gain.gain.setValueAtTime(0.2, now + i * 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 1.2);
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.start(now + i * 0.15);
+        osc.stop(now + i * 0.15 + 1.2);
+      });
+    } catch (e) {}
   }
 
   // =========================================================================
@@ -335,12 +540,10 @@ class LecturePortal {
     this.activeCanvas = canvas;
     this.activeCtx = canvas.getContext("2d");
     
-    // Tự động điều chỉnh kích thước canvas theo khung cha
     const rect = canvas.parentElement.getBoundingClientRect();
     canvas.width = rect.width;
     canvas.height = rect.height;
 
-    // Gắn sự kiện chuột & cảm ứng
     canvas.onmousedown = (e) => this.startPaint(e);
     canvas.onmousemove = (e) => this.drawPaint(e);
     canvas.onmouseup = () => this.stopPaint();
