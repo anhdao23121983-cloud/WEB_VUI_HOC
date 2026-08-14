@@ -8,12 +8,13 @@
  * 5. 🤖 Robot Dọn Dẹp & Vẽ Tranh 3D (AI Cleaning Robot & 3D Turtle Drawing Bot)
  * 6. 🛡️ An Toàn Số, Tư Thế Ngồi & Đố Vui Blitz 10s (3D Safety Lab)
  * 7. 🖥️ Lắp Ráp Máy Tính 3D (Build Your PC 3D Lab)
- * 8. 🎆 HIỆU ỨNG PHÁO HOA 3D & CONFETTI CHÚC MỪNG ĐIỂM 10 (Particle Engine)
- * 9. ☁️ Tự Động Đồng Bộ Điểm Thí Nghiệm Lên Supabase Cloud Database
- * 10. 🎵 Background Music Synthesizer: Nhạc nền vui nhộn Web Audio API
- * 11. 🏆 Bảng Xếp Hạng Top 10 Speedrun Sắp Xếp Nhanh Nhất (Leaderboard)
- * 12. 🎖️ In Chứng Chỉ Huấn Luyện Viên Robot & Kỹ Sư Tin Học Nhí (PDF A4)
- * 13. 🔊 Voice Narration AI & Phòng Chiếu AR Camera Thực Tế Ảo
+ * 8. 🌙 CHẾ ĐỘ BAN ĐÊM NEON PHÁT SÁNG (Dark Neon Room Mode & Cyberpunk Lab)
+ * 9. 🎆 HIỆU ỨNG PHÁO HOA 3D & CONFETTI CHÚC MỪNG ĐIỂM 10 (Particle Engine)
+ * 10. ☁️ Tự Động Đồng Bộ Điểm Thí Nghiệm Lên Supabase Cloud Database
+ * 11. 🎵 Background Music Synthesizer: Nhạc nền vui nhộn Web Audio API
+ * 12. 🏆 Bảng Xếp Hạng Top 10 Speedrun Sắp Xếp Nhanh Nhất (Leaderboard)
+ * 13. 🎖️ In Chứng Chỉ Huấn Luyện Viên Robot & Kỹ Sư Tin Học Nhí (PDF A4)
+ * 14. 🔊 Voice Narration AI & Phòng Chiếu AR Camera Thực Tế Ảo
  */
 
 class Simulation3D {
@@ -24,6 +25,7 @@ class Simulation3D {
     this.score = 0;
     this.isVoiceEnabled = true;
     this.isBgmEnabled = false;
+    this.isDarkMode = localStorage.getItem("sim_3d_dark_mode") === "true";
     this.bgmInterval = null;
     this.audioCtx = null;
     this.searchScenario = "organized";
@@ -119,6 +121,20 @@ class Simulation3D {
     this.initLeaderboard();
   }
 
+  toggleDarkMode() {
+    this.isDarkMode = !this.isDarkMode;
+    localStorage.setItem("sim_3d_dark_mode", this.isDarkMode);
+    this.playKeySound(750);
+    if (this.isDarkMode) {
+      this.speak("Đã chuyển sang chế độ Phòng học Ban Đêm Neon!");
+      window.app.showToast("🌙 Đã bật chế độ Ban Đêm Neon tương lai!", "info");
+    } else {
+      this.speak("Đã chuyển về chế độ Phòng học Ban Ngày!");
+      window.app.showToast("☀️ Đã chuyển về chế độ Ban Ngày sáng sủa!", "info");
+    }
+    this.render("main-content-area");
+  }
+
   resetItemLocations() {
     this.items.forEach(item => {
       this.itemLocations[item.id] = "desk";
@@ -173,7 +189,7 @@ class Simulation3D {
   }
 
   // =========================================================================
-  // 🎆 FIREWORKS & CONFETTI PARTICLE ENGINE (CANVAS 3D)
+  // 🎆 FIREWORKS & CONFETTI PARTICLE ENGINE
   // =========================================================================
   triggerFireworks() {
     let canvas = document.getElementById("sim-fireworks-canvas");
@@ -197,7 +213,6 @@ class Simulation3D {
     const colors = ["#f59e0b", "#ef4444", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899", "#06b6d4", "#eab308"];
     this.particles = [];
 
-    // Tạo 3 chùm pháo hoa nổ ở các vị trí khác nhau
     const burstPoints = [
       { x: canvas.width * 0.3, y: canvas.height * 0.35 },
       { x: canvas.width * 0.5, y: canvas.height * 0.25 },
@@ -412,14 +427,17 @@ class Simulation3D {
     if (this.currentLesson === 'safety') titleText = "AN TOÀN KHI SỬ DỤNG MÁY TÍNH & ĐỐ VUI BLITZ 10S";
     if (this.currentLesson === 'pc_builder') titleText = "THÍ NGHIỆM LẮP RÁP MÁY TÍNH 3D (BUILD YOUR PC)";
 
+    const darkClass = this.isDarkMode ? "bg-slate-950 text-slate-100 p-4 md:p-6 rounded-3xl border-2 border-cyan-500/40 shadow-[0_0_50px_rgba(6,182,212,0.15)]" : "";
+
     container.innerHTML = `
-      <div class="space-y-6 animate-pop">
+      <div class="space-y-6 animate-pop ${darkClass}">
         <!-- Banner Thí Nghiệm Đa Năng -->
         <div class="banner-anhdao flex flex-col md:flex-row items-center justify-between gap-6">
           <div class="space-y-2">
             <div class="flex items-center gap-2 flex-wrap">
               <span class="badge badge-amber font-black">🧪 PHÒNG THÍ NGHIỆM 3D & AR ẢO</span>
               <span class="badge bg-white/20 text-white font-bold">GDPT 2018 • HỌC LIỆU SỐ TOÀN DIỆN</span>
+              ${this.isDarkMode ? `<span class="badge bg-cyan-500 text-slate-950 font-black animate-pulse">🌙 NEON CYBER LAB</span>` : ''}
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">${titleText}</h2>
             <p class="text-cyan-100 text-xs md:text-sm max-w-2xl">
@@ -428,6 +446,11 @@ class Simulation3D {
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="simulation3D.toggleDarkMode()" class="btn ${this.isDarkMode ? 'bg-cyan-400 text-slate-950 font-black ring-2 ring-cyan-300' : 'bg-slate-800 text-white'} text-xs py-2 px-3 rounded-xl border border-white/30 flex items-center gap-1.5 shadow-md hover:scale-105 transition-all" title="Chuyển đổi giao diện Ban Đêm Neon / Ban Ngày">
+              <span>${this.isDarkMode ? '🌙' : '☀️'}</span> 
+              <span>${this.isDarkMode ? 'Đêm Neon' : 'Ban Ngày'}</span>
+            </button>
+
             <button onclick="simulation3D.triggerFireworks()" class="btn bg-rose-500 hover:bg-rose-600 text-white text-xs py-2 px-3 rounded-xl border border-white/30 flex items-center gap-1.5 shadow-md hover:scale-105 transition-all" title="Bắn pháo hoa rực rỡ chúc mừng">
               <span>🎆</span> <span>Pháo Hoa 3D</span>
             </button>
@@ -453,33 +476,33 @@ class Simulation3D {
         </div>
 
         <!-- 7 Nút Chọn Chủ Đề Bài Thí Nghiệm -->
-        <div class="flex items-center justify-between bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex-wrap gap-2">
+        <div class="flex items-center justify-between ${this.isDarkMode ? 'bg-slate-900/90 border-cyan-500/30' : 'bg-white border-slate-200'} p-3.5 rounded-2xl border shadow-sm flex-wrap gap-2">
           <div class="flex items-center gap-1.5 flex-wrap">
-            <button onclick="simulation3D.selectLesson(7)" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 7 ? 'bg-indigo-600 text-white shadow-md scale-102 ring-2 ring-indigo-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+            <button onclick="simulation3D.selectLesson(7)" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 7 ? 'bg-indigo-600 text-white shadow-md scale-102 ring-2 ring-indigo-300' : this.isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
               <span>📘</span> <span>Bài 7: Sắp Xếp</span>
             </button>
 
-            <button onclick="simulation3D.selectLesson(8)" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 8 ? 'bg-purple-600 text-white shadow-md scale-102 ring-2 ring-purple-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+            <button onclick="simulation3D.selectLesson(8)" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 8 ? 'bg-purple-600 text-white shadow-md scale-102 ring-2 ring-purple-300' : this.isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
               <span>📁</span> <span>Bài 8: Thư Mục</span>
             </button>
 
-            <button onclick="simulation3D.selectLesson(10)" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 10 ? 'bg-blue-600 text-white shadow-md scale-102 ring-2 ring-blue-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+            <button onclick="simulation3D.selectLesson(10)" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 10 ? 'bg-blue-600 text-white shadow-md scale-102 ring-2 ring-blue-300' : this.isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
               <span>⌨️</span> <span>Phím & Chuột</span>
             </button>
 
-            <button onclick="simulation3D.selectLesson('internet')" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 'internet' ? 'bg-cyan-600 text-white shadow-md scale-102 ring-2 ring-cyan-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+            <button onclick="simulation3D.selectLesson('internet')" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 'internet' ? 'bg-cyan-600 text-white shadow-md scale-102 ring-2 ring-cyan-300' : this.isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
               <span>🌐</span> <span>Mạng Internet & Web</span>
             </button>
 
-            <button onclick="simulation3D.selectLesson('robot')" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 'robot' ? 'bg-amber-600 text-white shadow-md scale-102 ring-2 ring-amber-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+            <button onclick="simulation3D.selectLesson('robot')" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 'robot' ? 'bg-amber-600 text-white shadow-md scale-102 ring-2 ring-amber-300' : this.isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
               <span>🤖</span> <span>Robot & Vẽ Tranh</span>
             </button>
 
-            <button onclick="simulation3D.selectLesson('safety')" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 'safety' ? 'bg-rose-600 text-white shadow-md scale-102 ring-2 ring-rose-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+            <button onclick="simulation3D.selectLesson('safety')" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 'safety' ? 'bg-rose-600 text-white shadow-md scale-102 ring-2 ring-rose-300' : this.isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
               <span>🛡️</span> <span>An Toàn & Blitz 10s</span>
             </button>
 
-            <button onclick="simulation3D.selectLesson('pc_builder')" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 'pc_builder' ? 'bg-emerald-600 text-white shadow-md scale-102 ring-2 ring-emerald-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+            <button onclick="simulation3D.selectLesson('pc_builder')" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 'pc_builder' ? 'bg-emerald-600 text-white shadow-md scale-102 ring-2 ring-emerald-300' : this.isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
               <span>🖥️</span> <span>Lắp Ráp PC 3D</span>
             </button>
           </div>
@@ -552,12 +575,12 @@ class Simulation3D {
   // =========================================================================
   renderInternet3DView() {
     return `
-      <div class="glass-card p-6 md:p-8 space-y-6 max-w-5xl mx-auto shadow-2xl">
+      <div class="glass-card p-6 md:p-8 space-y-6 max-w-5xl mx-auto shadow-2xl ${this.isDarkMode ? 'bg-slate-900/90 border-cyan-500/40 text-white' : ''}">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <span class="badge bg-cyan-600 text-white font-black text-xs">🌐 INTERNET & CLOUD 3D</span>
-            <h3 class="text-2xl font-black text-slate-900 mt-1">MẠNG TOÀN CẦU & TRÌNH DUYỆT WEB</h3>
-            <p class="text-xs text-slate-500">Mô phỏng dòng chảy dữ liệu từ Máy tính ➔ Wi-Fi Router ➔ Đám mây Internet ➔ Trình duyệt Web!</p>
+            <h3 class="text-2xl font-black ${this.isDarkMode ? 'text-cyan-300' : 'text-slate-900'} mt-1">MẠNG TOÀN CẦU & TRÌNH DUYỆT WEB</h3>
+            <p class="text-xs ${this.isDarkMode ? 'text-slate-300' : 'text-slate-500'}">Mô phỏng dòng chảy dữ liệu từ Máy tính ➔ Wi-Fi Router ➔ Đám mây Internet ➔ Trình duyệt Web!</p>
           </div>
 
           <button onclick="simulation3D.testInternetPacketFlow()" class="btn btn-primary btn-sm font-black bg-cyan-700 text-white shadow-md flex items-center gap-1.5">
@@ -595,19 +618,19 @@ class Simulation3D {
           </div>
         </div>
 
-        <div class="p-5 bg-white rounded-3xl border-2 border-slate-300 shadow-md space-y-4">
-          <div class="flex items-center gap-2 border-b border-slate-200 pb-3">
+        <div class="p-5 ${this.isDarkMode ? 'bg-slate-800 border-cyan-500/30 text-white' : 'bg-white border-slate-300'} rounded-3xl border-2 shadow-md space-y-4">
+          <div class="flex items-center gap-2 border-b ${this.isDarkMode ? 'border-slate-700' : 'border-slate-200'} pb-3">
             <span class="text-emerald-600 font-bold text-xs flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-300">
               <span>🔒</span> <span>HTTPS An Toàn</span>
             </span>
-            <input id="sim-web-url-input" type="text" value="${this.webBrowserUrl}" class="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-mono font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400">
+            <input id="sim-web-url-input" type="text" value="${this.webBrowserUrl}" class="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-mono font-bold ${this.isDarkMode ? 'text-white bg-slate-900' : 'text-slate-800 bg-slate-50'} focus:outline-none focus:ring-2 focus:ring-cyan-400">
             <button onclick="simulation3D.navigateWebBrowser()" class="btn btn-primary btn-xs font-black bg-cyan-700 text-white">🔍 Truy Cập</button>
           </div>
 
-          <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 min-h-[140px] flex flex-col items-center justify-center text-center space-y-2">
+          <div class="p-6 ${this.isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-200'} rounded-2xl border min-h-[140px] flex flex-col items-center justify-center text-center space-y-2">
             <span class="text-4xl block animate-float">🎓</span>
-            <h4 class="font-black text-slate-900 text-sm">${this.webPageContent}</h4>
-            <p class="text-xs text-slate-500 max-w-md">Trang web bảo mật chuẩn quốc tế, cung cấp học liệu Tin học 3, 4, 5 tương tác trực tuyến.</p>
+            <h4 class="font-black ${this.isDarkMode ? 'text-amber-300' : 'text-slate-900'} text-sm" id="sim-web-content-title">${this.webPageContent}</h4>
+            <p class="text-xs ${this.isDarkMode ? 'text-slate-400' : 'text-slate-500'} max-w-md">Trang web bảo mật chuẩn quốc tế, cung cấp học liệu Tin học 3, 4, 5 tương tác trực tuyến.</p>
           </div>
         </div>
       </div>
@@ -646,11 +669,11 @@ class Simulation3D {
   renderRobot3DView() {
     return `
       <div class="space-y-4">
-        <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
-          <button onclick="simulation3D.setRobotSubTab('clean')" class="px-4 py-2 rounded-xl font-black text-xs transition-all flex items-center gap-1.5 ${this.robotSubTab === 'clean' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border'}">
+        <div class="flex items-center gap-2 border-b ${this.isDarkMode ? 'border-slate-800' : 'border-slate-200'} pb-2">
+          <button onclick="simulation3D.setRobotSubTab('clean')" class="px-4 py-2 rounded-xl font-black text-xs transition-all flex items-center gap-1.5 ${this.robotSubTab === 'clean' ? 'bg-amber-600 text-white shadow-md' : this.isDarkMode ? 'bg-slate-900 text-slate-300 border-slate-700' : 'bg-white text-slate-700 hover:bg-slate-100 border'}">
             <span>🤖 1. Robot Dọn Dẹp Phòng Học</span>
           </button>
-          <button onclick="simulation3D.setRobotSubTab('draw')" class="px-4 py-2 rounded-xl font-black text-xs transition-all flex items-center gap-1.5 ${this.robotSubTab === 'draw' ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border'}">
+          <button onclick="simulation3D.setRobotSubTab('draw')" class="px-4 py-2 rounded-xl font-black text-xs transition-all flex items-center gap-1.5 ${this.robotSubTab === 'draw' ? 'bg-purple-600 text-white shadow-md' : this.isDarkMode ? 'bg-slate-900 text-slate-300 border-slate-700' : 'bg-white text-slate-700 hover:bg-slate-100 border'}">
             <span>🎨 2. Robot Vẽ Tranh Hình Học 3D (Logo/Scratch)</span>
           </button>
         </div>
@@ -671,26 +694,26 @@ class Simulation3D {
         const isShelfTarget = (c === size - 1 && r === size - 1);
 
         gridHtml += `
-          <div class="w-14 h-14 md:w-16 md:h-16 rounded-xl border-2 flex items-center justify-center relative transition-all ${isRobotHere ? 'border-amber-500 bg-amber-100 shadow-md ring-2 ring-amber-300' : isShelfTarget ? 'border-emerald-500 bg-emerald-50' : itemHere ? 'border-blue-300 bg-blue-50' : 'border-slate-200 bg-white'}">
-            ${isRobotHere ? `<span class="text-3xl animate-bounce">🤖</span>` : itemHere ? `<div class="text-center"><span class="text-2xl block">${itemHere.icon}</span><span class="text-[8px] font-bold text-slate-600 block">${itemHere.name}</span></div>` : isShelfTarget ? `<div class="text-center"><span class="text-2xl block">🏢</span><span class="text-[8px] font-bold text-emerald-800 block">TỦ ĐỒ</span></div>` : ''}
+          <div class="w-14 h-14 md:w-16 md:h-16 rounded-xl border-2 flex items-center justify-center relative transition-all ${isRobotHere ? 'border-amber-500 bg-amber-100 shadow-md ring-2 ring-amber-300' : isShelfTarget ? 'border-emerald-500 bg-emerald-50' : itemHere ? 'border-blue-300 bg-blue-50' : this.isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white'}">
+            ${isRobotHere ? `<span class="text-3xl animate-bounce">🤖</span>` : itemHere ? `<div class="text-center"><span class="text-2xl block">${itemHere.icon}</span><span class="text-[8px] font-bold ${this.isDarkMode ? 'text-slate-200' : 'text-slate-600'} block">${itemHere.name}</span></div>` : isShelfTarget ? `<div class="text-center"><span class="text-2xl block">🏢</span><span class="text-[8px] font-bold text-emerald-800 block">TỦ ĐỒ</span></div>` : ''}
           </div>
         `;
       }
     }
 
     return `
-      <div class="glass-card p-6 md:p-8 space-y-6 max-w-5xl mx-auto shadow-2xl">
+      <div class="glass-card p-6 md:p-8 space-y-6 max-w-5xl mx-auto shadow-2xl ${this.isDarkMode ? 'bg-slate-900/90 border-cyan-500/40 text-white' : ''}">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <span class="badge bg-amber-600 text-white font-black text-xs">🤖 AI ROBOT SIMULATOR</span>
-            <h3 class="text-2xl font-black text-slate-900 mt-1">ROBOT DỌN DẸP PHÒNG HỌC TỰ ĐỘNG</h3>
-            <p class="text-xs text-slate-500">Điều khiển Robot thu gom đồ vật về Tủ Đồ 🏢 ở góc dưới bên phải!</p>
+            <h3 class="text-2xl font-black ${this.isDarkMode ? 'text-amber-400' : 'text-slate-900'} mt-1">ROBOT DỌN DẸP PHÒNG HỌC TỰ ĐỘNG</h3>
+            <p class="text-xs ${this.isDarkMode ? 'text-slate-300' : 'text-slate-500'}">Điều khiển Robot thu gom đồ vật về Tủ Đồ 🏢 ở góc dưới bên phải!</p>
           </div>
-          <button onclick="simulation3D.resetRobotGame()" class="btn btn-outline btn-xs font-bold text-slate-600">🔄 Đặt Lại</button>
+          <button onclick="simulation3D.resetRobotGame()" class="btn btn-outline btn-xs font-bold ${this.isDarkMode ? 'text-white border-slate-600' : 'text-slate-600'}">🔄 Đặt Lại</button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="lg:col-span-2 flex flex-col items-center justify-center p-6 bg-slate-100 rounded-3xl border-2 border-slate-300 shadow-inner">
+          <div class="lg:col-span-2 flex flex-col items-center justify-center p-6 ${this.isDarkMode ? 'bg-slate-950 border-slate-700' : 'bg-slate-100 border-slate-300'} rounded-3xl border-2 shadow-inner">
             <div class="grid grid-cols-5 gap-2">${gridHtml}</div>
             <div class="mt-4 flex items-center gap-3 text-xs">
               <span class="badge bg-amber-500 text-slate-950 font-black">🤖 Robot: (${this.robotPos.x}, ${this.robotPos.y})</span>
@@ -700,8 +723,8 @@ class Simulation3D {
           </div>
 
           <div class="space-y-4">
-            <div class="p-4 bg-white rounded-2xl border-2 border-slate-200 space-y-3 shadow-sm">
-              <h4 class="font-black text-xs text-slate-900 uppercase">🎮 ĐIỀU KHIỂN ROBOT DI CHUYỂN:</h4>
+            <div class="p-4 ${this.isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200'} rounded-2xl border-2 space-y-3 shadow-sm">
+              <h4 class="font-black text-xs uppercase">🎮 ĐIỀU KHIỂN ROBOT DI CHUYỂN:</h4>
               <div class="flex flex-col items-center gap-2">
                 <button onclick="simulation3D.moveRobot(0, -1)" class="w-12 h-12 rounded-2xl bg-cyan-700 text-white font-black text-xl shadow-md">⬆️</button>
                 <div class="flex items-center gap-3">
@@ -710,7 +733,7 @@ class Simulation3D {
                 </div>
                 <button onclick="simulation3D.moveRobot(0, 1)" class="w-12 h-12 rounded-2xl bg-cyan-700 text-white font-black text-xl shadow-md">⬇️</button>
               </div>
-              <div class="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2">
+              <div class="pt-2 border-t ${this.isDarkMode ? 'border-slate-700' : 'border-slate-100'} grid grid-cols-2 gap-2">
                 <button onclick="simulation3D.robotPickUp()" class="btn btn-amber btn-xs font-black shadow-md flex items-center justify-center gap-1"><span>🧲</span> <span>Hút Đồ</span></button>
                 <button onclick="simulation3D.robotDropAtShelf()" class="btn btn-emerald btn-xs font-black shadow-md flex items-center justify-center gap-1"><span>📥</span> <span>Bỏ Tủ</span></button>
               </div>
@@ -784,12 +807,12 @@ class Simulation3D {
 
   renderRobotDrawView() {
     return `
-      <div class="glass-card p-6 md:p-8 space-y-6 max-w-5xl mx-auto shadow-2xl">
+      <div class="glass-card p-6 md:p-8 space-y-6 max-w-5xl mx-auto shadow-2xl ${this.isDarkMode ? 'bg-slate-900/90 border-purple-500/40 text-white' : ''}">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <span class="badge bg-purple-600 text-white font-black text-xs">🎨 3D TURTLE ROBOT DRAWING</span>
-            <h3 class="text-2xl font-black text-slate-900 mt-1">LẬP TRÌNH ROBOT VẼ TRANH HÌNH HỌC</h3>
-            <p class="text-xs text-slate-500">Chọn khối lệnh lập trình để chú Robot tự động hạ bút vẽ các hình học neon phát sáng trên mặt sàn 3D!</p>
+            <h3 class="text-2xl font-black ${this.isDarkMode ? 'text-purple-300' : 'text-slate-900'} mt-1">LẬP TRÌNH ROBOT VẼ TRANH HÌNH HỌC</h3>
+            <p class="text-xs ${this.isDarkMode ? 'text-slate-300' : 'text-slate-500'}">Chọn khối lệnh lập trình để chú Robot tự động hạ bút vẽ các hình học neon phát sáng trên mặt sàn 3D!</p>
           </div>
         </div>
 
@@ -818,34 +841,34 @@ class Simulation3D {
           <div class="space-y-3">
             <span class="badge badge-purple font-black text-xs">🧩 CHỌN MẪU KHỐI LỆNH:</span>
 
-            <button onclick="simulation3D.runDrawShape('square')" class="w-full p-3 bg-white border-2 border-blue-300 rounded-2xl text-left hover:border-blue-500 transition-all shadow-sm flex items-center justify-between">
+            <button onclick="simulation3D.runDrawShape('square')" class="w-full p-3 ${this.isDarkMode ? 'bg-slate-800 border-blue-500/40 text-white' : 'bg-white border-blue-300'} border-2 rounded-2xl text-left hover:border-blue-500 transition-all shadow-sm flex items-center justify-between">
               <div>
-                <h5 class="text-xs font-black text-slate-900">🔲 1. Vẽ Hình Vuông</h5>
-                <p class="text-[10px] text-slate-500">Lặp lại 4 lần [Tiến ➔ Rẽ phải 90°]</p>
+                <h5 class="text-xs font-black">🔲 1. Vẽ Hình Vuông</h5>
+                <p class="text-[10px] text-slate-400">Lặp lại 4 lần [Tiến ➔ Rẽ phải 90°]</p>
               </div>
               <span class="badge bg-blue-600 text-white text-[10px]">Chạy ▶</span>
             </button>
 
-            <button onclick="simulation3D.runDrawShape('triangle')" class="w-full p-3 bg-white border-2 border-emerald-300 rounded-2xl text-left hover:border-emerald-500 transition-all shadow-sm flex items-center justify-between">
+            <button onclick="simulation3D.runDrawShape('triangle')" class="w-full p-3 ${this.isDarkMode ? 'bg-slate-800 border-emerald-500/40 text-white' : 'bg-white border-emerald-300'} border-2 rounded-2xl text-left hover:border-emerald-500 transition-all shadow-sm flex items-center justify-between">
               <div>
-                <h5 class="text-xs font-black text-slate-900">🔺 2. Vẽ Hình Tam Giác Đều</h5>
-                <p class="text-[10px] text-slate-500">Lặp lại 3 lần [Tiến ➔ Rẽ phải 120°]</p>
+                <h5 class="text-xs font-black">🔺 2. Vẽ Hình Tam Giác Đều</h5>
+                <p class="text-[10px] text-slate-400">Lặp lại 3 lần [Tiến ➔ Rẽ phải 120°]</p>
               </div>
               <span class="badge bg-emerald-600 text-white text-[10px]">Chạy ▶</span>
             </button>
 
-            <button onclick="simulation3D.runDrawShape('star')" class="w-full p-3 bg-white border-2 border-amber-300 rounded-2xl text-left hover:border-amber-500 transition-all shadow-sm flex items-center justify-between">
+            <button onclick="simulation3D.runDrawShape('star')" class="w-full p-3 ${this.isDarkMode ? 'bg-slate-800 border-amber-500/40 text-white' : 'bg-white border-amber-300'} border-2 rounded-2xl text-left hover:border-amber-500 transition-all shadow-sm flex items-center justify-between">
               <div>
-                <h5 class="text-xs font-black text-slate-900">⭐ 3. Vẽ Ngôi Sao 5 Cánh</h5>
-                <p class="text-[10px] text-slate-500">Lặp lại 5 lần [Tiến ➔ Rẽ phải 144°]</p>
+                <h5 class="text-xs font-black">⭐ 3. Vẽ Ngôi Sao 5 Cánh</h5>
+                <p class="text-[10px] text-slate-400">Lặp lại 5 lần [Tiến ➔ Rẽ phải 144°]</p>
               </div>
               <span class="badge bg-amber-600 text-white text-[10px]">Chạy ▶</span>
             </button>
 
-            <button onclick="simulation3D.runDrawShape('flower')" class="w-full p-3 bg-white border-2 border-purple-300 rounded-2xl text-left hover:border-purple-500 transition-all shadow-sm flex items-center justify-between">
+            <button onclick="simulation3D.runDrawShape('flower')" class="w-full p-3 ${this.isDarkMode ? 'bg-slate-800 border-purple-500/40 text-white' : 'bg-white border-purple-300'} border-2 rounded-2xl text-left hover:border-purple-500 transition-all shadow-sm flex items-center justify-between">
               <div>
-                <h5 class="text-xs font-black text-slate-900">🌸 4. Bông Hoa Xoay Tròn</h5>
-                <p class="text-[10px] text-slate-500">Lặp lại 12 lần [Vẽ cánh hoa ➔ Xoay 30°]</p>
+                <h5 class="text-xs font-black">🌸 4. Bông Hoa Xoay Tròn</h5>
+                <p class="text-[10px] text-slate-400">Lặp lại 12 lần [Vẽ cánh hoa ➔ Xoay 30°]</p>
               </div>
               <span class="badge bg-purple-600 text-white text-[10px]">Chạy ▶</span>
             </button>
@@ -949,11 +972,11 @@ class Simulation3D {
   renderSafety3DView() {
     return `
       <div class="space-y-4">
-        <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
-          <button onclick="simulation3D.setSafetySubTab('scenarios')" class="px-4 py-2 rounded-xl font-black text-xs transition-all flex items-center gap-1.5 ${this.safetySubTab === 'scenarios' ? 'bg-rose-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border'}">
+        <div class="flex items-center gap-2 border-b ${this.isDarkMode ? 'border-slate-800' : 'border-slate-200'} pb-2">
+          <button onclick="simulation3D.setSafetySubTab('scenarios')" class="px-4 py-2 rounded-xl font-black text-xs transition-all flex items-center gap-1.5 ${this.safetySubTab === 'scenarios' ? 'bg-rose-600 text-white shadow-md' : this.isDarkMode ? 'bg-slate-900 text-slate-300 border-slate-700' : 'bg-white text-slate-700 hover:bg-slate-100 border'}">
             <span>🛡️ 1. Tình Huống Thực Tế & Tư Thế</span>
           </button>
-          <button onclick="simulation3D.setSafetySubTab('blitz')" class="px-4 py-2 rounded-xl font-black text-xs transition-all flex items-center gap-1.5 ${this.safetySubTab === 'blitz' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border'}">
+          <button onclick="simulation3D.setSafetySubTab('blitz')" class="px-4 py-2 rounded-xl font-black text-xs transition-all flex items-center gap-1.5 ${this.safetySubTab === 'blitz' ? 'bg-amber-600 text-white shadow-md' : this.isDarkMode ? 'bg-slate-900 text-slate-300 border-slate-700' : 'bg-white text-slate-700 hover:bg-slate-100 border'}">
             <span>⚡ 2. Đố Vui Chớp Nhoáng 10s (Blitz)</span>
           </button>
         </div>
@@ -965,24 +988,24 @@ class Simulation3D {
 
   renderSafetyScenarios() {
     return `
-      <div class="glass-card p-6 md:p-8 space-y-6 max-w-4xl mx-auto shadow-2xl">
+      <div class="glass-card p-6 md:p-8 space-y-6 max-w-4xl mx-auto shadow-2xl ${this.isDarkMode ? 'bg-slate-900/90 border-rose-500/40 text-white' : ''}">
         <div class="text-center space-y-2">
           <span class="badge bg-rose-600 text-white font-black text-xs">🛡️ AN TOÀN KHI HỌC TIN HỌC</span>
-          <h3 class="text-2xl font-black text-slate-900">AN TOÀN ĐIỆN, THIẾT BỊ & TƯ THẾ NGỒI HỌC</h3>
-          <p class="text-xs text-slate-600 max-w-xl mx-auto">
+          <h3 class="text-2xl font-black ${this.isDarkMode ? 'text-rose-400' : 'text-slate-900'}">AN TOÀN ĐIỆN, THIẾT BỊ & TƯ THẾ NGỒI HỌC</h3>
+          <p class="text-xs ${this.isDarkMode ? 'text-slate-300' : 'text-slate-600'} max-w-xl mx-auto">
             Học sinh xử lý các tình huống thực tế để nhận biết việc <b>Nên làm (✅)</b> và <b>Không nên làm (❌)</b> khi sử dụng máy tính.
           </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="p-5 rounded-2xl border-2 border-slate-200 bg-white space-y-3 shadow-sm">
+          <div class="p-5 rounded-2xl border-2 ${this.isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200'} space-y-3 shadow-sm">
             <div class="flex items-center justify-between">
-              <span class="text-3xl p-2 bg-slate-100 rounded-xl">⚡</span>
+              <span class="text-3xl p-2 bg-slate-100 rounded-xl text-slate-900">⚡</span>
               <span class="badge badge-amber text-xs font-bold">Điện</span>
             </div>
             <div>
-              <h4 class="font-black text-sm text-slate-900">Tình huống 1: Tay ướt khi cắm nguồn điện</h4>
-              <p class="text-xs text-slate-600 mt-1">Em vừa rửa tay xong, tay còn ướt và định cắm phích cắm máy tính vào ổ điện.</p>
+              <h4 class="font-black text-sm">Tình huống 1: Tay ướt khi cắm nguồn điện</h4>
+              <p class="text-xs ${this.isDarkMode ? 'text-slate-300' : 'text-slate-600'} mt-1">Em vừa rửa tay xong, tay còn ướt và định cắm phích cắm máy tính vào ổ điện.</p>
             </div>
             <div class="pt-2 flex items-center gap-2">
               <button onclick="simulation3D.speak('Chưa đúng rồi! Nước dẫn điện gây nguy hiểm điện giật!'); window.app.showToast('❌ Không được cắm điện khi tay ướt!', 'error')" class="btn btn-emerald btn-xs font-black flex-1">👍 Nên Làm</button>
@@ -990,14 +1013,14 @@ class Simulation3D {
             </div>
           </div>
 
-          <div class="p-5 rounded-2xl border-2 border-slate-200 bg-white space-y-3 shadow-sm">
+          <div class="p-5 rounded-2xl border-2 ${this.isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200'} space-y-3 shadow-sm">
             <div class="flex items-center justify-between">
-              <span class="text-3xl p-2 bg-slate-100 rounded-xl">💺</span>
+              <span class="text-3xl p-2 bg-slate-100 rounded-xl text-slate-900">💺</span>
               <span class="badge badge-cyan text-xs font-bold">Tư Thế</span>
             </div>
             <div>
-              <h4 class="font-black text-sm text-slate-900">Tình huống 2: Tư thế ngồi học đúng chuẩn</h4>
-              <p class="text-xs text-slate-600 mt-1">Ngồi thẳng lưng, mắt cách màn hình 50-70cm, bàn chân chạm đất, tay vuông góc.</p>
+              <h4 class="font-black text-sm">Tình huống 2: Tư thế ngồi học đúng chuẩn</h4>
+              <p class="text-xs ${this.isDarkMode ? 'text-slate-300' : 'text-slate-600'} mt-1">Ngồi thẳng lưng, mắt cách màn hình 50-70cm, bàn chân chạm đất, tay vuông góc.</p>
             </div>
             <div class="pt-2 flex items-center gap-2">
               <button onclick="simulation3D.playSuccessFanfare(); simulation3D.speak('Chính xác! Tư thế này giúp bảo vệ cột sống và mắt!'); window.app.showToast('✅ Chính xác! Ngồi thẳng lưng là rất tốt!', 'success')" class="btn btn-emerald btn-xs font-black flex-1">👍 Nên Làm</button>
@@ -1013,11 +1036,11 @@ class Simulation3D {
     const isFinished = this.blitzCurrentIndex >= this.blitzQuestions.length;
     if (isFinished) {
       return `
-        <div class="glass-card p-8 text-center space-y-4 max-w-xl mx-auto shadow-2xl animate-pop">
+        <div class="glass-card p-8 text-center space-y-4 max-w-xl mx-auto shadow-2xl animate-pop ${this.isDarkMode ? 'bg-slate-900 border-amber-500/40 text-white' : ''}">
           <span class="text-6xl block animate-bounce">🏆 ⚡</span>
-          <h3 class="text-2xl font-black text-slate-900">HOÀN THÀNH ĐỐ VUI AN TOÀN 10S!</h3>
-          <p class="text-base font-black text-amber-600">Tổng điểm đạt được: <b>${this.blitzScore} / 100 Điểm</b></p>
-          <p class="text-xs text-slate-600">Em đã đạt danh hiệu <b>SIÊU PHẢN XẠ AN TOÀN SỐ</b> xuất sắc!</p>
+          <h3 class="text-2xl font-black">HOÀN THÀNH ĐỐ VUI AN TOÀN 10S!</h3>
+          <p class="text-base font-black text-amber-500">Tổng điểm đạt được: <b>${this.blitzScore} / 100 Điểm</b></p>
+          <p class="text-xs ${this.isDarkMode ? 'text-slate-300' : 'text-slate-600'}">Em đã đạt danh hiệu <b>SIÊU PHẢN XẠ AN TOÀN SỐ</b> xuất sắc!</p>
           <button onclick="simulation3D.startBlitzQuiz()" class="btn btn-primary btn-md font-black bg-amber-600 text-white shadow-md">🔄 Chơi Lại Thử Thách</button>
         </div>
       `;
@@ -1025,10 +1048,10 @@ class Simulation3D {
 
     const q = this.blitzQuestions[this.blitzCurrentIndex];
     return `
-      <div class="glass-card p-6 md:p-8 space-y-6 max-w-xl mx-auto shadow-2xl">
+      <div class="glass-card p-6 md:p-8 space-y-6 max-w-xl mx-auto shadow-2xl ${this.isDarkMode ? 'bg-slate-900 border-amber-500/40 text-white' : ''}">
         <div class="flex items-center justify-between">
           <span class="badge bg-amber-600 text-white font-black text-xs">CÂU ${this.blitzCurrentIndex + 1} / ${this.blitzQuestions.length}</span>
-          <div class="flex items-center gap-1 font-mono font-black text-rose-600 text-lg">
+          <div class="flex items-center gap-1 font-mono font-black text-rose-500 text-lg">
             <span>⏱️</span> <span id="sim-blitz-timer-val">${this.blitzTimer}s</span>
           </div>
         </div>
@@ -1037,9 +1060,9 @@ class Simulation3D {
           <div id="sim-blitz-bar" class="bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500 h-3 rounded-full transition-all duration-1000" style="width: ${(this.blitzTimer / 10) * 100}%"></div>
         </div>
 
-        <div class="p-6 bg-slate-50 rounded-2xl border-2 border-slate-300 text-center space-y-2">
+        <div class="p-6 ${this.isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-300'} rounded-2xl border-2 text-center space-y-2">
           <span class="text-4xl block">❓</span>
-          <h4 class="text-base font-black text-slate-900 leading-relaxed">${q.q}</h4>
+          <h4 class="text-base font-black leading-relaxed">${q.q}</h4>
         </div>
 
         <div class="grid grid-cols-2 gap-4 pt-2">
@@ -1059,14 +1082,14 @@ class Simulation3D {
     const isCompleted = unplacedParts.length === 0;
 
     return `
-      <div class="glass-card p-6 md:p-8 space-y-6 max-w-5xl mx-auto shadow-2xl">
+      <div class="glass-card p-6 md:p-8 space-y-6 max-w-5xl mx-auto shadow-2xl ${this.isDarkMode ? 'bg-slate-900/90 border-emerald-500/40 text-white' : ''}">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <span class="badge bg-emerald-600 text-white font-black text-xs">🖥️ BUILD YOUR PC 3D</span>
-            <h3 class="text-2xl font-black text-slate-900 mt-1">LẮP RÁP HOÀN CHỈNH BỘ MÁY TÍNH 3D</h3>
-            <p class="text-xs text-slate-500">Kéo thả 5 bộ phận cơ bản vào đúng vị trí bàn học để khởi động máy tính!</p>
+            <h3 class="text-2xl font-black ${this.isDarkMode ? 'text-emerald-400' : 'text-slate-900'} mt-1">LẮP RÁP HOÀN CHỈNH BỘ MÁY TÍNH 3D</h3>
+            <p class="text-xs ${this.isDarkMode ? 'text-slate-300' : 'text-slate-500'}">Kéo thả 5 bộ phận cơ bản vào đúng vị trí bàn học để khởi động máy tính!</p>
           </div>
-          <button onclick="simulation3D.resetPCBuilder()" class="btn btn-outline btn-xs font-bold text-slate-600">🔄 Lắp Lại</button>
+          <button onclick="simulation3D.resetPCBuilder()" class="btn btn-outline btn-xs font-bold ${this.isDarkMode ? 'text-white border-slate-600' : 'text-slate-600'}">🔄 Lắp Lại</button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1104,18 +1127,18 @@ class Simulation3D {
           </div>
 
           <div class="space-y-4">
-            <div class="glass-card p-5 border-2 border-emerald-200 bg-white space-y-3 shadow-md">
+            <div class="glass-card p-5 border-2 ${this.isDarkMode ? 'bg-slate-800 border-emerald-500/30 text-white' : 'bg-white border-emerald-200'} space-y-3 shadow-md">
               <span class="badge badge-emerald font-black text-xs">📦 KHO LINH KIỆN MÁY TÍNH</span>
               <div class="space-y-2 max-h-80 overflow-y-auto pr-1">
-                ${unplacedParts.length === 0 ? `<div class="text-center py-6 text-emerald-700 font-bold text-xs">✨ Đã lắp ráp hoàn thành toàn bộ 5 bộ phận!</div>` : unplacedParts.map(part => {
+                ${unplacedParts.length === 0 ? `<div class="text-center py-6 text-emerald-400 font-bold text-xs">✨ Đã lắp ráp hoàn thành toàn bộ 5 bộ phận!</div>` : unplacedParts.map(part => {
                   const isSelected = this.selectedPCPart?.id === part.id;
                   return `
-                    <div onclick="simulation3D.selectPCPart('${part.id}')" class="p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between gap-2 ${isSelected ? 'border-emerald-600 bg-emerald-50 ring-2 ring-emerald-300' : 'border-slate-200 bg-slate-50'}">
+                    <div onclick="simulation3D.selectPCPart('${part.id}')" class="p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between gap-2 ${isSelected ? 'border-emerald-600 bg-emerald-500/20 ring-2 ring-emerald-300' : this.isDarkMode ? 'border-slate-700 bg-slate-900' : 'border-slate-200 bg-slate-50'}">
                       <div class="flex items-center gap-2">
                         <span class="text-2xl">${part.icon}</span>
                         <div>
-                          <h5 class="text-xs font-black text-slate-900">${part.name}</h5>
-                          <p class="text-[9px] text-slate-500">${part.desc}</p>
+                          <h5 class="text-xs font-black">${part.name}</h5>
+                          <p class="text-[9px] ${this.isDarkMode ? 'text-slate-400' : 'text-slate-500'}">${part.desc}</p>
                         </div>
                       </div>
                       ${isSelected ? `<span class="badge bg-emerald-600 text-white text-[9px] font-black animate-pulse">Chọn</span>` : ''}
@@ -1245,11 +1268,11 @@ class Simulation3D {
     return `
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-4">
-          <div class="glass-card p-5 border-2 border-indigo-200 bg-gradient-to-b from-indigo-50/50 via-white to-slate-50 space-y-4 shadow-md">
+          <div class="glass-card p-5 border-2 ${this.isDarkMode ? 'bg-slate-900/90 border-indigo-500/40 text-white' : 'border-indigo-200 bg-gradient-to-b from-indigo-50/50 via-white to-slate-50'} space-y-4 shadow-md">
             <div class="flex items-center justify-between">
               <div>
                 <span class="badge badge-cyan font-black text-[10px]">TỦ ĐỒ 3 TẦNG THÔNG MINH</span>
-                <h3 class="text-base font-black text-slate-900 mt-0.5">🏢 KỆ TỦ PHÂN LOẠI GIA ĐÌNH & HỌC TẬP</h3>
+                <h3 class="text-base font-black ${this.isDarkMode ? 'text-cyan-300' : 'text-slate-900'} mt-0.5">🏢 KỆ TỦ PHÂN LOẠI GIA ĐÌNH & HỌC TẬP</h3>
               </div>
               <div class="text-right">
                 <span id="sim-speedrun-timer" class="font-mono font-black text-sm bg-rose-100 text-rose-800 px-2 py-0.5 rounded-lg">${this.speedrunElapsedTime.toFixed(1)}s</span>
@@ -1257,32 +1280,32 @@ class Simulation3D {
             </div>
 
             <div class="space-y-4 pt-2">
-              <div onclick="simulation3D.placeSelectedItem('shelf_study')" class="p-4 rounded-2xl border-2 border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50/50 space-y-2.5 cursor-pointer hover:border-blue-600 transition-all shadow-sm">
+              <div onclick="simulation3D.placeSelectedItem('shelf_study')" class="p-4 rounded-2xl border-2 border-blue-400 ${this.isDarkMode ? 'bg-blue-950/40' : 'bg-gradient-to-r from-blue-50 to-indigo-50/50'} space-y-2.5 cursor-pointer hover:border-blue-600 transition-all shadow-sm">
                 <div class="flex items-center justify-between">
-                  <span class="font-black text-xs text-blue-900">📚 TẦNG 1: SÁCH VỞ & HỌC TẬP</span>
+                  <span class="font-black text-xs ${this.isDarkMode ? 'text-blue-300' : 'text-blue-900'}">📚 TẦNG 1: SÁCH VỞ & HỌC TẬP</span>
                   <span class="badge bg-blue-600 text-white text-[10px]">${studyItems.length} Món</span>
                 </div>
-                <div class="min-h-[50px] p-2 bg-white/80 rounded-xl border border-blue-200 flex items-center gap-2 flex-wrap">
+                <div class="min-h-[50px] p-2 ${this.isDarkMode ? 'bg-slate-900/80 border-slate-700' : 'bg-white/80 border-blue-200'} rounded-xl border flex items-center gap-2 flex-wrap">
                   ${studyItems.map(item => `<div class="px-2.5 py-1.5 rounded-xl bg-blue-100 text-blue-900 font-black text-xs shadow-sm">${item.icon} ${item.name}</div>`).join("")}
                 </div>
               </div>
 
-              <div onclick="simulation3D.placeSelectedItem('shelf_toy')" class="p-4 rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 to-orange-50/50 space-y-2.5 cursor-pointer hover:border-amber-600 transition-all shadow-sm">
+              <div onclick="simulation3D.placeSelectedItem('shelf_toy')" class="p-4 rounded-2xl border-2 border-amber-400 ${this.isDarkMode ? 'bg-amber-950/40' : 'bg-gradient-to-r from-amber-50 to-orange-50/50'} space-y-2.5 cursor-pointer hover:border-amber-600 transition-all shadow-sm">
                 <div class="flex items-center justify-between">
-                  <span class="font-black text-xs text-amber-900">🧸 TẦNG 2: ĐỒ CHƠI & THỂ THAO</span>
+                  <span class="font-black text-xs ${this.isDarkMode ? 'text-amber-300' : 'text-amber-900'}">🧸 TẦNG 2: ĐỒ CHƠI & THỂ THAO</span>
                   <span class="badge bg-amber-600 text-white text-[10px]">${toyItems.length} Món</span>
                 </div>
-                <div class="min-h-[50px] p-2 bg-white/80 rounded-xl border border-amber-200 flex items-center gap-2 flex-wrap">
+                <div class="min-h-[50px] p-2 ${this.isDarkMode ? 'bg-slate-900/80 border-slate-700' : 'bg-white/80 border-amber-200'} rounded-xl border flex items-center gap-2 flex-wrap">
                   ${toyItems.map(item => `<div class="px-2.5 py-1.5 rounded-xl bg-amber-100 text-amber-900 font-black text-xs shadow-sm">${item.icon} ${item.name}</div>`).join("")}
                 </div>
               </div>
 
-              <div onclick="simulation3D.placeSelectedItem('shelf_tech')" class="p-4 rounded-2xl border-2 border-emerald-400 bg-gradient-to-r from-emerald-50 to-teal-50/50 space-y-2.5 cursor-pointer hover:border-emerald-600 transition-all shadow-sm">
+              <div onclick="simulation3D.placeSelectedItem('shelf_tech')" class="p-4 rounded-2xl border-2 border-emerald-400 ${this.isDarkMode ? 'bg-emerald-950/40' : 'bg-gradient-to-r from-emerald-50 to-teal-50/50'} space-y-2.5 cursor-pointer hover:border-emerald-600 transition-all shadow-sm">
                 <div class="flex items-center justify-between">
-                  <span class="font-black text-xs text-emerald-900">💾 TẦNG 3: THIẾT BỊ SỐ & TIN HỌC</span>
+                  <span class="font-black text-xs ${this.isDarkMode ? 'text-emerald-300' : 'text-emerald-900'}">💾 TẦNG 3: THIẾT BỊ SỐ & TIN HỌC</span>
                   <span class="badge bg-emerald-600 text-white text-[10px]">${techItems.length} Món</span>
                 </div>
-                <div class="min-h-[50px] p-2 bg-white/80 rounded-xl border border-emerald-200 flex items-center gap-2 flex-wrap">
+                <div class="min-h-[50px] p-2 ${this.isDarkMode ? 'bg-slate-900/80 border-slate-700' : 'bg-white/80 border-emerald-200'} rounded-xl border flex items-center gap-2 flex-wrap">
                   ${techItems.map(item => `<div class="px-2.5 py-1.5 rounded-xl bg-emerald-100 text-emerald-950 font-black text-xs shadow-sm">${item.icon} ${item.name}</div>`).join("")}
                 </div>
               </div>
@@ -1291,20 +1314,20 @@ class Simulation3D {
         </div>
 
         <div class="space-y-4">
-          <div class="glass-card p-5 border-2 border-amber-200 bg-white space-y-3 shadow-md">
+          <div class="glass-card p-5 border-2 ${this.isDarkMode ? 'bg-slate-900/90 border-amber-500/40 text-white' : 'border-amber-200 bg-white'} space-y-3 shadow-md">
             <span class="badge badge-amber font-black text-[10px]">BÀN HỌC BAN ĐẦU (Còn ${deskItems.length} món)</span>
             <div class="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto pr-1">
               ${deskItems.map(item => {
                 const isSelected = this.selectedItem?.id === item.id;
                 return `
-                  <div onclick="simulation3D.selectDeskItem('${item.id}')" class="p-3 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between gap-2 ${isSelected ? 'border-cyan-600 bg-cyan-50 ring-2 ring-cyan-300' : 'border-slate-200 bg-white'}">
+                  <div onclick="simulation3D.selectDeskItem('${item.id}')" class="p-3 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between gap-2 ${isSelected ? 'border-cyan-600 bg-cyan-500/20 ring-2 ring-cyan-300' : this.isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white'}">
                     <span class="text-xl">${item.icon}</span>
-                    <span class="text-xs font-black text-slate-900 flex-1">${item.name}</span>
+                    <span class="text-xs font-black flex-1">${item.name}</span>
                   </div>
                 `;
               }).join("")}
             </div>
-            <button onclick="simulation3D.autoSortAll()" class="btn btn-outline btn-xs w-full font-bold text-indigo-700 bg-indigo-50">✨ Tự Động Xếp Nhanh</button>
+            <button onclick="simulation3D.autoSortAll()" class="btn btn-outline btn-xs w-full font-bold text-indigo-400 bg-indigo-950/50 border-indigo-500">✨ Tự Động Xếp Nhanh</button>
           </div>
         </div>
       </div>
@@ -1389,16 +1412,16 @@ class Simulation3D {
   renderLeaderboardView() {
     const records = this.getLeaderboard();
     return `
-      <div class="glass-card p-6 md:p-8 space-y-4 max-w-3xl mx-auto shadow-2xl">
-        <h3 class="text-xl font-black text-slate-900 text-center">🏆 TOP 10 KỶ LỤC TỐC ĐỘ</h3>
+      <div class="glass-card p-6 md:p-8 space-y-4 max-w-3xl mx-auto shadow-2xl ${this.isDarkMode ? 'bg-slate-900 border-cyan-500/40 text-white' : ''}">
+        <h3 class="text-xl font-black ${this.isDarkMode ? 'text-amber-400' : 'text-slate-900'} text-center">🏆 TOP 10 KỶ LỤC TỐC ĐỘ</h3>
         <div class="space-y-2">
           ${records.map((r, i) => `
-            <div class="p-3 rounded-xl border bg-white flex items-center justify-between">
+            <div class="p-3 rounded-xl border ${this.isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white'} flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <span class="font-black text-sm">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : r.rank}</span>
-                <span class="font-bold text-xs text-slate-900">${r.name} (${r.className})</span>
+                <span class="font-bold text-xs">${r.name} (${r.className})</span>
               </div>
-              <span class="font-mono text-xs font-black text-indigo-700">${r.time}</span>
+              <span class="font-mono text-xs font-black text-cyan-400">${r.time}</span>
             </div>
           `).join("")}
         </div>
