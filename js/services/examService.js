@@ -616,6 +616,23 @@ class ExamService {
     return attemptObj;
   }
 
+  // 12.2 Tự động đồng bộ điểm Thí Nghiệm 3D lên Supabase Cloud
+  async syncSimulationScoreToCloud(labData) {
+    const user = window.authService?.getUser() || { name: "Nguyễn Văn An", className: "3A" };
+    const attemptObj = {
+      examId: "sim_3d_lab",
+      examTitle: `Thí Nghiệm 3D: ${labData.labName || "Tin Học Tiểu Học"}`,
+      grade: 3,
+      studentName: user.name || "Nguyễn Văn An",
+      studentClass: user.className || "3A",
+      score: labData.score || 10,
+      totalScore: 10,
+      durationSpentSeconds: labData.durationSpentSeconds || 45,
+      isForceSubmitted: false
+    };
+    return await this.saveExamAttempt(attemptObj);
+  }
+
   // 13. Tổng hợp số liệu Thống Kê & Phổ Điểm Kiểm Tra
   getScoreDistributionSummary() {
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
