@@ -1244,12 +1244,15 @@
             <div class="flex items-center gap-2">
               <span class="text-3xl p-1 bg-emerald-500/20 text-emerald-300 rounded-xl animate-bounce">🎈</span>
               <div>
-                <h4 class="font-black text-emerald-300 text-sm md:text-base">TRÒ CHƠI BẮN BONG BÓNG TÌM TỪ KHÓA 3D</h4>
+                <h4 id="bubble-pop-theme-title" class="font-black text-emerald-300 text-sm md:text-base">TRÒ CHƠI BẮN BONG BÓNG TÌM TỪ KHÓA 3D</h4>
                 <p id="bubble-pop-mission-text" class="text-[11px] text-amber-300 font-bold">Nhiệm vụ: Bắn vỡ tất cả các bong bóng chứa THIẾT BỊ VÀO (INPUT)</p>
               </div>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+              <button onclick="lecturePortal.openBubblePopMakerModal()" class="btn bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 btn-xs font-bold flex items-center gap-1" title="Tùy biến nhiệm vụ & từ khóa bắn bong bóng">
+                <span>⚙️</span> <span>Soạn Bắn Bóng</span>
+              </button>
               <span id="bubble-pop-score-badge" class="badge bg-emerald-950 text-emerald-300 border border-emerald-400 font-mono text-xs">Đã bắn: 0 / 5</span>
               <button onclick="lecturePortal.toggleInSlideBubblePop()" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
             </div>
@@ -1270,6 +1273,13 @@
               <button onclick="lecturePortal.switchBubblePopMission()" class="btn btn-primary btn-xs font-bold">
                 🎯 Đổi Nhiệm Vụ Khác
               </button>
+              <button onclick="lecturePortal.openStarAwardForBubbleWinner()" class="btn btn-amber btn-xs font-black shadow-md">
+                ⭐ Tặng Sao Xạ Thủ
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- WIDGET 9: TRÒ CHƠI GHÉP KHỐI LẬP TRÌNH SCRATCH 3D TRÊN SLIDE (IN-SLIDE 3D SCRATCH BLOCK MATCH) -->
         <div id="in-slide-scratch-block-overlay" class="hidden absolute inset-3 md:inset-5 bg-slate-950/95 text-white p-4 md:p-5 rounded-3xl border-2 border-amber-400 shadow-2xl backdrop-blur-xl z-30 flex flex-col justify-between space-y-2.5 animate-pop">
           <!-- Header Scratch 3D -->
@@ -1283,6 +1293,9 @@
             </div>
 
             <div class="flex items-center gap-2">
+              <button onclick="lecturePortal.openScratchMakerModal()" class="btn bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-700 btn-xs font-bold flex items-center gap-1" title="Tùy biến thử thách & chuỗi khối lệnh Scratch">
+                <span>⚙️</span> <span>Soạn Scratch</span>
+              </button>
               <select id="scratch-mission-select" onchange="lecturePortal.switchScratchMission(this.value)" class="bg-slate-900 text-amber-300 border border-amber-500/60 rounded-xl px-2.5 py-1 text-xs font-black">
                 <option value="0">Thử Thách 1: Mèo Đi & Chào Hỏi</option>
                 <option value="1">Thử Thách 2: Mèo Nhảy & Kêu Meow</option>
@@ -2284,6 +2297,128 @@
         <button onclick="document.getElementById('column-match-maker-modal').classList.remove('active')" class="btn btn-outline btn-sm">Hủy</button>
         <button onclick="lecturePortal.saveCustomColumnMatchFromForm()" class="btn btn-cyan btn-sm font-black shadow-md flex items-center gap-1">
           <span>💾</span> <span>Áp Dụng Cặp Nối Này</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 36: SOẠN & TÙY BIẾN NHIỆM VỤ BẮN BONG BÓNG 3D (CUSTOM BUBBLE MISSION MAKER MODAL) -->
+  <div id="bubble-pop-maker-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-2xl animate-pop space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1 bg-emerald-100 rounded-xl">🎈</span>
+          <div>
+            <h3 class="text-base font-black text-slate-900">SOẠN & TÙY BIẾN NHIỆM VỤ BẮN BÓNG 3D</h3>
+            <p class="text-xs text-slate-500">Nạp nhanh 4 chủ đề có sẵn hoặc tự gõ câu lệnh nhiệm vụ và từ khóa</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('bubble-pop-maker-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+
+      <!-- 4 Bộ Nhiệm Vụ Bắn Bóng Có Sẵn GDPT 2018 -->
+      <div class="space-y-2">
+        <label class="font-bold text-xs text-slate-700 block">📚 4 Bộ Nhiệm Vụ Bắn Bóng Có Sẵn (Nạp Nhanh):</label>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button onclick="lecturePortal.loadPresetBubbleMission('input')" class="p-2.5 bg-cyan-50 hover:bg-cyan-100 border border-cyan-300 rounded-xl text-left font-bold text-cyan-900 transition-all flex items-center gap-2">
+            <span>⌨️</span> <span>1. Thiết bị Vào (Input)</span>
+          </button>
+          <button onclick="lecturePortal.loadPresetBubbleMission('output')" class="p-2.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl text-left font-bold text-emerald-900 transition-all flex items-center gap-2">
+            <span>🖥️</span> <span>2. Thiết bị Ra (Output)</span>
+          </button>
+          <button onclick="lecturePortal.loadPresetBubbleMission('keyboard')" class="p-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl text-left font-bold text-amber-900 transition-all flex items-center gap-2">
+            <span>🔤</span> <span>3. Hàng phím Cơ sở</span>
+          </button>
+          <button onclick="lecturePortal.loadPresetBubbleMission('storage')" class="p-2.5 bg-purple-50 hover:bg-purple-100 border border-purple-300 rounded-xl text-left font-bold text-purple-900 transition-all flex items-center gap-2">
+            <span>💾</span> <span>4. Thiết bị Lưu trữ</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Khung Tự Nhập Nhiệm Vụ & Từ Khóa -->
+      <div class="space-y-3 pt-2 border-t border-slate-200 text-xs">
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">CÂU LỆNH NHIỆM VỤ (Hiển thị đầu trò chơi):</label>
+          <input type="text" id="maker-bubble-mission-text" class="form-control text-xs font-bold text-emerald-800" placeholder="VD: Nhiệm vụ: Bắn vỡ tất cả bong bóng chứa THIẾT BỊ LƯU TRỮ DỮ LIỆU" value="Nhiệm vụ: Bắn vỡ tất cả các bong bóng chứa THIẾT BỊ VÀO (INPUT)">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="font-bold text-emerald-700 block mb-1">🎯 TỪ KHÓA ĐÚNG (Mỗi từ 1 dòng, cách nhau xuống dòng):</label>
+            <textarea id="maker-bubble-targets-input" rows="4" class="form-control text-xs font-mono" placeholder="Bàn phím&#10;Chuột máy&#10;Micro&#10;Webcam&#10;Máy quét"></textarea>
+          </div>
+          <div>
+            <label class="font-bold text-rose-700 block mb-1">🚫 TỪ KHÓA SAI / GÂY NHIỄU (Mỗi từ 1 dòng):</label>
+            <textarea id="maker-bubble-distractors-input" rows="4" class="form-control text-xs font-mono" placeholder="Màn hình&#10;Máy in&#10;Loa nghe&#10;Tai nghe"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+        <button onclick="document.getElementById('bubble-pop-maker-modal').classList.remove('active')" class="btn btn-outline btn-sm">Hủy</button>
+        <button onclick="lecturePortal.saveCustomBubbleMissionFromForm()" class="btn btn-emerald btn-sm font-black shadow-md flex items-center gap-1">
+          <span>💾</span> <span>Áp Dụng Nhiệm Vụ Bắn Bóng</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 37: SOẠN & TÙY BIẾN THỬ THÁCH SCRATCH 3D (CUSTOM SCRATCH MISSION MAKER MODAL) -->
+  <div id="scratch-mission-maker-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-2xl animate-pop space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1 bg-amber-100 rounded-xl">🐱</span>
+          <div>
+            <h3 class="text-base font-black text-slate-900">SOẠN & TÙY BIẾN THỬ THÁCH SCRATCH 3D</h3>
+            <p class="text-xs text-slate-500">Tùy biến mục tiêu thuật toán và chuỗi khối lệnh chuẩn cho học sinh thực hành</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('scratch-mission-maker-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+
+      <!-- 4 Thử Thách Scratch Mẫu Nạp Nhanh -->
+      <div class="space-y-2">
+        <label class="font-bold text-xs text-slate-700 block">📚 4 Thử Thách Mẫu Chuẩn GDPT 2018 (Nạp Nhanh):</label>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button onclick="lecturePortal.loadPresetScratchMission(0)" class="p-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl text-left font-bold text-amber-900 transition-all flex items-center gap-2">
+            <span>🐾</span> <span>1. Mèo Đi & Chào Hỏi</span>
+          </button>
+          <button onclick="lecturePortal.loadPresetScratchMission(1)" class="p-2.5 bg-pink-50 hover:bg-pink-100 border border-pink-300 rounded-xl text-left font-bold text-pink-900 transition-all flex items-center gap-2">
+            <span>🐱</span> <span>2. Mèo Nhảy & Kêu Meow</span>
+          </button>
+          <button onclick="lecturePortal.loadPresetScratchMission(2)" class="p-2.5 bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-xl text-left font-bold text-blue-900 transition-all flex items-center gap-2">
+            <span>🔁</span> <span>3. Vòng Lặp 10 Lần</span>
+          </button>
+          <button onclick="lecturePortal.loadPresetScratchMission(3)" class="p-2.5 bg-purple-50 hover:bg-purple-100 border border-purple-300 rounded-xl text-left font-bold text-purple-900 transition-all flex items-center gap-2">
+            <span>🔲</span> <span>4. Vẽ Hình Vuông 4 Cạnh</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Khung Tự Nhập Thử Thách Scratch Mới -->
+      <div class="space-y-3 pt-2 border-t border-slate-200 text-xs">
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">TIÊU ĐỀ THỬ THÁCH:</label>
+          <input type="text" id="maker-scratch-title" class="form-control text-xs font-bold text-amber-800" placeholder="VD: THỬ THÁCH: MÈO CHẠY VÒNG TRÒN" value="THỬ THÁCH TÙY BIẾN: LẬP TRÌNH CHÚ MÈO">
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">YÊU CẦU MỤC TIÊU (Hướng dẫn học sinh):</label>
+          <input type="text" id="maker-scratch-goal" class="form-control text-xs font-medium text-slate-800" placeholder="VD: Khi bấm cờ xanh ➔ Phát âm thanh Meow ➔ Di chuyển 10 bước" value="Lập trình cho chú mèo: Khi bấm cờ xanh ➔ Di chuyển 10 bước ➔ Nói 'Xin chào các bạn!'">
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">CHUỖI KHỐI LỆNH ĐÚNG (Chọn theo thứ tự):</label>
+          <p class="text-[11px] text-slate-500 mb-1.5">Mã khối có sẵn: <code>event_flag</code> (Cờ xanh), <code>motion_move10</code> (Đi 10 bước), <code>motion_turn90</code> (Xoay 90 độ), <code>sound_meow</code> (Kêu Meow), <code>looks_sayhello</code> (Nói Xin chào), <code>looks_nextcostume</code> (Đổi áo), <code>control_repeat10</code> (Lặp 10 lần), <code>control_wait</code> (Đợi 0.5s)</p>
+          <input type="text" id="maker-scratch-order" class="form-control text-xs font-mono font-bold text-indigo-700" placeholder="event_flag, motion_move10, looks_sayhello" value="event_flag, motion_move10, looks_sayhello">
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+        <button onclick="document.getElementById('scratch-mission-maker-modal').classList.remove('active')" class="btn btn-outline btn-sm">Hủy</button>
+        <button onclick="lecturePortal.saveCustomScratchMissionFromForm()" class="btn btn-amber btn-sm font-black shadow-md flex items-center gap-1">
+          <span>💾</span> <span>Áp Dụng Thử Thách Này</span>
         </button>
       </div>
     </div>

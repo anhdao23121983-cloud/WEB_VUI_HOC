@@ -10,8 +10,8 @@
  * 7. 🔔 Đấu Trường Rung Chuông Vàng 3D củng cố bài học (In-Slide Golden Bell Arena)
  * 8. 🃏 Trò chơi Ghép Thẻ Trí Nhớ 3D trên Slide (In-Slide 3D Memory Card Match)
  * 9. ⚡ Trò chơi Nối Cột Định Nghĩa 3D & ⚙️ Soạn Cặp Nối Cột (Custom Column Match Maker)
- * 10. 🎈 Trò chơi Bắn Bong Bóng Tìm Từ Khóa 3D (In-Slide 3D Bubble Pop Game)
- * 11. 🐱 Trò chơi Thả Khối Lập Trình Scratch 3D (In-Slide 3D Scratch Block Drag-Drop)
+ * 10. 🎈 Trò chơi Bắn Bong Bóng 3D & ⚙️ Soạn Nhiệm Vụ Bắn Bóng (Custom Bubble Mission Maker)
+ * 11. 🐱 Trò chơi Thả Khối Scratch 3D & ⚙️ Soạn Thử Thách Scratch (Custom Scratch Mission Maker)
  * 12. ⭐ Bảng Khen Thưởng & 🌟 Bắn Thông Báo 50 Sao Toàn Trường Realtime
  * 13. 📖 Sách 3D lật trang siêu thực có 🌙 Chế Độ Ban Đêm Neon & 🔊 Giọng đọc AI E-Book
  * 14. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
@@ -554,7 +554,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 2: TRÒ CHƠI THẢ KHỐI LẬP TRÌNH SCRATCH 3D (IN-SLIDE SCRATCH BLOCKS)
+  // OPTION 2: SOẠN & TÙY BIẾN THỬ THÁCH SCRATCH 3D (CUSTOM SCRATCH MISSION MAKER)
   // =========================================================================
   toggleInSlideScratch() {
     const overlay = document.getElementById("in-slide-scratch-block-overlay");
@@ -574,6 +574,89 @@ class LecturePortal {
     } else {
       overlay.classList.add("hidden");
     }
+  }
+
+  openScratchMakerModal() {
+    const modal = document.getElementById("scratch-mission-maker-modal");
+    if (!modal) return;
+
+    const curMission = this.scratchMissions[this.currentScratchMissionIdx];
+    const titleInput = document.getElementById("maker-scratch-title");
+    const goalInput = document.getElementById("maker-scratch-goal");
+    const orderInput = document.getElementById("maker-scratch-order");
+
+    if (curMission) {
+      if (titleInput) titleInput.value = curMission.title;
+      if (goalInput) goalInput.value = curMission.goal;
+      if (orderInput) orderInput.value = curMission.targetOrder.join(", ");
+    }
+
+    modal.classList.add("active");
+  }
+
+  loadPresetScratchMission(idx) {
+    this.switchScratchMission(idx);
+    const modal = document.getElementById("scratch-mission-maker-modal");
+    if (modal) modal.classList.remove("active");
+    window.app.showToast(`🎉 Đã nạp thử thách mẫu ${idx + 1}!`, "success");
+  }
+
+  saveCustomScratchMissionFromForm() {
+    const titleInput = document.getElementById("maker-scratch-title");
+    const goalInput = document.getElementById("maker-scratch-goal");
+    const orderInput = document.getElementById("maker-scratch-order");
+
+    if (!titleInput || !goalInput || !orderInput) return;
+
+    const title = (titleInput.value || "THỬ THÁCH SCRATCH TÙY BIẾN").trim();
+    const goal = (goalInput.value || "Lập trình cho chú mèo theo yêu cầu bài dạy").trim();
+    const orderStr = orderInput.value.trim();
+    const targetOrder = orderStr.split(",").map(s => s.trim()).filter(s => s.length > 0);
+
+    if (targetOrder.length < 2) {
+      window.app.showToast("Chuỗi khối lệnh phải có ít nhất 2 khối lệnh hợp lệ!", "warning");
+      return;
+    }
+
+    const availableBlocks = [
+      { id: "event_flag", type: "event", color: "bg-amber-500 border-amber-400 text-slate-950", icon: "🏳️", text: "Khi bấm cờ xanh" },
+      { id: "motion_move10", type: "motion", color: "bg-blue-600 border-blue-400 text-white", icon: "👣", text: "Di chuyển 10 bước" },
+      { id: "motion_move50", type: "motion", color: "bg-blue-600 border-blue-400 text-white", icon: "👣", text: "Di chuyển 50 bước" },
+      { id: "motion_turn90", type: "motion", color: "bg-blue-600 border-blue-400 text-white", icon: "🔄", text: "Xoay phải 90 độ" },
+      { id: "sound_meow", type: "sound", color: "bg-pink-600 border-pink-400 text-white", icon: "🐱", text: "Phát âm thanh Meow" },
+      { id: "looks_sayhello", type: "looks", color: "bg-purple-600 border-purple-400 text-white", icon: "💬", text: "Nói 'Xin chào!' 2s" },
+      { id: "looks_nextcostume", type: "looks", color: "bg-purple-600 border-purple-400 text-white", icon: "👗", text: "Đổi trang phục tiếp theo" },
+      { id: "control_repeat10", type: "control", color: "bg-amber-600 border-amber-400 text-white", icon: "🔁", text: "Lặp lại 10 lần" },
+      { id: "control_repeat4", type: "control", color: "bg-amber-600 border-amber-400 text-white", icon: "🔁", text: "Lặp lại 4 lần" },
+      { id: "control_wait", type: "control", color: "bg-amber-600 border-amber-400 text-white", icon: "⏳", text: "Đợi 0.5 giây" }
+    ];
+
+    const customMission = {
+      id: this.scratchMissions.length,
+      title: title,
+      goal: goal,
+      targetOrder: targetOrder,
+      availableBlocks: availableBlocks
+    };
+
+    this.scratchMissions.push(customMission);
+    this.currentScratchMissionIdx = this.scratchMissions.length - 1;
+
+    const modal = document.getElementById("scratch-mission-maker-modal");
+    if (modal) modal.classList.remove("active");
+
+    const titleEl = document.getElementById("scratch-mission-title");
+    const goalEl = document.getElementById("scratch-mission-goal");
+
+    if (titleEl) titleEl.innerText = title;
+    if (goalEl) goalEl.innerText = goal;
+
+    this.scratchWorkspace = [];
+    this.resetScratchStage();
+    this.renderScratchPalette();
+    this.renderScratchWorkspace();
+
+    window.app.showToast(`🎉 Đã áp dụng thành công thử thách Scratch: "${title}"!`, "success");
   }
 
   initScratchGame() {
@@ -864,7 +947,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // TRÒ CHƠI BẮN BONG BÓNG TÌM TỪ KHÓA 3D (IN-SLIDE BUBBLE POP)
+  // OPTION 4: SOẠN & TÙY BIẾN NHIỆM VỤ BẮN BÓNG 3D (CUSTOM BUBBLE MISSION MAKER)
   // =========================================================================
   toggleInSlideBubblePop() {
     const overlay = document.getElementById("in-slide-bubble-pop-overlay");
@@ -887,51 +970,161 @@ class LecturePortal {
     }
   }
 
-  initBubblePopGame() {
-    this.bubblePopMissions = [
-      {
+  openBubblePopMakerModal() {
+    const modal = document.getElementById("bubble-pop-maker-modal");
+    if (!modal) return;
+
+    const curMission = this.bubblePopMissions[this.currentBubbleMissionIdx % this.bubblePopMissions.length];
+    const missionInput = document.getElementById("maker-bubble-mission-text");
+    const targetsInput = document.getElementById("maker-bubble-targets-input");
+    const distractorsInput = document.getElementById("maker-bubble-distractors-input");
+
+    if (curMission) {
+      if (missionInput) missionInput.value = curMission.mission;
+      if (targetsInput) {
+        targetsInput.value = curMission.pool.filter(p => p.isTarget).map(p => p.text).join("\n");
+      }
+      if (distractorsInput) {
+        distractorsInput.value = curMission.pool.filter(p => !p.isTarget).map(p => p.text).join("\n");
+      }
+    }
+
+    modal.classList.add("active");
+  }
+
+  loadPresetBubbleMission(presetKey) {
+    const presets = {
+      input: {
         mission: "Nhiệm vụ: Bắn vỡ tất cả các bong bóng chứa THIẾT BỊ VÀO (INPUT)",
         targetCount: 5,
-        pool: [
-          { text: "Bàn phím", isTarget: true, icon: "⌨️" },
-          { text: "Chuột máy", isTarget: true, icon: "🖱️" },
-          { text: "Micro", isTarget: true, icon: "🎙️" },
-          { text: "Webcam", isTarget: true, icon: "📷" },
-          { text: "Máy quét Scanner", isTarget: true, icon: "📠" },
-          { text: "Màn hình", isTarget: false, icon: "🖥️" },
-          { text: "Máy in", isTarget: false, icon: "🖨️" },
-          { text: "Loa", isTarget: false, icon: "🔊" },
-          { text: "Tai nghe", isTarget: false, icon: "🎧" }
-        ]
+        targets: ["Bàn phím", "Chuột máy", "Micro", "Webcam", "Máy quét Scanner"],
+        distractors: ["Màn hình", "Máy in", "Loa", "Tai nghe"]
       },
-      {
+      output: {
         mission: "Nhiệm vụ: Bắn vỡ tất cả các bong bóng chứa THIẾT BỊ RA (OUTPUT)",
         targetCount: 4,
-        pool: [
-          { text: "Màn hình", isTarget: true, icon: "🖥️" },
-          { text: "Máy in", isTarget: true, icon: "🖨️" },
-          { text: "Loa nghe", isTarget: true, icon: "🔊" },
-          { text: "Tai nghe", isTarget: true, icon: "🎧" },
-          { text: "Chuột", isTarget: false, icon: "🖱️" },
-          { text: "Bàn phím", isTarget: false, icon: "⌨️" },
-          { text: "Micro", isTarget: false, icon: "🎙️" }
-        ]
+        targets: ["Màn hình", "Máy in", "Loa nghe", "Tai nghe"],
+        distractors: ["Chuột", "Bàn phím", "Micro", "Webcam"]
       },
-      {
-        mission: "Nhiệm vụ: Bắn vỡ các bong bóng chứa PHÍM THUỘC HÀNG CƠ SỞ (HOME ROW)",
+      keyboard: {
+        mission: "Nhiệm vụ: Bắn vỡ các bong bóng chứa PHÍM HÀNG CƠ SỞ (HOME ROW)",
         targetCount: 5,
-        pool: [
-          { text: "Phím F (Gờ nổi)", isTarget: true, icon: "🔤" },
-          { text: "Phím J (Gờ nổi)", isTarget: true, icon: "🔤" },
-          { text: "Phím A", isTarget: true, icon: "🔤" },
-          { text: "Phím S", isTarget: true, icon: "🔤" },
-          { text: "Phím L", isTarget: true, icon: "🔤" },
-          { text: "Phím Q (Hàng trên)", isTarget: false, icon: "🚫" },
-          { text: "Phím Z (Hàng dưới)", isTarget: false, icon: "🚫" },
-          { text: "Phím Số 1", isTarget: false, icon: "🚫" }
-        ]
+        targets: ["Phím F (Gờ nổi)", "Phím J (Gờ nổi)", "Phím A", "Phím S", "Phím L"],
+        distractors: ["Phím Q (Hàng trên)", "Phím Z (Hàng dưới)", "Phím Số 1", "Phím Cách Space"]
+      },
+      storage: {
+        mission: "Nhiệm vụ: Bắn vỡ các bong bóng chứa THIẾT BỊ LƯU TRỮ DỮ LIỆU",
+        targetCount: 4,
+        targets: ["Ổ đĩa cứng HDD", "Ổ đĩa SSD", "Thẻ nhớ SD", "USB Flash Drive"],
+        distractors: ["Màn hình", "Bàn phím", "Chuột", "Máy in"]
       }
+    };
+
+    const chosen = presets[presetKey] || presets.input;
+    const pool = [
+      ...chosen.targets.map(t => ({ text: t, isTarget: true, icon: "🎯" })),
+      ...chosen.distractors.map(d => ({ text: d, isTarget: false, icon: "🚫" }))
     ];
+
+    const missionObj = {
+      mission: chosen.mission,
+      targetCount: chosen.targetCount,
+      pool: pool
+    };
+
+    this.bubblePopMissions[this.currentBubbleMissionIdx] = missionObj;
+
+    const modal = document.getElementById("bubble-pop-maker-modal");
+    if (modal) modal.classList.remove("active");
+
+    this.initBubblePopGame();
+    window.app.showToast(`🎉 Đã nạp nhiệm vụ: "${chosen.mission}"!`, "success");
+  }
+
+  saveCustomBubbleMissionFromForm() {
+    const missionInput = document.getElementById("maker-bubble-mission-text");
+    const targetsInput = document.getElementById("maker-bubble-targets-input");
+    const distractorsInput = document.getElementById("maker-bubble-distractors-input");
+
+    if (!missionInput || !targetsInput || !distractorsInput) return;
+
+    const missionText = (missionInput.value || "Nhiệm vụ: Bắn vỡ các từ khóa theo yêu cầu").trim();
+    const targets = targetsInput.value.split("\n").map(s => s.trim()).filter(s => s.length > 0);
+    const distractors = distractorsInput.value.split("\n").map(s => s.trim()).filter(s => s.length > 0);
+
+    if (targets.length < 2) {
+      window.app.showToast("Thầy Cô hãy nhập ít nhất 2 từ khóa đúng mục tiêu!", "warning");
+      return;
+    }
+
+    const pool = [
+      ...targets.map(t => ({ text: t, isTarget: true, icon: "🎯" })),
+      ...distractors.map(d => ({ text: d, isTarget: false, icon: "🚫" }))
+    ];
+
+    const customMission = {
+      mission: missionText,
+      targetCount: Math.min(targets.length, 5),
+      pool: pool
+    };
+
+    this.bubblePopMissions.push(customMission);
+    this.currentBubbleMissionIdx = this.bubblePopMissions.length - 1;
+
+    const modal = document.getElementById("bubble-pop-maker-modal");
+    if (modal) modal.classList.remove("active");
+
+    this.initBubblePopGame();
+    window.app.showToast(`🎉 Đã áp dụng thành công nhiệm vụ bắn bóng: "${missionText}"!`, "success");
+  }
+
+  initBubblePopGame() {
+    if (this.bubblePopMissions.length === 0) {
+      this.bubblePopMissions = [
+        {
+          mission: "Nhiệm vụ: Bắn vỡ tất cả các bong bóng chứa THIẾT BỊ VÀO (INPUT)",
+          targetCount: 5,
+          pool: [
+            { text: "Bàn phím", isTarget: true, icon: "⌨️" },
+            { text: "Chuột máy", isTarget: true, icon: "🖱️" },
+            { text: "Micro", isTarget: true, icon: "🎙️" },
+            { text: "Webcam", isTarget: true, icon: "📷" },
+            { text: "Máy quét Scanner", isTarget: true, icon: "📠" },
+            { text: "Màn hình", isTarget: false, icon: "🖥️" },
+            { text: "Máy in", isTarget: false, icon: "🖨️" },
+            { text: "Loa", isTarget: false, icon: "🔊" },
+            { text: "Tai nghe", isTarget: false, icon: "🎧" }
+          ]
+        },
+        {
+          mission: "Nhiệm vụ: Bắn vỡ tất cả các bong bóng chứa THIẾT BỊ RA (OUTPUT)",
+          targetCount: 4,
+          pool: [
+            { text: "Màn hình", isTarget: true, icon: "🖥️" },
+            { text: "Máy in", isTarget: true, icon: "🖨️" },
+            { text: "Loa nghe", isTarget: true, icon: "🔊" },
+            { text: "Tai nghe", isTarget: true, icon: "🎧" },
+            { text: "Chuột", isTarget: false, icon: "🖱️" },
+            { text: "Bàn phím", isTarget: false, icon: "⌨️" },
+            { text: "Micro", isTarget: false, icon: "🎙️" }
+          ]
+        },
+        {
+          mission: "Nhiệm vụ: Bắn vỡ các bong bóng chứa PHÍM THUỘC HÀNG CƠ SỞ (HOME ROW)",
+          targetCount: 5,
+          pool: [
+            { text: "Phím F (Gờ nổi)", isTarget: true, icon: "🔤" },
+            { text: "Phím J (Gờ nổi)", isTarget: true, icon: "🔤" },
+            { text: "Phím A", isTarget: true, icon: "🔤" },
+            { text: "Phím S", isTarget: true, icon: "🔤" },
+            { text: "Phím L", isTarget: true, icon: "🔤" },
+            { text: "Phím Q (Hàng trên)", isTarget: false, icon: "🚫" },
+            { text: "Phím Z (Hàng dưới)", isTarget: false, icon: "🚫" },
+            { text: "Phím Số 1", isTarget: false, icon: "🚫" }
+          ]
+        }
+      ];
+    }
 
     const curMission = this.bubblePopMissions[this.currentBubbleMissionIdx % this.bubblePopMissions.length];
     this.bubbleScore = 0;
