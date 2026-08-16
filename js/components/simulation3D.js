@@ -382,8 +382,13 @@ class Simulation3D {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = "vi-VN";
-      utterance.rate = 0.95;
-      utterance.pitch = 1.05;
+      utterance.rate = 0.9;
+      utterance.pitch = 1.2; // Giọng Nữ Cô Giáo trong sáng, ấm áp chuẩn sư phạm
+
+      const voices = window.speechSynthesis.getVoices();
+      const viVoice = voices.find(v => (v.lang && v.lang.toLowerCase().includes("vi")) && (v.name.toLowerCase().includes("hoaimy") || v.name.toLowerCase().includes("female") || v.name.toLowerCase().includes("linh") || v.name.toLowerCase().includes("mai") || v.name.toLowerCase().includes("google") || v.name.toLowerCase().includes("nu"))) || voices.find(v => v.lang && v.lang.toLowerCase().includes("vi"));
+      if (viVoice) utterance.voice = viVoice;
+
       window.speechSynthesis.speak(utterance);
     } catch (e) {}
   }

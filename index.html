@@ -873,6 +873,15 @@
           <button onclick="lecturePortal.toggleInSlideQuiz()" class="btn bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all">
             <span>⚡</span> <span>Đố Vui 10s</span>
           </button>
+          <button onclick="lecturePortal.toggleInSlideRobotMaze()" class="btn bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mô phỏng Mê Cung Thuật Toán Robot 3D điều hướng tương tác trên Slide">
+            <span>🤖</span> <span>Robot Mê Cung</span>
+          </button>
+          <button onclick="lecturePortal.openRealtimeBuzzerModal()" class="btn bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mở Đấu Trường Bấm Chuông Trực Tuyến bằng điện thoại học sinh">
+            <span>🔔</span> <span>Bấm Chuông</span>
+          </button>
+          <button onclick="lecturePortal.openVoiceRecorderModal()" class="btn bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Ghi âm lời giảng trực tiếp của Cô Giáo kèm theo slide">
+            <span>🎙️</span> <span>Ghi Âm Lời Giảng</span>
+          </button>
           <button onclick="lecturePortal.openLectureQRModal()" class="btn bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Tạo mã QR Code sắc nét để học sinh quét điện thoại vào học">
             <span>📱</span> <span>QR Chia Sẻ</span>
           </button>
@@ -1398,6 +1407,114 @@
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- IN-SLIDE 3D ROBOT MAZE ALGORITHM OVERLAY (MÔ PHỎNG MÊ CUNG THUẬT TOÁN ROBOT 3D) -->
+      <div id="in-slide-robot-maze-overlay" class="hidden absolute inset-4 z-40 bg-slate-950/95 backdrop-blur-md rounded-3xl border-2 border-emerald-500 shadow-2xl p-4 flex flex-col justify-between space-y-3 animate-pop text-white">
+        <!-- Header Robot Maze -->
+        <div class="flex items-center justify-between pb-2 border-b border-emerald-500/40 shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl p-1 bg-emerald-500/20 text-emerald-300 rounded-xl">🤖</span>
+            <div>
+              <h3 id="robot-maze-title" class="text-sm md:text-base font-black text-emerald-300">MÔ PHỎNG MÊ CUNG THUẬT TOÁN ROBOT 3D</h3>
+              <p id="robot-maze-mission" class="text-[11px] text-cyan-300 font-semibold">Lập trình chuỗi lệnh điều khiển Robot nhặt linh kiện và về đích 🏁</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <select id="robot-maze-level-select" onchange="lecturePortal.switchRobotMazeLevel(this.value)" class="bg-slate-900 border border-emerald-400 text-emerald-300 text-xs rounded-xl px-2.5 py-1 font-bold">
+              <option value="0">🎒 Màn 1: Robot Tìm Chuột Máy Tính (Dễ)</option>
+              <option value="1">🚀 Màn 2: Thu Thập 4 Bộ Phận Máy (Vừa)</option>
+              <option value="2">⭐ Màn 3: Vượt Tường Lửa Mê Cung (Khó)</option>
+            </select>
+            <button onclick="lecturePortal.toggleInSlideRobotMaze()" class="text-slate-400 hover:text-white text-xl font-bold">✕</button>
+          </div>
+        </div>
+
+        <!-- 3 Cột: Bản Đồ Lưới | Bảng Nút Lệnh | Kịch Bản Thuật Toán -->
+        <div class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3 overflow-hidden">
+          <!-- Cột 1: Sân Khấu Bản Đồ Mê Cung (Maze Grid 6x6) -->
+          <div class="md:col-span-5 bg-slate-900/90 rounded-2xl border border-slate-700 p-3 flex flex-col justify-between items-center overflow-hidden">
+            <div class="w-full flex items-center justify-between text-xs pb-1 border-b border-slate-800">
+              <span id="robot-maze-items-badge" class="badge bg-emerald-950 text-emerald-300 border border-emerald-500 font-mono text-[10px]">Linh kiện: 0 / 3</span>
+              <span id="robot-maze-steps-badge" class="badge bg-cyan-950 text-cyan-300 border border-cyan-500 font-mono text-[10px]">Số bước: 0</span>
+            </div>
+
+            <!-- Grid Container -->
+            <div id="robot-maze-grid-board" class="my-auto grid grid-cols-6 gap-1 p-2 bg-slate-950 rounded-2xl border-2 border-slate-800 shadow-inner">
+              <!-- Sẽ được sinh bằng JS -->
+            </div>
+
+            <div class="w-full flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800">
+              <span>🤖 Robot: Hướng Đông ➔</span>
+              <span>🏁 Đích đến: Bàn Thực Hành</span>
+            </div>
+          </div>
+
+          <!-- Cột 2: Bảng Nút Lệnh Lập Trình (Command Blocks Palette) -->
+          <div class="md:col-span-3 bg-slate-900/90 rounded-2xl border border-slate-700 p-3 flex flex-col justify-between overflow-hidden">
+            <div class="flex items-center justify-between text-[11px] pb-1 border-b border-slate-800">
+              <span class="text-amber-400 font-bold">🎮 Bảng Lệnh (Bấm để thêm)</span>
+              <span class="text-slate-500 text-[10px]">Tư duy GDPT 2018</span>
+            </div>
+
+            <div class="grid grid-cols-1 gap-1.5 py-1.5">
+              <button onclick="lecturePortal.addRobotCommand('forward')" class="p-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs flex items-center justify-between shadow-sm">
+                <span>⬆️ Tiến 1 Ô</span>
+                <span class="bg-black/30 px-1.5 py-0.5 rounded text-[10px]">➕</span>
+              </button>
+              <button onclick="lecturePortal.addRobotCommand('turn_left')" class="p-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs flex items-center justify-between shadow-sm">
+                <span>⬅️ Xoay Trái 90°</span>
+                <span class="bg-black/30 px-1.5 py-0.5 rounded text-[10px]">➕</span>
+              </button>
+              <button onclick="lecturePortal.addRobotCommand('turn_right')" class="p-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs flex items-center justify-between shadow-sm">
+                <span>➡️ Xoay Phải 90°</span>
+                <span class="bg-black/30 px-1.5 py-0.5 rounded text-[10px]">➕</span>
+              </button>
+              <button onclick="lecturePortal.addRobotCommand('collect')" class="p-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-between shadow-sm">
+                <span>⚡ Nhặt Vật Phẩm</span>
+                <span class="bg-black/30 px-1.5 py-0.5 rounded text-[10px]">➕</span>
+              </button>
+              <button onclick="lecturePortal.addRobotCommand('backward')" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center justify-between">
+                <span>⬇️ Lùi 1 Ô</span>
+                <span class="bg-black/30 px-1.5 py-0.5 rounded text-[10px]">➕</span>
+              </button>
+            </div>
+
+            <div class="pt-1 text-[10px] text-slate-400 text-center border-t border-slate-800">
+              💡 Bấm lệnh để xây dựng kịch bản cho Robot.
+            </div>
+          </div>
+
+          <!-- Cột 3: Kịch Bản Lệnh Thuật Toán Của Em (Algorithm Queue) -->
+          <div class="md:col-span-4 bg-slate-900/90 rounded-2xl border border-slate-700 p-3 flex flex-col justify-between overflow-hidden">
+            <div class="flex items-center justify-between text-[11px] pb-1 border-b border-slate-800">
+              <span class="text-emerald-400 font-bold">📝 Kịch Bản Thuật Toán</span>
+              <button onclick="lecturePortal.clearRobotCommands()" class="text-rose-400 hover:text-rose-300 text-[10px] font-bold">
+                🧹 Xóa Hết
+              </button>
+            </div>
+
+            <div id="robot-commands-queue" class="flex-1 overflow-y-auto space-y-1 py-1.5 pr-1 min-h-[140px] bg-slate-950/60 rounded-xl p-2 border border-slate-800"></div>
+
+            <div class="pt-2 border-t border-slate-800 flex items-center gap-1.5">
+              <button onclick="lecturePortal.runRobotAlgorithm()" id="btn-run-robot" class="btn bg-emerald-600 hover:bg-emerald-500 text-white btn-xs font-black flex-1 flex items-center justify-center gap-1 shadow-md">
+                <span>▶️</span> <span>Chạy Thuật Toán</span>
+              </button>
+              <button onclick="lecturePortal.resetRobotStage()" class="btn btn-outline btn-xs text-rose-300 border-rose-800 hover:bg-rose-950 font-bold">
+                <span>🛑</span> <span>Đặt Lại</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Robot Maze -->
+        <div class="flex items-center justify-between pt-1 border-t border-emerald-500/40 shrink-0 text-xs">
+          <span class="text-slate-400 text-[11px]">💡 Hãy tư duy không gian và ghép lệnh để Robot nhặt sạch linh kiện rồi về đúng đích 🏁 nhé!</span>
+          <button onclick="lecturePortal.openStarAwardForRobotWinner()" class="btn btn-amber btn-xs font-black shadow-md">
+            ⭐ Tặng Sao Kỹ Sư Robot
+          </button>
         </div>
       </div>
 
@@ -2608,6 +2725,138 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 40: ĐẤU TRƯỜNG BẤM CHUÔNG THỜI GIAN THỰC (REALTIME IN-CLASS BUZZER - MODAL 40) -->
+  <div id="realtime-class-buzzer-modal" class="modal-backdrop">
+    <div class="modal-content p-4 md:p-6 max-w-4xl animate-pop bg-slate-950 text-white border-2 border-rose-500 shadow-2xl space-y-4">
+      <!-- Header Buzzer -->
+      <div class="flex items-center justify-between pb-3 border-b border-rose-500/40">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-rose-500/20 text-rose-300 rounded-xl animate-bounce">🔔</span>
+          <div>
+            <h3 class="text-base font-black text-rose-400">ĐẤU TRƯỜNG BẤM CHUÔNG TRỰC TUYẾN</h3>
+            <p class="text-xs text-slate-400">Học sinh quét mã QR bằng điện thoại để biến màn hình thành nút bấm chuông</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('realtime-class-buzzer-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-white">✕</button>
+      </div>
+
+      <!-- 2 Cột: Bàn Điều Khiển Của Cô (Trái) & Vùng Giả Lập Chuông Học Sinh (Phải) -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+        <!-- Cột Trái: Bàn Điều Khiển Cô Giáo & Bảng Xếp Hạng Bấm Nhanh Nhất (7 Cột) -->
+        <div class="md:col-span-7 bg-slate-900/90 rounded-2xl border border-slate-800 p-4 flex flex-col justify-between space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-400 font-bold">Mã Phòng PIN:</span>
+              <span id="buzzer-room-pin" class="font-mono text-base font-black text-amber-400 tracking-wider">582 914</span>
+            </div>
+            <span id="buzzer-status-badge" class="badge bg-amber-500 text-slate-950 font-black text-[10px] animate-pulse">● CHỜ BẮT ĐẦU</span>
+          </div>
+
+          <!-- Các Nút Điều Khiển Của Cô -->
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="lecturePortal.startNewBuzzerRound()" id="btn-buzzer-start-round" class="btn bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white btn-sm font-black shadow-md flex items-center justify-center gap-1">
+              <span>🔔</span> <span>Mở Chuông (3s)</span>
+            </button>
+            <button onclick="lecturePortal.lockBuzzer()" id="btn-buzzer-lock" class="btn bg-rose-600 hover:bg-rose-500 text-white btn-sm font-black shadow-md flex items-center justify-center gap-1">
+              <span>🔒</span> <span>Khóa Chuông</span>
+            </button>
+            <button onclick="lecturePortal.resetBuzzerLeaderboard()" class="btn btn-outline btn-sm text-slate-300 border-slate-700 hover:bg-slate-800 font-bold flex items-center justify-center gap-1">
+              <span>🔄</span> <span>Làm Mới</span>
+            </button>
+          </div>
+
+          <!-- Bảng Xếp Hạng Top Bấm Nhanh Nhất (Leaderboard) -->
+          <div class="space-y-2 flex-1">
+            <div class="flex items-center justify-between text-xs text-slate-400">
+              <span class="font-bold text-amber-300">🏆 TOP BẤM CHUÔNG NHANH NHẤT (Mili-giây):</span>
+              <span id="buzzer-count-participants" class="text-[11px] font-mono">35 Thí sinh tham gia</span>
+            </div>
+
+            <div id="buzzer-leaderboard-list" class="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+              <!-- Sẽ được sinh bằng JS -->
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+            <span>💡 Cô bấm <b>'Mở Chuông'</b> để bắt đầu đếm ngược 3-2-1 cho cả lớp tranh tài!</span>
+          </div>
+        </div>
+
+        <!-- Cột Phải: Nút Bấm Chuông 3D Cho Học Sinh (Remote Buzzer) (5 Cột) -->
+        <div class="md:col-span-5 bg-gradient-to-br from-slate-900 to-slate-950 rounded-2xl border-2 border-rose-500/40 p-4 flex flex-col justify-between items-center text-center space-y-3">
+          <div class="w-full text-left pb-1 border-b border-slate-800">
+            <span class="badge bg-rose-500/20 text-rose-300 font-bold text-[10px]">📱 GIAO DIỆN ĐIỆN THOẠI HỌC SINH</span>
+            <input type="text" id="buzzer-student-name-input" class="form-control text-xs font-black bg-slate-950 border-slate-700 text-white mt-1.5" value="Nguyễn Văn An (Lớp 3A)" placeholder="Nhập họ tên học sinh...">
+          </div>
+
+          <!-- Nút Chuông Đỏ Dạ Quang Khổng Lồ -->
+          <div class="my-auto py-2">
+            <button id="btn-student-big-buzzer" onclick="lecturePortal.pressStudentBuzzer()" class="w-36 h-36 rounded-full bg-gradient-to-b from-rose-500 via-red-600 to-rose-900 text-white border-4 border-rose-300 shadow-[0_0_40px_rgba(244,63,94,0.6)] flex flex-col items-center justify-center hover:scale-105 active:scale-90 transition-all cursor-pointer group">
+              <span class="text-4xl filter drop-shadow-md group-hover:animate-ping">🔔</span>
+              <span class="font-black text-xs mt-1 uppercase tracking-wider">BẤM CHUÔNG!</span>
+            </button>
+          </div>
+
+          <!-- Thông báo vị trí bấm -->
+          <div id="buzzer-student-result-msg" class="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400">
+            Sẵn sàng bấm chuông khi chuông mở...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 41: PHÒNG THU & GHI ÂM LỜI GIẢNG CÔ GIÁO (VOICE RECORDER - MODAL 41) -->
+  <div id="lecture-voice-recorder-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-xl animate-pop bg-slate-950 text-white border-2 border-pink-500 shadow-2xl space-y-4 text-center">
+      <div class="flex items-center justify-between pb-3 border-b border-pink-500/40 text-left">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-pink-500/20 text-pink-300 rounded-xl">🎙️</span>
+          <div>
+            <h3 class="text-base font-black text-pink-400">GHI ÂM LỜI GIẢNG CÔ GIÁO</h3>
+            <p class="text-xs text-slate-400">Thu âm trực tiếp từ Micro máy tính và gắn kèm vào slide cho học sinh nghe lại</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('lecture-voice-recorder-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-white">✕</button>
+      </div>
+
+      <!-- Khung Thu Âm & Đồng Hồ Thời Gian Thực -->
+      <div class="p-5 bg-slate-900 rounded-3xl border border-slate-800 space-y-3">
+        <div>
+          <span class="badge bg-pink-500/20 text-pink-300 font-bold text-[10px]">⏱️ THỜI LƯỢNG GHI ÂM</span>
+          <h4 id="voice-recorder-timer-disp" class="text-4xl font-black font-mono text-emerald-400 my-1">00:00.00</h4>
+          <p id="voice-recorder-status" class="text-xs text-slate-400">Sẵn sàng ghi âm giọng Cô...</p>
+        </div>
+
+        <!-- Sóng Âm Thanh Visualizer Canvas -->
+        <div class="w-full h-16 bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden flex items-center justify-center p-1">
+          <canvas id="voice-wave-canvas" class="w-full h-full"></canvas>
+        </div>
+
+        <!-- 3 Nút Điều Khiển Ghi Âm -->
+        <div class="flex items-center justify-center gap-2 pt-1">
+          <button onclick="lecturePortal.startVoiceRecording()" id="btn-voice-start" class="btn bg-rose-600 hover:bg-rose-500 text-white btn-sm font-black shadow-md flex items-center gap-1">
+            <span>🔴</span> <span>Bắt Đầu Ghi</span>
+          </button>
+          <button onclick="lecturePortal.pauseVoiceRecording()" id="btn-voice-pause" class="btn bg-slate-800 hover:bg-slate-700 text-white btn-sm font-bold flex items-center gap-1">
+            <span>⏸️</span> <span>Tạm Dừng</span>
+          </button>
+          <button onclick="lecturePortal.stopVoiceRecording()" id="btn-voice-stop" class="btn bg-emerald-600 hover:bg-emerald-500 text-white btn-sm font-black shadow-md flex items-center gap-1">
+            <span>⏹️</span> <span>Lưu Bản Ghi</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Danh Sách Các Bản Ghi Âm Gần Nhất -->
+      <div class="space-y-2 text-left">
+        <h5 class="text-xs font-bold text-slate-300">🎧 Bản Ghi Âm Vừa Thu (Nghe thử & Tải về):</h5>
+        <div id="voice-recordings-list" class="space-y-2 max-h-[140px] overflow-y-auto pr-1">
+          <p class="text-xs text-slate-500 italic text-center py-2">Chưa có bản ghi âm nào. Hãy bấm 'Bắt Đầu Ghi' để thu âm!</p>
         </div>
       </div>
     </div>
