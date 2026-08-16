@@ -150,6 +150,10 @@ class QuizPlayModal {
         `;
         expBox.classList.remove("hidden");
       }
+
+      if (window.ttsService) {
+        window.ttsService.playPraise("smart");
+      }
     } else {
       if (expBox) {
         expBox.className = "p-4 bg-amber-100/70 border-2 border-amber-400 text-amber-900 rounded-2xl text-xs space-y-1 animate-pop";
@@ -160,6 +164,10 @@ class QuizPlayModal {
           ${q.explanation ? `<p class="text-slate-700 font-medium pt-1">💡 <b>Gợi ý sư phạm:</b> ${q.explanation}</p>` : ''}
         `;
         expBox.classList.remove("hidden");
+      }
+
+      if (window.ttsService) {
+        window.ttsService.playPraise("encourage");
       }
     }
 

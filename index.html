@@ -909,6 +909,31 @@
           </button>
           <button onclick="lecturePortal.closePreviewModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
         </div>
+
+        <!-- Thanh Âm Thanh Khen Thưởng Nhanh Của Cô Giáo (Teacher Voice Soundboard Bar) -->
+        <div class="p-2 bg-gradient-to-r from-pink-950/90 via-purple-950/90 to-slate-900 rounded-2xl border border-pink-500/30 flex items-center justify-between gap-2 shrink-0 text-xs flex-wrap">
+          <div class="flex items-center gap-1.5 text-pink-300 font-black">
+            <span class="text-base animate-pulse">🎙️</span>
+            <span>CỔ VŨ CÔ GIÁO:</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button onclick="ttsService.playPraise('excellent')" class="px-2.5 py-1 rounded-xl font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-sm flex items-center gap-1 transition-all hover:scale-105 active:scale-95" title="Cô khen: Xuất sắc lắm em ơi! +15 Sao Vàng">
+              <span>🎉</span> <span>Xuất Sắc</span>
+            </button>
+            <button onclick="ttsService.playPraise('cheer')" class="px-2.5 py-1 rounded-xl font-bold bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-sm flex items-center gap-1 transition-all hover:scale-105 active:scale-95" title="Cô khen: Hoan hô bạn đã trả lời chính xác!">
+              <span>👏</span> <span>Hoan Hô</span>
+            </button>
+            <button onclick="ttsService.playPraise('smart')" class="px-2.5 py-1 rounded-xl font-bold bg-cyan-400 text-slate-950 hover:bg-cyan-300 shadow-sm flex items-center gap-1 transition-all hover:scale-105 active:scale-95" title="Cô khen: Câu trả lời rất thông minh & sáng tạo!">
+              <span>⭐</span> <span>Thông Minh</span>
+            </button>
+            <button onclick="ttsService.playPraise('champion')" class="px-2.5 py-1 rounded-xl font-bold bg-purple-500 text-white hover:bg-purple-400 shadow-sm flex items-center gap-1 transition-all hover:scale-105 active:scale-95" title="Cô khen: Chúc mừng Quán Quân của đấu trường!">
+              <span>🚀</span> <span>Quán Quân</span>
+            </button>
+            <button onclick="ttsService.playPraise('encourage')" class="px-2.5 py-1 rounded-xl font-bold bg-pink-600 text-white hover:bg-pink-500 shadow-sm flex items-center gap-1 transition-all hover:scale-105 active:scale-95" title="Cô động viên: Cố gắng lên một chút nữa là đúng rồi em ơi!">
+              <span>💪</span> <span>Cố Lên Nào</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Floating Toolbar Khi Bật Bút Vẽ -->
@@ -2671,6 +2696,18 @@
               <button onclick="lecturePortal.toggleInSlideLuckyWheel()" class="btn bg-emerald-700 hover:bg-emerald-600 text-white btn-xs font-bold">
                 🎡 Gọi Tên
               </button>
+            </div>
+          </div>
+
+          <!-- Thanh Âm Thanh Khen Thưởng & Cổ Vũ Lớp Học (Presenter Soundboard) -->
+          <div class="p-2 bg-gradient-to-r from-pink-950/80 via-purple-950/80 to-slate-950 rounded-xl border border-pink-500/30 flex items-center justify-between gap-1.5 text-[11px] shrink-0 flex-wrap">
+            <span class="text-pink-300 font-bold flex items-center gap-1">🎙️ Cổ Vũ:</span>
+            <div class="flex items-center gap-1 flex-wrap">
+              <button onclick="ttsService.playPraise('excellent')" class="px-2 py-0.5 rounded-lg font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-xs">🎉 Xuất Sắc</button>
+              <button onclick="ttsService.playPraise('cheer')" class="px-2 py-0.5 rounded-lg font-bold bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-xs">👏 Hoan Hô</button>
+              <button onclick="ttsService.playPraise('smart')" class="px-2 py-0.5 rounded-lg font-bold bg-cyan-400 text-slate-950 hover:bg-cyan-300 shadow-xs">⭐ Thông Minh</button>
+              <button onclick="ttsService.playPraise('champion')" class="px-2 py-0.5 rounded-lg font-bold bg-purple-500 text-white hover:bg-purple-400 shadow-xs">🚀 Quán Quân</button>
+              <button onclick="ttsService.playPraise('encourage')" class="px-2 py-0.5 rounded-lg font-bold bg-pink-600 text-white hover:bg-pink-500 shadow-xs">💪 Cố Lên</button>
             </div>
           </div>
         </div>

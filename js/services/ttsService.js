@@ -393,6 +393,72 @@ class TTSService {
       }
     });
   }
+
+  // =========================================================================
+  // BỘ ÂM THANH KHEN THƯỞNG & CỔ VŨ THEO GIỌNG CÔ GIÁO (VOICE PRAISE CLIPS)
+  // =========================================================================
+  getPraiseClips() {
+    return {
+      excellent: [
+        "Xuất sắc lắm em ơi! Câu trả lời hoàn toàn chính xác!",
+        "Tuyệt vời! Cô thưởng cho em mười điểm và mười lăm sao vàng nhé!",
+        "Hoan hô! Em làm bài rất giỏi và hiểu bài rất sâu sắc!"
+      ],
+      cheer: [
+        "Hoan hô bạn đã trả lời rất nhanh và chính xác!",
+        "Cả lớp hãy cùng vỗ tay khen ngợi bạn nào!",
+        "Rất chuẩn xác! Em nắm kiến thức bài học rất vững vàng!"
+      ],
+      smart: [
+        "Câu trả lời rất thông minh và đầy tính sáng tạo!",
+        "Tư duy rất sắc bén! Em xứng đáng là một kỹ sư nhí tương lai!",
+        "Ý kiến rất độc đáo và đúng trọng tâm bài học!"
+      ],
+      encourage: [
+        "Cố gắng lên một chút nữa thôi là đúng rồi em ơi!",
+        "Không sao cả, em hãy quan sát kỹ lại câu hỏi một lần nữa nhé!",
+        "Gần chính xác rồi! Cô tin lần sau em nhất định sẽ làm đúng!"
+      ],
+      champion: [
+        "Chúc mừng Quán Quân của phần thi! Em đã về đích xuất sắc nhất!",
+        "Vô cùng ấn tượng! Em là nhà vô địch của đấu trường hôm nay!",
+        "Chiến thắng tuyệt đối! Em thật là tài năng!"
+      ]
+    };
+  }
+
+  playPraise(type = "excellent") {
+    const clips = this.getPraiseClips();
+    const list = clips[type] || clips.excellent;
+    const randomClip = list[Math.floor(Math.random() * list.length)];
+    
+    this.playCelebrationDing();
+
+    setTimeout(() => {
+      this.speak(randomClip, { rate: 0.95, pitch: 1.25 });
+    }, 250);
+
+    window.app?.showToast?.(`🎙️ Cô Giáo: "${randomClip}"`, "success");
+  }
+
+  playCelebrationDing() {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const freqs = [523.25, 659.25, 783.99, 1046.50];
+      freqs.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.08);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.08 + 0.6);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + idx * 0.08);
+        osc.stop(audioCtx.currentTime + idx * 0.08 + 0.6);
+      });
+    } catch (e) {}
+  }
 }
 
 window.ttsService = new TTSService();

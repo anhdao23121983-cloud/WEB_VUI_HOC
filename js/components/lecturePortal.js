@@ -946,6 +946,9 @@ class LecturePortal {
     if (window.Simulation3D?.triggerFireworks) {
       window.Simulation3D.triggerFireworks();
     }
+    if (window.ttsService) {
+      window.ttsService.playPraise("champion");
+    }
     window.app.showToast("🎉 XUẤT SẮC! Robot đã hoàn thành nhiệm vụ mê cung xuất sắc!", "success");
     this.openStarAwardForRobotWinner();
   }
@@ -2407,8 +2410,10 @@ class LecturePortal {
     if (selectedIndex === q.correct) {
       this.icebreakerScore += 10;
       window.app.showToast("✅ Chính xác! +10 Điểm", "success");
+      if (window.ttsService) window.ttsService.playPraise("cheer");
     } else {
       window.app.showToast(`❌ Chưa đúng! ${q.explanation}`, "error");
+      if (window.ttsService) window.ttsService.playPraise("encourage");
     }
 
     this.icebreakerCurrentQ++;
