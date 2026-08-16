@@ -11,13 +11,14 @@
  * 8. 🃏 Trò chơi Ghép Thẻ Trí Nhớ 3D trên Slide (In-Slide 3D Memory Card Match)
  * 9. ⚡ Trò chơi Nối Cột Định Nghĩa 3D & ⚙️ Soạn Cặp Nối Cột (Custom Column Match Maker)
  * 10. 🎈 Trò chơi Bắn Bong Bóng Tìm Từ Khóa 3D (In-Slide 3D Bubble Pop Game)
- * 11. ⭐ Bảng Khen Thưởng & 🌟 Bắn Thông Báo 50 Sao Toàn Trường Realtime
- * 12. 📖 Sách 3D lật trang siêu thực có 🌙 Chế Độ Ban Đêm Neon & 🔊 Giọng đọc AI E-Book
- * 13. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
- * 14. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
- * 15. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
- * 16. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
- * 17. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
+ * 11. 🐱 Trò chơi Thả Khối Lập Trình Scratch 3D (In-Slide 3D Scratch Block Drag-Drop)
+ * 12. ⭐ Bảng Khen Thưởng & 🌟 Bắn Thông Báo 50 Sao Toàn Trường Realtime
+ * 13. 📖 Sách 3D lật trang siêu thực có 🌙 Chế Độ Ban Đêm Neon & 🔊 Giọng đọc AI E-Book
+ * 14. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
+ * 15. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
+ * 16. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
+ * 17. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
+ * 18. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
  */
 
 class LecturePortal {
@@ -110,6 +111,14 @@ class LecturePortal {
     this.bubbleTarget = 5;
     this.bubbleAnimId = null;
 
+    // In-Slide 3D Scratch Block State
+    this.scratchActive = false;
+    this.scratchMissions = [];
+    this.currentScratchMissionIdx = 0;
+    this.scratchWorkspace = [];
+    this.scratchCatState = { x: 0, y: 0, angle: 0, costume: 1 };
+    this.isScratchRunning = false;
+
     // In-Slide Star Awarding State
     this.starAwardActive = false;
     this.recentStarLogs = [];
@@ -187,7 +196,7 @@ class LecturePortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser, Nối Cột 3D, Bắn Bóng 3D, Ghép Thẻ, Rung Chuông, Tặng Sao & Vinh Danh Toàn Trường</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser, Lập Trình Scratch 3D, Nối Cột 3D, Bắn Bóng 3D, Ghép Thẻ, Rung Chuông, Tặng Sao & Vinh Danh Toàn Trường</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
@@ -487,9 +496,9 @@ class LecturePortal {
                     </button>
                   </div>
 
-                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser, Nối cột 3D, Bắn bóng, Ghép thẻ, Rung Chuông) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
+                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser, Scratch 3D, Nối cột 3D, Bắn bóng, Ghép thẻ, Rung Chuông) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
                   <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
-                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser, Nối Cột 3D, Bắn Bóng 3D, Ghép Thẻ, Rung Chuông Vàng & Tặng Sao Trực Tiếp">
+                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser, Scratch 3D, Nối Cột 3D, Bắn Bóng 3D, Ghép Thẻ, Rung Chuông Vàng & Tặng Sao Trực Tiếp">
                       <span>🎨</span> <span>Trình Chiếu & Laser</span>
                     </button>
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
@@ -545,7 +554,317 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 3: TRÒ CHƠI BẮN BONG BÓNG TÌM TỪ KHÓA 3D (IN-SLIDE BUBBLE POP)
+  // OPTION 2: TRÒ CHƠI THẢ KHỐI LẬP TRÌNH SCRATCH 3D (IN-SLIDE SCRATCH BLOCKS)
+  // =========================================================================
+  toggleInSlideScratch() {
+    const overlay = document.getElementById("in-slide-scratch-block-overlay");
+    if (!overlay) return;
+
+    this.scratchActive = !this.scratchActive;
+    if (this.scratchActive) {
+      if (this.inSlideQuizActive) this.toggleInSlideQuiz();
+      if (this.crosswordActive) this.toggleInSlideCrossword();
+      if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
+      if (this.goldenBellActive) this.toggleInSlideGoldenBell();
+      if (this.memoryCardActive) this.toggleInSlideMemoryCard();
+      if (this.columnMatchActive) this.toggleInSlideColumnMatch();
+      if (this.bubblePopActive) this.toggleInSlideBubblePop();
+      overlay.classList.remove("hidden");
+      this.initScratchGame();
+    } else {
+      overlay.classList.add("hidden");
+    }
+  }
+
+  initScratchGame() {
+    this.scratchMissions = [
+      {
+        id: 0,
+        title: "THỬ THÁCH 1: MÈO ĐI & CHÀO HỎI",
+        goal: "Lập trình cho chú mèo: Khi bấm cờ xanh ➔ Di chuyển 10 bước ➔ Nói 'Xin chào các bạn!' trong 2 giây",
+        targetOrder: ["event_flag", "motion_move10", "looks_sayhello"],
+        availableBlocks: [
+          { id: "event_flag", type: "event", color: "bg-amber-500 border-amber-400 text-slate-950", icon: "🏳️", text: "Khi bấm cờ xanh" },
+          { id: "motion_move10", type: "motion", color: "bg-blue-600 border-blue-400 text-white", icon: "👣", text: "Di chuyển 10 bước" },
+          { id: "looks_sayhello", type: "looks", color: "bg-purple-600 border-purple-400 text-white", icon: "💬", text: "Nói 'Xin chào!' 2s" },
+          { id: "sound_meow", type: "sound", color: "bg-pink-600 border-pink-400 text-white", icon: "🐱", text: "Phát âm thanh Meow" },
+          { id: "motion_turn90", type: "motion", color: "bg-blue-600 border-blue-400 text-white", icon: "🔄", text: "Xoay phải 90 độ" }
+        ]
+      },
+      {
+        id: 1,
+        title: "THỬ THÁCH 2: MÈO NHẢY & KÊU MEOW",
+        goal: "Lập trình cho chú mèo: Khi bấm cờ xanh ➔ Phát âm thanh Meow ➔ Xoay phải 90 độ ➔ Đổi trang phục tiếp theo",
+        targetOrder: ["event_flag", "sound_meow", "motion_turn90", "looks_nextcostume"],
+        availableBlocks: [
+          { id: "event_flag", type: "event", color: "bg-amber-500 border-amber-400 text-slate-950", icon: "🏳️", text: "Khi bấm cờ xanh" },
+          { id: "sound_meow", type: "sound", color: "bg-pink-600 border-pink-400 text-white", icon: "🐱", text: "Phát âm thanh Meow" },
+          { id: "motion_turn90", type: "motion", color: "bg-blue-600 border-blue-400 text-white", icon: "🔄", text: "Xoay phải 90 độ" },
+          { id: "looks_nextcostume", type: "looks", color: "bg-purple-600 border-purple-400 text-white", icon: "👗", text: "Đổi trang phục tiếp theo" },
+          { id: "motion_move10", type: "motion", color: "bg-blue-600 border-blue-400 text-white", icon: "👣", text: "Di chuyển 10 bước" }
+        ]
+      },
+      {
+        id: 2,
+        title: "THỬ THÁCH 3: VÒNG LẶP BƯỚC ĐI 10 LẦN",
+        goal: "Lập trình thuật toán: Khi bấm cờ xanh ➔ Lặp lại 10 lần (Di chuyển 10 bước + Đợi 0.5s)",
+        targetOrder: ["event_flag", "control_repeat10", "motion_move10", "control_wait"],
+        availableBlocks: [
+          { id: "event_flag", type: "event", color: "bg-amber-500 border-amber-400 text-slate-950", icon: "🏳️", text: "Khi bấm cờ xanh" },
+          { id: "control_repeat10", type: "control", color: "bg-amber-600 border-amber-400 text-white", icon: "🔁", text: "Lặp lại 10 lần" },
+          { id: "motion_move10", type: "motion", color: "bg-blue-600 border-blue-400 text-white", icon: "👣", text: "Di chuyển 10 bước" },
+          { id: "control_wait", type: "control", color: "bg-amber-600 border-amber-400 text-white", icon: "⏳", text: "Đợi 0.5 giây" },
+          { id: "sound_meow", type: "sound", color: "bg-pink-600 border-pink-400 text-white", icon: "🐱", text: "Phát âm thanh Meow" }
+        ]
+      },
+      {
+        id: 3,
+        title: "THỬ THÁCH 4: VẼ HÌNH VUÔNG 4 CẠNH",
+        goal: "Lập trình cho chú mèo vẽ hình vuông: Khi bấm cờ xanh ➔ Lặp lại 4 lần (Di chuyển 50 bước + Xoay phải 90 độ)",
+        targetOrder: ["event_flag", "control_repeat4", "motion_move50", "motion_turn90"],
+        availableBlocks: [
+          { id: "event_flag", type: "event", color: "bg-amber-500 border-amber-400 text-slate-950", icon: "🏳️", text: "Khi bấm cờ xanh" },
+          { id: "control_repeat4", type: "control", color: "bg-amber-600 border-amber-400 text-white", icon: "🔁", text: "Lặp lại 4 lần" },
+          { id: "motion_move50", type: "motion", color: "bg-blue-600 border-blue-400 text-white", icon: "👣", text: "Di chuyển 50 bước" },
+          { id: "motion_turn90", type: "motion", color: "bg-blue-600 border-blue-400 text-white", icon: "🔄", text: "Xoay phải 90 độ" },
+          { id: "looks_sayhello", type: "looks", color: "bg-purple-600 border-purple-400 text-white", icon: "💬", text: "Nói 'Đã vẽ xong!'" }
+        ]
+      }
+    ];
+
+    this.scratchWorkspace = [];
+    this.resetScratchStage();
+    this.renderScratchPalette();
+    this.renderScratchWorkspace();
+  }
+
+  switchScratchMission(idx) {
+    this.currentScratchMissionIdx = parseInt(idx, 10) || 0;
+    const curMission = this.scratchMissions[this.currentScratchMissionIdx];
+
+    const titleEl = document.getElementById("scratch-mission-title");
+    const goalEl = document.getElementById("scratch-mission-goal");
+    const selectEl = document.getElementById("scratch-mission-select");
+
+    if (titleEl) titleEl.innerText = curMission.title;
+    if (goalEl) goalEl.innerText = curMission.goal;
+    if (selectEl) selectEl.value = this.currentScratchMissionIdx;
+
+    this.scratchWorkspace = [];
+    this.resetScratchStage();
+    this.renderScratchPalette();
+    this.renderScratchWorkspace();
+    window.app.showToast(`🎯 Đã mở: "${curMission.title}"!`, "info");
+  }
+
+  renderScratchPalette() {
+    const paletteEl = document.getElementById("scratch-palette-blocks");
+    if (!paletteEl) return;
+
+    const curMission = this.scratchMissions[this.currentScratchMissionIdx];
+    paletteEl.innerHTML = curMission.availableBlocks.map(b => `
+      <div onclick="lecturePortal.addBlockToWorkspace('${b.id}')" class="p-2 rounded-xl border-2 cursor-pointer shadow-sm hover:scale-102 transition-all select-none flex items-center justify-between ${b.color}">
+        <div class="flex items-center gap-1.5">
+          <span class="text-base">${b.icon}</span>
+          <span class="font-black text-xs">${b.text}</span>
+        </div>
+        <span class="text-xs font-bold bg-black/20 px-1.5 py-0.5 rounded-md">➕ Thêm</span>
+      </div>
+    `).join("");
+  }
+
+  addBlockToWorkspace(blockId) {
+    const curMission = this.scratchMissions[this.currentScratchMissionIdx];
+    const block = curMission.availableBlocks.find(b => b.id === blockId);
+    if (!block) return;
+
+    this.scratchWorkspace.push(JSON.parse(JSON.stringify(block)));
+    this.playTickSound();
+    this.renderScratchWorkspace();
+  }
+
+  removeBlockFromWorkspace(index) {
+    this.scratchWorkspace.splice(index, 1);
+    this.playTickSound();
+    this.renderScratchWorkspace();
+  }
+
+  clearScratchWorkspace() {
+    this.scratchWorkspace = [];
+    this.renderScratchWorkspace();
+    window.app.showToast("🧹 Đã làm sạch kịch bản Scratch!", "info");
+  }
+
+  renderScratchWorkspace() {
+    const listEl = document.getElementById("scratch-workspace-list");
+    const countEl = document.getElementById("scratch-blocks-count");
+
+    if (countEl) countEl.innerText = `Số khối: ${this.scratchWorkspace.length}`;
+    if (!listEl) return;
+
+    if (this.scratchWorkspace.length === 0) {
+      listEl.innerHTML = `
+        <div class="h-full flex flex-col items-center justify-center text-center p-4 text-slate-500 text-xs italic">
+          <span class="text-3xl block mb-1 opacity-40">🧩</span>
+          <span>Bấm các khối lệnh bên cạnh để ghép vào kịch bản này!</span>
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = this.scratchWorkspace.map((b, idx) => `
+      <div id="scratch-ws-block-${idx}" class="p-2 rounded-xl border-2 shadow-md transition-all flex items-center justify-between select-none relative group ${b.color}">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-mono opacity-80">${idx + 1}.</span>
+          <span class="text-base">${b.icon}</span>
+          <span class="font-black text-xs">${b.text}</span>
+        </div>
+        <button onclick="lecturePortal.removeBlockFromWorkspace(${idx})" class="text-xs font-bold text-white/80 hover:text-white bg-black/30 hover:bg-rose-600 px-1.5 py-0.5 rounded-lg transition-all" title="Xóa khối này">
+          ✕
+        </button>
+      </div>
+    `).join("");
+  }
+
+  resetScratchStage() {
+    this.scratchCatState = { x: 0, y: 0, angle: 0, costume: 1 };
+    this.isScratchRunning = false;
+
+    const sprite = document.getElementById("scratch-cat-sprite");
+    const speech = document.getElementById("scratch-cat-speech");
+    const coordsEl = document.getElementById("scratch-coords-disp");
+
+    if (sprite) {
+      sprite.style.transform = `translate(0px, 0px) rotate(0deg)`;
+    }
+    if (speech) speech.classList.add("hidden");
+    if (coordsEl) coordsEl.innerText = "x: 0 | y: 0";
+  }
+
+  async runScratchScript() {
+    if (this.isScratchRunning) return;
+    if (this.scratchWorkspace.length === 0) {
+      window.app.showToast("Thầy Cô và các bạn hãy ghép ít nhất 1 khối lệnh vào kịch bản nhé!", "warning");
+      return;
+    }
+
+    this.isScratchRunning = true;
+    this.resetScratchStage();
+    window.app.showToast("🚀 Bắt đầu thực thi kịch bản Scratch...", "info");
+
+    const curMission = this.scratchMissions[this.currentScratchMissionIdx];
+    const userBlockIds = this.scratchWorkspace.map(b => b.id);
+
+    // Chạy tuần tự từng khối lệnh
+    for (let i = 0; i < this.scratchWorkspace.length; i++) {
+      const block = this.scratchWorkspace[i];
+      const blockEl = document.getElementById(`scratch-ws-block-${i}`);
+
+      if (blockEl) {
+        blockEl.classList.add("ring-4", "ring-yellow-300", "scale-105");
+      }
+
+      await this.executeScratchBlock(block);
+
+      if (blockEl) {
+        blockEl.classList.remove("ring-4", "ring-yellow-300", "scale-105");
+      }
+      await new Promise(res => setTimeout(res, 350));
+    }
+
+    this.isScratchRunning = false;
+
+    // Kiểm tra tính chính xác của chuỗi khối lệnh so với mục tiêu bài học
+    const isExactMatch = curMission.targetOrder.length === userBlockIds.length &&
+      curMission.targetOrder.every((val, idx) => val === userBlockIds[idx]);
+
+    if (isExactMatch) {
+      this.celebrateScratchWin();
+    } else {
+      window.app.showToast("💡 Thuật toán đã chạy xong! Hãy đối chiếu lại với yêu cầu thử thách để ghép đúng 100% nhé.", "info");
+    }
+  }
+
+  async executeScratchBlock(block) {
+    const sprite = document.getElementById("scratch-cat-sprite");
+    const speech = document.getElementById("scratch-cat-speech");
+    const speechText = document.getElementById("scratch-speech-text");
+    const coordsEl = document.getElementById("scratch-coords-disp");
+
+    if (block.id === "event_flag") {
+      this.playTickSound();
+    } else if (block.id === "motion_move10") {
+      this.scratchCatState.x += 25;
+      if (sprite) sprite.style.transform = `translate(${this.scratchCatState.x}px, ${this.scratchCatState.y}px) rotate(${this.scratchCatState.angle}deg)`;
+      this.playTickSound();
+    } else if (block.id === "motion_move50") {
+      this.scratchCatState.x += 50;
+      if (sprite) sprite.style.transform = `translate(${this.scratchCatState.x}px, ${this.scratchCatState.y}px) rotate(${this.scratchCatState.angle}deg)`;
+      this.playTickSound();
+    } else if (block.id === "motion_turn90") {
+      this.scratchCatState.angle += 90;
+      if (sprite) sprite.style.transform = `translate(${this.scratchCatState.x}px, ${this.scratchCatState.y}px) rotate(${this.scratchCatState.angle}deg)`;
+      this.playTickSound();
+    } else if (block.id === "sound_meow") {
+      this.playMeowSound();
+    } else if (block.id === "looks_sayhello") {
+      if (speechText) speechText.innerText = "Xin chào các bạn!";
+      if (speech) speech.classList.remove("hidden");
+      this.playTingSound();
+      await new Promise(res => setTimeout(res, 1200));
+      if (speech) speech.classList.add("hidden");
+    } else if (block.id === "looks_nextcostume") {
+      const emojiEl = document.getElementById("scratch-cat-emoji");
+      if (emojiEl) emojiEl.innerText = emojiEl.innerText === "🐱" ? "😸" : "🐱";
+      this.playTickSound();
+    } else if (block.id.startsWith("control_repeat")) {
+      this.playTickSound();
+    } else if (block.id === "control_wait") {
+      await new Promise(res => setTimeout(res, 500));
+    }
+
+    if (coordsEl) coordsEl.innerText = `x: ${this.scratchCatState.x} | y: ${this.scratchCatState.y}`;
+  }
+
+  playMeowSound() {
+    try {
+      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(440, this.audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, this.audioCtx.currentTime + 0.15);
+      osc.frequency.exponentialRampToValueAtTime(330, this.audioCtx.currentTime + 0.4);
+
+      gain.gain.setValueAtTime(0.35, this.audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.4);
+
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+
+      osc.start();
+      osc.stop(this.audioCtx.currentTime + 0.4);
+    } catch (e) {}
+  }
+
+  celebrateScratchWin() {
+    this.playStarTingSound();
+    if (window.Simulation3D?.triggerFireworks) {
+      window.Simulation3D.triggerFireworks();
+    }
+    window.app.showToast("🎉 CHÍNH XÁC 100%! Bạn đã hoàn thành xuất sắc thuật toán khối Scratch!", "success");
+    this.openStarAwardForScratchWinner();
+  }
+
+  openStarAwardForScratchWinner() {
+    this.toggleInSlideStarAward(this.wheelNames[0] ? this.wheelNames[0].replace(/^\d+\.\s*/, '') : "Lập Trình Viên Scratch Nhí", "Hoàn thành xuất sắc thuật toán trong Trò chơi Khối Lập Trình Scratch 3D");
+  }
+
+  // =========================================================================
+  // TRÒ CHƠI BẮN BONG BÓNG TÌM TỪ KHÓA 3D (IN-SLIDE BUBBLE POP)
   // =========================================================================
   toggleInSlideBubblePop() {
     const overlay = document.getElementById("in-slide-bubble-pop-overlay");
@@ -559,6 +878,7 @@ class LecturePortal {
       if (this.goldenBellActive) this.toggleInSlideGoldenBell();
       if (this.memoryCardActive) this.toggleInSlideMemoryCard();
       if (this.columnMatchActive) this.toggleInSlideColumnMatch();
+      if (this.scratchActive) this.toggleInSlideScratch();
       overlay.classList.remove("hidden");
       this.initBubblePopGame();
     } else {
@@ -852,7 +1172,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 4: TRÒ CHƠI NỐI CỘT ĐỊNH NGHĨA 3D & SOẠN CẶP NỐI (CUSTOM COLUMN MATCH)
+  // TRÒ CHƠI NỐI CỘT ĐỊNH NGHĨA 3D & SOẠN CẶP NỐI (CUSTOM COLUMN MATCH)
   // =========================================================================
   toggleInSlideColumnMatch() {
     const overlay = document.getElementById("in-slide-column-match-overlay");
@@ -866,6 +1186,7 @@ class LecturePortal {
       if (this.goldenBellActive) this.toggleInSlideGoldenBell();
       if (this.memoryCardActive) this.toggleInSlideMemoryCard();
       if (this.bubblePopActive) this.toggleInSlideBubblePop();
+      if (this.scratchActive) this.toggleInSlideScratch();
       overlay.classList.remove("hidden");
       if (!this.columnMatchData) {
         this.loadPresetColumnMatch('devices');
@@ -1286,6 +1607,7 @@ class LecturePortal {
       if (this.goldenBellActive) this.toggleInSlideGoldenBell();
       if (this.columnMatchActive) this.toggleInSlideColumnMatch();
       if (this.bubblePopActive) this.toggleInSlideBubblePop();
+      if (this.scratchActive) this.toggleInSlideScratch();
       overlay.classList.remove("hidden");
       this.initMemoryCardGame();
     } else {
@@ -1534,6 +1856,7 @@ class LecturePortal {
       if (this.memoryCardActive) this.toggleInSlideMemoryCard();
       if (this.columnMatchActive) this.toggleInSlideColumnMatch();
       if (this.bubblePopActive) this.toggleInSlideBubblePop();
+      if (this.scratchActive) this.toggleInSlideScratch();
       overlay.classList.remove("hidden");
       this.loadInSlideQuestion();
       this.startInSlideCountdown();
@@ -1674,6 +1997,7 @@ class LecturePortal {
       if (this.memoryCardActive) this.toggleInSlideMemoryCard();
       if (this.columnMatchActive) this.toggleInSlideColumnMatch();
       if (this.bubblePopActive) this.toggleInSlideBubblePop();
+      if (this.scratchActive) this.toggleInSlideScratch();
       overlay.classList.remove("hidden");
       this.initGoldenBellArena();
     } else {
@@ -1902,6 +2226,7 @@ class LecturePortal {
       if (this.memoryCardActive) this.toggleInSlideMemoryCard();
       if (this.columnMatchActive) this.toggleInSlideColumnMatch();
       if (this.bubblePopActive) this.toggleInSlideBubblePop();
+      if (this.scratchActive) this.toggleInSlideScratch();
       overlay.classList.remove("hidden");
       if (!this.crosswordData) {
         this.loadPresetCrossword('computer');
@@ -2191,6 +2516,7 @@ class LecturePortal {
       if (this.memoryCardActive) this.toggleInSlideMemoryCard();
       if (this.columnMatchActive) this.toggleInSlideColumnMatch();
       if (this.bubblePopActive) this.toggleInSlideBubblePop();
+      if (this.scratchActive) this.toggleInSlideScratch();
       overlay.classList.remove("hidden");
       
       const input = document.getElementById("lucky-wheel-names-input");
@@ -2635,6 +2961,7 @@ class LecturePortal {
     if (this.memoryCardActive) this.toggleInSlideMemoryCard();
     if (this.columnMatchActive) this.toggleInSlideColumnMatch();
     if (this.bubblePopActive) this.toggleInSlideBubblePop();
+    if (this.scratchActive) this.toggleInSlideScratch();
     if (this.starAwardActive) this.toggleInSlideStarAward();
   }
 
