@@ -1616,11 +1616,34 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // GIỌNG ĐỌC NỮ TIẾNG VIỆT CHO SÁCH 3D & VIDEO HOẠT HỌA AI
+  // GIỌNG ĐỌC NỮ TIẾNG VIỆT & BÔI CHỮ KARAOKE CHO SÁCH 3D & VIDEO SLIDE
   // =========================================================================
+  toggleKaraokeMode() {
+    if (!window.ttsService) return;
+    const isEnabled = window.ttsService.toggleKaraoke();
+    const btnFlip = document.getElementById("btn-toggle-karaoke-flipbook");
+    const btnVid = document.getElementById("btn-toggle-karaoke-video");
+    const label = isEnabled ? "✨ Bôi Chữ Karaoke: BẬT" : "✨ Bôi Chữ Karaoke: TẮT";
+    const labelShort = isEnabled ? "✨ Karaoke: BẬT" : "✨ Karaoke: TẮT";
+
+    if (btnFlip) btnFlip.innerHTML = `<span>✨</span> <span>${label}</span>`;
+    if (btnVid) btnVid.innerHTML = `<span>✨</span> <span>${labelShort}</span>`;
+  }
+
+  setSpeechRate(rate) {
+    this.speechRate = parseFloat(rate) || 0.92;
+    window.app.showToast(`⚡ Tốc độ đọc Cô Giáo: ${this.speechRate}x`, "info");
+  }
+
+  setVoiceGender(gender) {
+    this.voiceGender = "female"; // Luôn ưu tiên giọng Nữ Cô Giáo
+    window.app.showToast("👩‍🏫 Đã chọn Giọng Đọc Nữ Tiếng Việt Chuẩn Cô Giáo!", "info");
+  }
+
   speakNarrative(text) {
     if (!window.ttsService) return;
     window.ttsService.speak(text, {
+      karaokeContainers: ["video-slide-screen"],
       rate: this.speechRate,
       pitch: 1.2,
       onEnd: () => {
@@ -1654,6 +1677,7 @@ class LecturePortal {
     }
 
     window.ttsService.speak(fullText, {
+      karaokeContainers: ["flipbook-left-page", "flipbook-right-page"],
       rate: this.speechRate,
       pitch: 1.2,
       onEnd: () => {

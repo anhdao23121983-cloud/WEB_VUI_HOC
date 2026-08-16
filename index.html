@@ -1616,18 +1616,16 @@
 
           <!-- Voice & 3D Settings -->
           <div class="flex items-center gap-2 flex-wrap text-xs">
-            <div class="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-xl border border-slate-800">
-              <span class="text-slate-400">🎙️ Giọng:</span>
-              <button onclick="lecturePortal.setVoiceGender('female')" class="px-2 py-0.5 rounded-lg font-bold text-[11px] bg-rose-950 text-rose-300 border border-rose-800 hover:bg-rose-900">Cô Giáo (Nữ)</button>
-              <button onclick="lecturePortal.setVoiceGender('male')" class="px-2 py-0.5 rounded-lg font-bold text-[11px] bg-cyan-950 text-cyan-300 border border-cyan-800 hover:bg-cyan-900">Thầy Giáo (Nam)</button>
-            </div>
+            <button id="btn-toggle-karaoke-video" onclick="lecturePortal.toggleKaraokeMode()" class="btn bg-pink-900/60 hover:bg-pink-800 text-pink-300 btn-sm font-bold flex items-center gap-1 border border-pink-700 shadow-sm" title="Bôi sáng từng từ theo nhịp đọc của Cô giáo">
+              <span>✨</span> <span>Karaoke: BẬT</span>
+            </button>
 
             <div class="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-xl border border-slate-800">
               <span class="text-slate-400">⚡ Tốc độ:</span>
               <select onchange="lecturePortal.setSpeechRate(this.value)" class="bg-transparent text-amber-300 font-black text-[11px] outline-none">
                 <option value="0.8" class="bg-slate-900 text-white">0.8x (Chậm)</option>
-                <option value="0.95" selected class="bg-slate-900 text-white">1.0x (Chuẩn)</option>
-                <option value="1.2" class="bg-slate-900 text-white">1.2x (Nhanh)</option>
+                <option value="0.92" selected class="bg-slate-900 text-white">0.9x (Chuẩn Cô Giáo)</option>
+                <option value="1.1" class="bg-slate-900 text-white">1.1x (Nhanh)</option>
               </select>
             </div>
 
@@ -2309,15 +2307,13 @@
             <span>🔊</span> <span>Đọc Sách AI</span>
           </button>
 
-          <div class="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-xl border border-slate-800">
-            <span class="text-slate-400">🎙️:</span>
-            <button onclick="lecturePortal.setVoiceGender('female'); if (lecturePortal.isReadingAloud) lecturePortal.readCurrentFlipbookPage();" class="px-2 py-0.5 rounded-lg font-bold text-[11px] bg-rose-950 text-rose-300 border border-rose-800">Nữ</button>
-            <button onclick="lecturePortal.setVoiceGender('male'); if (lecturePortal.isReadingAloud) lecturePortal.readCurrentFlipbookPage();" class="px-2 py-0.5 rounded-lg font-bold text-[11px] bg-cyan-950 text-cyan-300 border border-cyan-800">Nam</button>
-          </div>
+          <button id="btn-toggle-karaoke-flipbook" onclick="lecturePortal.toggleKaraokeMode()" class="btn bg-pink-900/60 hover:bg-pink-800 text-pink-300 btn-sm font-bold flex items-center gap-1 border border-pink-700 shadow-sm" title="Bôi sáng từng từ theo nhịp đọc của Cô giáo">
+            <span>✨</span> <span>Bôi Chữ Karaoke: BẬT</span>
+          </button>
         </div>
 
         <div class="flex items-center gap-3 text-slate-400">
-          <span class="text-[11px] hidden md:inline">💡 Thầy Cô có thể bấm <b>'🔊 Đọc Sách AI'</b> để AI tự động thuyết minh từng trang sách.</span>
+          <span class="text-[11px] hidden md:inline">💡 Cô có thể bấm <b>'🔊 Đọc Sách AI'</b> để AI tự động thuyết minh từng trang sách.</span>
           <button onclick="lecturePortal.closeFlipbookModal()" class="btn btn-outline btn-xs text-slate-300 border-slate-700">Đóng Sách 3D</button>
         </div>
       </div>
