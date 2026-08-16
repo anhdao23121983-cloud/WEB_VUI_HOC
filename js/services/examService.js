@@ -35,7 +35,7 @@ class ExamService {
             grade: item.grade_level,
             examType: item.exam_type || "final_term_1",
             bookSeries: item.book_series || "KNTT",
-            authorName: item.author_name || "Thầy Giáo Anh Đào",
+            authorName: item.author_name || "Cô Giáo Anh Đào",
             createdByUsername: item.created_by_username || "anhdao",
             schoolName: item.school_name || "Trường Tiểu Học Vui Học",
             durationMinutes: item.duration_minutes || 35,
@@ -133,7 +133,7 @@ class ExamService {
 
   // 6. Tải lên và lưu đề kiểm tra mới (Đồng bộ FE -> BE -> Supabase Cloud)
   async uploadExam(examData) {
-    const user = window.authService?.getUser() || { username: "anhdao", name: "Thầy Giáo Anh Đào", school: "Trường Tiểu Học" };
+    const user = window.authService?.getUser() || { username: "anhdao", name: "Cô Giáo Anh Đào", school: "Trường Tiểu Học" };
     const examId = examData.id || ("exam_" + Date.now());
 
     const colors = [

@@ -105,7 +105,7 @@ class LessonPlannerModal {
     const grade = parseInt(document.getElementById("plan-input-grade")?.value || "3");
     const book = document.getElementById("plan-input-book")?.value || "Kết nối tri thức với cuộc sống";
     const duration = document.getElementById("plan-input-duration")?.value || "2 tiết";
-    const teacherName = document.getElementById("plan-input-teacher")?.value || "Thầy Giáo Anh Đào";
+    const teacherName = document.getElementById("plan-input-teacher")?.value || "Cô Giáo Anh Đào";
 
     return {
       title: `KẾ HOẠCH BÀI DẠY: ${title.toUpperCase()}`,

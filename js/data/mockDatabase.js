@@ -19,10 +19,10 @@ const MOCK_DATABASE = {
     {
       id: "u_teacher_01",
       username: "anhdao",
-      name: "Thầy Giáo Anh Đào",
+      name: "Cô Giáo Anh Đào",
       role: "teacher",
       school: "Trường Tiểu Học Vui Học",
-      avatar: "👨‍🏫",
+      avatar: "👩‍🏫",
       stars: 999,
       isActive: true
     },
@@ -70,7 +70,7 @@ const MOCK_DATABASE = {
       lessonId: "L3_02",
       subject: "Tin học",
       duration: "2 tiết",
-      teacherName: "Thầy Giáo Anh Đào",
+      teacherName: "Cô Giáo Anh Đào",
       schoolName: "Trường Tiểu Học Vui Học",
       createdAt: "2026-08-10",
       objectives: {
@@ -130,7 +130,7 @@ const MOCK_DATABASE = {
       correctIndex: 1,
       explanation: "Màn hình là thiết bị xuất dữ liệu dạng hình ảnh để chúng ta quan sát và làm việc.",
       stars: 15,
-      createdBy: "Thầy Giáo Anh Đào"
+      createdBy: "Cô Giáo Anh Đào"
     },
     {
       id: "quiz_02",
@@ -142,7 +142,7 @@ const MOCK_DATABASE = {
       correctIndex: 2,
       explanation: "Bên trong Thân máy có bộ vi xử lý CPU đóng vai trò như bộ não xử lý mọi phép tính.",
       stars: 15,
-      createdBy: "Thầy Giáo Anh Đào"
+      createdBy: "Cô Giáo Anh Đào"
     },
     {
       id: "quiz_03",
@@ -154,7 +154,7 @@ const MOCK_DATABASE = {
       correctIndex: 0,
       explanation: "Quy tắc cầm chuột chuẩn: Ngón trỏ đặt nút trái, ngón giữa đặt nút phải.",
       stars: 15,
-      createdBy: "Thầy Giáo Anh Đào"
+      createdBy: "Cô Giáo Anh Đào"
     },
     {
       id: "quiz_04",
@@ -166,7 +166,7 @@ const MOCK_DATABASE = {
       correctIndex: 2,
       explanation: "Phần cứng là các thiết bị vật lý mà em có thể nhìn thấy và chạm tay vào được như bàn phím, chuột, màn hình.",
       stars: 20,
-      createdBy: "Thầy Giáo Anh Đào"
+      createdBy: "Cô Giáo Anh Đào"
     },
     {
       id: "quiz_05",
@@ -178,7 +178,7 @@ const MOCK_DATABASE = {
       correctIndex: 1,
       explanation: "Máy tìm kiếm trên Internet giúp em tra cứu văn bản, hình ảnh, tài liệu học tập nhanh chóng và chính xác.",
       stars: 25,
-      createdBy: "Thầy Giáo Anh Đào"
+      createdBy: "Cô Giáo Anh Đào"
     }
   ],
 
@@ -248,7 +248,7 @@ const MOCK_DATABASE = {
       grade: 3,
       topicName: "Chủ đề A: Máy tính và em",
       lessonId: "L3_02",
-      authorName: "Thầy Giáo Anh Đào",
+      authorName: "Cô Giáo Anh Đào",
       schoolName: "Trường Tiểu Học Vui Học",
       fileName: "BaiGiang_TinHoc3_KhamPhaMayTinh.pptx",
       fileSizeText: "6.8 MB",
@@ -266,7 +266,7 @@ const MOCK_DATABASE = {
       grade: 3,
       topicName: "Chủ đề A: Máy tính và em",
       lessonId: "L3_03",
-      authorName: "Thầy Giáo Anh Đào",
+      authorName: "Cô Giáo Anh Đào",
       schoolName: "Trường Tiểu Học Vui Học",
       fileName: "BaiGiang_TinHoc3_TapSuDungChuot.pptx",
       fileSizeText: "4.5 MB",
@@ -284,7 +284,7 @@ const MOCK_DATABASE = {
       grade: 4,
       topicName: "Chủ đề A: Máy tính và em",
       lessonId: "L4_01",
-      authorName: "Thầy Giáo Anh Đào",
+      authorName: "Cô Giáo Anh Đào",
       schoolName: "Trường Tiểu Học Vui Học",
       fileName: "BaiGiang_TinHoc4_PhanCungPhanMem.pptx",
       fileSizeText: "8.2 MB",
@@ -302,7 +302,7 @@ const MOCK_DATABASE = {
       grade: 5,
       topicName: "Chủ đề C: Tổ chức lưu trữ và tìm kiếm",
       lessonId: "L5_01",
-      authorName: "Thầy Giáo Anh Đào",
+      authorName: "Cô Giáo Anh Đào",
       schoolName: "Trường Tiểu Học Vui Học",
       fileName: "BaiGiang_TinHoc5_TimKiemInternet.pptx",
       fileSizeText: "5.7 MB",

@@ -462,7 +462,7 @@ class LecturePortal {
 
                 <div class="pt-2 border-t border-slate-100 space-y-1.5 text-[11px] text-slate-500">
                   <div class="flex items-center justify-between">
-                    <span>👨‍🏫 Tác giả: <b>${l.authorName || 'Thầy Anh Đào'}</b></span>
+                    <span>👩‍🏫 Tác giả: <b>${l.authorName || 'Cô Anh Đào'}</b></span>
                     <span>📦 Dung lượng: <b>${l.fileSizeText || '5.2 MB'}</b></span>
                   </div>
                   <div class="flex items-center justify-between text-slate-400">
@@ -1974,7 +1974,7 @@ class LecturePortal {
                     <span class="text-2xl">${medals[index] || (index + 1)}</span>
                     <div>
                       <h5 class="font-black text-slate-900 text-xs line-clamp-1">${item.title}</h5>
-                      <p class="text-[11px] text-slate-500">Lớp ${item.grade} • ${item.authorName || 'Thầy Anh Đào'} • ${item.bookSeries || 'KNTT'}</p>
+                      <p class="text-[11px] text-slate-500">Lớp ${item.grade} • ${item.authorName || 'Cô Anh Đào'} • ${item.bookSeries || 'KNTT'}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-3 text-right shrink-0">

@@ -31,7 +31,7 @@ class QuizService {
             correctIndex: item.correct_index,
             explanation: item.explanation || "",
             stars: item.stars || 15,
-            createdBy: item.created_by || "Thầy Giáo Anh Đào",
+            createdBy: item.created_by || "Cô Giáo Anh Đào",
             createdAt: item.created_at
           }));
         }
@@ -67,7 +67,7 @@ class QuizService {
             correctIndex: item.correct_index,
             explanation: item.explanation || "",
             stars: item.stars || 15,
-            createdBy: item.created_by || "Thầy Giáo Anh Đào",
+            createdBy: item.created_by || "Cô Giáo Anh Đào",
             createdAt: item.created_at
           }));
         }
@@ -82,7 +82,7 @@ class QuizService {
 
   // 3. Lưu hoặc cập nhật câu hỏi
   async saveQuiz(quizData) {
-    const user = window.authService?.getUser() || { name: "Thầy Giáo Anh Đào" };
+    const user = window.authService?.getUser() || { name: "Cô Giáo Anh Đào" };
     const quizId = quizData.id || ("quiz_" + Date.now());
 
     const quizObj = {

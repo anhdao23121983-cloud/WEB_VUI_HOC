@@ -18,7 +18,7 @@ class LectureUploadModal {
     let user = window.authService?.getUser();
     if (!user || (user.role !== 'teacher' && user.role !== 'admin')) {
       // Tự động nhận diện vai trò Giáo viên để tạo trải nghiệm thuận tiện nhất
-      user = { username: "anhdao", name: "Thầy Giáo Anh Đào", role: "teacher", school: "Trường Tiểu Học Vui Học" };
+      user = { username: "anhdao", name: "Cô Giáo Anh Đào", role: "teacher", school: "Trường Tiểu Học Vui Học" };
       if (window.authService?.setUser) window.authService.setUser(user);
     }
 
@@ -68,7 +68,7 @@ class LectureUploadModal {
   async openEditModal(lectureId) {
     let user = window.authService?.getUser();
     if (!user || (user.role !== 'teacher' && user.role !== 'admin')) {
-      user = { username: "anhdao", name: "Thầy Giáo Anh Đào", role: "teacher", school: "Trường Tiểu Học Vui Học" };
+      user = { username: "anhdao", name: "Cô Giáo Anh Đào", role: "teacher", school: "Trường Tiểu Học Vui Học" };
       if (window.authService?.setUser) window.authService.setUser(user);
     }
 
@@ -166,7 +166,7 @@ class LectureUploadModal {
     const topic = document.getElementById("lec-topic-input")?.value || "Chủ đề A: Máy tính và em";
     const desc = document.getElementById("lec-desc-input")?.value || "";
     const linkUrl = document.getElementById("lec-link-input")?.value || "";
-    const user = window.authService?.getUser() || { username: "anhdao", name: "Thầy Giáo Anh Đào", school: "Trường Tiểu Học Vui Học" };
+    const user = window.authService?.getUser() || { username: "anhdao", name: "Cô Giáo Anh Đào", school: "Trường Tiểu Học Vui Học" };
 
     if (!title.trim()) {
       window.app.showToast("Vui lòng nhập Tiêu đề bài giảng điện tử!", "warning");

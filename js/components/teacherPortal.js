@@ -13,7 +13,7 @@ class TeacherPortal {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const user = window.authService?.getUser() || { name: "Thầy Giáo Anh Đào", school: "Trường Tiểu Học", role: "teacher" };
+    const user = window.authService?.getUser() || { name: "Cô Giáo Anh Đào", school: "Trường Tiểu Học", role: "teacher" };
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     const plans = await window.supabaseService.getLessonPlans();
     const leaderboard = db.leaderboard || [];
@@ -137,7 +137,7 @@ class TeacherPortal {
                 <span class="text-xs text-slate-400">Thời lượng: ${plan.duration || "2 tiết"}</span>
               </div>
               <h4 class="text-lg font-bold text-slate-900">${plan.title}</h4>
-              <p class="text-xs text-slate-600">Giáo viên: <b>${plan.teacherName || "Thầy Anh Đào"}</b> | Đã lưu: ${plan.createdAt ? new Date(plan.createdAt).toLocaleDateString("vi-VN") : "Hôm nay"}</p>
+              <p class="text-xs text-slate-600">Giáo viên: <b>${plan.teacherName || "Cô Anh Đào"}</b> | Đã lưu: ${plan.createdAt ? new Date(plan.createdAt).toLocaleDateString("vi-VN") : "Hôm nay"}</p>
             </div>
             
             <div class="flex items-center gap-2 flex-wrap">
@@ -294,7 +294,7 @@ class TeacherPortal {
             <div><b>Môn học:</b> ${plan.subject || "Tin học"}</div>
             <div><b>Khối lớp:</b> Lớp ${plan.grade}</div>
             <div><b>Thời lượng:</b> ${plan.duration || "2 tiết"}</div>
-            <div><b>Giáo viên:</b> ${plan.teacherName || "Thầy Anh Đào"}</div>
+            <div><b>Giáo viên:</b> ${plan.teacherName || "Cô Anh Đào"}</div>
           </div>
 
           <div class="space-y-3 text-xs max-h-96 overflow-y-auto pr-2">

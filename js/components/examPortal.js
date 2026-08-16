@@ -862,7 +862,7 @@ class ExamPortal {
               <div class="text-center space-y-1">
                 <p class="font-bold">GIÁO VIÊN BỘ MÔN</p>
                 <div class="h-10"></div>
-                <p class="font-black text-slate-900">Thầy Anh Đào</p>
+                <p class="font-black text-slate-900">Cô Anh Đào</p>
               </div>
 
               <div class="text-center space-y-1">
@@ -961,7 +961,7 @@ class ExamPortal {
                 <td>
                   <b>GIÁO VIÊN BỘ MÔN</b>
                   <br><br><br><br>
-                  <b>Thầy Anh Đào</b>
+                  <b>Cô Anh Đào</b>
                 </td>
                 <td>
                   <i>Ngày ${this.currentCertData?.submittedAt}</i><br>
@@ -1688,7 +1688,7 @@ class ExamPortal {
 
                 <div class="pt-2 border-t border-slate-100 space-y-1.5 text-[11px] text-slate-500">
                   <div class="flex items-center justify-between">
-                    <span>👨‍🏫 Người ra đề: <b>${e.authorName || 'Thầy Anh Đào'}</b></span>
+                    <span>👩‍🏫 Người ra đề: <b>${e.authorName || 'Cô Anh Đào'}</b></span>
                     <span>📦 Tệp: <b>${e.fileSizeText || '2.0 MB'}</b></span>
                   </div>
                   <div class="flex items-center justify-between text-slate-400">

@@ -187,10 +187,10 @@ class AuthService {
         found = {
           id: "u_teacher_01",
           username: "anhdao",
-          name: "Thầy Giáo Anh Đào",
+          name: "Cô Giáo Anh Đào",
           role: "teacher",
           school: "Trường Tiểu Học Vui Học",
-          avatar: "👨‍🏫"
+          avatar: "👩‍🏫"
         };
       } else if (cleanUsername.startsWith("hs") || cleanUsername === "hocsinh") {
         found = {

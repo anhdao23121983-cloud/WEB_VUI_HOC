@@ -189,7 +189,7 @@ class ExamUploadModal {
     const duration = parseInt(document.getElementById("exam-duration-input")?.value) || 35;
     const desc = document.getElementById("exam-desc-input")?.value || "";
     const linkUrl = document.getElementById("exam-link-input")?.value || "";
-    const user = window.authService?.getUser() || { username: "anhdao", name: "Thầy Giáo Anh Đào" };
+    const user = window.authService?.getUser() || { username: "anhdao", name: "Cô Giáo Anh Đào" };
 
     if (!title.trim()) {
       window.app.showToast("Vui lòng nhập Tiêu đề đề kiểm tra!", "warning");

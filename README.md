@@ -39,5 +39,5 @@
 ---
 
 ## 👤 Tác Giả & Bản Quyền
-- **Tác giả**: Thầy Giáo Anh Đào (`anhdao23121983`)
+- **Tác giả**: Cô Giáo Anh Đào (`anhdao23121983`)
 - **Dự án**: Classroom App / WEB VUI HOC

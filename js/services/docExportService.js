@@ -102,7 +102,7 @@ class DocExportService {
         </table>
 
         <div class="title">${plan.title}</div>
-        <div class="subtitle">Môn: ${plan.subject || "Tin học"} - Lớp ${plan.grade} | Thời lượng: ${plan.duration || "2 tiết"} | Giáo viên: ${plan.teacherName || "Thầy Anh Đào"}</div>
+        <div class="subtitle">Môn: ${plan.subject || "Tin học"} - Lớp ${plan.grade} | Thời lượng: ${plan.duration || "2 tiết"} | Giáo viên: ${plan.teacherName || "Cô Anh Đào"}</div>
 
         <h2>I. YÊU CẦU CẦN ĐẠT</h2>
         <h3>1. Năng lực</h3>
@@ -143,7 +143,7 @@ class DocExportService {
             <td style="width: 50%; text-align: center;">
               <i>Ngày ...... tháng ...... năm 2026</i><br>
               <b>GIÁO VIÊN SOẠN BÀI</b><br><br><br><br>
-              <b>${plan.teacherName || "Thầy Giáo Anh Đào"}</b>
+              <b>${plan.teacherName || "Cô Giáo Anh Đào"}</b>
             </td>
           </tr>
         </table>
@@ -305,7 +305,7 @@ class DocExportService {
             </td>
             <td style="width: 40%; text-align: center; vertical-align: bottom;">
               <b>CHỮ KÝ GIÁO VIÊN</b><br><br><br>
-              <b>${lecture.authorName || "Thầy Giáo Anh Đào"}</b>
+              <b>${lecture.authorName || "Cô Giáo Anh Đào"}</b>
             </td>
           </tr>
         </table>
@@ -612,7 +612,7 @@ class DocExportService {
             </td>
             <td style="width: 50%; text-align: center;">
               <b>GIÁO VIÊN RA ĐỀ</b><br><br><br><br>
-              <b>${exam.authorName || 'Thầy Giáo Anh Đào'}</b>
+              <b>${exam.authorName || 'Cô Giáo Anh Đào'}</b>
             </td>
           </tr>
         </table>
@@ -781,7 +781,7 @@ class DocExportService {
         </table>
 
         <div class="title">BẢNG ĐIỂM KIỂM TRA ĐỊNH KỲ MÔN TIN HỌC (LỚP ${className})</div>
-        <div class="subtitle">Quy chuẩn theo Thông tư 27/2020/TT-BGDĐT • Giáo viên bộ môn: Thầy Anh Đào</div>
+        <div class="subtitle">Quy chuẩn theo Thông tư 27/2020/TT-BGDĐT • Giáo viên bộ môn: Cô Anh Đào</div>
 
         <table class="grade-table">
           <thead>
@@ -820,7 +820,7 @@ class DocExportService {
             </td>
             <td style="width: 50%; text-align: center;">
               <b>GIÁO VIÊN BỘ MÔN</b><br><br><br><br>
-              <b>Thầy Giáo Anh Đào</b>
+              <b>Cô Giáo Anh Đào</b>
             </td>
           </tr>
         </table>
@@ -890,7 +890,7 @@ class DocExportService {
 TRƯỜNG TIỂU HỌC VUI HỌC - HỌC LIỆU SỐ TIN HỌC TIỂU HỌC
 BỘ ĐỀ KIỂM TRA ĐỊNH KỲ MÔN TIN HỌC (${folderTitle})
 Quy chuẩn: Thông tư 27/2020/TT-BGDĐT & Chương trình GDPT 2018
-Tác giả / Giáo viên: Thầy Giáo Anh Đào
+Tác giả / Giáo viên: Cô Giáo Anh Đào
 Ngày đóng gói: ${new Date().toLocaleDateString('vi-VN')}
 Tổng số đề kiểm tra: ${exams.length} tệp
 ===================================================================
@@ -1044,7 +1044,7 @@ Chúc Thầy Cô và các em học sinh có những tiết học Tin học thậ
   exportLessonPlanByLecture(lecture) {
     const title = lecture.title || "Bài Giảng Tin Học Tiểu Học";
     const grade = lecture.grade || 3;
-    const author = lecture.authorName || "Thầy Giáo Anh Đào";
+    const author = lecture.authorName || "Cô Giáo Anh Đào";
     const bookSeries = lecture.bookSeries || "KNTT";
     const bookName = bookSeries === "KNTT" ? "Kết Nối Tri Thức Với Cuộc Sống" : (bookSeries === "CD" ? "Cánh Diều" : "Chân Trời Sáng Tạo");
 
@@ -1115,7 +1115,7 @@ Chúc Thầy Cô và các em học sinh có những tiết học Tin học thậ
   exportWorksheetDoc(lecture) {
     const title = lecture.title || "Bài Giảng Tin Học Tiểu Học";
     const grade = lecture.grade || 3;
-    const author = lecture.authorName || "Thầy Giáo Anh Đào";
+    const author = lecture.authorName || "Cô Giáo Anh Đào";
 
     const planObj = {
       title: `PHIẾU BÀI TẬP CUỐI TIẾT: ${title.toUpperCase()}`,

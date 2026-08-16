@@ -1233,7 +1233,7 @@ class Simulation3D {
             <div class="text-left">
               <p class="text-slate-500">Ngày cấp: <b>${new Date().toLocaleDateString('vi-VN')}</b></p>
               <p class="font-bold text-slate-700">GIÁO VIÊN BỘ MÔN</p>
-              <p class="text-cyan-800 font-black mt-6">Thầy Anh Đào</p>
+              <p class="text-cyan-800 font-black mt-6">Cô Anh Đào</p>
             </div>
             <div class="text-right">
               <p class="font-bold text-slate-700">HIỆU TRƯỞNG</p>

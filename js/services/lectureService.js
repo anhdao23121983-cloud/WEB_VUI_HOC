@@ -32,7 +32,7 @@ class LectureService {
             bookSeries: item.book_series || "KNTT",
             semester: item.semester || (item.topic_name && item.topic_name.includes("Chủ đề D") || item.topic_name && item.topic_name.includes("Chủ đề E") || item.topic_name && item.topic_name.includes("Chủ đề F") ? "sem2" : "sem1"),
             lessonId: item.lesson_id,
-            authorName: item.author_name || "Thầy Giáo Anh Đào",
+            authorName: item.author_name || "Cô Giáo Anh Đào",
             createdByUsername: item.created_by_username || "anhdao",
             schoolName: item.school_name || "Trường Tiểu Học Vui Học",
             fileName: item.file_name,
@@ -152,7 +152,7 @@ class LectureService {
 
   // 7. Tải lên và lưu bài giảng mới (Đồng bộ FE -> BE -> Supabase Cloud)
   async uploadLecture(lectureData) {
-    const user = window.authService?.getUser() || { username: "anhdao", name: "Thầy Giáo Anh Đào", school: "Trường Tiểu Học Vui Học" };
+    const user = window.authService?.getUser() || { username: "anhdao", name: "Cô Giáo Anh Đào", school: "Trường Tiểu Học Vui Học" };
     const lectureId = lectureData.id || ("lec_" + Date.now());
 
     const colors = [
@@ -323,7 +323,7 @@ class LectureService {
   generateSlideFrames(lecture) {
     const title = lecture.title || "Bài Giảng Tin Học Tiểu Học";
     const grade = lecture.grade || 3;
-    const author = lecture.authorName || "Thầy Giáo Anh Đào";
+    const author = lecture.authorName || "Cô Giáo Anh Đào";
 
     return [
       {
@@ -432,7 +432,7 @@ class LectureService {
   generateFlipbookPages(lecture) {
     const title = lecture.title || "Bài Giảng Tin Học Tiểu Học";
     const grade = lecture.grade || 3;
-    const author = lecture.authorName || "Thầy Giáo Anh Đào";
+    const author = lecture.authorName || "Cô Giáo Anh Đào";
 
     return [
       {
