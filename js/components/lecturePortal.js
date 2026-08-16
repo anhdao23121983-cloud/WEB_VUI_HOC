@@ -7,12 +7,13 @@
  * 4. ⚡ Đố vui 10s tương tác trực tiếp trên Slide (In-Slide Quick Quiz 10s)
  * 5. 🧩 Trò chơi Ô Chữ Bí Mật 3D & ⚙️ Soạn Ô Chữ Tùy Biến (Custom Crossword Maker)
  * 6. 🎡 Vòng Quay May Mắn gọi tên học sinh ngẫu nhiên trên Slide (In-Slide Lucky Wheel)
- * 7. 📖 Sách 3D lật trang siêu thực có âm thanh sột soạt & 🔊 Giọng đọc AI E-Book
- * 8. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
- * 9. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
- * 10. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
- * 11. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
- * 12. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
+ * 7. 🔔 Đấu Trường Rung Chuông Vàng 3D củng cố bài học (In-Slide Golden Bell Arena)
+ * 8. 📖 Sách 3D lật trang siêu thực có 🌙 Chế Độ Ban Đêm Neon & 🔊 Giọng đọc AI E-Book
+ * 9. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
+ * 10. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
+ * 11. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
+ * 12. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
+ * 13. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
  */
 
 class LecturePortal {
@@ -43,6 +44,7 @@ class LecturePortal {
     this.isAutoFlipRunning = false;
     this.autoFlipTimer = null;
     this.isReadingAloud = false;
+    this.isFlipbookDarkMode = localStorage.getItem("flipbook_dark_mode") === "true";
 
     // In-Slide Quick Quiz 10s State
     this.inSlideQuizActive = false;
@@ -67,6 +69,15 @@ class LecturePortal {
     this.wheelAngle = 0;
     this.isWheelSpinning = false;
     this.wheelAnimId = null;
+
+    // In-Slide Golden Bell Arena State
+    this.goldenBellActive = false;
+    this.goldenBellQIndex = 0;
+    this.goldenBellTimer = 15;
+    this.goldenBellInterval = null;
+    this.goldenBellSurvivors = 35;
+    this.isGoldenBellRevealed = false;
+    this.goldenBellQuestions = [];
 
     // Icebreaker Game State
     this.icebreakerActive = false;
@@ -140,7 +151,7 @@ class LecturePortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser, Ô chữ 3D & Vòng quay gọi tên, Sách 3D có Giọng đọc AI và Bảng Vàng Thống Kê</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser, Rung Chuông Vàng & Vòng quay gọi tên, Sách 3D Ban Đêm Neon và Bảng Vàng Thống Kê</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
@@ -422,7 +433,7 @@ class LecturePortal {
                     <button onclick="lecturePortal.openSlideVideoPlayer('${l.id}')" class="btn btn-amber btn-sm font-black flex items-center justify-center gap-1 shadow-sm" title="Tự động chuyển Slide thành Video hoạt họa AI có thuyết minh tiếng Việt">
                       <span>🎬</span> <span>Video Hoạt Họa AI</span>
                     </button>
-                    <button onclick="lecturePortal.openFlipbook('${l.id}')" class="btn bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white btn-sm font-black flex items-center justify-center gap-1 shadow-sm hover:scale-105 transition-all" title="Trình chiếu Sách 3D Lật Trang Siêu Thực có âm thanh sột soạt & Giọng đọc AI">
+                    <button onclick="lecturePortal.openFlipbook('${l.id}')" class="btn bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white btn-sm font-black flex items-center justify-center gap-1 shadow-sm hover:scale-105 transition-all" title="Trình chiếu Sách 3D Lật Trang Siêu Thực có chế độ Ban Đêm Neon & Giọng đọc AI">
                       <span>📖</span> <span>Sách 3D & Giọng AI</span>
                     </button>
                   </div>
@@ -440,9 +451,9 @@ class LecturePortal {
                     </button>
                   </div>
 
-                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser & Ô chữ 3D & Vòng quay) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
+                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser, Rung Chuông Vàng, Ô chữ 3D & Vòng quay) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
                   <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
-                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser, Ô Chữ Bí Mật 3D & Vòng Quay May Mắn">
+                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser, Rung Chuông Vàng & Vòng Quay May Mắn">
                       <span>🎨</span> <span>Trình Chiếu & Laser</span>
                     </button>
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
@@ -623,6 +634,7 @@ class LecturePortal {
     if (this.inSlideQuizActive) {
       if (this.crosswordActive) this.toggleInSlideCrossword();
       if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
+      if (this.goldenBellActive) this.toggleInSlideGoldenBell();
       overlay.classList.remove("hidden");
       this.loadInSlideQuestion();
       this.startInSlideCountdown();
@@ -749,7 +761,230 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 3: TRÒ CHƠI Ô CHỮ BÍ MẬT 3D & SOẠN TÙY BIẾN (CUSTOM CROSSWORD MAKER)
+  // OPTION 5: ĐẤU TRƯỜNG RUNG CHUÔNG VÀNG 3D TRÊN SLIDE (IN-SLIDE GOLDEN BELL)
+  // =========================================================================
+  toggleInSlideGoldenBell() {
+    const overlay = document.getElementById("in-slide-golden-bell-overlay");
+    if (!overlay) return;
+
+    this.goldenBellActive = !this.goldenBellActive;
+    if (this.goldenBellActive) {
+      if (this.inSlideQuizActive) this.toggleInSlideQuiz();
+      if (this.crosswordActive) this.toggleInSlideCrossword();
+      if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
+      overlay.classList.remove("hidden");
+      this.initGoldenBellArena();
+    } else {
+      overlay.classList.add("hidden");
+      if (this.goldenBellInterval) clearInterval(this.goldenBellInterval);
+    }
+  }
+
+  initGoldenBellArena() {
+    this.goldenBellQuestions = [
+      {
+        q: "Thiết bị nào đóng vai trò 'Bộ não' xử lý toàn bộ lệnh và dữ liệu của máy tính?",
+        opts: ["A. Bộ vi xử lý (CPU - Thân máy)", "B. Màn hình máy tính", "C. Chuột quang", "D. Bàn phím"],
+        correct: 0,
+        explanation: "CPU (Central Processing Unit) nằm trong thân máy là bộ não điều khiển toàn bộ hoạt động."
+      },
+      {
+        q: "Để gõ chữ tiếng Việt 'Â' theo kiểu gõ Telex, em sẽ bấm tổ hợp phím nào?",
+        opts: ["A. aa", "B. aw", "C. as", "D. af"],
+        correct: 0,
+        explanation: "Trong kiểu gõ Telex: aa = â, ee = ê, oo = ô, ow = ơ, uw = ư, dd = đ."
+      },
+      {
+        q: "Hành động nào sau đây là AN TOÀN VÀ ĐÚNG QUY TẮC trong phòng thực hành máy tính?",
+        opts: ["A. Mang đồ ăn, nước ngọt vào bàn máy", "B. Báo ngay với Thầy Cô khi phát hiện dây điện bị hở", "C. Tự ý cắm rút phích cắm điện nguồn", "D. Chạy nhảy đùa nghịch"],
+        correct: 1,
+        explanation: "Luôn báo với Thầy Cô quản lý phòng máy khi có sự cố kỹ thuật để đảm bảo an toàn."
+      },
+      {
+        q: "Trong phần mềm Scratch, khối lệnh nào giúp nhân vật xoay một góc 90 độ?",
+        opts: ["A. Khối Xoay trong nhóm Chuyển động (Motion)", "B. Khối Sự kiện", "C. Khối Âm thanh", "D. Khối Cảm biến"],
+        correct: 0,
+        explanation: "Khối 'Turn right 90 degrees' thuộc nhóm lệnh Chuyển động màu xanh dương."
+      },
+      {
+        q: "CÂU HỎI QUYẾT ĐỊNH RUNG CHUÔNG VÀNG: Thông tin khi đưa lên Internet có tính chất gì quan trọng nhất?",
+        opts: ["A. Lan truyền nhanh và khó thu hồi hoàn toàn", "B. Tự biến mất sau 1 ngày", "C. Chỉ bạn thân mới thấy", "D. Không bao giờ lưu lại"],
+        correct: 0,
+        explanation: "Thông tin số trên Internet có tính lan truyền toàn cầu, vì vậy cần suy nghĩ cẩn trọng trước khi đăng tải!"
+      }
+    ];
+
+    this.goldenBellQIndex = 0;
+    this.goldenBellSurvivors = 35;
+    this.isGoldenBellRevealed = false;
+    this.loadGoldenBellQuestion();
+  }
+
+  loadGoldenBellQuestion() {
+    const q = this.goldenBellQuestions[this.goldenBellQIndex];
+    if (!q) return;
+
+    this.isGoldenBellRevealed = false;
+
+    const qIndexBadge = document.getElementById("golden-bell-q-index");
+    const qTextEl = document.getElementById("golden-bell-question-text");
+    const optGrid = document.getElementById("golden-bell-options-grid");
+    const survivorsEl = document.getElementById("golden-bell-survivors");
+    const btnReveal = document.getElementById("btn-reveal-golden-bell");
+
+    if (qIndexBadge) qIndexBadge.innerText = `CÂU HỎI ${this.goldenBellQIndex + 1} / ${this.goldenBellQuestions.length}`;
+    if (qTextEl) qTextEl.innerText = `🔔 CÂU ${this.goldenBellQIndex + 1}: ${q.q}`;
+    if (survivorsEl) survivorsEl.innerText = `${this.goldenBellSurvivors} / 35 Thí sinh`;
+    if (btnReveal) btnReveal.innerHTML = "📢 Công Bố Đáp Án & Loại Thí Sinh";
+
+    if (optGrid) {
+      optGrid.innerHTML = q.opts.map((opt, idx) => `
+        <button id="gb-opt-${idx}" onclick="lecturePortal.selectGoldenBellOption(${idx})" class="p-3 bg-slate-900 hover:bg-amber-950 border border-slate-700 hover:border-amber-400 rounded-2xl text-left font-bold text-xs text-white transition-all">
+          ${opt}
+        </button>
+      `).join("");
+    }
+
+    this.startGoldenBellTimer();
+  }
+
+  startGoldenBellTimer() {
+    if (this.goldenBellInterval) clearInterval(this.goldenBellInterval);
+    this.goldenBellTimer = 15;
+
+    const timerBadge = document.getElementById("golden-bell-timer-badge");
+    const progressEl = document.getElementById("golden-bell-timer-progress");
+
+    if (timerBadge) timerBadge.innerText = "15s";
+    if (progressEl) progressEl.style.width = "100%";
+
+    this.goldenBellInterval = setInterval(() => {
+      this.goldenBellTimer--;
+      if (timerBadge) timerBadge.innerText = `${this.goldenBellTimer}s`;
+
+      if (progressEl) {
+        progressEl.style.width = `${(this.goldenBellTimer / 15) * 100}%`;
+      }
+
+      this.playTickSound();
+
+      if (this.goldenBellTimer <= 0) {
+        clearInterval(this.goldenBellInterval);
+        if (timerBadge) timerBadge.innerText = "HẾT GIỜ RUNG CHUÔNG!";
+        this.revealGoldenBellAnswer();
+      }
+    }, 1000);
+  }
+
+  selectGoldenBellOption(index) {
+    if (this.isGoldenBellRevealed) return;
+    this.revealGoldenBellAnswer(index);
+  }
+
+  revealGoldenBellAnswer(userSelectedIndex = null) {
+    if (this.isGoldenBellRevealed) return;
+    this.isGoldenBellRevealed = true;
+    if (this.goldenBellInterval) clearInterval(this.goldenBellInterval);
+
+    const q = this.goldenBellQuestions[this.goldenBellQIndex];
+    if (!q) return;
+
+    const correctBtn = document.getElementById(`gb-opt-${q.correct}`);
+    if (correctBtn) {
+      correctBtn.classList.remove("bg-slate-900", "border-slate-700");
+      correctBtn.classList.add("bg-emerald-600", "border-emerald-300", "text-white", "animate-bounce");
+    }
+
+    if (userSelectedIndex !== null && userSelectedIndex !== q.correct) {
+      const wrongBtn = document.getElementById(`gb-opt-${userSelectedIndex}`);
+      if (wrongBtn) {
+        wrongBtn.classList.remove("bg-slate-900", "border-slate-700");
+        wrongBtn.classList.add("bg-rose-600", "border-rose-300", "text-white");
+      }
+    }
+
+    this.ringGoldenBellSound();
+
+    // Mô phỏng số lượng thí sinh trụ lại qua từng vòng
+    const survivorDrop = [35, 28, 19, 10, 3];
+    this.goldenBellSurvivors = survivorDrop[this.goldenBellQIndex] || 3;
+    const survivorsEl = document.getElementById("golden-bell-survivors");
+    if (survivorsEl) survivorsEl.innerText = `${this.goldenBellSurvivors} / 35 Thí sinh`;
+
+    const btnReveal = document.getElementById("btn-reveal-golden-bell");
+    if (btnReveal) {
+      if (this.goldenBellQIndex < this.goldenBellQuestions.length - 1) {
+        btnReveal.innerHTML = "<span>Bước Sang Câu Tiếp Theo ➔</span>";
+        btnReveal.onclick = () => {
+          this.goldenBellQIndex++;
+          this.loadGoldenBellQuestion();
+        };
+      } else {
+        btnReveal.innerHTML = "<span>👑 VINH DANH QUÁN QUÂN RUNG CHUÔNG VÀNG</span>";
+        btnReveal.onclick = () => this.celebrateGoldenBellWinner();
+      }
+    }
+  }
+
+  ringGoldenBellSound() {
+    try {
+      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+
+      // Âm thanh chuông vàng ngân vang đặc trưng (587.33Hz D5 + 1174.66Hz)
+      const osc1 = this.audioCtx.createOscillator();
+      const osc2 = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+
+      osc1.type = "sine";
+      osc1.frequency.setValueAtTime(587.33, this.audioCtx.currentTime); // Nốt D5
+
+      osc2.type = "triangle";
+      osc2.frequency.setValueAtTime(1174.66, this.audioCtx.currentTime); // Nốt D6
+
+      gain.gain.setValueAtTime(0.4, this.audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 1.8);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(this.audioCtx.destination);
+
+      osc1.start();
+      osc2.start();
+      osc1.stop(this.audioCtx.currentTime + 1.8);
+      osc2.stop(this.audioCtx.currentTime + 1.8);
+    } catch (e) {}
+  }
+
+  celebrateGoldenBellWinner() {
+    this.ringGoldenBellSound();
+    if (window.Simulation3D?.triggerFireworks) {
+      window.Simulation3D.triggerFireworks();
+    }
+
+    const body = document.getElementById("golden-bell-arena-body");
+    if (body) {
+      body.innerHTML = `
+        <div class="text-center py-6 space-y-4 animate-pop">
+          <span class="text-7xl block animate-bounce filter drop-shadow-2xl">🔔 👑 🌿</span>
+          <h3 class="text-2xl font-black text-amber-300">VINH DANH QUÁN QUÂN RUNG CHUÔNG VÀNG!</h3>
+          <div class="inline-block p-4 bg-amber-400/20 border-2 border-amber-400 rounded-3xl text-amber-200 font-bold text-xs md:text-sm">
+            🏆 Chúc mừng <b>3 Thí Sinh Xuất Sắc Nhất Lớp</b> đã vượt qua cả 5 câu hỏi và Rung Chuông Vàng thành công!
+          </div>
+          <p class="text-xs text-slate-400">Thầy Cô hãy tuyên dương và trao Huy Hiệu Sao Vàng cho các bạn nhé!</p>
+        </div>
+      `;
+    }
+
+    window.app.showToast("🎉 CHÚC MỪNG QUÁN QUÂN ĐÃ RUNG ĐƯỢC CHUÔNG VÀNG!", "success");
+  }
+
+  restartGoldenBellArena() {
+    this.initGoldenBellArena();
+  }
+
+  // =========================================================================
+  // TRÒ CHƠI Ô CHỮ BÍ MẬT 3D & SOẠN TÙY BIẾN (CUSTOM CROSSWORD MAKER)
   // =========================================================================
   toggleInSlideCrossword() {
     const overlay = document.getElementById("in-slide-crossword-overlay");
@@ -759,6 +994,7 @@ class LecturePortal {
     if (this.crosswordActive) {
       if (this.inSlideQuizActive) this.toggleInSlideQuiz();
       if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
+      if (this.goldenBellActive) this.toggleInSlideGoldenBell();
       overlay.classList.remove("hidden");
       if (!this.crosswordData) {
         this.loadPresetCrossword('computer');
@@ -1033,7 +1269,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 5: VÒNG QUAY MAY MẮN GỌI TÊN HỌC SINH 3D (IN-SLIDE LUCKY WHEEL)
+  // VÒNG QUAY MAY MẮN GỌI TÊN HỌC SINH 3D (IN-SLIDE LUCKY WHEEL)
   // =========================================================================
   toggleInSlideLuckyWheel() {
     const overlay = document.getElementById("in-slide-lucky-wheel-overlay");
@@ -1043,6 +1279,7 @@ class LecturePortal {
     if (this.luckyWheelActive) {
       if (this.inSlideQuizActive) this.toggleInSlideQuiz();
       if (this.crosswordActive) this.toggleInSlideCrossword();
+      if (this.goldenBellActive) this.toggleInSlideGoldenBell();
       overlay.classList.remove("hidden");
       
       const input = document.getElementById("lucky-wheel-names-input");
@@ -1098,7 +1335,6 @@ class LecturePortal {
     for (let i = 0; i < numSlices; i++) {
       const angle = this.wheelAngle + i * sliceAngle;
 
-      // Vẽ lát cắt hình quạt
       ctx.beginPath();
       ctx.moveTo(centerX, centerY);
       ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle);
@@ -1109,7 +1345,6 @@ class LecturePortal {
       ctx.strokeStyle = "#ffffff";
       ctx.stroke();
 
-      // Vẽ chữ tên học sinh
       ctx.save();
       ctx.translate(centerX, centerY);
       ctx.rotate(angle + sliceAngle / 2);
@@ -1134,8 +1369,8 @@ class LecturePortal {
     if (winnerNameEl) winnerNameEl.innerText = "Đang quay cuồng nhiệt...";
     if (winnerBoxEl) winnerBoxEl.classList.remove("border-amber-400", "bg-amber-950/60");
 
-    let currentVelocity = 0.35 + Math.random() * 0.25; // Tốc độ quay ban đầu
-    const deceleration = 0.988; // Giảm tốc độ ma sát tự nhiên
+    let currentVelocity = 0.35 + Math.random() * 0.25;
+    const deceleration = 0.988;
     let lastSliceIndex = -1;
 
     const animateSpin = () => {
@@ -1179,8 +1414,22 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // SÁCH 3D LẬT TRANG & GIỌNG ĐỌC AI E-BOOK READ-ALOUD
+  // OPTION 1: SÁCH 3D LẬT TRANG & CHẾ ĐỘ BAN ĐÊM NEON (DARK NEON MODE)
   // =========================================================================
+  toggleFlipbookDarkMode() {
+    this.isFlipbookDarkMode = !this.isFlipbookDarkMode;
+    localStorage.setItem("flipbook_dark_mode", this.isFlipbookDarkMode);
+
+    const btn = document.getElementById("btn-flipbook-dark-mode");
+    if (btn) {
+      btn.innerHTML = this.isFlipbookDarkMode ? "<span>☀️</span> <span>Ban Ngày</span>" : "<span>🌙</span> <span>Ban Đêm Neon</span>";
+      btn.classList.toggle("text-cyan-300", this.isFlipbookDarkMode);
+    }
+
+    this.renderFlipbookPages();
+    window.app.showToast(this.isFlipbookDarkMode ? "🌙 Đã bật Chế Độ Ban Đêm Neon dạ quang êm mắt!" : "☀️ Đã chuyển sang Chế Độ Ban Ngày sáng rõ!", "info");
+  }
+
   async openFlipbook(lectureId) {
     const lecture = await window.lectureService.getLectureById(lectureId);
     if (!lecture) return;
@@ -1193,8 +1442,13 @@ class LecturePortal {
 
     const modal = document.getElementById("lecture-flipbook-modal");
     const titleEl = document.getElementById("flipbook-title-disp");
+    const darkBtn = document.getElementById("btn-flipbook-dark-mode");
 
     if (titleEl) titleEl.innerText = `SÁCH 3D: ${lecture.title.toUpperCase()}`;
+    if (darkBtn) {
+      darkBtn.innerHTML = this.isFlipbookDarkMode ? "<span>☀️</span> <span>Ban Ngày</span>" : "<span>🌙</span> <span>Ban Đêm Neon</span>";
+    }
+
     if (modal) modal.classList.add("active");
 
     this.renderFlipbookPages();
@@ -1224,23 +1478,35 @@ class LecturePortal {
       indicatorEl.innerText = `Trang ${this.currentFlipbookIndex + 1} - ${Math.min(this.currentFlipbookIndex + 2, totalPages)} / ${totalPages}`;
     }
 
+    // Phong cách Ban Đêm Neon vs Ban Ngày
+    const pageClassDark = "bg-slate-950 text-slate-100 border-slate-800 shadow-[0_0_30px_rgba(6,182,212,0.15)] ring-1 ring-cyan-500/30";
+    const pageClassLight = "bg-white text-slate-900 border-slate-200 shadow-2xl";
+
+    if (this.isFlipbookDarkMode) {
+      leftEl.className = `w-1/2 h-[92%] p-6 md:p-8 rounded-l-3xl border-r flex flex-col justify-between relative overflow-hidden transition-all duration-500 ${pageClassDark}`;
+      rightEl.className = `w-1/2 h-[92%] p-6 md:p-8 rounded-r-3xl border-l flex flex-col justify-between relative overflow-hidden transition-all duration-500 ${pageClassDark}`;
+    } else {
+      leftEl.className = `w-1/2 h-[92%] p-6 md:p-8 rounded-l-3xl border-r flex flex-col justify-between relative overflow-hidden transition-all duration-500 ${pageClassLight}`;
+      rightEl.className = `w-1/2 h-[92%] p-6 md:p-8 rounded-r-3xl border-l flex flex-col justify-between relative overflow-hidden transition-all duration-500 ${pageClassLight}`;
+    }
+
     // Render Trang Trái
     if (pageL) {
       leftEl.innerHTML = `
-        <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-          <span class="badge badge-cyan font-black text-[10px]">${pageL.badge}</span>
-          <span class="text-xs font-bold text-slate-400">Trang ${pageL.pageNum}</span>
+        <div class="flex items-center justify-between pb-2 border-b ${this.isFlipbookDarkMode ? 'border-slate-800' : 'border-slate-200'}">
+          <span class="badge ${this.isFlipbookDarkMode ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40' : 'badge-cyan'} font-black text-[10px]">${pageL.badge}</span>
+          <span class="text-xs font-bold ${this.isFlipbookDarkMode ? 'text-cyan-400' : 'text-slate-400'}">Trang ${pageL.pageNum}</span>
         </div>
 
         <div class="my-auto py-2">
           <div class="flex items-center gap-2 mb-2">
             <span class="text-2xl">${pageL.icon}</span>
-            <h4 class="font-black text-sm md:text-base text-slate-900">${pageL.title}</h4>
+            <h4 class="font-black text-sm md:text-base ${this.isFlipbookDarkMode ? 'text-amber-300 drop-shadow-[0_0_10px_rgba(251,191,36,0.3)]' : 'text-slate-900'}">${pageL.title}</h4>
           </div>
           ${pageL.content}
         </div>
 
-        <div class="flex items-center justify-between pt-2 border-t border-slate-200 text-[10px] text-slate-400">
+        <div class="flex items-center justify-between pt-2 border-t ${this.isFlipbookDarkMode ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-400'} text-[10px]">
           <span>📖 Sách Giáo Khoa Tin Học GDPT 2018</span>
           <span>Trang ${pageL.pageNum}</span>
         </div>
@@ -1252,30 +1518,30 @@ class LecturePortal {
     // Render Trang Phải
     if (pageR) {
       rightEl.innerHTML = `
-        <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-          <span class="badge badge-amber font-black text-[10px]">${pageR.badge}</span>
-          <span class="text-xs font-bold text-slate-400">Trang ${pageR.pageNum}</span>
+        <div class="flex items-center justify-between pb-2 border-b ${this.isFlipbookDarkMode ? 'border-slate-800' : 'border-slate-200'}">
+          <span class="badge ${this.isFlipbookDarkMode ? 'bg-amber-500/20 text-amber-300 border border-amber-400/40' : 'badge-amber'} font-black text-[10px]">${pageR.badge}</span>
+          <span class="text-xs font-bold ${this.isFlipbookDarkMode ? 'text-amber-400' : 'text-slate-400'}">Trang ${pageR.pageNum}</span>
         </div>
 
         <div class="my-auto py-2">
           <div class="flex items-center gap-2 mb-2">
             <span class="text-2xl">${pageR.icon}</span>
-            <h4 class="font-black text-sm md:text-base text-slate-900">${pageR.title}</h4>
+            <h4 class="font-black text-sm md:text-base ${this.isFlipbookDarkMode ? 'text-cyan-300 drop-shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'text-slate-900'}">${pageR.title}</h4>
           </div>
           ${pageR.content}
         </div>
 
-        <div class="flex items-center justify-between pt-2 border-t border-slate-200 text-[10px] text-slate-400">
+        <div class="flex items-center justify-between pt-2 border-t ${this.isFlipbookDarkMode ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-400'} text-[10px]">
           <span>${this.activeFlipbookLecture.title}</span>
           <span>Trang ${pageR.pageNum}</span>
         </div>
       `;
     } else {
       rightEl.innerHTML = `
-        <div class="my-auto text-center space-y-2 p-6 bg-slate-50 rounded-2xl border border-slate-200">
+        <div class="my-auto text-center space-y-2 p-6 ${this.isFlipbookDarkMode ? 'bg-slate-900 border-slate-800 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'} rounded-2xl border">
           <span class="text-5xl block">🎉</span>
-          <h4 class="font-black text-slate-900 text-sm">HẾT BÀI HỌC</h4>
-          <p class="text-xs text-slate-500">Em hãy đăng nhập Web Vui Học để làm bài tập trắc nghiệm và thí nghiệm 3D nhé!</p>
+          <h4 class="font-black text-amber-300 text-sm">HẾT BÀI HỌC</h4>
+          <p class="text-xs">Em hãy đăng nhập Web Vui Học để làm bài tập trắc nghiệm và thí nghiệm 3D nhé!</p>
         </div>
       `;
     }
@@ -1457,6 +1723,7 @@ class LecturePortal {
     if (this.inSlideQuizActive) this.toggleInSlideQuiz();
     if (this.crosswordActive) this.toggleInSlideCrossword();
     if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
+    if (this.goldenBellActive) this.toggleInSlideGoldenBell();
   }
 
   toggleDrawingMode(canvasId) {
