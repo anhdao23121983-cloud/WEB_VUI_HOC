@@ -366,10 +366,9 @@ class Simulation3D {
   toggleVoice() {
     this.isVoiceEnabled = !this.isVoiceEnabled;
     if (this.isVoiceEnabled) {
-      this.speak("Đã bật thuyết minh giọng nói Tiếng Việt!");
-      window.app.showToast("🔊 Đã bật giọng nói thuyết minh AI!", "success");
+      window.app.showToast("🔊 Đã bật giọng nói thuyết minh Nữ Tiếng Việt!", "success");
     } else {
-      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      if (window.ttsService) window.ttsService.stop();
       window.app.showToast("🔇 Đã tắt giọng nói thuyết minh!", "info");
     }
     this.render("main-content-area");
@@ -377,20 +376,9 @@ class Simulation3D {
 
   speak(text) {
     if (!this.isVoiceEnabled) return;
-    if (!('speechSynthesis' in window)) return;
-    try {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "vi-VN";
-      utterance.rate = 0.9;
-      utterance.pitch = 1.2; // Giọng Nữ Cô Giáo trong sáng, ấm áp chuẩn sư phạm
-
-      const voices = window.speechSynthesis.getVoices();
-      const viVoice = voices.find(v => (v.lang && v.lang.toLowerCase().includes("vi")) && (v.name.toLowerCase().includes("hoaimy") || v.name.toLowerCase().includes("female") || v.name.toLowerCase().includes("linh") || v.name.toLowerCase().includes("mai") || v.name.toLowerCase().includes("google") || v.name.toLowerCase().includes("nu"))) || voices.find(v => v.lang && v.lang.toLowerCase().includes("vi"));
-      if (viVoice) utterance.voice = viVoice;
-
-      window.speechSynthesis.speak(utterance);
-    } catch (e) {}
+    if (window.ttsService) {
+      window.ttsService.speak(text, { rate: 0.92, pitch: 1.2 });
+    }
   }
 
   // =========================================================================

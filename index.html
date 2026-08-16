@@ -502,6 +502,22 @@
           <input type="password" id="settings-ai-key" class="form-control font-mono text-xs" placeholder="AIzaSy...">
           <p class="text-[11px] text-slate-400 mt-1">Dùng để kích hoạt AI trực tiếp từ Google Gemini khi soạn giáo án.</p>
         </div>
+
+        <!-- Cấu hình Giọng đọc Nữ Tiếng Việt -->
+        <div class="p-3 bg-pink-50 rounded-xl border border-pink-200 space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">👩‍🏫</span>
+              <div>
+                <h5 class="font-black text-xs text-pink-950">Giọng Đọc Nữ Tiếng Việt Cô Giáo</h5>
+                <p class="text-[10px] text-pink-700 font-semibold">Tự động chọn giọng Nữ tự nhiên + Luồng âm thanh HD</p>
+              </div>
+            </div>
+            <button type="button" onclick="ttsService.testTeacherVoice()" class="btn bg-pink-600 hover:bg-pink-500 text-white btn-xs font-black shadow-sm flex items-center gap-1">
+              <span>🔊</span> <span>Nghe Thử</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="flex justify-end gap-3 pt-3 border-t border-slate-200">
@@ -2891,6 +2907,7 @@
   <script src="js/services/docExportService.js"></script>
   <script src="js/services/quizService.js"></script>
   <script src="js/services/adminService.js"></script>
+  <script src="js/services/ttsService.js"></script>
   <script src="js/services/lectureService.js"></script>
   <script src="js/services/examService.js"></script>
   <script src="js/components/adminPortal.js"></script>

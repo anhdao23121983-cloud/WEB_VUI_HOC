@@ -1619,32 +1619,22 @@ class LecturePortal {
   // GIỌNG ĐỌC NỮ TIẾNG VIỆT CHO SÁCH 3D & VIDEO HOẠT HỌA AI
   // =========================================================================
   speakNarrative(text) {
-    if (!this.speechSynth) return;
-    try {
-      this.speechSynth.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = "vi-VN";
-      utter.rate = this.speechRate;
-      utter.pitch = 1.2; // Giọng Nữ Cô Giáo trong sáng, ấm áp chuẩn sư phạm
-
-      const viVoice = this.getVietnameseFemaleVoice();
-      if (viVoice) utter.voice = viVoice;
-
-      utter.onend = () => {
+    if (!window.ttsService) return;
+    window.ttsService.speak(text, {
+      rate: this.speechRate,
+      pitch: 1.2,
+      onEnd: () => {
         if (this.isVideoPlaying) {
           setTimeout(() => {
             this.nextSlideVideo();
           }, 1500);
         }
-      };
-
-      this.speechSynth.speak(utter);
-    } catch (e) {}
+      }
+    });
   }
 
   readCurrentFlipbookPage() {
-    if (!this.speechSynth) return;
-    this.speechSynth.cancel();
+    if (!window.ttsService) return;
 
     const pageL = this.flipbookPages[this.currentFlipbookIndex];
     const pageR = this.flipbookPages[this.currentFlipbookIndex + 1];
@@ -1663,28 +1653,22 @@ class LecturePortal {
       fullText += tempDiv.innerText;
     }
 
-    const utter = new SpeechSynthesisUtterance(fullText);
-    utter.lang = "vi-VN";
-    utter.rate = this.speechRate;
-    utter.pitch = 1.2; // Giọng Nữ Cô Giáo chuẩn âm điệu
-
-    const viVoice = this.getVietnameseFemaleVoice();
-    if (viVoice) utter.voice = viVoice;
-
-    utter.onend = () => {
-      if (this.isReadingAloud) {
-        setTimeout(() => {
-          if (this.currentFlipbookIndex + 2 < this.flipbookPages.length) {
-            this.nextFlipbookPage();
-          } else {
-            this.stopReadAloud();
-            window.app.showToast("🎉 Đã đọc xong toàn bộ cuốn sách bài học!", "success");
-          }
-        }, 1500);
+    window.ttsService.speak(fullText, {
+      rate: this.speechRate,
+      pitch: 1.2,
+      onEnd: () => {
+        if (this.isReadingAloud) {
+          setTimeout(() => {
+            if (this.currentFlipbookIndex + 2 < this.flipbookPages.length) {
+              this.nextFlipbookPage();
+            } else {
+              this.stopReadAloud();
+              window.app.showToast("🎉 Đã đọc xong toàn bộ cuốn sách bài học!", "success");
+            }
+          }, 1500);
+        }
       }
-    };
-
-    this.speechSynth.speak(utter);
+    });
   }
 
   // =========================================================================
@@ -1885,7 +1869,7 @@ class LecturePortal {
 
   stopReadAloud() {
     this.isReadingAloud = false;
-    if (this.speechSynth) this.speechSynth.cancel();
+    if (window.ttsService) window.ttsService.stop();
     const btn = document.getElementById("btn-read-aloud-flipbook");
     if (btn) btn.innerHTML = "<span>🔊</span> <span>Đọc Sách AI</span>";
   }
