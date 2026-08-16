@@ -254,7 +254,14 @@ class Application {
       if (navGuestBox) navGuestBox.classList.add("hidden");
       if (navUserName) navUserName.innerText = user.name;
       if (navUserRole) navUserRole.innerText = user.role === "teacher" ? "Giáo viên" : `Học sinh (${user.className || "3A"})`;
-      if (navUserAvatar) navUserAvatar.innerText = user.avatar || "👤";
+      
+      if (navUserAvatar) {
+        if (user.avatar && (user.avatar.startsWith("data:image/") || user.avatar.startsWith("http"))) {
+          navUserAvatar.innerHTML = `<img src="${user.avatar}" alt="Avatar" class="w-6 h-6 object-cover rounded-full border border-cyan-400">`;
+        } else {
+          navUserAvatar.innerText = user.avatar || "👩‍🏫";
+        }
+      }
     } else {
       if (navUserBox) navUserBox.classList.add("hidden");
       if (navGuestBox) navGuestBox.classList.remove("hidden");
@@ -338,7 +345,7 @@ class Application {
       return;
     }
 
-    this.tempSelectedAvatar = user.avatar || "👤";
+    this.tempSelectedAvatar = user.avatar || "👩‍🏫";
 
     // Cập nhật thông tin lên UI Modal
     const curAvatar = document.getElementById("profile-current-avatar");
@@ -349,7 +356,14 @@ class Application {
     const inputName = document.getElementById("profile-input-name");
     const inputPass = document.getElementById("profile-input-password");
 
-    if (curAvatar) curAvatar.innerText = this.tempSelectedAvatar;
+    if (curAvatar) {
+      if (this.tempSelectedAvatar.startsWith("data:image/") || this.tempSelectedAvatar.startsWith("http")) {
+        curAvatar.innerHTML = `<img src="${this.tempSelectedAvatar}" alt="Avatar" class="w-full h-full object-cover rounded-2xl">`;
+      } else {
+        curAvatar.innerText = this.tempSelectedAvatar;
+      }
+    }
+
     if (dispName) dispName.innerText = user.name;
     if (dispRole) dispRole.innerText = user.role === "teacher" ? `Giáo Viên • ${user.school || "Tổ Tin Học"}` : `Học Sinh • Lớp ${user.className || "3A"}`;
     if (dispStars) dispStars.innerText = `⭐ ${user.stars || 0} Sao Vàng`;
@@ -361,11 +375,40 @@ class Application {
     if (modal) modal.classList.add("active");
   }
 
-  // Chọn avatar tạm thời
+  // Chọn avatar tạm thời từ danh sách Emoji
   selectAvatar(avatarEmoji) {
     this.tempSelectedAvatar = avatarEmoji;
     const curAvatar = document.getElementById("profile-current-avatar");
     if (curAvatar) curAvatar.innerText = avatarEmoji;
+  }
+
+  // Tải ảnh chân dung tùy chọn từ máy tính
+  handleCustomAvatarUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      this.showToast("Vui lòng chọn file hình ảnh hợp lệ (.png, .jpg, .jpeg, .webp)!", "warning");
+      return;
+    }
+
+    // Giới hạn 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      this.showToast("Dung lượng ảnh không được vượt quá 5MB!", "warning");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      this.tempSelectedAvatar = dataUrl;
+      const curAvatar = document.getElementById("profile-current-avatar");
+      if (curAvatar) {
+        curAvatar.innerHTML = `<img src="${dataUrl}" alt="Avatar Preview" class="w-full h-full object-cover rounded-2xl shadow-sm">`;
+      }
+      this.showToast("📷 Đã nạp ảnh chân dung! Hãy bấm 'Lưu Thay Đổi' để hoàn tất.", "info");
+    };
+    reader.readAsDataURL(file);
   }
 
   // Lưu thay đổi hồ sơ cá nhân

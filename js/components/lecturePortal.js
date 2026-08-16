@@ -5,20 +5,22 @@
  * 2. 📤 Nút đưa bài giảng lên cho Giáo viên (Đồng bộ Supabase Cloud & Local)
  * 3. 🎨 Bút Laser đỏ & Bút dạ quang khi Trình chiếu Slide (Laser Pointer & Pen Tool)
  * 4. ⚡ Đố vui 10s tương tác trực tiếp trên Slide (In-Slide Quick Quiz 10s)
- * 5. 🧩 Trò chơi Ô Chữ Bí Mật 3D & ⚙️ Soạn Ô Chữ Tùy Biến (Custom Crossword Maker)
+ * 5. 🧩 Trò chơi Ô Chữ Bí Mật 3D & ⚙️ Soạn Ô Chữ Tùy Biến (Custom Crossword Maker - Modal 33)
  * 6. 🎡 Vòng Quay May Mắn gọi tên học sinh ngẫu nhiên trên Slide (In-Slide Lucky Wheel)
  * 7. 🔔 Đấu Trường Rung Chuông Vàng 3D củng cố bài học (In-Slide Golden Bell Arena)
  * 8. 🃏 Trò chơi Ghép Thẻ Trí Nhớ 3D trên Slide (In-Slide 3D Memory Card Match)
- * 9. ⚡ Trò chơi Nối Cột Định Nghĩa 3D & ⚙️ Soạn Cặp Nối Cột (Custom Column Match Maker)
- * 10. 🎈 Trò chơi Bắn Bong Bóng 3D & ⚙️ Soạn Nhiệm Vụ Bắn Bóng (Custom Bubble Mission Maker)
- * 11. 🐱 Trò chơi Thả Khối Scratch 3D & ⚙️ Soạn Thử Thách Scratch (Custom Scratch Mission Maker)
- * 12. ⭐ Bảng Khen Thưởng & 🌟 Bắn Thông Báo 50 Sao Toàn Trường Realtime
- * 13. 📖 Sách 3D lật trang siêu thực có 🌙 Chế Độ Ban Đêm Neon & 🔊 Giọng đọc AI E-Book
- * 14. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
- * 15. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
- * 16. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
- * 17. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
- * 18. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
+ * 9. ⚡ Trò chơi Nối Cột Định Nghĩa 3D & ⚙️ Soạn Cặp Nối Cột (Custom Column Match Maker - Modal 35)
+ * 10. 🎈 Trò chơi Bắn Bong Bóng 3D & ⚙️ Soạn Nhiệm Vụ Bắn Bóng (Custom Bubble Mission Maker - Modal 36)
+ * 11. 🐱 Trò chơi Thả Khối Scratch 3D & ⚙️ Soạn Thử Thách Scratch (Custom Scratch Mission Maker - Modal 37)
+ * 12. 📱 Mã QR Code Chia Sẻ Bài Giảng & In Phiếu QR 6 Ô (QR Lecture Share - Modal 38)
+ * 13. 🖥️ Chế Độ Trình Chiếu 2 Màn Hình Dành Riêng Cho Cô Giáo (Dual-Screen Presenter View - Modal 39)
+ * 14. ⭐ Bảng Khen Thưởng & 🌟 Bắn Thông Báo 50 Sao Toàn Trường Realtime
+ * 15. 📖 Sách 3D lật trang siêu thực có 🌙 Chế Độ Ban Đêm Neon & 🔊 Giọng đọc AI E-Book
+ * 16. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
+ * 17. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
+ * 18. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ (.zip)
+ * 19. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
+ * 20. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
  */
 
 class LecturePortal {
@@ -30,6 +32,7 @@ class LecturePortal {
     this.selectedFolder = "all"; // 'all' | 3 | 4 | 5
     this.searchQuery = "";
     this.lectures = [];
+    this.currentPreviewLectureId = null;
 
     // Video Player & Voice State
     this.activeVideoLecture = null;
@@ -119,6 +122,18 @@ class LecturePortal {
     this.scratchCatState = { x: 0, y: 0, angle: 0, costume: 1 };
     this.isScratchRunning = false;
 
+    // QR Share State
+    this.activeQRLecture = null;
+
+    // Dual-Screen Presenter View State
+    this.presenterLecture = null;
+    this.presenterSlideIdx = 0;
+    this.presenterTimerSeconds = 45 * 60;
+    this.isPresenterTimerRunning = false;
+    this.presenterTimerInterval = null;
+    this.presenterClockInterval = null;
+    this.projectorWindow = null;
+
     // In-Slide Star Awarding State
     this.starAwardActive = false;
     this.recentStarLogs = [];
@@ -196,7 +211,7 @@ class LecturePortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser, Lập Trình Scratch 3D, Nối Cột 3D, Bắn Bóng 3D, Ghép Thẻ, Rung Chuông, Tặng Sao & Vinh Danh Toàn Trường</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser, 2 Màn Hình Presenter View, QR Chia Sẻ, Scratch 3D, Nối Cột, Bắn Bóng, Ghép Thẻ, Rung Chuông & Tặng Sao</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
@@ -296,7 +311,7 @@ class LecturePortal {
           </button>
 
           <button onclick="lecturePortal.switchTab('my_lectures')" class="px-4 py-2 rounded-2xl font-black text-xs transition-all flex items-center gap-2 ${this.currentTab === 'my_lectures' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}">
-            <span>👨‍🏫 Bài Giảng Của Tôi</span>
+            <span>👩‍🏫 Bài Giảng Của Tôi</span>
             <span class="badge ${this.currentTab === 'my_lectures' ? 'bg-white/25 text-white' : 'badge-amber'} text-[10px]">${myLecturesCount}</span>
           </button>
         </div>
@@ -399,7 +414,7 @@ class LecturePortal {
         <div class="text-center py-16 glass-card space-y-3 text-slate-400">
           <span class="text-6xl block mb-2 animate-bounce">📊</span>
           <p class="font-black text-slate-700 text-base">Chưa có bài giảng nào trong mục này.</p>
-          <p class="text-xs text-slate-500">Thầy Cô hãy bấm vào nút dưới đây để tải lên bài giảng PowerPoint (.pptx, .ppt, .pdf) của mình!</p>
+          <p class="text-xs text-slate-500">Cô hãy bấm vào nút dưới đây để tải lên bài giảng PowerPoint (.pptx, .ppt, .pdf) của mình!</p>
           <button onclick="lectureUploadModal.openModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-amber btn-md font-black mt-2 shadow-lg hover:scale-105 transition-all">
             📤 Đưa Bài Giảng Lên Ngay
           </button>
@@ -483,22 +498,25 @@ class LecturePortal {
                     </button>
                   </div>
 
-                  <!-- Hàng 2: Tải Giáo Án CV 2345 (.doc) + Khởi Động 3P + Phiếu Bài Tập Word -->
-                  <div class="grid grid-cols-3 gap-1.5">
-                    <button onclick="lecturePortal.downloadLessonPlanDoc('${l.id}')" class="btn btn-outline btn-xs font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200 flex items-center justify-center gap-1" title="Tải Kế hoạch bài dạy Giáo án Word chuẩn Công văn 2345">
+                  <!-- Hàng 2: Tải Giáo Án CV 2345 (.doc) + Khởi Động 3P + Phiếu Bài Tập Word + Mã QR Chia Sẻ -->
+                  <div class="grid grid-cols-4 gap-1">
+                    <button onclick="lecturePortal.downloadLessonPlanDoc('${l.id}')" class="btn btn-outline btn-xs font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200 flex items-center justify-center gap-0.5" title="Tải Kế hoạch bài dạy Giáo án Word chuẩn Công văn 2345">
                       <span>📄</span> <span>Giáo Án</span>
                     </button>
-                    <button onclick="lecturePortal.openIcebreakerGame('${l.id}')" class="btn btn-outline btn-xs font-black text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 flex items-center justify-center gap-1" title="Trò chơi đố vui khởi động 3 phút đầu giờ">
+                    <button onclick="lecturePortal.openIcebreakerGame('${l.id}')" class="btn btn-outline btn-xs font-black text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 flex items-center justify-center gap-0.5" title="Trò chơi đố vui khởi động 3 phút đầu giờ">
                       <span>⚡</span> <span>Khởi Động</span>
                     </button>
-                    <button onclick="lecturePortal.downloadWorksheet('${l.id}')" class="btn btn-outline btn-xs font-black text-cyan-800 bg-cyan-50 hover:bg-cyan-100 border-cyan-200 flex items-center justify-center gap-1" title="Tải Phiếu bài tập in ấn Word (.doc) cho học sinh">
+                    <button onclick="lecturePortal.downloadWorksheet('${l.id}')" class="btn btn-outline btn-xs font-black text-cyan-800 bg-cyan-50 hover:bg-cyan-100 border-cyan-200 flex items-center justify-center gap-0.5" title="Tải Phiếu bài tập in ấn Word (.doc) cho học sinh">
                       <span>📝</span> <span>Phiếu BT</span>
+                    </button>
+                    <button onclick="lecturePortal.openLectureQRModal('${l.id}')" class="btn btn-outline btn-xs font-black text-blue-800 bg-blue-50 hover:bg-blue-100 border-blue-200 flex items-center justify-center gap-0.5" title="Tạo mã QR chia sẻ cho học sinh quét điện thoại">
+                      <span>📱</span> <span>Mã QR</span>
                     </button>
                   </div>
 
-                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser, Scratch 3D, Nối cột 3D, Bắn bóng, Ghép thẻ, Rung Chuông) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
+                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser, Presenter View, Scratch 3D, Nối cột 3D, Bắn bóng, Ghép thẻ, Rung Chuông) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
                   <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
-                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser, Scratch 3D, Nối Cột 3D, Bắn Bóng 3D, Ghép Thẻ, Rung Chuông Vàng & Tặng Sao Trực Tiếp">
+                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser, 2 Màn Hình Presenter View, Scratch 3D, Nối Cột 3D, Bắn Bóng 3D, Ghép Thẻ, Rung Chuông Vàng & Tặng Sao Trực Tiếp">
                       <span>🎨</span> <span>Trình Chiếu & Laser</span>
                     </button>
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
@@ -554,7 +572,316 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 2: SOẠN & TÙY BIẾN THỬ THÁCH SCRATCH 3D (CUSTOM SCRATCH MISSION MAKER)
+  // OPTION 2: MÃ QR CHIA SẺ BÀI GIẢNG ĐIỆN TỬ (QR LECTURE SHARE - MODAL 38)
+  // =========================================================================
+  async openLectureQRModal(lectureId = null) {
+    const targetId = lectureId || this.currentPreviewLectureId || (this.lectures[0] && this.lectures[0].id);
+    if (!targetId) return;
+
+    const lecture = await window.lectureService.getLectureById(targetId);
+    if (!lecture) return;
+
+    this.activeQRLecture = lecture;
+
+    const modal = document.getElementById("lecture-qr-share-modal");
+    const gradeBadge = document.getElementById("qr-modal-grade-badge");
+    const titleEl = document.getElementById("qr-modal-lecture-title");
+    const authorEl = document.getElementById("qr-modal-author");
+    const linkInput = document.getElementById("lecture-qr-link-url");
+    const qrImg = document.getElementById("lecture-qr-image");
+
+    const shareUrl = `${window.location.origin}${window.location.pathname}#lectures?id=${encodeURIComponent(lecture.id)}`;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(shareUrl)}&margin=10`;
+
+    if (gradeBadge) gradeBadge.innerText = `TIN HỌC LỚP ${lecture.grade} • ${lecture.bookSeries || 'KNTT'}`;
+    if (titleEl) titleEl.innerText = lecture.title;
+    if (authorEl) authorEl.innerText = `Tác giả: ${lecture.authorName || 'Cô Giáo Anh Đào'}`;
+    if (linkInput) linkInput.value = shareUrl;
+    if (qrImg) qrImg.src = qrApiUrl;
+
+    if (modal) modal.classList.add("active");
+  }
+
+  copyQRShareLink() {
+    const linkInput = document.getElementById("lecture-qr-link-url");
+    if (linkInput) {
+      linkInput.select();
+      navigator.clipboard.writeText(linkInput.value).then(() => {
+        window.app.showToast("📋 Đã sao chép đường dẫn bài giảng vào bộ nhớ tạm!", "success");
+      }).catch(() => {
+        document.execCommand("copy");
+        window.app.showToast("📋 Đã sao chép link bài giảng!", "success");
+      });
+    }
+  }
+
+  downloadQRCodeImage() {
+    if (!this.activeQRLecture) return;
+    const lecture = this.activeQRLecture;
+    const shareUrl = `${window.location.origin}${window.location.pathname}#lectures?id=${encodeURIComponent(lecture.id)}`;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(shareUrl)}&margin=15`;
+
+    window.app.showToast("📥 Đang tải ảnh mã QR Code về máy tính...", "info");
+
+    const a = document.createElement("a");
+    a.href = qrApiUrl;
+    a.target = "_blank";
+    a.download = `MaQR_BaiGiang_Lop${lecture.grade}_${lecture.id}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setTimeout(() => {
+      window.app.showToast("🎉 Tải ảnh QR Code thành công!", "success");
+    }, 600);
+  }
+
+  printQRSheetForStudents() {
+    if (!this.activeQRLecture) return;
+    const lecture = this.activeQRLecture;
+    const shareUrl = `${window.location.origin}${window.location.pathname}#lectures?id=${encodeURIComponent(lecture.id)}`;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(shareUrl)}&margin=8`;
+
+    const printWindow = window.open("", "_blank", "width=850,height=900");
+    if (!printWindow) {
+      window.app.showToast("Vui lòng cho phép mở cửa sổ popup để in phiếu QR!", "warning");
+      return;
+    }
+
+    const cardsHtml = Array(6).fill(0).map((_, i) => `
+      <div style="border: 2px dashed #0284c7; border-radius: 16px; padding: 12px; text-align: center; font-family: sans-serif; background: #f0f9ff; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="font-size: 9pt; font-weight: bold; color: #0369a1; text-transform: uppercase;">🎓 WEB VUI HỌC • PHIẾU BÀI GIẢNG SỐ</div>
+          <div style="font-size: 11pt; font-weight: 900; color: #0f172a; margin: 4px 0;">${lecture.title}</div>
+          <div style="font-size: 8.5pt; color: #64748b;">Môn Tin học Lớp ${lecture.grade} • ${lecture.authorName || 'Cô Giáo Anh Đào'}</div>
+        </div>
+        <div style="margin: 8px auto;">
+          <img src="${qrApiUrl}" style="width: 140px; height: 140px; border: 3px solid #0ea5e9; border-radius: 12px; background: white; padding: 4px;" alt="QR Code">
+        </div>
+        <div style="font-size: 8pt; font-weight: bold; color: #0369a1; background: #e0f2fe; padding: 4px; border-radius: 8px;">
+          📱 Dùng Camera điện thoại quét mã để xem bài giảng
+        </div>
+      </div>
+    `).join("");
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>In Phiếu QR Bài Giảng - ${lecture.title}</title>
+        <style>
+          @page { size: A4 portrait; margin: 15mm; }
+          body { margin: 0; padding: 0; font-family: sans-serif; }
+          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+          .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; }
+          @media print { .no-print { display: none; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h2 style="margin: 0; color: #0f172a;">PHIẾU MÃ QR BÀI GIẢNG ĐIỆN TỬ CHO HỌC SINH (6 BẢN)</h2>
+          <p style="margin: 4px 0 0; font-size: 10pt; color: #64748b;">Trường Tiểu Học Vui Học • Kế hoạch bài dạy chuẩn GDPT 2018</p>
+        </div>
+        <div class="grid">
+          ${cardsHtml}
+        </div>
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  }
+
+  // =========================================================================
+  // OPTION 3: CHẾ ĐỘ TRÌNH CHIẾU 2 MÀN HÌNH (DUAL-SCREEN PRESENTER VIEW - MODAL 39)
+  // =========================================================================
+  async openPresenterView(lectureId = null) {
+    const targetId = lectureId || this.currentPreviewLectureId || (this.lectures[0] && this.lectures[0].id);
+    if (!targetId) return;
+
+    const lecture = await window.lectureService.getLectureById(targetId);
+    if (!lecture) return;
+
+    this.presenterLecture = lecture;
+    this.presenterSlideIdx = 0;
+    this.presenterTimerSeconds = 45 * 60;
+    this.isPresenterTimerRunning = false;
+
+    const modal = document.getElementById("presenter-view-modal");
+    const titleEl = document.getElementById("presenter-lecture-title");
+    const iframe = document.getElementById("presenter-live-iframe");
+
+    if (titleEl) titleEl.innerText = `PRESENTER VIEW: ${lecture.title.toUpperCase()} (LỚP ${lecture.grade})`;
+    if (iframe) {
+      iframe.src = lecture.fileUrl || "https://docs.google.com/presentation/d/e/2PACX-1vT1Z5u7.../embed";
+    }
+
+    if (modal) modal.classList.add("active");
+
+    this.updatePresenterNotes();
+    this.startPresenterClock();
+  }
+
+  updatePresenterNotes() {
+    if (!this.presenterLecture) return;
+    const totalSlides = this.presenterLecture.slideCount || 20;
+
+    const counterEl = document.getElementById("presenter-slide-counter");
+    const nextBadge = document.getElementById("presenter-next-slide-badge");
+    const nextTitle = document.getElementById("presenter-next-title");
+    const nextSummary = document.getElementById("presenter-next-summary");
+    const noteIntro = document.getElementById("presenter-note-intro");
+    const noteQ = document.getElementById("presenter-note-question");
+    const noteReward = document.getElementById("presenter-note-reward");
+
+    if (counterEl) counterEl.innerText = `Slide ${this.presenterSlideIdx + 1} / ${totalSlides}`;
+    if (nextBadge) nextBadge.innerText = `Trang ${Math.min(this.presenterSlideIdx + 2, totalSlides)}`;
+
+    const notesLibrary = [
+      {
+        nextTitle: "1. Khám Phá Thân Máy Tính (CPU)",
+        nextSummary: "Nội dung: Quan sát cấu tạo bên trong và bên ngoài thân máy tính để bàn.",
+        intro: '"Các em hãy quan sát trên màn hình và cho Cô biết: Bạn nào đã từng nhìn thấy chiếc máy tính để bàn ở nhà hoặc phòng máy trường mình?"',
+        q: '"Nếu không có bàn phím và chuột thì chúng ta có thể nhập chữ và điều khiển máy tính được không? Vì sao?"',
+        reward: '"Gọi ngẫu nhiên 2 bạn trả lời nhanh nhất bằng Vòng Quay May Mắn và thưởng +15 Sao Vàng vào tài khoản!"'
+      },
+      {
+        nextTitle: "2. Thao Tác Chuột Chuẩn Tư Thế",
+        nextSummary: "Nội dung: Quy tắc đặt tay ngón trỏ nút trái, ngón giữa nút phải và cuộn trang.",
+        intro: '"Bây giờ Cô mời cả lớp cùng quan sát hình ảnh chú chuột máy tính và thực hành động tác cầm chuột mô phỏng trên không trung."',
+        q: '"Khi nào em dùng thao tác nháy đúp chuột trái và khi nào dùng nháy đơn chuột trái?"',
+        reward: '"Bật trò chơi Ghép Thẻ Trí Nhớ 3D và thưởng sao cho nhóm hoàn thành dưới 8 lượt lật!"'
+      },
+      {
+        nextTitle: "3. Khám Phá Hàng Phím Cơ Sở F & J",
+        nextSummary: "Nội dung: Nhận diện 2 phím có gờ nổi mốc đặt tay ngón trỏ trên bàn phím.",
+        intro: '"Hãy nhắm mắt lại và dùng 2 ngón trỏ sờ nhẹ trên bàn phím để tìm 2 chiếc gờ nổi bí mật nhé các em!"',
+        q: '"Vì sao trên phím F và phím J lại được thiết kế gờ nổi mà các phím khác không có?"',
+        reward: '"Mở trò chơi Bắn Bong Bóng Tìm Từ Khóa 3D cho cả lớp cùng bấm chọn phím đúng!"'
+      },
+      {
+        nextTitle: "4. Tổng Kết & Vận Dụng Bài Học",
+        nextSummary: "Nội dung: Củng cố 4 bộ phận máy tính và ghi nhận sao khen thưởng cuối tiết.",
+        intro: '"Tiết học hôm nay các em đã rất tích cực, Cô mời bạn lớp trưởng lên bấm nút Rung Chuông Vàng để củng cố bài học!"',
+        q: '"Về nhà em sẽ chia sẻ với bố mẹ những bộ phận nào của chiếc máy tính?"',
+        reward: '"Tặng danh hiệu Quán Quân Tiết Học +50 Sao Vàng vinh danh toàn trường!"'
+      }
+    ];
+
+    const curNote = notesLibrary[this.presenterSlideIdx % notesLibrary.length];
+    if (nextTitle) nextTitle.innerText = curNote.nextTitle;
+    if (nextSummary) nextSummary.innerText = curNote.nextSummary;
+    if (noteIntro) noteIntro.innerText = curNote.intro;
+    if (noteQ) noteQ.innerText = curNote.q;
+    if (noteReward) noteReward.innerText = curNote.reward;
+  }
+
+  presenterNextSlide() {
+    if (!this.presenterLecture) return;
+    const totalSlides = this.presenterLecture.slideCount || 20;
+    if (this.presenterSlideIdx < totalSlides - 1) {
+      this.presenterSlideIdx++;
+      this.updatePresenterNotes();
+      this.playTickSound();
+    } else {
+      window.app.showToast("Đã đến slide cuối cùng của bài học!", "info");
+    }
+  }
+
+  presenterPrevSlide() {
+    if (this.presenterSlideIdx > 0) {
+      this.presenterSlideIdx--;
+      this.updatePresenterNotes();
+      this.playTickSound();
+    }
+  }
+
+  startPresenterClock() {
+    if (this.presenterClockInterval) clearInterval(this.presenterClockInterval);
+    const updateTime = () => {
+      const clockEl = document.getElementById("presenter-clock-now");
+      if (clockEl) {
+        clockEl.innerText = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      }
+    };
+    updateTime();
+    this.presenterClockInterval = setInterval(updateTime, 1000);
+  }
+
+  togglePresenterTimer() {
+    this.isPresenterTimerRunning = !this.isPresenterTimerRunning;
+    const btn = document.getElementById("btn-presenter-timer-toggle");
+
+    if (this.isPresenterTimerRunning) {
+      if (btn) btn.innerHTML = "<span>⏸️</span> <span>Tạm Dừng</span>";
+      if (this.presenterTimerInterval) clearInterval(this.presenterTimerInterval);
+      this.presenterTimerInterval = setInterval(() => {
+        this.presenterTimerSeconds--;
+        const mins = Math.floor(this.presenterTimerSeconds / 60);
+        const secs = this.presenterTimerSeconds % 60;
+        const disp = document.getElementById("presenter-timer-disp");
+        if (disp) disp.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+        if (this.presenterTimerSeconds <= 0) {
+          clearInterval(this.presenterTimerInterval);
+          this.isPresenterTimerRunning = false;
+          if (btn) btn.innerHTML = "<span>▶️</span> <span>Bắt Đầu</span>";
+          this.playBellChime();
+          window.app.showToast("🔔 HẾT GIỜ TIẾT HỌC 45 PHÚT!", "warning");
+        }
+      }, 1000);
+    } else {
+      if (btn) btn.innerHTML = "<span>▶️</span> <span>Tiếp Tục</span>";
+      if (this.presenterTimerInterval) clearInterval(this.presenterTimerInterval);
+    }
+  }
+
+  resetPresenterTimer() {
+    this.isPresenterTimerRunning = false;
+    if (this.presenterTimerInterval) clearInterval(this.presenterTimerInterval);
+    this.presenterTimerSeconds = 45 * 60;
+    const disp = document.getElementById("presenter-timer-disp");
+    const btn = document.getElementById("btn-presenter-timer-toggle");
+    if (disp) disp.innerText = "45:00";
+    if (btn) btn.innerHTML = "<span>▶️</span> <span>Bắt Đầu</span>";
+  }
+
+  openProjectorWindow() {
+    if (!this.presenterLecture) return;
+    const lecture = this.presenterLecture;
+    const projectorUrl = lecture.fileUrl || "https://docs.google.com/presentation/d/e/2PACX-1vT1Z5u7.../embed";
+
+    this.projectorWindow = window.open("", "ProjectorWindow", "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no");
+    if (!this.projectorWindow) {
+      window.app.showToast("Vui lòng cho phép popup để mở màn hình máy chiếu riêng!", "warning");
+      return;
+    }
+
+    this.projectorWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Màn Hình Máy Chiếu / Tivi - ${lecture.title}</title>
+        <style>
+          body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+          iframe { width: 100%; height: 100%; border: 0; }
+        </style>
+      </head>
+      <body>
+        <iframe src="${projectorUrl}" allowfullscreen></iframe>
+      </body>
+      </html>
+    `);
+    this.projectorWindow.document.close();
+    window.app.showToast("📺 Đã mở Cửa Sổ Máy Chiếu Riêng! Cô hãy kéo cửa sổ này sang màn hình phụ nhé.", "success");
+  }
+
+  // =========================================================================
+  // TRÒ CHƠI THẢ KHỐI SCRATCH 3D & SOẠN THỬ THÁCH (CUSTOM SCRATCH MAKER)
   // =========================================================================
   toggleInSlideScratch() {
     const overlay = document.getElementById("in-slide-scratch-block-overlay");
@@ -827,7 +1154,7 @@ class LecturePortal {
   async runScratchScript() {
     if (this.isScratchRunning) return;
     if (this.scratchWorkspace.length === 0) {
-      window.app.showToast("Thầy Cô và các bạn hãy ghép ít nhất 1 khối lệnh vào kịch bản nhé!", "warning");
+      window.app.showToast("Cô và các bạn hãy ghép ít nhất 1 khối lệnh vào kịch bản nhé!", "warning");
       return;
     }
 
@@ -947,7 +1274,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 4: SOẠN & TÙY BIẾN NHIỆM VỤ BẮN BÓNG 3D (CUSTOM BUBBLE MISSION MAKER)
+  // TRÒ CHƠI BẮN BONG BÓNG 3D & SOẠN NHIỆM VỤ (CUSTOM BUBBLE MAKER)
   // =========================================================================
   toggleInSlideBubblePop() {
     const overlay = document.getElementById("in-slide-bubble-pop-overlay");
@@ -1053,7 +1380,7 @@ class LecturePortal {
     const distractors = distractorsInput.value.split("\n").map(s => s.trim()).filter(s => s.length > 0);
 
     if (targets.length < 2) {
-      window.app.showToast("Thầy Cô hãy nhập ít nhất 2 từ khóa đúng mục tiêu!", "warning");
+      window.app.showToast("Cô hãy nhập ít nhất 2 từ khóa đúng mục tiêu!", "warning");
       return;
     }
 
@@ -1365,7 +1692,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // TRÒ CHƠI NỐI CỘT ĐỊNH NGHĨA 3D & SOẠN CẶP NỐI (CUSTOM COLUMN MATCH)
+  // TRÒ CHƠI NỐI CỘT ĐỊNH NGHĨA 3D & SOẠN CẶP NỐI (CUSTOM COLUMN MATCH - MODAL 35)
   // =========================================================================
   toggleInSlideColumnMatch() {
     const overlay = document.getElementById("in-slide-column-match-overlay");
@@ -1471,7 +1798,7 @@ class LecturePortal {
     const lines = rowsInput.value.split("\n").filter(l => l.trim().length > 0);
 
     if (lines.length < 2) {
-      window.app.showToast("Thầy Cô hãy nhập ít nhất 2 cặp nối (Cột A | Cột B)!", "warning");
+      window.app.showToast("Cô hãy nhập ít nhất 2 cặp nối (Cột A | Cột B)!", "warning");
       return;
     }
 
@@ -2215,9 +2542,9 @@ class LecturePortal {
       },
       {
         q: "Hành động nào sau đây là AN TOÀN VÀ ĐÚNG QUY TẮC trong phòng thực hành máy tính?",
-        opts: ["A. Mang đồ ăn, nước ngọt vào bàn máy", "B. Báo ngay với Thầy Cô khi phát hiện dây điện bị hở", "C. Tự ý cắm rút phích cắm điện nguồn", "D. Chạy nhảy đùa nghịch"],
+        opts: ["A. Mang đồ ăn, nước ngọt vào bàn máy", "B. Báo ngay với Cô khi phát hiện dây điện bị hở", "C. Tự ý cắm rút phích cắm điện nguồn", "D. Chạy nhảy đùa nghịch"],
         correct: 1,
-        explanation: "Luôn báo với Thầy Cô quản lý phòng máy khi có sự cố kỹ thuật để đảm bảo an toàn."
+        explanation: "Luôn báo với Cô quản lý phòng máy khi có sự cố kỹ thuật để đảm bảo an toàn."
       },
       {
         q: "Trong phần mềm Scratch, khối lệnh nào giúp nhân vật xoay một góc 90 độ?",
@@ -2405,7 +2732,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // TRÒ CHƠI Ô CHỮ BÍ MẬT 3D & SOẠN TÙY BIẾN (CUSTOM CROSSWORD MAKER)
+  // TRÒ CHƠI Ô CHỮ BÍ MẬT 3D & SOẠN TÙY BIẾN (CUSTOM CROSSWORD - MODAL 33)
   // =========================================================================
   toggleInSlideCrossword() {
     const overlay = document.getElementById("in-slide-crossword-overlay");
@@ -2470,7 +2797,7 @@ class LecturePortal {
         secretKeyword: "ANTOAN",
         rows: [
           { word: "AMTHANH", clue: "Tín hiệu phát ra từ loa hoặc tai nghe khi nghe nhạc.", revealed: false, keyCharIndex: 0 },
-          { word: "NHACNHO", clue: "Hành động Thầy Cô khuyên bảo khi học sinh dùng máy sai cách.", revealed: false, keyCharIndex: 0 },
+          { word: "NHACNHO", clue: "Hành động Cô khuyên bảo khi học sinh dùng máy sai cách.", revealed: false, keyCharIndex: 0 },
           { word: "THONGTIN", clue: "Dữ liệu cá nhân cần bảo mật và không tùy tiện chia sẻ trên mạng.", revealed: false, keyCharIndex: 0 },
           { word: "ONGBATIN", clue: "Hỏi ý kiến người lớn trước khi truy cập trang web lạ.", revealed: false, keyCharIndex: 0 },
           { word: "ANTOANSO", clue: "Kỹ năng sống cần thiết trong thời đại công nghệ 4.0.", revealed: false, keyCharIndex: 0 },
@@ -2562,7 +2889,7 @@ class LecturePortal {
     }
 
     if (lines.length < 3) {
-      window.app.showToast("Thầy Cô hãy nhập ít nhất 3 hàng câu đố!", "warning");
+      window.app.showToast("Cô hãy nhập ít nhất 3 hàng câu đố!", "warning");
       return;
     }
 
@@ -3128,6 +3455,7 @@ class LecturePortal {
     const lecture = await window.lectureService.getLectureById(lectureId);
     if (!lecture) return;
 
+    this.currentPreviewLectureId = lectureId;
     window.lectureService.incrementViewCount(lectureId);
 
     const modal = document.getElementById("lecture-preview-modal");
@@ -3169,7 +3497,7 @@ class LecturePortal {
         canvas.style.pointerEvents = "auto";
         canvas.style.cursor = this.drawTool === "laser" ? "none" : "crosshair";
       }
-      window.app.showToast("🎨 Đã bật chế độ Bút vẽ & Laser Slide! Thầy Cô hãy vẽ trực tiếp lên màn hình.", "info");
+      window.app.showToast("🎨 Đã bật chế độ Bút vẽ & Laser Slide! Cô hãy vẽ trực tiếp lên màn hình.", "info");
     } else {
       if (toolbar) toolbar.classList.add("hidden");
       if (canvas) {
@@ -3415,7 +3743,7 @@ class LecturePortal {
 
         <!-- Footer Slide -->
         <div class="flex items-center justify-between border-t border-white/20 pt-3 text-xs text-white/80">
-          <span>👨‍🏫 Tác giả: <b>${this.activeVideoLecture.authorName}</b></span>
+          <span>👩‍🏫 Tác giả: <b>${this.activeVideoLecture.authorName}</b></span>
           <span class="font-bold">Trường Tiểu Học Vui Học • GDPT 2018</span>
         </div>
       </div>

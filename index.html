@@ -600,9 +600,18 @@
         </div>
       </div>
 
-      <!-- Bảng Chọn Avatar -->
-      <div class="space-y-2">
-        <label class="form-label font-bold text-slate-700">Chọn Ảnh Đại Diện (Avatar):</label>
+      <!-- Bảng Chọn Avatar & Tải Ảnh Chân Dung Thật -->
+      <div class="space-y-2.5">
+        <div class="flex items-center justify-between">
+          <label class="form-label font-bold text-slate-700">Chọn Ảnh Đại Diện (Avatar):</label>
+          <div class="flex items-center gap-2">
+            <input type="file" id="custom-avatar-file-input" accept="image/*" class="hidden" onchange="app.handleCustomAvatarUpload(event)">
+            <button onclick="document.getElementById('custom-avatar-file-input').click()" class="btn bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-300 btn-xs font-black flex items-center gap-1 shadow-xs" title="Tải ảnh chân dung từ máy tính lên làm avatar">
+              <span>📷</span> <span>Tải Ảnh Chân Dung</span>
+            </button>
+          </div>
+        </div>
+
         <div class="grid grid-cols-8 gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200 text-2xl">
           <button onclick="app.selectAvatar('👩‍🏫')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">👩‍🏫</button>
           <button onclick="app.selectAvatar('👨‍🏫')" class="p-1.5 rounded-xl bg-white shadow hover:scale-125 transition-all">👨‍🏫</button>
@@ -863,6 +872,12 @@
           </button>
           <button onclick="lecturePortal.toggleInSlideQuiz()" class="btn bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all">
             <span>⚡</span> <span>Đố Vui 10s</span>
+          </button>
+          <button onclick="lecturePortal.openLectureQRModal()" class="btn bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Tạo mã QR Code sắc nét để học sinh quét điện thoại vào học">
+            <span>📱</span> <span>QR Chia Sẻ</span>
+          </button>
+          <button onclick="lecturePortal.openPresenterView()" class="btn bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Bật chế độ 2 màn hình dành riêng cho Cô Giáo (Presenter View)">
+            <span>🖥️</span> <span>Presenter View</span>
           </button>
           <button onclick="lecturePortal.toggleDrawingMode('lec-preview-canvas')" class="btn btn-amber btn-xs font-black shadow-sm flex items-center gap-1">
             <span>🎨</span> <span>Bút Vẽ & Laser</span>
@@ -2420,6 +2435,180 @@
         <button onclick="lecturePortal.saveCustomScratchMissionFromForm()" class="btn btn-amber btn-sm font-black shadow-md flex items-center gap-1">
           <span>💾</span> <span>Áp Dụng Thử Thách Này</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 38: MÃ QR CHIA SẺ BÀI GIẢNG ĐIỆN TỬ (QR LECTURE SHARE MODAL) -->
+  <div id="lecture-qr-share-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-lg animate-pop space-y-4 text-center">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 text-left">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-cyan-100 rounded-xl">📱</span>
+          <div>
+            <h3 class="text-base font-black text-slate-900">MÃ QR CHIA SẺ BÀI GIẢNG</h3>
+            <p class="text-xs text-slate-500">Học sinh quét mã bằng Camera điện thoại/máy tính bảng để xem bài ngay</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('lecture-qr-share-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+
+      <!-- Khung Hiển Thị Mã QR & Thông Tin Bài Giảng -->
+      <div class="p-5 bg-gradient-to-br from-cyan-50 via-white to-blue-50/50 rounded-3xl border-2 border-cyan-200 shadow-sm space-y-3">
+        <div class="space-y-1">
+          <span id="qr-modal-grade-badge" class="badge badge-cyan font-black text-[10px]">TIN HỌC LỚP 3</span>
+          <h4 id="qr-modal-lecture-title" class="font-black text-slate-900 text-sm md:text-base leading-snug line-clamp-2">Khám Phá Máy Tính Để Bàn</h4>
+          <p id="qr-modal-author" class="text-xs text-cyan-800 font-bold">Tác giả: Cô Giáo Anh Đào</p>
+        </div>
+
+        <!-- Ảnh Mã QR Sắc Nét -->
+        <div class="relative inline-block my-2 group">
+          <img id="lecture-qr-image" src="" alt="Mã QR Bài Giảng" class="w-56 h-56 mx-auto object-contain bg-white p-3 rounded-2xl shadow-xl border-4 border-cyan-400 transition-all group-hover:scale-102">
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+            <span class="badge bg-slate-950/80 text-white font-black text-[10px] backdrop-blur-sm">Quét Bằng Camera</span>
+          </div>
+        </div>
+
+        <!-- Ô Link Truy Cập Rút Gọn -->
+        <div class="flex items-center gap-1.5 pt-1">
+          <input type="text" id="lecture-qr-link-url" readonly class="form-control text-[11px] font-mono font-bold bg-white text-slate-700 select-all" value="http://localhost:3000/#lectures">
+          <button onclick="lecturePortal.copyQRShareLink()" class="btn btn-primary btn-sm font-black shrink-0 flex items-center gap-1" title="Sao chép đường dẫn bài giảng">
+            <span>📋</span> <span>Chép Link</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3 Nút Hành Động -->
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <button onclick="lecturePortal.downloadQRCodeImage()" class="btn bg-cyan-600 hover:bg-cyan-500 text-white btn-sm font-black shadow-md flex items-center justify-center gap-1">
+          <span>📥</span> <span>Tải Ảnh QR (.png)</span>
+        </button>
+        <button onclick="lecturePortal.printQRSheetForStudents()" class="btn bg-amber-500 hover:bg-amber-400 text-slate-950 btn-sm font-black shadow-md flex items-center justify-center gap-1">
+          <span>🖨️</span> <span>In Phiếu QR (6 Ô)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 39: CHẾ ĐỘ TRÌNH CHIẾU 2 MÀN HÌNH DÀNH RIÊNG CHO GIÁO VIÊN (PRESENTER VIEW MODAL) -->
+  <div id="presenter-view-modal" class="modal-backdrop">
+    <div class="modal-content p-4 md:p-6 max-w-6xl h-[94vh] flex flex-col space-y-3 animate-pop bg-slate-950 text-white border-2 border-indigo-500 shadow-2xl">
+      <!-- Header Presenter View -->
+      <div class="flex items-center justify-between pb-2 border-b border-indigo-500/40 shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-indigo-500/20 text-indigo-300 rounded-xl">🖥️</span>
+          <div>
+            <h3 id="presenter-lecture-title" class="text-base font-black text-indigo-300">CHẾ ĐỘ 2 MÀN HÌNH TRÌNH CHIẾU (PRESENTER VIEW)</h3>
+            <p class="text-[11px] text-cyan-300 font-semibold">Màn hình phụ chiếu cho Học sinh • Màn hình chính hỗ trợ Cô Giáo ghi chú & đếm giờ</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="lecturePortal.openProjectorWindow()" class="btn bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white btn-xs font-black shadow-md flex items-center gap-1" title="Mở một cửa sổ toàn màn hình riêng biệt để kéo sang Máy Chiếu / TV">
+            <span>📺</span> <span>Mở Cửa Sổ Máy Chiếu Riêng</span>
+          </button>
+          <button onclick="document.getElementById('presenter-view-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-white">✕</button>
+        </div>
+      </div>
+
+      <!-- Bàn Điều Khiển 2 Cột: Cột Trái (Màn Chiếu Hiện Tại) | Cột Phải (Timer + Slide Kế + Ghi Chú Sư Phạm) -->
+      <div class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3 items-stretch overflow-hidden">
+        <!-- Cột Trái: Slide Hiện Tại (Live Slide Preview) -->
+        <div class="md:col-span-7 bg-slate-900/90 rounded-2xl border border-slate-800 p-3 flex flex-col justify-between space-y-2 overflow-hidden">
+          <div class="flex items-center justify-between text-xs pb-1 border-b border-slate-800">
+            <span class="badge bg-rose-600 text-white font-black text-[10px] animate-pulse">● ĐANG TRÌNH CHIẾU CHO HỌC SINH</span>
+            <span id="presenter-slide-counter" class="font-mono text-cyan-300 font-bold">Slide 1 / 20</span>
+          </div>
+
+          <div class="flex-1 w-full bg-black rounded-xl overflow-hidden relative border border-slate-700 flex items-center justify-center">
+            <iframe id="presenter-live-iframe" class="w-full h-full border-0" allowfullscreen></iframe>
+          </div>
+
+          <!-- Nút Chuyển Slide & Điều Khiển Nhanh -->
+          <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-800 text-xs">
+            <div class="flex items-center gap-1.5">
+              <button onclick="lecturePortal.presenterPrevSlide()" class="btn bg-slate-800 hover:bg-slate-700 text-white btn-xs font-bold px-3">
+                ◀️ Slide Trước
+              </button>
+              <button onclick="lecturePortal.presenterNextSlide()" class="btn bg-indigo-600 hover:bg-indigo-500 text-white btn-xs font-black px-4 shadow">
+                Slide Sau ▶️
+              </button>
+            </div>
+
+            <div class="flex items-center gap-1">
+              <button onclick="lecturePortal.toggleInSlideStarAward()" class="btn btn-amber btn-xs font-black shadow-xs">
+                ⭐ Tặng Sao Nhanh
+              </button>
+              <button onclick="lecturePortal.toggleInSlideLuckyWheel()" class="btn bg-emerald-700 hover:bg-emerald-600 text-white btn-xs font-bold">
+                🎡 Gọi Tên
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cột Phải: Đồng Hồ Tiết Học + Slide Kế Tiếp + Ghi Chú Sư Phạm (Speaker Notes) -->
+        <div class="md:col-span-5 flex flex-col justify-between space-y-3 overflow-hidden">
+          <!-- Khung Đồng Hồ Tiết Học -->
+          <div class="p-3.5 bg-slate-900/90 rounded-2xl border border-slate-800 space-y-2 shrink-0">
+            <div class="flex items-center justify-between text-xs pb-1 border-b border-slate-800">
+              <span class="text-amber-400 font-bold flex items-center gap-1">⏱️ Đồng Hồ Tiết Học (45 Phút)</span>
+              <span id="presenter-clock-now" class="font-mono text-slate-400 text-[11px]">14:30:00</span>
+            </div>
+
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <span class="text-[10px] text-slate-400 block font-semibold">Đếm ngược còn:</span>
+                <h4 id="presenter-timer-disp" class="text-2xl font-black text-emerald-400 font-mono">45:00</h4>
+              </div>
+
+              <div class="flex items-center gap-1">
+                <button onclick="lecturePortal.togglePresenterTimer()" id="btn-presenter-timer-toggle" class="btn bg-emerald-600 hover:bg-emerald-500 text-white btn-xs font-black">
+                  ▶️ Bắt Đầu
+                </button>
+                <button onclick="lecturePortal.resetPresenterTimer()" class="btn btn-outline btn-xs text-rose-300 border-rose-800 hover:bg-rose-950 font-bold">
+                  🔄 45P
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Khung Xem Trước Slide Kế Tiếp (Next Slide Preview) -->
+          <div class="p-3 bg-slate-900/90 rounded-2xl border border-slate-800 space-y-1.5 shrink-0">
+            <div class="flex items-center justify-between text-xs pb-1 border-b border-slate-800">
+              <span class="text-indigo-400 font-bold flex items-center gap-1">⏩ Slide Kế Tiếp (Chuẩn Bị Lời Dẫn)</span>
+              <span id="presenter-next-slide-badge" class="badge bg-indigo-950 text-indigo-300 border border-indigo-500 text-[10px]">Trang 2</span>
+            </div>
+            <div id="presenter-next-preview-box" class="h-20 bg-slate-950 rounded-xl border border-slate-800 p-2 text-xs flex flex-col justify-center">
+              <p id="presenter-next-title" class="font-black text-amber-300 line-clamp-1">Khám Phá Bàn Phím & Chuột Máy Tính</p>
+              <p id="presenter-next-summary" class="text-[11px] text-slate-400 line-clamp-2 mt-0.5">Nội dung: Phân biệt 4 hàng phím và 2 phím có gờ nổi F, J.</p>
+            </div>
+          </div>
+
+          <!-- Khung Kịch Bản & Ghi Chú Sư Phạm (Speaker Notes) -->
+          <div class="flex-1 bg-slate-900/90 rounded-2xl border border-slate-800 p-3.5 flex flex-col justify-between space-y-2 overflow-hidden">
+            <div class="flex items-center justify-between text-xs pb-1 border-b border-slate-800 shrink-0">
+              <span class="text-cyan-300 font-bold flex items-center gap-1">📝 Ghi Chú Sư Phạm (Speaker Notes)</span>
+              <span class="text-[10px] text-slate-400">Chuẩn CV 2345</span>
+            </div>
+
+            <div id="presenter-speaker-notes-content" class="flex-1 overflow-y-auto pr-1 text-xs text-slate-300 space-y-2 leading-relaxed font-sans">
+              <div class="p-2.5 bg-slate-950/80 rounded-xl border border-cyan-500/30 space-y-1">
+                <span class="badge bg-cyan-500/20 text-cyan-300 font-bold text-[10px]">💡 LỜI DẪN SƯ PHẠM</span>
+                <p id="presenter-note-intro">"Các em hãy quan sát trên màn hình và cho Cô biết: Bạn nào đã từng nhìn thấy chiếc máy tính để bàn ở nhà hoặc phòng máy trường mình?"</p>
+              </div>
+
+              <div class="p-2.5 bg-slate-950/80 rounded-xl border border-amber-500/30 space-y-1">
+                <span class="badge bg-amber-500/20 text-amber-300 font-bold text-[10px]">🎯 CÂU HỎI TƯƠNG TÁC GỢI MỞ</span>
+                <p id="presenter-note-question">"Nếu không có bàn phím và chuột thì chúng ta có thể nhập chữ và điều khiển máy tính được không? Vì sao?"</p>
+              </div>
+
+              <div class="p-2.5 bg-slate-950/80 rounded-xl border border-emerald-500/30 space-y-1">
+                <span class="badge bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">⭐ HOẠT ĐỘNG KHEN THƯỞNG</span>
+                <p id="presenter-note-reward">"Gọi ngẫu nhiên 2 bạn trả lời nhanh nhất bằng Vòng Quay May Mắn và thưởng +15 Sao Vàng vào tài khoản!"</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
