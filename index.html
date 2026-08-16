@@ -835,10 +835,13 @@
           </div>
         </div>
 
-        <!-- Toolbar Bút Vẽ, Đố Vui, Ô Chữ, Ghép Thẻ, Nối Cột, Vòng Quay & Tặng Sao -->
+        <!-- Toolbar Bút Vẽ, Đố Vui, Ô Chữ, Ghép Thẻ, Nối Cột, Bắn Bóng, Vòng Quay & Tặng Sao -->
         <div class="flex items-center gap-2 flex-wrap">
           <button onclick="lecturePortal.toggleInSlideStarAward()" class="btn bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 btn-xs font-black shadow-md flex items-center gap-1 hover:scale-105 transition-all" title="Tặng Sao Vàng khen thưởng trực tiếp cho học sinh (Đồng bộ Supabase Database)">
             <span>⭐</span> <span>Tặng Sao</span>
+          </button>
+          <button onclick="lecturePortal.toggleInSlideBubblePop()" class="btn bg-gradient-to-r from-teal-400 to-emerald-600 hover:from-teal-500 hover:to-emerald-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mở trò chơi Bắn Bong Bóng Tìm Từ Khóa 3D tương tác trên Slide">
+            <span>🎈</span> <span>Bắn Bóng 3D</span>
           </button>
           <button onclick="lecturePortal.toggleInSlideColumnMatch()" class="btn bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mở trò chơi Nối Cột Định Nghĩa 3D tương tác trên Slide">
             <span>⚡</span> <span>Nối Cột 3D</span>
@@ -1182,12 +1185,15 @@
             <div class="flex items-center gap-2">
               <span class="text-2xl p-1 bg-cyan-500/20 text-cyan-300 rounded-xl">⚡</span>
               <div>
-                <h4 class="font-black text-cyan-300 text-sm md:text-base">TRÒ CHƠI NỐI CỘT ĐỊNH NGHĨA 3D</h4>
+                <h4 id="column-match-theme-title" class="font-black text-cyan-300 text-sm md:text-base">TRÒ CHƠI NỐI CỘT ĐỊNH NGHĨA 3D</h4>
                 <p class="text-[10px] text-amber-300 font-semibold">Nối thiết bị ở Cột A với chức năng tương ứng ở Cột B</p>
               </div>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+              <button onclick="lecturePortal.openColumnMatchMakerModal()" class="btn bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-700 btn-xs font-bold flex items-center gap-1" title="Tùy biến bộ câu hỏi & chọn chủ đề nối cột">
+                <span>⚙️</span> <span>Soạn Nối Cột</span>
+              </button>
               <span id="column-match-progress-badge" class="badge badge-amber font-mono text-xs">Đã nối: 0 / 4 Cặp</span>
               <button onclick="lecturePortal.toggleInSlideColumnMatch()" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
             </div>
@@ -1223,6 +1229,46 @@
               </button>
               <button onclick="lecturePortal.openStarAwardForColumnWinner()" class="btn btn-amber btn-xs font-black shadow-md">
                 ⭐ Tặng Sao Chiến Thắng
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- WIDGET 8: TRÒ CHƠI BẮN BONG BÓNG TÌM TỪ KHÓA 3D TRÊN SLIDE (IN-SLIDE 3D BUBBLE POP GAME) -->
+        <div id="in-slide-bubble-pop-overlay" class="hidden absolute inset-4 md:inset-6 bg-slate-950/95 text-white p-5 rounded-3xl border-2 border-emerald-400 shadow-2xl backdrop-blur-xl z-30 flex flex-col justify-between space-y-3 animate-pop">
+          <!-- Header Bắn Bong Bóng -->
+          <div class="flex items-center justify-between pb-2 border-b border-emerald-400/40 shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="text-3xl p-1 bg-emerald-500/20 text-emerald-300 rounded-xl animate-bounce">🎈</span>
+              <div>
+                <h4 class="font-black text-emerald-300 text-sm md:text-base">TRÒ CHƠI BẮN BONG BÓNG TÌM TỪ KHÓA 3D</h4>
+                <p id="bubble-pop-mission-text" class="text-[11px] text-amber-300 font-bold">Nhiệm vụ: Bắn vỡ tất cả các bong bóng chứa THIẾT BỊ VÀO (INPUT)</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <span id="bubble-pop-score-badge" class="badge bg-emerald-950 text-emerald-300 border border-emerald-400 font-mono text-xs">Đã bắn: 0 / 5</span>
+              <button onclick="lecturePortal.toggleInSlideBubblePop()" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
+            </div>
+          </div>
+
+          <!-- Màn Bay Bong Bóng Canvas 3D -->
+          <div class="flex-1 w-full relative bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden cursor-crosshair flex items-center justify-center">
+            <canvas id="bubble-pop-canvas" class="w-full h-full block"></canvas>
+          </div>
+
+          <!-- Footer Bắn Bong Bóng -->
+          <div class="flex items-center justify-between pt-1 border-t border-emerald-400/40 shrink-0 text-xs">
+            <span class="text-slate-400 text-[11px]">💡 Nhấp chuột hoặc chạm tay vào bong bóng bay để bắn nổ từ khóa đúng.</span>
+            <div class="flex items-center gap-2">
+              <button onclick="lecturePortal.restartBubblePopGame()" class="btn btn-outline btn-xs text-emerald-300 border-emerald-700 hover:bg-emerald-950">
+                🔄 Chơi Lại Màn Này
+              </button>
+              <button onclick="lecturePortal.switchBubblePopMission()" class="btn btn-primary btn-xs font-bold">
+                🎯 Đổi Nhiệm Vụ Khác
+              </button>
+              <button onclick="lecturePortal.openStarAwardForBubbleWinner()" class="btn btn-amber btn-xs font-black shadow-md">
+                ⭐ Tặng Sao Xạ Thủ
               </button>
             </div>
           </div>
@@ -2085,6 +2131,61 @@
         <button onclick="document.getElementById('crossword-maker-modal').classList.remove('active')" class="btn btn-outline btn-sm">Hủy</button>
         <button onclick="lecturePortal.saveCustomCrosswordFromForm()" class="btn btn-indigo btn-sm font-black shadow-md flex items-center gap-1">
           <span>💾</span> <span>Áp Dụng Bộ Ô Chữ Này</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 35: SOẠN & TÙY BIẾN CẶP NỐI CỘT 3D (CUSTOM COLUMN MATCH MAKER MODAL) -->
+  <div id="column-match-maker-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-2xl animate-pop space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1 bg-cyan-100 rounded-xl">⚙️</span>
+          <div>
+            <h3 class="text-base font-black text-slate-900">SOẠN & TÙY BIẾN CẶP NỐI CỘT 3D</h3>
+            <p class="text-xs text-slate-500">Chọn 4 chủ đề có sẵn hoặc tự gõ các cặp định nghĩa theo bài giảng</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('column-match-maker-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+
+      <!-- 4 Bộ Chủ Đề Có Sẵn GDPT 2018 -->
+      <div class="space-y-2">
+        <label class="font-bold text-xs text-slate-700 block">📚 4 Bộ Chủ Đề Nối Cột Có Sẵn (Nạp Nhanh):</label>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button onclick="lecturePortal.loadPresetColumnMatch('devices')" class="p-2.5 bg-cyan-50 hover:bg-cyan-100 border border-cyan-300 rounded-xl text-left font-bold text-cyan-900 transition-all flex items-center gap-2">
+            <span>🖥️</span> <span>1. Thiết bị máy tính</span>
+          </button>
+          <button onclick="lecturePortal.loadPresetColumnMatch('mouse')" class="p-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl text-left font-bold text-amber-900 transition-all flex items-center gap-2">
+            <span>🖱️</span> <span>2. Thao tác chuột máy</span>
+          </button>
+          <button onclick="lecturePortal.loadPresetColumnMatch('keyboard')" class="p-2.5 bg-purple-50 hover:bg-purple-100 border border-purple-300 rounded-xl text-left font-bold text-purple-900 transition-all flex items-center gap-2">
+            <span>⌨️</span> <span>3. Các hàng phím gõ</span>
+          </button>
+          <button onclick="lecturePortal.loadPresetColumnMatch('software')" class="p-2.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl text-left font-bold text-emerald-900 transition-all flex items-center gap-2">
+            <span>🎨</span> <span>4. Phần mềm học tập</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Khung Tự Nhập Cặp Nối Cột -->
+      <div class="space-y-3 pt-2 border-t border-slate-200 text-xs">
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">TIÊU ĐỀ BỘ NỐI CỘT:</label>
+          <input type="text" id="maker-column-title" class="form-control text-xs font-bold text-cyan-800" placeholder="VD: THỬ THÁCH NỐI CỘT: CÁC THAO TÁC VỚI TỆP TIN" value="TRÒ CHƠI NỐI CỘT ĐỊNH NGHĨA 3D">
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">DANH SÁCH CẶP NỐI (Định dạng: CỘT_A | CỘT_B):</label>
+          <textarea id="maker-column-rows-input" rows="5" class="form-control text-xs font-mono" placeholder="🖥️ Màn hình | Hiển thị hình ảnh và chữ viết&#10;🖱️ Chuột | Điều khiển con trỏ trên màn hình&#10;⌨️ Bàn phím | Nhập chữ và các ký tự&#10;🔲 Thân máy | Xử lý toàn bộ dữ liệu"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+        <button onclick="document.getElementById('column-match-maker-modal').classList.remove('active')" class="btn btn-outline btn-sm">Hủy</button>
+        <button onclick="lecturePortal.saveCustomColumnMatchFromForm()" class="btn btn-cyan btn-sm font-black shadow-md flex items-center gap-1">
+          <span>💾</span> <span>Áp Dụng Cặp Nối Này</span>
         </button>
       </div>
     </div>

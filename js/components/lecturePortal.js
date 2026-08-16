@@ -9,14 +9,15 @@
  * 6. 🎡 Vòng Quay May Mắn gọi tên học sinh ngẫu nhiên trên Slide (In-Slide Lucky Wheel)
  * 7. 🔔 Đấu Trường Rung Chuông Vàng 3D củng cố bài học (In-Slide Golden Bell Arena)
  * 8. 🃏 Trò chơi Ghép Thẻ Trí Nhớ 3D trên Slide (In-Slide 3D Memory Card Match)
- * 9. ⚡ Trò chơi Nối Cột Định Nghĩa 3D trên Slide (In-Slide 3D Column Match)
- * 10. ⭐ Bảng Khen Thưởng & 🌟 Bắn Thông Báo 50 Sao Toàn Trường Realtime
- * 11. 📖 Sách 3D lật trang siêu thực có 🌙 Chế Độ Ban Đêm Neon & 🔊 Giọng đọc AI E-Book
- * 12. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
- * 13. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
- * 14. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
- * 15. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
- * 16. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
+ * 9. ⚡ Trò chơi Nối Cột Định Nghĩa 3D & ⚙️ Soạn Cặp Nối Cột (Custom Column Match Maker)
+ * 10. 🎈 Trò chơi Bắn Bong Bóng Tìm Từ Khóa 3D (In-Slide 3D Bubble Pop Game)
+ * 11. ⭐ Bảng Khen Thưởng & 🌟 Bắn Thông Báo 50 Sao Toàn Trường Realtime
+ * 12. 📖 Sách 3D lật trang siêu thực có 🌙 Chế Độ Ban Đêm Neon & 🔊 Giọng đọc AI E-Book
+ * 13. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
+ * 14. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
+ * 15. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
+ * 16. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
+ * 17. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
  */
 
 class LecturePortal {
@@ -92,11 +93,22 @@ class LecturePortal {
 
     // In-Slide 3D Column Match State
     this.columnMatchActive = false;
+    this.columnMatchData = null;
     this.columnLeftItems = [];
     this.columnRightItems = [];
     this.selectedLeftId = null;
     this.selectedRightId = null;
     this.matchedConnections = [];
+
+    // In-Slide 3D Bubble Pop Game State
+    this.bubblePopActive = false;
+    this.bubblePopMissions = [];
+    this.currentBubbleMissionIdx = 0;
+    this.bubbles = [];
+    this.bubbleParticles = [];
+    this.bubbleScore = 0;
+    this.bubbleTarget = 5;
+    this.bubbleAnimId = null;
 
     // In-Slide Star Awarding State
     this.starAwardActive = false;
@@ -175,7 +187,7 @@ class LecturePortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser, Nối Cột 3D, Ghép Thẻ, Rung Chuông Vàng, Tặng Sao & Vinh Danh Toàn Trường</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser, Nối Cột 3D, Bắn Bóng 3D, Ghép Thẻ, Rung Chuông, Tặng Sao & Vinh Danh Toàn Trường</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
@@ -475,9 +487,9 @@ class LecturePortal {
                     </button>
                   </div>
 
-                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser, Nối cột 3D, Ghép thẻ, Rung Chuông) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
+                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser, Nối cột 3D, Bắn bóng, Ghép thẻ, Rung Chuông) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
                   <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
-                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser, Nối Cột 3D, Ghép Thẻ, Rung Chuông Vàng & Tặng Sao Trực Tiếp">
+                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser, Nối Cột 3D, Bắn Bóng 3D, Ghép Thẻ, Rung Chuông Vàng & Tặng Sao Trực Tiếp">
                       <span>🎨</span> <span>Trình Chiếu & Laser</span>
                     </button>
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
@@ -533,7 +545,314 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 3: TRÒ CHƠI NỐI CỘT ĐỊNH NGHĨA 3D TRÊN SLIDE (IN-SLIDE COLUMN MATCH)
+  // OPTION 3: TRÒ CHƠI BẮN BONG BÓNG TÌM TỪ KHÓA 3D (IN-SLIDE BUBBLE POP)
+  // =========================================================================
+  toggleInSlideBubblePop() {
+    const overlay = document.getElementById("in-slide-bubble-pop-overlay");
+    if (!overlay) return;
+
+    this.bubblePopActive = !this.bubblePopActive;
+    if (this.bubblePopActive) {
+      if (this.inSlideQuizActive) this.toggleInSlideQuiz();
+      if (this.crosswordActive) this.toggleInSlideCrossword();
+      if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
+      if (this.goldenBellActive) this.toggleInSlideGoldenBell();
+      if (this.memoryCardActive) this.toggleInSlideMemoryCard();
+      if (this.columnMatchActive) this.toggleInSlideColumnMatch();
+      overlay.classList.remove("hidden");
+      this.initBubblePopGame();
+    } else {
+      overlay.classList.add("hidden");
+      if (this.bubbleAnimId) cancelAnimationFrame(this.bubbleAnimId);
+    }
+  }
+
+  initBubblePopGame() {
+    this.bubblePopMissions = [
+      {
+        mission: "Nhiệm vụ: Bắn vỡ tất cả các bong bóng chứa THIẾT BỊ VÀO (INPUT)",
+        targetCount: 5,
+        pool: [
+          { text: "Bàn phím", isTarget: true, icon: "⌨️" },
+          { text: "Chuột máy", isTarget: true, icon: "🖱️" },
+          { text: "Micro", isTarget: true, icon: "🎙️" },
+          { text: "Webcam", isTarget: true, icon: "📷" },
+          { text: "Máy quét Scanner", isTarget: true, icon: "📠" },
+          { text: "Màn hình", isTarget: false, icon: "🖥️" },
+          { text: "Máy in", isTarget: false, icon: "🖨️" },
+          { text: "Loa", isTarget: false, icon: "🔊" },
+          { text: "Tai nghe", isTarget: false, icon: "🎧" }
+        ]
+      },
+      {
+        mission: "Nhiệm vụ: Bắn vỡ tất cả các bong bóng chứa THIẾT BỊ RA (OUTPUT)",
+        targetCount: 4,
+        pool: [
+          { text: "Màn hình", isTarget: true, icon: "🖥️" },
+          { text: "Máy in", isTarget: true, icon: "🖨️" },
+          { text: "Loa nghe", isTarget: true, icon: "🔊" },
+          { text: "Tai nghe", isTarget: true, icon: "🎧" },
+          { text: "Chuột", isTarget: false, icon: "🖱️" },
+          { text: "Bàn phím", isTarget: false, icon: "⌨️" },
+          { text: "Micro", isTarget: false, icon: "🎙️" }
+        ]
+      },
+      {
+        mission: "Nhiệm vụ: Bắn vỡ các bong bóng chứa PHÍM THUỘC HÀNG CƠ SỞ (HOME ROW)",
+        targetCount: 5,
+        pool: [
+          { text: "Phím F (Gờ nổi)", isTarget: true, icon: "🔤" },
+          { text: "Phím J (Gờ nổi)", isTarget: true, icon: "🔤" },
+          { text: "Phím A", isTarget: true, icon: "🔤" },
+          { text: "Phím S", isTarget: true, icon: "🔤" },
+          { text: "Phím L", isTarget: true, icon: "🔤" },
+          { text: "Phím Q (Hàng trên)", isTarget: false, icon: "🚫" },
+          { text: "Phím Z (Hàng dưới)", isTarget: false, icon: "🚫" },
+          { text: "Phím Số 1", isTarget: false, icon: "🚫" }
+        ]
+      }
+    ];
+
+    const curMission = this.bubblePopMissions[this.currentBubbleMissionIdx % this.bubblePopMissions.length];
+    this.bubbleScore = 0;
+    this.bubbleTarget = curMission.targetCount;
+    this.bubbles = [];
+    this.bubbleParticles = [];
+
+    const missionTextEl = document.getElementById("bubble-pop-mission-text");
+    const scoreBadge = document.getElementById("bubble-pop-score-badge");
+
+    if (missionTextEl) missionTextEl.innerText = curMission.mission;
+    if (scoreBadge) scoreBadge.innerText = `Đã bắn: 0 / ${this.bubbleTarget}`;
+
+    const canvas = document.getElementById("bubble-pop-canvas");
+    if (!canvas) return;
+
+    canvas.width = canvas.parentElement.clientWidth || 800;
+    canvas.height = canvas.parentElement.clientHeight || 400;
+
+    const colors = [
+      { bg: "rgba(59, 130, 246, 0.75)", border: "#93c5fd" },
+      { bg: "rgba(16, 185, 129, 0.75)", border: "#6ee7b7" },
+      { bg: "rgba(245, 158, 11, 0.75)", border: "#fde68a" },
+      { bg: "rgba(236, 72, 153, 0.75)", border: "#fbcfe8" },
+      { bg: "rgba(139, 92, 246, 0.75)", border: "#c4b5fd" }
+    ];
+
+    // Tạo các quả bóng ban đầu
+    for (let i = 0; i < 7; i++) {
+      const item = curMission.pool[Math.floor(Math.random() * curMission.pool.length)];
+      const color = colors[i % colors.length];
+      this.bubbles.push({
+        id: i,
+        text: item.text,
+        icon: item.icon,
+        isTarget: item.isTarget,
+        x: 60 + Math.random() * (canvas.width - 120),
+        y: canvas.height + 40 + i * 55,
+        radius: 42,
+        speedY: 1.0 + Math.random() * 0.9,
+        swingOffset: Math.random() * Math.PI * 2,
+        color: color
+      });
+    }
+
+    // Lắng nghe click / touch trên canvas
+    canvas.onclick = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      this.checkBubbleClick(clickX, clickY);
+    };
+
+    if (this.bubbleAnimId) cancelAnimationFrame(this.bubbleAnimId);
+    this.animateBubblePop();
+  }
+
+  animateBubblePop() {
+    const canvas = document.getElementById("bubble-pop-canvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const curMission = this.bubblePopMissions[this.currentBubbleMissionIdx % this.bubblePopMissions.length];
+
+    // Vẽ và cập nhật bóng bay
+    for (let i = this.bubbles.length - 1; i >= 0; i--) {
+      const b = this.bubbles[i];
+      b.y -= b.speedY;
+      b.x += Math.sin(b.y * 0.02 + b.swingOffset) * 0.6;
+
+      // Vẽ quả bóng 3D dạ quang
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+      ctx.fillStyle = b.color.bg;
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = b.color.border;
+      ctx.stroke();
+
+      // Đốm sáng phản quang 3D
+      ctx.beginPath();
+      ctx.arc(b.x - b.radius * 0.35, b.y - b.radius * 0.35, b.radius * 0.22, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.fill();
+
+      // Vẽ Icon & Chữ
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "18px sans-serif";
+      ctx.fillText(b.icon, b.x, b.y - 4);
+
+      ctx.font = "bold 10px sans-serif";
+      ctx.shadowColor = "rgba(0,0,0,0.8)";
+      ctx.shadowBlur = 4;
+      ctx.fillText(b.text, b.x, b.y + 14);
+      ctx.restore();
+
+      // Nếu bay khỏi đỉnh màn hình -> hồi sinh từ dưới
+      if (b.y < -b.radius) {
+        const item = curMission.pool[Math.floor(Math.random() * curMission.pool.length)];
+        b.y = canvas.height + b.radius;
+        b.x = 60 + Math.random() * (canvas.width - 120);
+        b.text = item.text;
+        b.icon = item.icon;
+        b.isTarget = item.isTarget;
+      }
+    }
+
+    // Vẽ và cập nhật hạt nổ (Particles)
+    for (let i = this.bubbleParticles.length - 1; i >= 0; i--) {
+      const p = this.bubbleParticles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha -= 0.03;
+
+      if (p.alpha <= 0) {
+        this.bubbleParticles.splice(i, 1);
+        continue;
+      }
+
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    if (this.bubblePopActive) {
+      this.bubbleAnimId = requestAnimationFrame(() => this.animateBubblePop());
+    }
+  }
+
+  checkBubbleClick(clickX, clickY) {
+    const canvas = document.getElementById("bubble-pop-canvas");
+    const scoreBadge = document.getElementById("bubble-pop-score-badge");
+    const curMission = this.bubblePopMissions[this.currentBubbleMissionIdx % this.bubblePopMissions.length];
+
+    for (let i = 0; i < this.bubbles.length; i++) {
+      const b = this.bubbles[i];
+      const dist = Math.hypot(clickX - b.x, clickY - b.y);
+
+      if (dist < b.radius + 6) {
+        if (b.isTarget) {
+          // Bắn đúng mục tiêu!
+          this.playPopSound();
+          this.createBubbleExplosion(b.x, b.y, b.color.border);
+          this.bubbleScore++;
+
+          if (scoreBadge) scoreBadge.innerText = `Đã bắn: ${this.bubbleScore} / ${this.bubbleTarget}`;
+          window.app.showToast(`🎯 Tuyệt vời! "${b.text}" chính xác!`, "success");
+
+          // Tái sinh bóng mới
+          const item = curMission.pool[Math.floor(Math.random() * curMission.pool.length)];
+          b.y = canvas.height + b.radius;
+          b.x = 60 + Math.random() * (canvas.width - 120);
+          b.text = item.text;
+          b.icon = item.icon;
+          b.isTarget = item.isTarget;
+
+          if (this.bubbleScore >= this.bubbleTarget) {
+            this.celebrateBubbleWin();
+          }
+        } else {
+          // Bắn nhầm từ khóa không thuộc yêu cầu
+          window.app.showToast(`❌ "${b.text}" không thuộc yêu cầu nhiệm vụ này!`, "warning");
+          b.y += 40; // Đẩy tụt bóng xuống
+        }
+        break;
+      }
+    }
+  }
+
+  createBubbleExplosion(x, y, color) {
+    for (let i = 0; i < 14; i++) {
+      const angle = (Math.PI * 2 * i) / 14;
+      const speed = 2 + Math.random() * 3.5;
+      this.bubbleParticles.push({
+        x: x,
+        y: y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size: 3 + Math.random() * 4,
+        color: color,
+        alpha: 1.0
+      });
+    }
+  }
+
+  playPopSound() {
+    try {
+      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(600, this.audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1400, this.audioCtx.currentTime + 0.08);
+
+      gain.gain.setValueAtTime(0.35, this.audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.08);
+
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+
+      osc.start();
+      osc.stop(this.audioCtx.currentTime + 0.08);
+    } catch (e) {}
+  }
+
+  switchBubblePopMission() {
+    this.currentBubbleMissionIdx++;
+    this.initBubblePopGame();
+    window.app.showToast("🎯 Đã chuyển sang nhiệm vụ mới!", "info");
+  }
+
+  restartBubblePopGame() {
+    this.initBubblePopGame();
+  }
+
+  celebrateBubbleWin() {
+    this.playStarTingSound();
+    if (window.Simulation3D?.triggerFireworks) {
+      window.Simulation3D.triggerFireworks();
+    }
+    window.app.showToast(`🎉 XUẤT SẮC! Cả lớp đã bắn hạ toàn bộ ${this.bubbleTarget} mục tiêu chính xác!`, "success");
+    this.openStarAwardForBubbleWinner();
+  }
+
+  openStarAwardForBubbleWinner() {
+    this.toggleInSlideStarAward(this.wheelNames[0] ? this.wheelNames[0].replace(/^\d+\.\s*/, '') : "Xạ Thủ Bắn Bóng Xuất Sắc", "Bắn nổ chính xác tất cả các từ khóa trong trò chơi Bong Bóng 3D");
+  }
+
+  // =========================================================================
+  // OPTION 4: TRÒ CHƠI NỐI CỘT ĐỊNH NGHĨA 3D & SOẠN CẶP NỐI (CUSTOM COLUMN MATCH)
   // =========================================================================
   toggleInSlideColumnMatch() {
     const overlay = document.getElementById("in-slide-column-match-overlay");
@@ -546,23 +865,134 @@ class LecturePortal {
       if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
       if (this.goldenBellActive) this.toggleInSlideGoldenBell();
       if (this.memoryCardActive) this.toggleInSlideMemoryCard();
+      if (this.bubblePopActive) this.toggleInSlideBubblePop();
       overlay.classList.remove("hidden");
-      this.initColumnMatchGame();
+      if (!this.columnMatchData) {
+        this.loadPresetColumnMatch('devices');
+      } else {
+        this.initColumnMatchGame();
+      }
     } else {
       overlay.classList.add("hidden");
     }
   }
 
+  openColumnMatchMakerModal() {
+    const modal = document.getElementById("column-match-maker-modal");
+    if (!modal) return;
+
+    const titleInput = document.getElementById("maker-column-title");
+    const rowsInput = document.getElementById("maker-column-rows-input");
+
+    if (this.columnMatchData) {
+      if (titleInput) titleInput.value = this.columnMatchData.title;
+      if (rowsInput) {
+        rowsInput.value = this.columnMatchData.pairs.map(p => `${p.left} | ${p.right}`).join("\n");
+      }
+    }
+
+    modal.classList.add("active");
+  }
+
+  loadPresetColumnMatch(presetKey) {
+    const presets = {
+      devices: {
+        title: "CHỦ ĐỀ 1: THIẾT BỊ MÁY TÍNH & CHỨC NĂNG",
+        pairs: [
+          { id: 1, left: "🖥️ Màn hình máy tính", right: "Hiển thị hình ảnh, chữ viết và kết quả làm việc cho em quan sát" },
+          { id: 2, left: "🖱️ Chuột máy tính", right: "Điều khiển con trỏ trên màn hình và thực hiện nhấp chọn đối tượng" },
+          { id: 3, left: "⌨️ Bàn phím máy tính", right: "Nhập các ký tự văn bản, chữ cái, con số và phím điều khiển vào máy tính" },
+          { id: 4, left: "🔲 Thân máy (CPU)", right: "Chứa bộ vi xử lý đóng vai trò bộ não xử lý toàn bộ dữ liệu máy tính" }
+        ]
+      },
+      mouse: {
+        title: "CHỦ ĐỀ 2: CÁC THAO TÁC CƠ BẢN VỚI CHUỘT MÁY TÍNH",
+        pairs: [
+          { id: 1, left: "🖱️ Nháy chuột trái", right: "Nhấn nút chuột trái một lần rồi thả tay để chọn một đối tượng" },
+          { id: 2, left: "🖱️ Nháy đúp chuột", right: "Nhấn nút chuột trái liên tiếp 2 lần thật nhanh để mở tệp hoặc phần mềm" },
+          { id: 3, left: "🖱️ Nháy chuột phải", right: "Nhấn nút chuột phải một lần để mở bảng menu lối tắt tính năng" },
+          { id: 4, left: "🖱️ Kéo thả chuột", right: "Nhấn giữ nút chuột trái, di chuyển đối tượng đến vị trí mới rồi thả tay" }
+        ]
+      },
+      keyboard: {
+        title: "CHỦ ĐỀ 3: CÁC HÀNG PHÍM TRÊN BÀN PHÍM MÁY TÍNH",
+        pairs: [
+          { id: 1, left: "⌨️ Hàng phím cơ sở", right: "Chứa 2 phím có gờ mốc đặt tay F và J cùng các phím A, S, D, K, L" },
+          { id: 2, left: "⌨️ Hàng phím trên", right: "Nằm ngay phía trên hàng cơ sở, chứa các phím Q, W, E, R, T, Y, U, I, O, P" },
+          { id: 3, left: "⌨️ Hàng phím dưới", right: "Nằm ngay phía dưới hàng cơ sở, chứa các phím Z, X, C, V, B, N, M" },
+          { id: 4, left: "⌨️ Phím cách (Space)", right: "Phím dài nhất nằm ở hàng phím dưới cùng dùng để tạo dấu cách giữa các từ" }
+        ]
+      },
+      software: {
+        title: "CHỦ ĐỀ 4: PHẦN MỀM HỌC TẬP VÀ BIỂU TƯỢNG",
+        pairs: [
+          { id: 1, left: "📝 MS Word (W màu xanh)", right: "Phần mềm dùng để soạn thảo bài thơ, kể chuyện và định dạng văn bản" },
+          { id: 2, left: "🎨 Paint (Bảng pha màu)", right: "Phần mềm dùng để vẽ tranh, tô màu và tạo các hình khối sáng tạo" },
+          { id: 3, left: "🐱 Scratch (Chú mèo vàng)", right: "Môi trường lập trình kéo thả các khối lệnh tạo trò chơi và hoạt hình" },
+          { id: 4, left: "🌐 Trình duyệt Web", right: "Phần mềm Chrome hoặc Cốc Cốc dùng để tra cứu kiến thức trên Internet" }
+        ]
+      }
+    };
+
+    const chosen = presets[presetKey] || presets.devices;
+    this.columnMatchData = JSON.parse(JSON.stringify(chosen));
+
+    const modal = document.getElementById("column-match-maker-modal");
+    if (modal) modal.classList.remove("active");
+
+    const themeTitle = document.getElementById("column-match-theme-title");
+    if (themeTitle) themeTitle.innerText = this.columnMatchData.title;
+
+    this.initColumnMatchGame();
+    window.app.showToast(`🎉 Đã tải bộ nối cột: "${chosen.title}"!`, "success");
+  }
+
+  saveCustomColumnMatchFromForm() {
+    const titleInput = document.getElementById("maker-column-title");
+    const rowsInput = document.getElementById("maker-column-rows-input");
+
+    if (!titleInput || !rowsInput) return;
+
+    const title = (titleInput.value || "BỘ NỐI CỘT TÙY BIẾN").trim();
+    const lines = rowsInput.value.split("\n").filter(l => l.trim().length > 0);
+
+    if (lines.length < 2) {
+      window.app.showToast("Thầy Cô hãy nhập ít nhất 2 cặp nối (Cột A | Cột B)!", "warning");
+      return;
+    }
+
+    const pairs = lines.map((line, idx) => {
+      const parts = line.split("|");
+      const left = (parts[0] || `Khái niệm ${idx + 1}`).trim();
+      const right = (parts[1] || `Định nghĩa ${idx + 1}`).trim();
+      return { id: idx + 1, left, right };
+    });
+
+    this.columnMatchData = {
+      title: title,
+      pairs: pairs
+    };
+
+    const modal = document.getElementById("column-match-maker-modal");
+    if (modal) modal.classList.remove("active");
+
+    const themeTitle = document.getElementById("column-match-theme-title");
+    if (themeTitle) themeTitle.innerText = this.columnMatchData.title;
+
+    this.initColumnMatchGame();
+    window.app.showToast(`🎉 Đã áp dụng thành công bộ nối cột: "${title}"!`, "success");
+  }
+
   initColumnMatchGame() {
-    const basePairs = [
+    const pairs = (this.columnMatchData && this.columnMatchData.pairs) ? this.columnMatchData.pairs : [
       { id: 1, left: "🖥️ Màn hình máy tính", right: "Hiển thị hình ảnh, chữ viết và kết quả làm việc cho em quan sát" },
       { id: 2, left: "🖱️ Chuột máy tính", right: "Điều khiển con trỏ trên màn hình và thực hiện nhấp chọn đối tượng" },
       { id: 3, left: "⌨️ Bàn phím máy tính", right: "Nhập các ký tự văn bản, chữ cái, con số và phím điều khiển vào máy tính" },
       { id: 4, left: "🔲 Thân máy (CPU)", right: "Chứa bộ vi xử lý đóng vai trò bộ não xử lý toàn bộ dữ liệu máy tính" }
     ];
 
-    this.columnLeftItems = basePairs.map(p => ({ id: p.id, text: p.left })).sort(() => Math.random() - 0.5);
-    this.columnRightItems = basePairs.map(p => ({ id: p.id, text: p.right })).sort(() => Math.random() - 0.5);
+    this.columnLeftItems = pairs.map(p => ({ id: p.id, text: p.left })).sort(() => Math.random() - 0.5);
+    this.columnRightItems = pairs.map(p => ({ id: p.id, text: p.right })).sort(() => Math.random() - 0.5);
     this.selectedLeftId = null;
     this.selectedRightId = null;
     this.matchedConnections = [];
@@ -574,9 +1004,10 @@ class LecturePortal {
     const leftListEl = document.getElementById("column-match-left-list");
     const rightListEl = document.getElementById("column-match-right-list");
     const progressBadge = document.getElementById("column-match-progress-badge");
+    const totalPairs = this.columnLeftItems.length;
 
     if (progressBadge) {
-      progressBadge.innerText = `Đã nối: ${this.matchedConnections.length} / 4 Cặp`;
+      progressBadge.innerText = `Đã nối: ${this.matchedConnections.length} / ${totalPairs} Cặp`;
     }
 
     if (leftListEl) {
@@ -634,7 +1065,6 @@ class LecturePortal {
     if (this.selectedLeftId === null || this.selectedRightId === null) return;
 
     if (this.selectedLeftId === this.selectedRightId) {
-      // Nối đúng!
       this.matchedConnections.push({
         leftId: this.selectedLeftId,
         rightId: this.selectedRightId
@@ -647,11 +1077,10 @@ class LecturePortal {
 
       window.app.showToast("✅ Chính xác! Bạn đã nối đúng chức năng thiết bị!", "success");
 
-      if (this.matchedConnections.length === 4) {
+      if (this.matchedConnections.length === this.columnLeftItems.length) {
         this.celebrateColumnMatchWin();
       }
     } else {
-      // Nối sai
       const leftBtn = document.getElementById(`col-left-${this.selectedLeftId}`);
       const rightBtn = document.getElementById(`col-right-${this.selectedRightId}`);
 
@@ -673,7 +1102,7 @@ class LecturePortal {
     if (window.Simulation3D?.triggerFireworks) {
       window.Simulation3D.triggerFireworks();
     }
-    window.app.showToast("🎉 XUẤT SẮC! Cả lớp đã hoàn thành chính xác toàn bộ 4 cặp nối định nghĩa!", "success");
+    window.app.showToast("🎉 XUẤT SẮC! Cả lớp đã hoàn thành chính xác toàn bộ các cặp nối định nghĩa!", "success");
     this.openStarAwardForColumnWinner();
   }
 
@@ -682,7 +1111,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 4: BẢNG KHEN THƯỞNG & BẮN THÔNG BÁO 50 SAO TOÀN TRƯỜNG REALTIME
+  // BẢNG KHEN THƯỞNG & BẮN THÔNG BÁO 50 SAO TOÀN TRƯỜNG REALTIME
   // =========================================================================
   toggleInSlideStarAward(prefilledStudentName = "", defaultReason = "Phát biểu đúng và tích cực xây dựng bài học trên Slide") {
     const overlay = document.getElementById("in-slide-star-award-overlay");
@@ -772,7 +1201,6 @@ class LecturePortal {
       if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
 
-      // Âm thanh kèn đồng khải hoàn Fanfare (C4 - E4 - G4 - C5 - G4 - C5)
       const notes = [261.63, 329.63, 392.00, 523.25, 392.00, 523.25];
       const durations = [0.15, 0.15, 0.15, 0.35, 0.15, 0.6];
       let offset = 0;
@@ -857,6 +1285,7 @@ class LecturePortal {
       if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
       if (this.goldenBellActive) this.toggleInSlideGoldenBell();
       if (this.columnMatchActive) this.toggleInSlideColumnMatch();
+      if (this.bubblePopActive) this.toggleInSlideBubblePop();
       overlay.classList.remove("hidden");
       this.initMemoryCardGame();
     } else {
@@ -1104,6 +1533,7 @@ class LecturePortal {
       if (this.goldenBellActive) this.toggleInSlideGoldenBell();
       if (this.memoryCardActive) this.toggleInSlideMemoryCard();
       if (this.columnMatchActive) this.toggleInSlideColumnMatch();
+      if (this.bubblePopActive) this.toggleInSlideBubblePop();
       overlay.classList.remove("hidden");
       this.loadInSlideQuestion();
       this.startInSlideCountdown();
@@ -1243,6 +1673,7 @@ class LecturePortal {
       if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
       if (this.memoryCardActive) this.toggleInSlideMemoryCard();
       if (this.columnMatchActive) this.toggleInSlideColumnMatch();
+      if (this.bubblePopActive) this.toggleInSlideBubblePop();
       overlay.classList.remove("hidden");
       this.initGoldenBellArena();
     } else {
@@ -1470,6 +1901,7 @@ class LecturePortal {
       if (this.goldenBellActive) this.toggleInSlideGoldenBell();
       if (this.memoryCardActive) this.toggleInSlideMemoryCard();
       if (this.columnMatchActive) this.toggleInSlideColumnMatch();
+      if (this.bubblePopActive) this.toggleInSlideBubblePop();
       overlay.classList.remove("hidden");
       if (!this.crosswordData) {
         this.loadPresetCrossword('computer');
@@ -1758,6 +2190,7 @@ class LecturePortal {
       if (this.goldenBellActive) this.toggleInSlideGoldenBell();
       if (this.memoryCardActive) this.toggleInSlideMemoryCard();
       if (this.columnMatchActive) this.toggleInSlideColumnMatch();
+      if (this.bubblePopActive) this.toggleInSlideBubblePop();
       overlay.classList.remove("hidden");
       
       const input = document.getElementById("lucky-wheel-names-input");
@@ -2201,6 +2634,7 @@ class LecturePortal {
     if (this.goldenBellActive) this.toggleInSlideGoldenBell();
     if (this.memoryCardActive) this.toggleInSlideMemoryCard();
     if (this.columnMatchActive) this.toggleInSlideColumnMatch();
+    if (this.bubblePopActive) this.toggleInSlideBubblePop();
     if (this.starAwardActive) this.toggleInSlideStarAward();
   }
 
