@@ -5,12 +5,13 @@
  * 2. 📤 Nút đưa bài giảng lên cho Giáo viên (Đồng bộ Supabase Cloud & Local)
  * 3. 🎨 Bút Laser đỏ & Bút dạ quang khi Trình chiếu Slide (Laser Pointer & Pen Tool)
  * 4. ⚡ Đố vui 10s tương tác trực tiếp trên Slide (In-Slide Quick Quiz 10s)
- * 5. 📖 Sách 3D lật trang siêu thực có âm thanh sột soạt (3D Flipbook E-Book Viewer)
- * 6. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
- * 7. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
- * 8. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
- * 9. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
- * 10. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
+ * 5. 🧩 Trò chơi Ô Chữ Bí Mật 3D tương tác trên Slide (In-Slide 3D Crossword Puzzle)
+ * 6. 📖 Sách 3D lật trang siêu thực có âm thanh sột soạt & 🔊 Giọng đọc AI E-Book
+ * 7. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
+ * 8. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
+ * 9. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
+ * 10. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
+ * 11. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
  */
 
 class LecturePortal {
@@ -37,9 +38,10 @@ class LecturePortal {
     // 3D Flipbook State
     this.activeFlipbookLecture = null;
     this.flipbookPages = [];
-    this.currentFlipbookIndex = 0; // Chứa cặp trang: 0 = trang 1-2, 2 = trang 3-4...
+    this.currentFlipbookIndex = 0;
     this.isAutoFlipRunning = false;
     this.autoFlipTimer = null;
+    this.isReadingAloud = false;
 
     // In-Slide Quick Quiz 10s State
     this.inSlideQuizActive = false;
@@ -47,6 +49,11 @@ class LecturePortal {
     this.inSlideQuizInterval = null;
     this.currentInSlideQuestion = null;
     this.isInSlideAnswerRevealed = false;
+
+    // In-Slide 3D Crossword State
+    this.crosswordActive = false;
+    this.selectedCrosswordRow = 0;
+    this.crosswordData = null;
 
     // Icebreaker Game State
     this.icebreakerActive = false;
@@ -120,7 +127,7 @@ class LecturePortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser & Đố vui 10s, Sách 3D lật trang, Video hoạt họa AI và Bảng Vàng Thống Kê</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser & Ô chữ 3D, Sách 3D có Giọng đọc AI, Video hoạt họa và Bảng Vàng Thống Kê</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
@@ -402,8 +409,8 @@ class LecturePortal {
                     <button onclick="lecturePortal.openSlideVideoPlayer('${l.id}')" class="btn btn-amber btn-sm font-black flex items-center justify-center gap-1 shadow-sm" title="Tự động chuyển Slide thành Video hoạt họa AI có thuyết minh tiếng Việt">
                       <span>🎬</span> <span>Video Hoạt Họa AI</span>
                     </button>
-                    <button onclick="lecturePortal.openFlipbook('${l.id}')" class="btn bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white btn-sm font-black flex items-center justify-center gap-1 shadow-sm hover:scale-105 transition-all" title="Trình chiếu Sách 3D Lật Trang Siêu Thực có âm thanh sột soạt">
-                      <span>📖</span> <span>Sách 3D Lật Trang</span>
+                    <button onclick="lecturePortal.openFlipbook('${l.id}')" class="btn bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white btn-sm font-black flex items-center justify-center gap-1 shadow-sm hover:scale-105 transition-all" title="Trình chiếu Sách 3D Lật Trang Siêu Thực có âm thanh sột soạt & Giọng đọc AI">
+                      <span>📖</span> <span>Sách 3D & Giọng AI</span>
                     </button>
                   </div>
 
@@ -420,9 +427,9 @@ class LecturePortal {
                     </button>
                   </div>
 
-                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser & Đố vui 10s) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
+                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser & Ô chữ 3D) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
                   <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
-                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser & Đố Vui 10s">
+                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser & Ô Chữ Bí Mật 3D">
                       <span>🎨</span> <span>Trình Chiếu & Laser</span>
                     </button>
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
@@ -487,8 +494,6 @@ class LecturePortal {
 
     window.app.showToast("📊 Đang tổng hợp số liệu Bảng Vàng & Mức độ yêu thích...", "info");
     const summary = await window.lectureService.getAnalyticsSummary();
-
-    const maxViews = Math.max(...Object.values(summary.gradeStats).map(g => g.views), 10);
 
     contentEl.innerHTML = `
       <div class="space-y-6 text-xs text-slate-800 animate-pop">
@@ -603,6 +608,7 @@ class LecturePortal {
 
     this.inSlideQuizActive = !this.inSlideQuizActive;
     if (this.inSlideQuizActive) {
+      if (this.crosswordActive) this.toggleInSlideCrossword(); // Đóng ô chữ nếu đang mở
       overlay.classList.remove("hidden");
       this.loadInSlideQuestion();
       this.startInSlideCountdown();
@@ -613,15 +619,13 @@ class LecturePortal {
   }
 
   loadInSlideQuestion() {
-    const defaultQ = {
-      question: "Thiết bị nào sau đây dùng để hiển thị hình ảnh và kết quả làm việc của máy tính?",
-      options: ["A. Màn hình", "B. Bàn phím", "C. Chuột", "D. Thân máy"],
-      correct: 0,
-      explanation: "Màn hình là thiết bị xuất hiển thị hình ảnh cho người dùng quan sát."
-    };
-
     const questions = [
-      defaultQ,
+      {
+        question: "Thiết bị nào sau đây dùng để hiển thị hình ảnh và kết quả làm việc của máy tính?",
+        options: ["A. Màn hình", "B. Bàn phím", "C. Chuột", "D. Thân máy"],
+        correct: 0,
+        explanation: "Màn hình là thiết bị xuất hiển thị hình ảnh cho người dùng quan sát."
+      },
       {
         question: "Hai phím cơ sở có gờ nổi trên hàng phím cơ sở là hai phím nào?",
         options: ["A. Phím F và J", "B. Phím G và H", "C. Phím A và L", "D. Phím D và K"],
@@ -730,48 +734,181 @@ class LecturePortal {
     this.startInSlideCountdown();
   }
 
-  playTickSound() {
-    try {
-      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+  // =========================================================================
+  // OPTION 5: TRÒ CHƠI Ô CHỮ BÍ MẬT 3D TRÊN SLIDE (IN-SLIDE 3D CROSSWORD PUZZLE)
+  // =========================================================================
+  toggleInSlideCrossword() {
+    const overlay = document.getElementById("in-slide-crossword-overlay");
+    if (!overlay) return;
 
-      const osc = this.audioCtx.createOscillator();
-      const gain = this.audioCtx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(800, this.audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.05, this.audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.08);
-
-      osc.connect(gain);
-      gain.connect(this.audioCtx.destination);
-      osc.start();
-      osc.stop(this.audioCtx.currentTime + 0.08);
-    } catch (e) {}
+    this.crosswordActive = !this.crosswordActive;
+    if (this.crosswordActive) {
+      if (this.inSlideQuizActive) this.toggleInSlideQuiz(); // Đóng đố vui nếu đang mở
+      overlay.classList.remove("hidden");
+      this.initCrosswordGame();
+    } else {
+      overlay.classList.add("hidden");
+    }
   }
 
-  playTingSound() {
-    try {
-      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+  initCrosswordGame() {
+    this.crosswordData = {
+      secretKeyword: "MAYTINH",
+      rows: [
+        {
+          id: 0,
+          word: "MANHINH",
+          clue: "Thiết bị dùng để hiển thị chữ và hình ảnh cho người dùng nhìn thấy.",
+          revealed: false,
+          keyCharIndex: 0 // Chữ M
+        },
+        {
+          id: 1,
+          word: "ANTOAN",
+          clue: "Quy tắc hàng đầu khi sử dụng điện và thiết bị công nghệ trong phòng máy.",
+          revealed: false,
+          keyCharIndex: 0 // Chữ A
+        },
+        {
+          id: 2,
+          word: "YNGHIA",
+          clue: "Đặt tên thư mục hoặc tệp tin phải rõ ràng và có...",
+          revealed: false,
+          keyCharIndex: 0 // Chữ Y
+        },
+        {
+          id: 3,
+          word: "THUMUC",
+          clue: "Nơi lưu trữ và sắp xếp các tệp tin bài học như một ngăn kéo tủ.",
+          revealed: false,
+          keyCharIndex: 0 // Chữ T
+        },
+        {
+          id: 4,
+          word: "INTERNET",
+          clue: "Mạng lưới thông tin toàn cầu kết nối hàng triệu máy tính.",
+          revealed: false,
+          keyCharIndex: 0 // Chữ I
+        },
+        {
+          id: 5,
+          word: "NHAPCHU",
+          clue: "Thao tác gõ các ký tự văn bản thông qua bàn phím.",
+          revealed: false,
+          keyCharIndex: 0 // Chữ N
+        },
+        {
+          id: 6,
+          word: "HOCBAI",
+          clue: "Mục đích chính của em khi sử dụng Web Vui Học mỗi ngày.",
+          revealed: false,
+          keyCharIndex: 0 // Chữ H
+        }
+      ]
+    };
 
-      [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
-        const osc = this.audioCtx.createOscillator();
-        const gain = this.audioCtx.createGain();
-        osc.type = "triangle";
-        osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime + idx * 0.1);
-        gain.gain.setValueAtTime(0.2, this.audioCtx.currentTime + idx * 0.1);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + idx * 0.1 + 0.8);
+    this.selectedCrosswordRow = 0;
+    this.renderCrosswordGrid();
+    this.renderAlphabetButtons();
+    this.selectCrosswordRow(0);
+  }
 
-        osc.connect(gain);
-        gain.connect(this.audioCtx.destination);
-        osc.start(this.audioCtx.currentTime + idx * 0.1);
-        osc.stop(this.audioCtx.currentTime + idx * 0.1 + 0.8);
-      });
-    } catch (e) {}
+  renderCrosswordGrid() {
+    const grid = document.getElementById("in-slide-crossword-grid");
+    if (!grid || !this.crosswordData) return;
+
+    grid.innerHTML = this.crosswordData.rows.map((row, rIdx) => {
+      const isSelected = this.selectedCrosswordRow === rIdx;
+      return `
+        <div onclick="lecturePortal.selectCrosswordRow(${rIdx})" class="flex items-center gap-2 p-1.5 rounded-2xl cursor-pointer transition-all ${isSelected ? 'bg-indigo-600/30 border border-indigo-400' : 'hover:bg-white/5'}">
+          <span class="badge ${isSelected ? 'badge-amber' : 'bg-white/10 text-white'} text-[10px] font-black w-14 text-center">Hàng ${rIdx + 1}</span>
+          
+          <div class="flex items-center gap-1.5">
+            ${row.word.split('').map((char, cIdx) => {
+              const isKeyChar = cIdx === row.keyCharIndex;
+              const isShown = row.revealed;
+
+              return `
+                <div class="w-8 h-8 md:w-9 md:h-9 rounded-xl border-2 font-black text-sm md:text-base flex items-center justify-center transition-all duration-500 select-none ${isShown ? (isKeyChar ? 'bg-amber-400 border-amber-300 text-slate-950 shadow-md transform rotate-y-360 scale-105' : 'bg-emerald-600 border-emerald-400 text-white shadow-sm') : (isKeyChar ? 'bg-indigo-950 border-amber-400 text-transparent ring-1 ring-amber-400' : 'bg-slate-900 border-slate-700 text-transparent')}">
+                  ${isShown ? char : (isKeyChar ? '⭐' : '')}
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  selectCrosswordRow(rowIndex) {
+    this.selectedCrosswordRow = rowIndex;
+    this.renderCrosswordGrid();
+
+    const row = this.crosswordData.rows[rowIndex];
+    const clueLabel = document.getElementById("crossword-clue-label");
+    const clueText = document.getElementById("crossword-clue-text");
+
+    if (clueLabel) clueLabel.innerText = `HÀNG ${rowIndex + 1} (${row.word.length} CHỮ CÁI)`;
+    if (clueText) clueText.innerText = row.clue;
+  }
+
+  revealCurrentCrosswordRow() {
+    const row = this.crosswordData.rows[this.selectedCrosswordRow];
+    if (!row) return;
+
+    row.revealed = true;
+    this.renderCrosswordGrid();
+    this.playTingSound();
+    window.app.showToast(`🎉 Đã mở khóa hàng ${this.selectedCrosswordRow + 1}: ${row.word}!`, "success");
+
+    // Kiểm tra nếu đã mở hết
+    if (this.crosswordData.rows.every(r => r.revealed)) {
+      this.celebrateCrosswordWin();
+    }
+  }
+
+  revealSecretKeyword() {
+    this.crosswordData.rows.forEach(r => r.revealed = true);
+    this.renderCrosswordGrid();
+    this.celebrateCrosswordWin();
+  }
+
+  celebrateCrosswordWin() {
+    this.playTingSound();
+    if (window.Simulation3D?.triggerFireworks) {
+      window.Simulation3D.triggerFireworks();
+    }
+    window.app.showToast(`👑 CHÚC MỪNG CẢ LỚP ĐÃ GIẢI ĐƯỢC TỪ KHÓA BÍ MẬT: "MÁY TÍNH"!`, "success");
+  }
+
+  renderAlphabetButtons() {
+    const container = document.getElementById("crossword-alphabet-buttons");
+    if (!container) return;
+
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    container.innerHTML = alphabet.map(char => `
+      <button onclick="lecturePortal.guessCrosswordLetter('${char}')" class="w-6 h-6 rounded-lg bg-slate-900 hover:bg-amber-400 hover:text-slate-950 border border-slate-700 text-[10px] font-black transition-all">
+        ${char}
+      </button>
+    `).join("");
+  }
+
+  guessCrosswordLetter(letter) {
+    const row = this.crosswordData.rows[this.selectedCrosswordRow];
+    if (!row) return;
+
+    if (row.word.includes(letter)) {
+      row.revealed = true;
+      this.renderCrosswordGrid();
+      this.playTingSound();
+      window.app.showToast(`✅ Chính xác! Chữ '${letter}' có trong hàng ${this.selectedCrosswordRow + 1}!`, "success");
+    } else {
+      window.app.showToast(`❌ Chưa đúng, hàng này không có chữ '${letter}'!`, "info");
+    }
   }
 
   // =========================================================================
-  // OPTION 5: TRÌNH CHIẾU SÁCH 3D LẬT TRANG SIÊU THỰC (3D FLIPBOOK E-BOOK VIEWER)
+  // OPTION 3: SÁCH 3D LẬT TRANG & GIỌNG ĐỌC AI E-BOOK READ-ALOUD
   // =========================================================================
   async openFlipbook(lectureId) {
     const lecture = await window.lectureService.getLectureById(lectureId);
@@ -781,6 +918,7 @@ class LecturePortal {
     this.flipbookPages = window.lectureService.generateFlipbookPages(lecture);
     this.currentFlipbookIndex = 0;
     this.isAutoFlipRunning = false;
+    this.isReadingAloud = false;
 
     const modal = document.getElementById("lecture-flipbook-modal");
     const titleEl = document.getElementById("flipbook-title-disp");
@@ -794,6 +932,7 @@ class LecturePortal {
 
   closeFlipbookModal() {
     this.stopAutoFlipbook();
+    this.stopReadAloud();
     const modal = document.getElementById("lecture-flipbook-modal");
     if (modal) modal.classList.remove("active");
     this.activeFlipbookLecture = null;
@@ -869,6 +1008,10 @@ class LecturePortal {
         </div>
       `;
     }
+
+    if (this.isReadingAloud) {
+      this.readCurrentFlipbookPage();
+    }
   }
 
   nextFlipbookPage() {
@@ -895,7 +1038,7 @@ class LecturePortal {
     const btn = document.getElementById("btn-toggle-auto-flip");
 
     if (this.isAutoFlipRunning) {
-      if (btn) btn.innerHTML = "<span>⏸️</span> <span>Dừng Tự Động Lật</span>";
+      if (btn) btn.innerHTML = "<span>⏸️</span> <span>Dừng (5s)</span>";
       window.app.showToast("▶️ Bắt đầu tự động lật trang mỗi 5 giây!", "info");
 
       this.autoFlipTimer = setInterval(() => {
@@ -916,7 +1059,70 @@ class LecturePortal {
     this.isAutoFlipRunning = false;
     if (this.autoFlipTimer) clearInterval(this.autoFlipTimer);
     const btn = document.getElementById("btn-toggle-auto-flip");
-    if (btn) btn.innerHTML = "<span>▶️</span> <span>Tự Động Lật (5s)</span>";
+    if (btn) btn.innerHTML = "<span>▶️</span> <span>Tự Động (5s)</span>";
+  }
+
+  // Giọng đọc AI đọc to nội dung trang sách (E-Book Read-Aloud)
+  toggleReadAloudFlipbook() {
+    this.isReadingAloud = !this.isReadingAloud;
+    const btn = document.getElementById("btn-read-aloud-flipbook");
+
+    if (this.isReadingAloud) {
+      if (btn) btn.innerHTML = "<span>⏸️</span> <span>Dừng Đọc</span>";
+      window.app.showToast("🔊 Đang đọc nội dung trang sách bằng giọng đọc AI...", "info");
+      this.readCurrentFlipbookPage();
+    } else {
+      this.stopReadAloud();
+    }
+  }
+
+  stopReadAloud() {
+    this.isReadingAloud = false;
+    if (this.speechSynth) this.speechSynth.cancel();
+    const btn = document.getElementById("btn-read-aloud-flipbook");
+    if (btn) btn.innerHTML = "<span>🔊</span> <span>Đọc Sách AI</span>";
+  }
+
+  readCurrentFlipbookPage() {
+    if (!this.speechSynth) return;
+    this.speechSynth.cancel();
+
+    const pageL = this.flipbookPages[this.currentFlipbookIndex];
+    const pageR = this.flipbookPages[this.currentFlipbookIndex + 1];
+
+    let fullText = "";
+    if (pageL) {
+      fullText += `Trang ${pageL.pageNum}: ${pageL.title}. `;
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = pageL.content;
+      fullText += tempDiv.innerText + " ";
+    }
+    if (pageR) {
+      fullText += `Trang ${pageR.pageNum}: ${pageR.title}. `;
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = pageR.content;
+      fullText += tempDiv.innerText;
+    }
+
+    const utter = new SpeechSynthesisUtterance(fullText);
+    utter.lang = "vi-VN";
+    utter.rate = this.speechRate;
+    utter.pitch = this.voiceGender === "female" ? 1.15 : 0.85;
+
+    utter.onend = () => {
+      if (this.isReadingAloud) {
+        setTimeout(() => {
+          if (this.currentFlipbookIndex + 2 < this.flipbookPages.length) {
+            this.nextFlipbookPage();
+          } else {
+            this.stopReadAloud();
+            window.app.showToast("🎉 Đã đọc xong toàn bộ cuốn sách bài học!", "success");
+          }
+        }, 1500);
+      }
+    };
+
+    this.speechSynth.speak(utter);
   }
 
   playPageFlipSound() {
@@ -924,8 +1130,7 @@ class LecturePortal {
       if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
 
-      // Mô phỏng âm thanh lật giấy sột soạt (white noise burst with bandpass filter)
-      const bufferSize = this.audioCtx.sampleRate * 0.15; // 150ms
+      const bufferSize = this.audioCtx.sampleRate * 0.15;
       const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
       const output = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
@@ -953,7 +1158,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 1: TRÌNH CHIẾU SLIDE & BẢNG VẼ BÚT LASER / DẠ QUANG
+  // TRÌNH CHIẾU SLIDE & BẢNG VẼ BÚT LASER / DẠ QUANG
   // =========================================================================
   async previewLecture(lectureId) {
     const lecture = await window.lectureService.getLectureById(lectureId);
@@ -979,6 +1184,7 @@ class LecturePortal {
     if (modal) modal.classList.remove("active");
     this.disableDrawingMode("lec-preview-canvas");
     if (this.inSlideQuizActive) this.toggleInSlideQuiz();
+    if (this.crosswordActive) this.toggleInSlideCrossword();
   }
 
   toggleDrawingMode(canvasId) {
@@ -1668,6 +1874,46 @@ class LecturePortal {
 
         osc.start(this.audioCtx.currentTime + idx * 0.15);
         osc.stop(this.audioCtx.currentTime + idx * 0.15 + 1.2);
+      });
+    } catch (e) {}
+  }
+
+  playTickSound() {
+    try {
+      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(800, this.audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.05, this.audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.08);
+
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+      osc.start();
+      osc.stop(this.audioCtx.currentTime + 0.08);
+    } catch (e) {}
+  }
+
+  playTingSound() {
+    try {
+      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+
+      [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime + idx * 0.1);
+        gain.gain.setValueAtTime(0.2, this.audioCtx.currentTime + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + idx * 0.1 + 0.8);
+
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.start(this.audioCtx.currentTime + idx * 0.1);
+        osc.stop(this.audioCtx.currentTime + idx * 0.1 + 0.8);
       });
     } catch (e) {}
   }

@@ -826,8 +826,11 @@
 
         <!-- Toolbar Bút Vẽ & Đố Vui Giảng Bài -->
         <div class="flex items-center gap-2">
+          <button onclick="lecturePortal.toggleInSlideCrossword()" class="btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mở trò chơi Ô Chữ Bí Mật 3D tương tác trên Slide">
+            <span>🧩</span> <span>Ô Chữ Bí Mật 3D</span>
+          </button>
           <button onclick="lecturePortal.toggleInSlideQuiz()" class="btn bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all">
-            <span>⚡</span> <span>Đố Vui 10s Trên Slide</span>
+            <span>⚡</span> <span>Đố Vui 10s</span>
           </button>
           <button onclick="lecturePortal.toggleDrawingMode('lec-preview-canvas')" class="btn btn-amber btn-xs font-black shadow-sm flex items-center gap-1">
             <span>🎨</span> <span>Bút Vẽ & Laser</span>
@@ -854,7 +857,7 @@
         </button>
       </div>
 
-      <!-- Khung Chiếu Chứa Iframe, Canvas Vẽ và Widget Đố Vui 10s -->
+      <!-- Khung Chiếu Chứa Iframe, Canvas Vẽ, Widget Đố Vui 10s và Ô Chữ Bí Mật 3D -->
       <div class="flex-1 bg-slate-900 rounded-2xl overflow-hidden shadow-inner relative flex items-center justify-center">
         <iframe id="lec-preview-iframe" class="w-full h-full border-0" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
         <canvas id="lec-preview-canvas" class="absolute inset-0 z-20 pointer-events-none w-full h-full"></canvas>
@@ -892,6 +895,42 @@
             </button>
             <button id="btn-reveal-answer" onclick="lecturePortal.revealInSlideAnswer()" class="btn btn-amber btn-xs font-black shadow-md">
               📢 Công Bố Đáp Án
+            </button>
+          </div>
+        </div>
+
+        <!-- WIDGET Ô CHỮ BÍ MẬT 3D TRÊN SLIDE (IN-SLIDE 3D CROSSWORD OVERLAY) -->
+        <div id="in-slide-crossword-overlay" class="hidden absolute inset-4 bg-slate-950/95 text-white p-5 rounded-3xl border-2 border-indigo-400 shadow-2xl backdrop-blur-xl z-30 flex flex-col justify-between space-y-3 animate-pop">
+          <div class="flex items-center justify-between pb-2 border-b border-indigo-500/40 shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl p-1 bg-indigo-500/20 text-indigo-300 rounded-xl">🧩</span>
+              <div>
+                <h4 class="font-black text-indigo-300 text-sm md:text-base">TRÒ CHƠI Ô CHỮ BÍ MẬT 3D</h4>
+                <p class="text-[10px] text-cyan-300">Giải các hàng ngang để mở khóa TỪ KHÓA BÍ MẬT của bài học</p>
+              </div>
+            </div>
+            <button onclick="lecturePortal.toggleInSlideCrossword()" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
+          </div>
+
+          <!-- Khung Bảng Ô Chữ 3D -->
+          <div id="in-slide-crossword-grid" class="flex-1 flex flex-col items-center justify-center space-y-2 py-2 overflow-y-auto"></div>
+
+          <!-- Khung Câu Hỏi Gợi Ý Hàng Ngang Đang Chọn -->
+          <div id="crossword-current-clue-box" class="p-3 bg-indigo-900/40 rounded-2xl border border-indigo-500/30 text-xs shrink-0 flex items-center justify-between gap-3">
+            <div>
+              <span id="crossword-clue-label" class="badge badge-amber font-black text-[10px] mr-1">HÀNG 1</span>
+              <span id="crossword-clue-text" class="font-semibold text-slate-100">Bấm vào một hàng để xem gợi ý câu đố...</span>
+            </div>
+            <button onclick="lecturePortal.revealCurrentCrosswordRow()" class="btn btn-emerald btn-xs font-black shrink-0 shadow-md">
+              🔓 Mở Hàng Này
+            </button>
+          </div>
+
+          <!-- Footer Bảng Chữ Cái Đoán Chữ -->
+          <div class="flex items-center justify-between pt-1 border-t border-indigo-500/30 shrink-0 text-xs flex-wrap gap-2">
+            <div class="flex items-center gap-1.5 flex-wrap" id="crossword-alphabet-buttons"></div>
+            <button onclick="lecturePortal.revealSecretKeyword()" class="btn bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 btn-xs font-black shadow-lg hover:scale-105 transition-all">
+              👑 Mở Toàn Bộ Ô Chữ
             </button>
           </div>
         </div>
@@ -1650,22 +1689,33 @@
         </div>
       </div>
 
-      <!-- Thanh Điều Khiển Lật Trang & Tự Động Lật -->
+      <!-- Thanh Điều Khiển Lật Trang & Giọng Đọc AI E-Book -->
       <div class="flex items-center justify-between pt-2 border-t border-slate-800 shrink-0 text-xs flex-wrap gap-2">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
           <button onclick="lecturePortal.prevFlipbookPage()" class="btn bg-slate-800 hover:bg-slate-700 text-white font-bold btn-sm flex items-center gap-1 border border-slate-700">
-            <span>◀</span> <span>Lật Trang Trước</span>
+            <span>◀</span> <span>Trang Trước</span>
           </button>
-          <button id="btn-toggle-auto-flip" onclick="lecturePortal.toggleAutoFlipbook()" class="btn btn-amber btn-sm font-black flex items-center gap-1 shadow-md">
-            <span>▶️</span> <span>Tự Động Lật (5s)</span>
+          <button id="btn-toggle-auto-flip" onclick="lecturePortal.toggleAutoFlipbook()" class="btn bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold btn-sm flex items-center gap-1 border border-slate-700">
+            <span>▶️</span> <span>Tự Động (5s)</span>
           </button>
           <button onclick="lecturePortal.nextFlipbookPage()" class="btn bg-slate-800 hover:bg-slate-700 text-white font-bold btn-sm flex items-center gap-1 border border-slate-700">
-            <span>Lật Trang Sau</span> <span>▶</span>
+            <span>Trang Sau</span> <span>▶</span>
           </button>
+
+          <!-- BỘ ĐỌC SÁCH BẰNG GIỌNG ĐỌC AI -->
+          <button id="btn-read-aloud-flipbook" onclick="lecturePortal.toggleReadAloudFlipbook()" class="btn btn-amber btn-sm font-black flex items-center gap-1 shadow-lg hover:scale-105 transition-all">
+            <span>🔊</span> <span>Đọc Sách AI</span>
+          </button>
+
+          <div class="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-xl border border-slate-800">
+            <span class="text-slate-400">🎙️:</span>
+            <button onclick="lecturePortal.setVoiceGender('female'); if (lecturePortal.isReadingAloud) lecturePortal.readCurrentFlipbookPage();" class="px-2 py-0.5 rounded-lg font-bold text-[11px] bg-rose-950 text-rose-300 border border-rose-800">Nữ</button>
+            <button onclick="lecturePortal.setVoiceGender('male'); if (lecturePortal.isReadingAloud) lecturePortal.readCurrentFlipbookPage();" class="px-2 py-0.5 rounded-lg font-bold text-[11px] bg-cyan-950 text-cyan-300 border border-cyan-800">Nam</button>
+          </div>
         </div>
 
         <div class="flex items-center gap-3 text-slate-400">
-          <span class="text-[11px] hidden sm:inline">💡 Thầy Cô có thể bấm vào mép trang hoặc dùng phím mũi tên ◀ ▶ để lật sách.</span>
+          <span class="text-[11px] hidden md:inline">💡 Thầy Cô có thể bấm <b>'🔊 Đọc Sách AI'</b> để AI tự động thuyết minh từng trang sách.</span>
           <button onclick="lecturePortal.closeFlipbookModal()" class="btn btn-outline btn-xs text-slate-300 border-slate-700">Đóng Sách 3D</button>
         </div>
       </div>
