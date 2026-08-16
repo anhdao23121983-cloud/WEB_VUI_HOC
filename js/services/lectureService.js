@@ -1,6 +1,6 @@
 /**
  * LECTURE SERVICE (DỊCH VỤ QUẢN LÝ BÀI GIẢNG ĐIỆN TỬ & FILE POWERPOINT)
- * Quản lý tải lên, lưu trữ, lọc SGK (KNTT/CD/CTST), AI tóm tắt và Trình chiếu video hoạt họa
+ * Quản lý tải lên, lưu trữ, lọc SGK (KNTT/CD/CTST), Học Kỳ 1 & 2, AI tóm tắt và Trình chiếu video hoạt họa
  */
 
 class LectureService {
@@ -8,8 +8,8 @@ class LectureService {
     this.lectures = [];
   }
 
-  // 1. Lấy danh sách bài giảng điện tử (hỗ trợ lọc khối lớp, bộ sách và tìm kiếm)
-  async getAllLectures(gradeFilter = "all", searchQuery = "", bookFilter = "all") {
+  // 1. Lấy danh sách bài giảng điện tử (hỗ trợ lọc khối lớp, bộ sách, học kỳ và tìm kiếm)
+  async getAllLectures(gradeFilter = "all", searchQuery = "", bookFilter = "all", semesterFilter = "all") {
     let list = [];
 
     // 1. Kiểm tra Supabase trước
@@ -30,6 +30,7 @@ class LectureService {
             grade: item.grade_level,
             topicName: item.topic_name,
             bookSeries: item.book_series || "KNTT",
+            semester: item.semester || (item.topic_name && item.topic_name.includes("Chủ đề D") || item.topic_name && item.topic_name.includes("Chủ đề E") || item.topic_name && item.topic_name.includes("Chủ đề F") ? "sem2" : "sem1"),
             lessonId: item.lesson_id,
             authorName: item.author_name || "Thầy Giáo Anh Đào",
             createdByUsername: item.created_by_username || "anhdao",
@@ -54,7 +55,10 @@ class LectureService {
     // 2. Dự phòng LocalStorage nếu Supabase trống hoặc offline
     if (list.length === 0) {
       const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
-      list = db.lectures || [];
+      list = (db.lectures || []).map(item => ({
+        ...item,
+        semester: item.semester || (item.topicName && (item.topicName.includes("Chủ đề D") || item.topicName.includes("Chủ đề E") || item.topicName.includes("Chủ đề F")) ? "sem2" : "sem1")
+      }));
 
       if (gradeFilter !== "all") {
         list = list.filter(l => l.grade === parseInt(gradeFilter));
@@ -64,6 +68,11 @@ class LectureService {
     // Lọc theo bộ sách (KNTT, CD, CTST)
     if (bookFilter !== "all") {
       list = list.filter(l => (l.bookSeries || "KNTT") === bookFilter);
+    }
+
+    // Lọc theo Học kỳ (Học kỳ 1 vs Học kỳ 2)
+    if (semesterFilter !== "all") {
+      list = list.filter(l => (l.semester || "sem1") === semesterFilter);
     }
 
     // Lọc theo từ khóa tìm kiếm
@@ -79,7 +88,13 @@ class LectureService {
     return list;
   }
 
-  // 2. Lấy danh sách ID bài giảng yêu thích
+  // 2. Lấy chi tiết 1 bài giảng theo ID
+  async getLectureById(id) {
+    const all = await this.getAllLectures();
+    return all.find(l => l.id === id) || null;
+  }
+
+  // 3. Lấy danh sách ID bài giảng yêu thích
   getFavoriteIds() {
     const user = window.authService?.getUser();
     const key = user ? `app_fav_lectures_${user.username}` : "app_fav_lectures_guest";
@@ -90,46 +105,54 @@ class LectureService {
     }
   }
 
-  // 3. Kiểm tra 1 bài giảng có được yêu thích hay không
+  // 4. Kiểm tra 1 bài giảng có được yêu thích hay không
   isFavorite(id) {
     const favs = this.getFavoriteIds();
     return favs.includes(id);
   }
 
-  // 4. Bật/Tắt yêu thích bài giảng (Toggle Favorite)
+  // 5. Bật/Tắt yêu thích bài giảng (Toggle Favorite)
   toggleFavorite(id) {
     const user = window.authService?.getUser();
     const key = user ? `app_fav_lectures_${user.username}` : "app_fav_lectures_guest";
     let favs = this.getFavoriteIds();
-    let isFavNow = false;
 
     if (favs.includes(id)) {
-      favs = favs.filter(favId => favId !== id);
-      isFavNow = false;
+      favs = favs.filter(fId => fId !== id);
     } else {
       favs.push(id);
-      isFavNow = true;
     }
 
     localStorage.setItem(key, JSON.stringify(favs));
-    return isFavNow;
+    return favs.includes(id);
   }
 
-  // 5. Lấy danh sách bài giảng của riêng giáo viên đang đăng nhập
-  async getMyLectures(username) {
-    const all = await this.getAllLectures();
-    return all.filter(l => (l.createdByUsername === username) || (l.authorName && l.authorName.toLowerCase().includes(username.toLowerCase())));
+  // 6. Tăng lượt xem / tải
+  async incrementViewCount(id) {
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (db.lectures) {
+      const item = db.lectures.find(l => l.id === id);
+      if (item) {
+        item.viewCount = (item.viewCount || 0) + 1;
+        localStorage.setItem("app_mock_db", JSON.stringify(db));
+      }
+    }
   }
 
-  // 6. Lấy thông tin 1 bài giảng theo ID
-  async getLectureById(id) {
-    const all = await this.getAllLectures();
-    return all.find(l => l.id === id);
+  async incrementDownloadCount(id) {
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (db.lectures) {
+      const item = db.lectures.find(l => l.id === id);
+      if (item) {
+        item.downloadCount = (item.downloadCount || 0) + 1;
+        localStorage.setItem("app_mock_db", JSON.stringify(db));
+      }
+    }
   }
 
   // 7. Tải lên và lưu bài giảng mới (Đồng bộ FE -> BE -> Supabase Cloud)
   async uploadLecture(lectureData) {
-    const user = window.authService?.getUser() || { username: "anhdao", name: "Thầy Giáo Anh Đào", school: "Trường Tiểu Học" };
+    const user = window.authService?.getUser() || { username: "anhdao", name: "Thầy Giáo Anh Đào", school: "Trường Tiểu Học Vui Học" };
     const lectureId = lectureData.id || ("lec_" + Date.now());
 
     const colors = [
@@ -147,6 +170,7 @@ class LectureService {
       grade: parseInt(lectureData.grade) || 3,
       topicName: lectureData.topicName || "Chủ đề Tin học GDPT 2018",
       bookSeries: lectureData.bookSeries || "KNTT",
+      semester: lectureData.semester || "sem1",
       lessonId: lectureData.lessonId || "L" + (lectureData.grade || 3) + "_01",
       authorName: lectureData.authorName || user.name,
       createdByUsername: user.username || "anhdao",
@@ -216,7 +240,7 @@ class LectureService {
     return { success: true, lecture: lectureObj };
   }
 
-  // 5. Cập nhật / Chỉnh sửa bài giảng và thay thế file PowerPoint (Đồng bộ Supabase)
+  // 8. Cập nhật / Chỉnh sửa bài giảng (Đồng bộ Supabase)
   async updateLecture(id, updateData) {
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     let updatedObj = null;
@@ -275,23 +299,18 @@ class LectureService {
     return { success: true, lecture: updatedObj };
   }
 
-  // 6. Xóa bài giảng điện tử (Xóa cả LocalStorage và Supabase Cloud)
+  // 9. Xóa bài giảng điện tử (Xóa cả LocalStorage và Supabase Cloud)
   async deleteLecture(id) {
-    // 1. Xóa trong LocalStorage
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     if (db.lectures) {
       db.lectures = db.lectures.filter(l => l.id !== id);
       localStorage.setItem("app_mock_db", JSON.stringify(db));
     }
 
-    // 2. Xóa trên Supabase Cloud Database
     if (window.supabaseService?.isReady()) {
       try {
         const client = window.supabaseService.client;
-        const { error } = await client.from("lecture_slides").delete().eq("id", id);
-        if (error) {
-          console.warn("Lỗi xóa bài giảng từ Supabase:", error);
-        }
+        await client.from("lecture_slides").delete().eq("id", id);
       } catch (err) {
         console.warn("Lỗi kết nối xóa bài giảng Supabase:", err);
       }
@@ -300,137 +319,93 @@ class LectureService {
     return { success: true };
   }
 
-  // 7. Tổng hợp số liệu thống kê lượt xem, lượt tải theo khối lớp và bộ sách
-  async getAnalyticsSummary() {
-    const all = await this.getAllLectures();
-    const totalLectures = all.length;
-    let totalViews = 0;
-    let totalDownloads = 0;
-
-    const gradeStats = { 3: { count: 0, views: 0, downloads: 0 }, 4: { count: 0, views: 0, downloads: 0 }, 5: { count: 0, views: 0, downloads: 0 } };
-    const seriesStats = { "KNTT": 0, "CD": 0, "CTST": 0 };
-
-    all.forEach(l => {
-      totalViews += (l.viewCount || 0);
-      totalDownloads += (l.downloadCount || 0);
-
-      const g = l.grade || 3;
-      if (gradeStats[g]) {
-        gradeStats[g].count++;
-        gradeStats[g].views += (l.viewCount || 0);
-        gradeStats[g].downloads += (l.downloadCount || 0);
-      }
-
-      const s = l.bookSeries || "KNTT";
-      seriesStats[s] = (seriesStats[s] || 0) + 1;
-    });
-
-    const topLectures = [...all].sort((a, b) => (b.viewCount + b.downloadCount) - (a.viewCount + a.downloadCount)).slice(0, 5);
-
-    return {
-      totalLectures,
-      totalViews,
-      totalDownloads,
-      gradeStats,
-      seriesStats,
-      topLectures
-    };
-  }
-
-  // 5. Tăng lượt xem / tải
-  async recordAction(id, type = 'view') {
-    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
-    const item = (db.lectures || []).find(l => l.id === id);
-    if (item) {
-      if (type === 'view') item.viewCount = (item.viewCount || 0) + 1;
-      if (type === 'download') item.downloadCount = (item.downloadCount || 0) + 1;
-      localStorage.setItem("app_mock_db", JSON.stringify(db));
-    }
-  }
-
-  // 6. AI Tóm tắt nội dung slide bài giảng (AI Slide Summary)
-  async generateAISlideSummary(lectureTitle, grade, topicName) {
-    return {
-      title: lectureTitle,
-      grade: grade,
-      topicName: topicName,
-      competencies: [
-        "Nhận biết và gọi tên chính xác các khái niệm/thiết bị cốt lõi trong bài học.",
-        "Hình thành phản xạ thao tác kỹ thuật an toàn trên máy tính trường học.",
-        "Ứng dụng kiến thức vào giải quyết các bài toán thực tiễn ở trường và gia đình."
-      ],
-      corePoints: [
-        "Định nghĩa chuẩn xác theo Chương trình GDPT 2018 và Công văn 2345/BGDĐT.",
-        "Quy trình thực hành 4 bước: Khởi động ➡️ Khám phá ➡️ Luyện tập ➡️ Vận dụng.",
-        "Các lưu ý an toàn phòng tránh rủi ro điện tử và bảo vệ mắt khi ngồi máy tính."
-      ],
-      suggestedActivities: [
-        "Hoạt động nhóm 4 học sinh: Ghép thẻ thuật ngữ với hình ảnh minh họa.",
-        "Thực hành cá nhân trên Web Vui Học: Hoàn thành mini-game và bài kiểm tra 3 sao ⭐.",
-        "Vận dụng sáng tạo: Thuyết trình 2 phút trước lớp về sản phẩm vừa hoàn thiện."
-      ],
-      aiConfidence: "98% (Chuẩn Sư Phạm Tiểu Học)"
-    };
-  }
-
-  // 7. Tạo chuỗi Slide hoạt họa cho tính năng Slide-to-Video Player
+  // 10. Tự động sinh phân cảnh Video hoạt họa AI từ Slide (Auto AI Video Generator)
   generateSlideFrames(lecture) {
+    const title = lecture.title || "Bài Giảng Tin Học Tiểu Học";
+    const grade = lecture.grade || 3;
+    const author = lecture.authorName || "Thầy Giáo Anh Đào";
+
     return [
       {
         slideNum: 1,
-        heading: "🌸 KHỞI ĐỘNG & GIỚI THIỆU BÀI HỌC",
-        subtitle: lecture.title,
+        title: "🌸 KHỞI ĐỘNG & GIỚI THIỆU BÀI HỌC",
+        subtitle: title,
         icon: "🚀",
-        color: "from-blue-600 to-indigo-700",
+        bgGradient: "bg-gradient-to-br from-blue-700 via-indigo-800 to-slate-950",
         bulletPoints: [
-          "Chào mừng các em học sinh đến với giờ học Tin học vui nhộn!",
-          "Môn: Tin Học Tiểu Học • Khối Lớp " + lecture.grade,
-          "Giáo viên hướng dẫn: " + (lecture.authorName || "Thầy Giáo Anh Đào"),
-          "Hãy chuẩn bị tinh thần khám phá những điều kỳ thú hôm nay!"
+          `Chào mừng các em học sinh lớp ${grade} đến với giờ học Tin học kỳ thú!`,
+          `Môn học: Tin Học GDPT 2018 • Bộ sách ${lecture.bookSeries || 'Kết Nối Tri Thức'}`,
+          `Giáo viên hướng dẫn: ${author}`,
+          "Hãy cùng chuẩn bị năng lượng để tích lũy thật nhiều Sao Vàng nhé!"
         ],
-        narration: `Chào mừng các em học sinh thân yêu đến với bài giảng: ${lecture.title}. Hôm nay chúng ta sẽ cùng nhau khám phá những kiến thức công nghệ vô cùng thú vị!`
+        narrative: `Chào mừng các em học sinh thân yêu đến với tiết học Tin học lớp ${grade}, bài học: ${title}. Thầy chúc các em sẽ có một giờ học thật vui vẻ và tiếp thu được nhiều kiến thức bổ ích!`
       },
       {
         slideNum: 2,
-        heading: "💡 HÌNH THÀNH KIẾN THỨC MỚI",
-        subtitle: "Trọng tâm bài dạy: " + (lecture.topicName || "Kiến thức số"),
+        title: "💡 KHÁM PHÁ KIẾN THỨC MỚI",
+        subtitle: `Chủ đề trọng tâm: ${lecture.topicName || 'Kiến thức và Kỹ năng số'}`,
         icon: "🧠",
-        color: "from-cyan-600 to-teal-700",
+        bgGradient: "bg-gradient-to-br from-cyan-700 via-teal-800 to-slate-950",
         bulletPoints: [
-          "Khám phá các thành phần và nguyên lý hoạt động cơ bản.",
-          "Quan sát hình ảnh trực quan và ghi nhớ các từ khóa chính.",
-          "So sánh điểm giống và khác nhau giữa các thiết bị/khái niệm.",
-          "Ghi chép những ý quan trọng vào vở bài tập Tin học."
+          "Quan sát các thành phần và cấu trúc trực quan của bài học.",
+          "Nắm vững các thuật ngữ cốt lõi và nguyên lý hoạt động.",
+          "Phân biệt các trường hợp đúng - sai khi sử dụng thiết bị công nghệ.",
+          "Ghi nhớ các quy tắc thao tác an toàn theo hướng dẫn của Thầy Cô."
         ],
-        narration: `Bước vào phần khám phá kiến thức mới, các em hãy chú ý quan sát màn hình, lắng nghe Thầy hướng dẫn để ghi nhớ những đặc điểm quan trọng nhất của bài học nhé!`
+        narrative: `Trong phần khám phá kiến thức hôm nay, chúng ta cùng tìm hiểu những khái niệm quan trọng nhất. Các em hãy chú ý quan sát màn hình và lắng nghe thật kỹ nhé!`
       },
       {
         slideNum: 3,
-        heading: "🎮 THỰC HÀNH & LUYỆN TẬP TƯƠNG TÁC",
-        subtitle: "Học đi đôi với hành - Tích lũy Sao Vàng",
+        title: "🎮 THỰC HÀNH & LUYỆN TẬP TƯƠNG TÁC",
+        subtitle: "Học Đi Đôi Với Hành - Vui Cùng Thử Thách",
         icon: "⭐",
-        color: "from-amber-600 to-orange-700",
+        bgGradient: "bg-gradient-to-br from-amber-600 via-orange-700 to-slate-950",
         bulletPoints: [
-          "Thao tác trực tiếp trên máy tính hoặc Web Vui Học.",
-          "Hoàn thành các thử thách trắc nghiệm và trò chơi rèn luyện.",
-          "Hỗ trợ bạn cùng bàn để cùng nhau tiến bộ.",
-          "Nhận ngay +25 Sao Vàng thưởng khi đạt kết quả xuất sắc!"
+          "Thao tác trực tiếp trên giao diện thực nghiệm của Web Vui Học.",
+          "Trả lời các câu hỏi đố vui nhanh để giành điểm 10 rực rỡ.",
+          "Tương tác nhóm cùng bạn bè để giải quyết nhiệm vụ bài học.",
+          "Tự tin kiểm tra kết quả và ghi danh vào Bảng Vàng Vinh Danh!"
         ],
-        narration: `Bây giờ là lúc chúng mình cùng nhau thực hành và luyện tập! Các em hãy đăng nhập vào Web Vui Học để làm bài tập trắc nghiệm và thử thách trò chơi trí tuệ nhé!`
+        narrative: `Bây giờ là lúc chúng mình cùng nhau bước vào phần luyện tập thực hành! Các em hãy thao tác cẩn thận, làm bài trắc nghiệm và thử thách cùng bạn bè nhé!`
       },
       {
         slideNum: 4,
-        heading: "🏆 VẬN DỤNG & TỔNG KẾT BÀI HỌC",
-        subtitle: "Liên hệ thực tế & Ghi nhận thành tích",
+        title: "🏆 VẬN DỤNG & TỔNG KẾT BÀI DẠY",
+        subtitle: "Liên Hệ Thực Tiễn & Ghi Nhớ Bài Học",
         icon: "🎉",
-        color: "from-emerald-600 to-green-700",
+        bgGradient: "bg-gradient-to-br from-emerald-700 via-green-800 to-slate-950",
         bulletPoints: [
-          "Tóm tắt 3 điều cốt lõi em đã học được hôm nay.",
-          "Ứng dụng công nghệ an toàn và có trách nhiệm tại gia đình.",
-          "Tắt máy tính đúng quy trình an toàn trước khi rời phòng máy.",
-          "Chúc các em học tập thật vui và hẹn gặp lại ở bài học sau!"
+          "Tóm tắt 3 điều bổ ích em đã học và thực hành thành thạo hôm nay.",
+          "Ứng dụng công nghệ đúng cách, an toàn và bổ ích tại gia đình.",
+          "Luôn giữ gìn tư thế ngồi học chuẩn và bảo vệ mắt khi dùng máy tính.",
+          "Hẹn gặp lại các em ở bài học tiếp theo trên Web Vui Học!"
         ],
-        narration: `Chúc mừng các em đã hoàn thành xuất sắc tiết học hôm nay! Hãy luôn nhớ giữ gìn an toàn thiết bị và ứng dụng những điều bổ ích vào cuộc sống hàng ngày nhé!`
+        narrative: `Chúc mừng tất cả các em đã hoàn thành xuất sắc bài học ${title}! Thầy hy vọng các em sẽ luôn say mê khám phá công nghệ và áp dụng vào học tập hàng ngày nhé!`
+      }
+    ];
+  }
+
+  // 11. Tạo bộ câu hỏi khởi động đố vui 3 phút
+  generateIcebreakerQuestions(lecture) {
+    const grade = lecture.grade || 3;
+    return [
+      {
+        question: `Thiết bị nào sau đây là thiết bị đưa thông tin vào máy tính (Khối ${grade})?`,
+        options: ["A. Bàn phím và Chuột", "B. Màn hình", "C. Máy in", "D. Loa"],
+        correct: 0,
+        explanation: "Bàn phím và Chuột giúp em nhập chữ và điều khiển thông tin vào máy tính."
+      },
+      {
+        question: "Khi ngồi học máy tính, tư thế nào sau đây là đúng và bảo vệ sức khỏe?",
+        options: ["A. Ngồi cúi sát màn hình", "B. Ngồi thẳng lưng, mắt cách màn hình 50-80cm", "C. Nằm ra bàn khi gõ phím", "D. Bắt chéo chân lên ghế"],
+        correct: 1,
+        explanation: "Ngồi thẳng lưng giúp không bị cong vẹo cột sống và giữ khoảng cách bảo vệ mắt."
+      },
+      {
+        question: "Đâu là biểu tượng chuẩn của tệp trình chiếu PowerPoint?",
+        options: ["A. Chữ W màu xanh dương", "B. Chữ X màu xanh lá", "C. Chữ P màu cam đỏ", "D. Chữ N màu tím"],
+        correct: 2,
+        explanation: "PowerPoint có biểu tượng chữ P màu cam/đỏ đặc trưng."
       }
     ];
   }

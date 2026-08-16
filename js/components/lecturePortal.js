@@ -3,16 +3,18 @@
  * Quản lý Bài Giảng Điện Tử & Slide PowerPoint:
  * 1. 📂 3 Thư mục con: Bài giảng Tin lớp 3, Bài giảng Tin lớp 4, Bài giảng Tin lớp 5
  * 2. 📤 Nút đưa bài giảng lên cho Giáo viên (Đồng bộ Supabase Cloud & Local)
- * 3. 🎬 Trình chiếu Slide 3D & Video hoạt họa thuyết minh AI đa giọng đọc
- * 4. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
- * 5. ✏️ Chỉnh sửa & 🗑️ Xóa bỏ bài giảng đồng bộ Supabase Cloud
- * 6. ⭐ Đánh dấu bài giảng yêu thích (Bookmark)
+ * 3. 🎨 Bút Laser đỏ & Bút dạ quang khi Trình chiếu Slide (Laser Pointer & Pen Tool)
+ * 4. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
+ * 5. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
+ * 6. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
+ * 7. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
  */
 
 class LecturePortal {
   constructor() {
     this.currentGrade = "all";
     this.currentBookSeries = "all";
+    this.currentSemester = "all"; // 'all' | 'sem1' | 'sem2'
     this.currentTab = "all"; // 'all' | 'my_lectures' | 'favorites'
     this.selectedFolder = "all"; // 'all' | 3 | 4 | 5
     this.searchQuery = "";
@@ -41,12 +43,15 @@ class LecturePortal {
     this.pendingDeleteId = null;
     this.pendingDeleteTitle = "";
 
-    // Drawing Canvas State
+    // Drawing Canvas State (Laser & Pen)
     this.isDrawingActive = false;
-    this.drawTool = "highlighter"; // 'highlighter' | 'red_pen' | 'chalk' | 'eraser'
+    this.drawTool = "highlighter"; // 'laser' | 'highlighter' | 'red_pen' | 'blue_pen' | 'chalk' | 'eraser'
     this.isPainting = false;
     this.activeCanvas = null;
     this.activeCtx = null;
+    this.lastX = 0;
+    this.lastY = 0;
+    this.laserTimer = null;
 
     // Group Work Timer State
     this.groupTimerSeconds = 180;
@@ -67,7 +72,7 @@ class LecturePortal {
     
     // Tải toàn bộ bài giảng
     const effectiveGrade = this.selectedFolder !== "all" ? this.selectedFolder : this.currentGrade;
-    let allLectures = await window.lectureService.getAllLectures(effectiveGrade, this.searchQuery, this.currentBookSeries);
+    let allLectures = await window.lectureService.getAllLectures(effectiveGrade, this.searchQuery, this.currentBookSeries, this.currentSemester);
     const favoriteIds = window.lectureService.getFavoriteIds();
     
     // Thống kê theo 3 thư mục con
@@ -98,7 +103,7 @@ class LecturePortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide 3D, Video hoạt họa thuyết minh AI, Đồng hồ nhóm 1-10P và Đưa bài giảng lên CSDL Cloud</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser & Dạ quang, Video hoạt họa AI, Giáo án Word CV 2345 và Lọc Học kỳ 1 & 2</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
@@ -114,7 +119,7 @@ class LecturePortal {
           </div>
         </div>
 
-        <!-- 3 THƯ MỤC CON: KIỂM TRA MÔN TIN LỚP 3, LỚP 4, LỚP 5 -->
+        <!-- 3 THƯ MỤC CON: BÀI GIẢNG MÔN TIN LỚP 3, LỚP 4, LỚP 5 -->
         <div class="space-y-3">
           <div class="flex items-center justify-between">
             <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
@@ -203,7 +208,7 @@ class LecturePortal {
           </button>
         </div>
 
-        <!-- Thanh Bộ Lọc Kép: Khối Lớp + 3 Bộ Sách Giáo Khoa + Ô Tìm Kiếm -->
+        <!-- Thanh Bộ Lọc Kép: Khối Lớp + 3 Bộ Sách Giáo Khoa + Học Kỳ 1 & 2 + Ô Tìm Kiếm -->
         <div class="glass-card p-5 space-y-4">
           <!-- Hàng 1: Lọc Khối Lớp & Tìm Kiếm -->
           <div class="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -230,21 +235,38 @@ class LecturePortal {
             </div>
           </div>
 
-          <!-- Hàng 2: Lọc Theo 3 Bộ Sách Giáo Khoa -->
-          <div class="flex items-center gap-2 flex-wrap pt-3 border-t border-slate-200/70">
-            <span class="text-xs font-bold text-slate-500 mr-1">Bộ Sách Giáo Khoa:</span>
-            <button onclick="lecturePortal.selectBookSeries('all')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${this.currentBookSeries === 'all' ? 'bg-slate-800 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
-              Tất Cả Bộ Sách
-            </button>
-            <button onclick="lecturePortal.selectBookSeries('KNTT')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${this.currentBookSeries === 'KNTT' ? 'bg-blue-600 text-white shadow' : 'bg-blue-50 text-blue-800 hover:bg-blue-100'}">
-              📘 Kết Nối Tri Thức
-            </button>
-            <button onclick="lecturePortal.selectBookSeries('CD')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${this.currentBookSeries === 'CD' ? 'bg-amber-600 text-white shadow' : 'bg-amber-50 text-amber-800 hover:bg-amber-100'}">
-              📙 Cánh Diều
-            </button>
-            <button onclick="lecturePortal.selectBookSeries('CTST')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${this.currentBookSeries === 'CTST' ? 'bg-emerald-600 text-white shadow' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'}">
-              📗 Chân Trời Sáng Tạo
-            </button>
+          <!-- Hàng 2: Lọc Theo 3 Bộ Sách Giáo Khoa & Phân Loại Học Kỳ 1 - Học Kỳ 2 -->
+          <div class="flex flex-col md:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-200/70">
+            <!-- Bộ Sách -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-bold text-slate-500 mr-1">Bộ Sách:</span>
+              <button onclick="lecturePortal.selectBookSeries('all')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${this.currentBookSeries === 'all' ? 'bg-slate-800 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                Tất Cả
+              </button>
+              <button onclick="lecturePortal.selectBookSeries('KNTT')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${this.currentBookSeries === 'KNTT' ? 'bg-blue-600 text-white shadow' : 'bg-blue-50 text-blue-800 hover:bg-blue-100'}">
+                📘 Kết Nối Tri Thức
+              </button>
+              <button onclick="lecturePortal.selectBookSeries('CD')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${this.currentBookSeries === 'CD' ? 'bg-amber-600 text-white shadow' : 'bg-amber-50 text-amber-800 hover:bg-amber-100'}">
+                📙 Cánh Diều
+              </button>
+              <button onclick="lecturePortal.selectBookSeries('CTST')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${this.currentBookSeries === 'CTST' ? 'bg-emerald-600 text-white shadow' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'}">
+                📗 Chân Trời Sáng Tạo
+              </button>
+            </div>
+
+            <!-- Phân loại Học Kỳ 1 & Học Kỳ 2 -->
+            <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+              <span class="text-[11px] font-bold text-slate-500 px-1">🗓️ Học Kỳ:</span>
+              <button onclick="lecturePortal.selectSemester('all')" class="px-2.5 py-1 rounded-lg text-xs font-black transition-all ${this.currentSemester === 'all' ? 'bg-white text-cyan-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'}">
+                Cả Năm
+              </button>
+              <button onclick="lecturePortal.selectSemester('sem1')" class="px-2.5 py-1 rounded-lg text-xs font-black transition-all ${this.currentSemester === 'sem1' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-900'}">
+                🍂 Học Kỳ 1
+              </button>
+              <button onclick="lecturePortal.selectSemester('sem2')" class="px-2.5 py-1 rounded-lg text-xs font-black transition-all ${this.currentSemester === 'sem2' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}">
+                🌸 Học Kỳ 2
+              </button>
+            </div>
           </div>
         </div>
 
@@ -252,7 +274,7 @@ class LecturePortal {
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <span>📚 DANH SÁCH BÀI GIẢNG ${this.selectedFolder !== 'all' ? `KHỐI ${this.selectedFolder}` : ''}</span>
+              <span>📚 DANH SÁCH BÀI GIẢNG ${this.selectedFolder !== 'all' ? `KHỐI ${this.selectedFolder}` : ''} ${this.currentSemester === 'sem1' ? '(HỌC KỲ 1)' : (this.currentSemester === 'sem2' ? '(HỌC KỲ 2)' : '')}</span>
               <span class="badge badge-cyan font-black text-xs">${this.lectures.length} Bài</span>
             </h3>
             <button onclick="lectureUploadModal.openModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-amber btn-xs font-black shadow-md flex items-center gap-1">
@@ -269,6 +291,11 @@ class LecturePortal {
   selectFolder(grade) {
     this.selectedFolder = grade;
     this.currentGrade = grade;
+    this.render("main-content-area");
+  }
+
+  selectSemester(sem) {
+    this.currentSemester = sem;
     this.render("main-content-area");
   }
 
@@ -298,15 +325,21 @@ class LecturePortal {
         ${this.lectures.map(l => {
           const sInfo = seriesLabels[l.bookSeries] || seriesLabels["KNTT"];
           const isFav = window.lectureService.isFavorite(l.id);
+          const semesterText = l.semester === "sem2" ? "🌸 Học Kỳ 2" : "🍂 Học Kỳ 1";
 
           return `
             <div class="glass-card overflow-hidden hover:border-cyan-500 transition-all duration-300 shadow-md hover:shadow-xl flex flex-col justify-between group relative">
               <!-- Header Thumbnail Gradient -->
               <div class="p-5 bg-gradient-to-br ${l.thumbnailColor || 'from-blue-600 to-cyan-500'} text-white space-y-2 relative">
                 <div class="flex items-center justify-between gap-1 flex-wrap">
-                  <span class="badge ${sInfo.bg} text-white font-black text-[10px] uppercase backdrop-blur-sm">
-                    ${sInfo.name} • Lớp ${l.grade}
-                  </span>
+                  <div class="flex items-center gap-1">
+                    <span class="badge ${sInfo.bg} text-white font-black text-[10px] uppercase backdrop-blur-sm">
+                      ${sInfo.name} • Lớp ${l.grade}
+                    </span>
+                    <span class="badge bg-black/20 text-amber-200 font-bold text-[10px]">
+                      ${semesterText}
+                    </span>
+                  </div>
                   
                   <div class="flex items-center gap-1.5">
                     <span class="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-sm">
@@ -347,33 +380,36 @@ class LecturePortal {
 
                 <!-- Hàng nút hành động đa năng -->
                 <div class="space-y-2 pt-2 border-t border-slate-100">
-                  <!-- Hàng 1: Video hoạt họa + Game Khởi động 3 phút -->
+                  <!-- Hàng 1: Video hoạt họa AI + Game Khởi động 3 phút -->
                   <div class="grid grid-cols-2 gap-2">
-                    <button onclick="lecturePortal.openSlideVideoPlayer('${l.id}')" class="btn btn-amber btn-sm font-black flex items-center justify-center gap-1 shadow-sm" title="Xem Video bài giảng hoạt họa có thuyết minh giọng đọc">
-                      <span>🎬</span> <span>Video Hoạt Họa</span>
+                    <button onclick="lecturePortal.openSlideVideoPlayer('${l.id}')" class="btn btn-amber btn-sm font-black flex items-center justify-center gap-1 shadow-sm" title="Tự động chuyển Slide thành Video hoạt họa AI có thuyết minh tiếng Việt">
+                      <span>🎬</span> <span>Video Hoạt Họa AI</span>
                     </button>
                     <button onclick="lecturePortal.openIcebreakerGame('${l.id}')" class="btn btn-emerald btn-sm font-black flex items-center justify-center gap-1 shadow-sm" title="Trò chơi đố vui khởi động 3 phút đầu giờ">
                       <span>⚡</span> <span>Khởi Động 3P</span>
                     </button>
                   </div>
 
-                  <!-- Hàng 2: AI Tóm Tắt + Phiếu Bài Tập Word -->
+                  <!-- Hàng 2: Tải Giáo Án CV 2345 (.doc) + Phiếu Bài Tập Word -->
                   <div class="grid grid-cols-2 gap-2">
-                    <button onclick="lecturePortal.openAISummary('${l.id}')" class="btn btn-outline btn-sm font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200 flex items-center justify-center gap-1">
-                      <span>✨</span> <span>AI Tóm Tắt</span>
+                    <button onclick="lecturePortal.downloadLessonPlanDoc('${l.id}')" class="btn btn-outline btn-sm font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200 flex items-center justify-center gap-1" title="Tải Kế hoạch bài dạy Giáo án Word chuẩn Công văn 2345">
+                      <span>📄</span> <span>Giáo Án CV 2345</span>
                     </button>
                     <button onclick="lecturePortal.downloadWorksheet('${l.id}')" class="btn btn-outline btn-sm font-black text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 flex items-center justify-center gap-1" title="Tải Phiếu bài tập in ấn Word (.doc) cho học sinh">
                       <span>📝</span> <span>Phiếu Bài Tập</span>
                     </button>
                   </div>
 
-                  <!-- Hàng 3: Trình chiếu + Tải PPT + Sửa + Xóa -->
-                  <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100">
-                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm">
-                      <span>👁️</span> <span>Trình Chiếu</span>
+                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser/Dạ quang) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
+                  <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
+                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser & Bút Dạ Quang">
+                      <span>🎨</span> <span>Trình Chiếu & Bút</span>
                     </button>
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
                       <span>📥</span> <span>Tải PPT</span>
+                    </button>
+                    <button onclick="lecturePortal.downloadBundleZip('${l.id}')" class="btn btn-outline btn-sm font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 border-amber-300 flex items-center gap-1" title="Tải trọn bộ Gói học liệu (Slide PPTX + Giáo án Word + Phiếu bài tập)">
+                      <span>📦</span> <span>Trọn Gói</span>
                     </button>
 
                     <button onclick="lectureUploadModal.openEditModal('${l.id}')" class="p-2 text-cyan-700 hover:bg-cyan-100 rounded-xl font-bold border border-cyan-200 transition-all hover:scale-105" title="Chỉnh sửa thông tin & đổi file PowerPoint">
@@ -422,234 +458,209 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // ĐỒNG HỒ ĐẾM NGƯỢC HOẠT ĐỘNG NHÓM (GROUP WORK TIMER 1-10 PHÚT)
+  // OPTION 1: TRÌNH CHIẾU SLIDE & BẢNG VẼ BÚT LASER / DẠ QUANG
   // =========================================================================
-  openGroupTimerModal() {
-    const modal = document.getElementById("group-timer-modal");
-    if (modal) modal.classList.add("active");
-    this.updateTimerDisplay();
-  }
-
-  closeGroupTimerModal() {
-    this.pauseGroupTimer();
-    const modal = document.getElementById("group-timer-modal");
-    if (modal) modal.classList.remove("active");
-  }
-
-  setGroupTimerMinutes(minutes) {
-    this.pauseGroupTimer();
-    this.groupTimerSeconds = minutes * 60;
-    this.groupTimerInitial = this.groupTimerSeconds;
-    this.updateTimerDisplay();
-    window.app.showToast(`⏱️ Đã đặt đồng hồ nhóm: ${minutes} Phút!`, "info");
-  }
-
-  addTimerSeconds(seconds) {
-    this.groupTimerSeconds += seconds;
-    this.groupTimerInitial = Math.max(this.groupTimerInitial, this.groupTimerSeconds);
-    this.updateTimerDisplay();
-  }
-
-  toggleGroupTimer() {
-    if (this.isGroupTimerRunning) {
-      this.pauseGroupTimer();
-    } else {
-      this.startGroupTimer();
-    }
-  }
-
-  startGroupTimer() {
-    if (this.groupTimerSeconds <= 0) return;
-    this.isGroupTimerRunning = true;
-    const btn = document.getElementById("btn-toggle-group-timer");
-    if (btn) btn.innerHTML = "<span>⏸️</span> <span>Tạm Dừng</span>";
-
-    if (this.isLofiMusicOn) {
-      this.startLofiAmbientMusic();
-    }
-
-    if (this.groupTimerInterval) clearInterval(this.groupTimerInterval);
-    this.groupTimerInterval = setInterval(() => {
-      this.groupTimerSeconds--;
-      this.updateTimerDisplay();
-
-      if (this.groupTimerSeconds <= 0) {
-        this.finishGroupTimer();
-      }
-    }, 1000);
-  }
-
-  pauseGroupTimer() {
-    this.isGroupTimerRunning = false;
-    if (this.groupTimerInterval) clearInterval(this.groupTimerInterval);
-    const btn = document.getElementById("btn-toggle-group-timer");
-    if (btn) btn.innerHTML = "<span>▶️</span> <span>Bắt Đầu Đếm Giờ</span>";
-    this.stopLofiAmbientMusic();
-  }
-
-  resetGroupTimer() {
-    this.pauseGroupTimer();
-    this.groupTimerSeconds = this.groupTimerInitial || 180;
-    this.updateTimerDisplay();
-  }
-
-  updateTimerDisplay() {
-    const mins = Math.floor(this.groupTimerSeconds / 60);
-    const secs = this.groupTimerSeconds % 60;
-    const timeStr = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
-
-    const disp = document.getElementById("group-timer-clock-disp");
-    const ring = document.getElementById("group-timer-progress-ring");
-
-    if (disp) disp.innerText = timeStr;
-
-    if (ring && this.groupTimerInitial > 0) {
-      const percent = (this.groupTimerSeconds / this.groupTimerInitial) * 100;
-      ring.style.width = `${percent}%`;
-    }
-  }
-
-  finishGroupTimer() {
-    this.pauseGroupTimer();
-    this.playBellChime();
-    window.app.showToast("🔔 HẾT GIỜ HOẠT ĐỘNG NHÓM! Các nhóm hãy tổng kết kết quả thảo luận!", "warning");
-
-    const clockBox = document.getElementById("group-timer-clock-box");
-    if (clockBox) {
-      clockBox.classList.add("animate-bounce");
-      setTimeout(() => clockBox.classList.remove("animate-bounce"), 4000);
-    }
-  }
-
-  toggleLofiMusic() {
-    this.isLofiMusicOn = !this.isLofiMusicOn;
-    const btn = document.getElementById("btn-toggle-lofi-timer");
-    if (btn) {
-      btn.innerHTML = this.isLofiMusicOn ? "<span>🎵 Nhạc Lofi: BẬT</span>" : "<span>🔇 Nhạc Lofi: TẮT</span>";
-    }
-    if (this.isGroupTimerRunning) {
-      if (this.isLofiMusicOn) this.startLofiAmbientMusic();
-      else this.stopLofiAmbientMusic();
-    }
-  }
-
-  startLofiAmbientMusic() {
-    try {
-      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
-
-      const osc = this.audioCtx.createOscillator();
-      const gain = this.audioCtx.createGain();
-      const filter = this.audioCtx.createBiquadFilter();
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(220, this.audioCtx.currentTime); // Nốt A3 dịu nhẹ
-
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(400, this.audioCtx.currentTime);
-
-      gain.gain.setValueAtTime(0.04, this.audioCtx.currentTime);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(this.audioCtx.destination);
-
-      osc.start();
-      this.lofiOscillator = osc;
-    } catch (e) {}
-  }
-
-  stopLofiAmbientMusic() {
-    if (this.lofiOscillator) {
-      try {
-        this.lofiOscillator.stop();
-        this.lofiOscillator.disconnect();
-      } catch (e) {}
-      this.lofiOscillator = null;
-    }
-  }
-
-  playBellChime() {
-    try {
-      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
-
-      const notes = [523.25, 659.25, 783.99, 1046.50];
-      notes.forEach((freq, idx) => {
-        const osc = this.audioCtx.createOscillator();
-        const gain = this.audioCtx.createGain();
-
-        osc.type = "triangle";
-        osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime + idx * 0.15);
-
-        gain.gain.setValueAtTime(0.3, this.audioCtx.currentTime + idx * 0.15);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + idx * 0.15 + 1.2);
-
-        osc.connect(gain);
-        gain.connect(this.audioCtx.destination);
-
-        osc.start(this.audioCtx.currentTime + idx * 0.15);
-        osc.stop(this.audioCtx.currentTime + idx * 0.15 + 1.2);
-      });
-    } catch (e) {}
-  }
-
-  // =========================================================================
-  // XÓA BÀI GIẢNG ĐIỆN TỬ
-  // =========================================================================
-  openDeleteConfirmModal(lectureId, lectureTitle) {
-    this.pendingDeleteId = lectureId;
-    this.pendingDeleteTitle = lectureTitle;
-
-    const modal = document.getElementById("lecture-delete-confirm-modal");
-    const nameEl = document.getElementById("delete-lec-name-target");
-    if (nameEl) nameEl.innerText = `"${lectureTitle}"`;
-    if (modal) modal.classList.add("active");
-  }
-
-  closeDeleteConfirmModal() {
-    this.pendingDeleteId = null;
-    this.pendingDeleteTitle = "";
-    const modal = document.getElementById("lecture-delete-confirm-modal");
-    if (modal) modal.classList.remove("active");
-  }
-
-  async confirmDeleteLecture() {
-    if (!this.pendingDeleteId) return;
-    const lectureId = this.pendingDeleteId;
-    const lectureTitle = this.pendingDeleteTitle;
-
-    const res = await window.lectureService.deleteLecture(lectureId);
-    this.closeDeleteConfirmModal();
-
-    if (res.success) {
-      window.app.showToast(`🗑️ Đã xóa bài giảng "${lectureTitle}" thành công!`, "success");
-      this.render("main-content-area");
-    } else {
-      window.app.showToast("Không thể xóa bài giảng, vui lòng thử lại!", "error");
-    }
-  }
-
-  // =========================================================================
-  // XUẤT PHIẾU BÀI TẬP WORD (.DOC)
-  // =========================================================================
-  async downloadWorksheet(lectureId) {
+  async previewLecture(lectureId) {
     const lecture = await window.lectureService.getLectureById(lectureId);
     if (!lecture) return;
 
-    window.app.showToast(`⏳ Đang tạo Phiếu Bài Tập Word cho "${lecture.title}"...`, "info");
-    
-    if (window.docExportService?.exportWorksheetDoc) {
-      window.docExportService.exportWorksheetDoc(lecture);
+    window.lectureService.incrementViewCount(lectureId);
+
+    const modal = document.getElementById("lecture-preview-modal");
+    const iframe = document.getElementById("lec-preview-iframe");
+    const titleEl = document.getElementById("lec-preview-title");
+
+    if (titleEl) titleEl.innerText = `${lecture.title} (Lớp ${lecture.grade})`;
+    if (iframe) {
+      iframe.src = lecture.fileUrl || "https://docs.google.com/presentation/d/e/2PACX-1vT1Z5u7.../embed";
+    }
+
+    if (modal) modal.classList.add("active");
+    this.initDrawingCanvas("lec-preview-canvas");
+  }
+
+  closePreviewModal() {
+    const modal = document.getElementById("lecture-preview-modal");
+    if (modal) modal.classList.remove("active");
+    this.disableDrawingMode("lec-preview-canvas");
+  }
+
+  toggleDrawingMode(canvasId) {
+    this.isDrawingActive = !this.isDrawingActive;
+    const toolbar = document.getElementById(`drawing-toolbar-${canvasId}`);
+    const canvas = document.getElementById(canvasId);
+
+    if (this.isDrawingActive) {
+      if (toolbar) toolbar.classList.remove("hidden");
+      if (canvas) {
+        canvas.style.pointerEvents = "auto";
+        canvas.style.cursor = this.drawTool === "laser" ? "none" : "crosshair";
+      }
+      window.app.showToast("🎨 Đã bật chế độ Bút vẽ & Laser Slide! Thầy Cô hãy vẽ trực tiếp lên màn hình.", "info");
     } else {
-      setTimeout(() => {
-        window.app.showToast("Đã tải xuống phiếu bài tập dạng Word (.doc)!", "success");
-      }, 1000);
+      if (toolbar) toolbar.classList.add("hidden");
+      if (canvas) {
+        canvas.style.pointerEvents = "none";
+        canvas.style.cursor = "default";
+      }
+    }
+  }
+
+  disableDrawingMode(canvasId) {
+    this.isDrawingActive = false;
+    const toolbar = document.getElementById(`drawing-toolbar-${canvasId}`);
+    const canvas = document.getElementById(canvasId);
+    if (toolbar) toolbar.classList.add("hidden");
+    if (canvas) canvas.style.pointerEvents = "none";
+  }
+
+  setDrawTool(tool) {
+    this.drawTool = tool;
+    const canvas = document.getElementById("lec-preview-canvas");
+    if (canvas) {
+      canvas.style.cursor = tool === "laser" ? "none" : "crosshair";
+    }
+    const toolNames = {
+      laser: "🔴 Bút Chỉ Laser Phát Quang",
+      highlighter: "✨ Bút Dạ Quang Vàng",
+      red_pen: "🔴 Bút Viết Nét Đỏ",
+      blue_pen: "🔵 Bút Viết Nét Xanh",
+      chalk: "⚪ Phấn Trắng",
+      eraser: "🧹 Tẩy Xóa Nét Vẽ"
+    };
+    window.app.showToast(`Đã chọn: ${toolNames[tool] || tool}`, "info");
+  }
+
+  initDrawingCanvas(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+
+    // Resize canvas đúng kích thước khung
+    canvas.width = canvas.offsetWidth || 900;
+    canvas.height = canvas.offsetHeight || 550;
+
+    const ctx = canvas.getContext("2d");
+    this.activeCanvas = canvas;
+    this.activeCtx = ctx;
+
+    const startDraw = (e) => {
+      if (!this.isDrawingActive) return;
+      this.isPainting = true;
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      this.lastX = clientX - rect.left;
+      this.lastY = clientY - rect.top;
+
+      if (this.drawTool === "laser") {
+        this.renderLaserPointer(this.lastX, this.lastY);
+      }
+    };
+
+    const drawMove = (e) => {
+      if (!this.isDrawingActive) return;
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      const curX = clientX - rect.left;
+      const curY = clientY - rect.top;
+
+      if (this.drawTool === "laser") {
+        this.renderLaserPointer(curX, curY);
+        return;
+      }
+
+      if (!this.isPainting) return;
+
+      ctx.beginPath();
+      ctx.moveTo(this.lastX, this.lastY);
+      ctx.lineTo(curX, curY);
+
+      if (this.drawTool === "highlighter") {
+        ctx.strokeStyle = "rgba(250, 204, 21, 0.4)"; // Dạ quang vàng bán trong suốt
+        ctx.lineWidth = 22;
+        ctx.lineCap = "square";
+        ctx.globalCompositeOperation = "source-over";
+      } else if (this.drawTool === "red_pen") {
+        ctx.strokeStyle = "#e11d48";
+        ctx.lineWidth = 4;
+        ctx.lineCap = "round";
+        ctx.globalCompositeOperation = "source-over";
+      } else if (this.drawTool === "blue_pen") {
+        ctx.strokeStyle = "#2563eb";
+        ctx.lineWidth = 4;
+        ctx.lineCap = "round";
+        ctx.globalCompositeOperation = "source-over";
+      } else if (this.drawTool === "chalk") {
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 4;
+        ctx.lineCap = "round";
+        ctx.globalCompositeOperation = "source-over";
+      } else if (this.drawTool === "eraser") {
+        ctx.strokeStyle = "rgba(0,0,0,1)";
+        ctx.lineWidth = 28;
+        ctx.lineCap = "round";
+        ctx.globalCompositeOperation = "destination-out";
+      }
+
+      ctx.stroke();
+      this.lastX = curX;
+      this.lastY = curY;
+    };
+
+    const stopDraw = () => {
+      this.isPainting = false;
+    };
+
+    canvas.onmousedown = startDraw;
+    canvas.onmousemove = drawMove;
+    canvas.onmouseup = stopDraw;
+    canvas.onmouseleave = stopDraw;
+
+    canvas.ontouchstart = startDraw;
+    canvas.ontouchmove = drawMove;
+    canvas.ontouchend = stopDraw;
+  }
+
+  renderLaserPointer(x, y) {
+    if (!this.activeCtx) return;
+    const ctx = this.activeCtx;
+
+    // Vẽ chấm laser đỏ nhấp nháy phát sáng
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = "#ef4444";
+    ctx.shadowColor = "#ff0000";
+    ctx.shadowBlur = 15;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+    ctx.restore();
+
+    // Tự động làm mờ vệt laser sau 400ms
+    if (this.laserTimer) clearTimeout(this.laserTimer);
+    this.laserTimer = setTimeout(() => {
+      if (this.drawTool === "laser") {
+        ctx.clearRect(x - 20, y - 20, 40, 40);
+      }
+    }, 400);
+  }
+
+  clearCanvas(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      window.app.showToast("🧹 Đã xóa sạch nét vẽ trên màn hình!", "info");
     }
   }
 
   // =========================================================================
-  // VIDEO HOẠT HỌA & TRÌNH CHIẾU SLIDE 3D
+  // OPTION 2: VIDEO HOẠT HỌA AI THUYẾT MINH & TỰ ĐỘNG CHUYỂN SLIDE
   // =========================================================================
   async openSlideVideoPlayer(lectureId) {
     const lecture = await window.lectureService.getLectureById(lectureId);
@@ -660,20 +671,17 @@ class LecturePortal {
     this.currentSlideIndex = 0;
     this.isVideoPlaying = false;
 
-    const modal = document.getElementById("lecture-video-player-modal");
+    const modal = document.getElementById("slide-video-player-modal");
     if (!modal) return;
-
-    const titleEl = document.getElementById("video-player-lec-title");
-    if (titleEl) titleEl.innerText = lecture.title;
 
     modal.classList.add("active");
     this.renderCurrentVideoSlide();
   }
 
-  closeVideoPlayerModal() {
+  closeSlideVideoPlayer() {
     this.stopVideoAutoPlay();
     if (this.speechSynth) this.speechSynth.cancel();
-    const modal = document.getElementById("lecture-video-player-modal");
+    const modal = document.getElementById("slide-video-player-modal");
     if (modal) modal.classList.remove("active");
     this.activeVideoLecture = null;
   }
@@ -682,50 +690,72 @@ class LecturePortal {
     const slide = this.videoSlideFrames[this.currentSlideIndex];
     if (!slide) return;
 
-    const canvasArea = document.getElementById("video-player-slide-canvas");
-    if (!canvasArea) return;
+    const screen = document.getElementById("video-slide-screen");
+    if (!screen) return;
 
     const totalSlides = this.videoSlideFrames.length;
     const progressPct = ((this.currentSlideIndex + 1) / totalSlides) * 100;
 
-    canvasArea.innerHTML = `
-      <div class="relative w-full h-full p-8 md:p-12 flex flex-col justify-between rounded-3xl ${slide.bgGradient} text-white shadow-2xl overflow-hidden ${this.is3DFlipEnabled ? 'animate-pop' : ''}">
+    screen.innerHTML = `
+      <div class="relative w-full h-full p-6 md:p-10 flex flex-col justify-between rounded-3xl ${slide.bgGradient} text-white shadow-2xl overflow-hidden border border-white/20 animate-pop">
         <!-- Header Slide -->
         <div class="flex items-center justify-between border-b border-white/20 pb-3">
-          <span class="badge bg-white/20 text-white font-black text-xs uppercase tracking-wider backdrop-blur-md">
-            ${this.activeVideoLecture.bookSeries} • LỚP ${this.activeVideoLecture.grade}
-          </span>
+          <div class="flex items-center gap-2">
+            <span class="badge bg-white/20 text-white font-black text-xs uppercase tracking-wider backdrop-blur-md">
+              ${this.activeVideoLecture.bookSeries} • LỚP ${this.activeVideoLecture.grade}
+            </span>
+            <span class="badge bg-amber-400 text-slate-950 font-black text-xs">
+              ${slide.title}
+            </span>
+          </div>
           <span class="text-xs font-bold bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
             Slide ${this.currentSlideIndex + 1} / ${totalSlides}
           </span>
         </div>
 
         <!-- Main Slide Body -->
-        <div class="space-y-6 my-auto text-center">
-          <div class="text-7xl md:text-8xl animate-bounce filter drop-shadow-lg">
-            ${slide.icon}
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center my-auto">
+          <div class="md:col-span-4 text-center">
+            <div class="text-7xl md:text-8xl animate-bounce filter drop-shadow-2xl mb-2">
+              ${slide.icon}
+            </div>
+            <h3 class="text-lg md:text-xl font-black text-amber-300">${slide.subtitle}</h3>
           </div>
-          <h2 class="text-2xl md:text-4xl font-black tracking-tight leading-tight max-w-2xl mx-auto drop-shadow-md">
-            ${slide.title}
-          </h2>
-          <div class="p-4 md:p-6 bg-black/25 backdrop-blur-md rounded-2xl border border-white/20 max-w-2xl mx-auto text-sm md:text-base leading-relaxed font-semibold">
-            ${slide.narrative}
+
+          <div class="md:col-span-8 space-y-3">
+            <div class="p-4 bg-black/30 backdrop-blur-md rounded-2xl border border-white/20 space-y-2">
+              <h4 class="font-black text-cyan-200 text-sm">📌 Nội Dung Cốt Lõi:</h4>
+              <ul class="space-y-1.5 text-xs md:text-sm">
+                ${slide.bulletPoints.map(pt => `
+                  <li class="flex items-start gap-2">
+                    <span class="text-amber-400 font-bold">✔</span>
+                    <span>${pt}</span>
+                  </li>
+                `).join("")}
+              </ul>
+            </div>
+
+            <!-- Khung Lời Thuyết Minh AI Subtitle -->
+            <div class="p-3 bg-amber-400/10 border border-amber-400/40 rounded-xl text-xs text-amber-100 flex items-center gap-2">
+              <span class="text-base animate-pulse">🎙️</span>
+              <span class="font-semibold italic">"${slide.narrative}"</span>
+            </div>
           </div>
         </div>
 
         <!-- Footer Slide -->
         <div class="flex items-center justify-between border-t border-white/20 pt-3 text-xs text-white/80">
-          <span>👨‍🏫 ${this.activeVideoLecture.authorName}</span>
-          <span class="font-bold">Trường Tiểu Học Vui Học</span>
+          <span>👨‍🏫 Tác giả: <b>${this.activeVideoLecture.authorName}</b></span>
+          <span class="font-bold">Trường Tiểu Học Vui Học • GDPT 2018</span>
         </div>
       </div>
     `;
 
-    const progressEl = document.getElementById("video-player-progress-bar");
+    const progressEl = document.getElementById("video-slide-progress-bar");
     if (progressEl) progressEl.style.width = `${progressPct}%`;
 
-    const counterEl = document.getElementById("video-player-slide-counter");
-    if (counterEl) counterEl.innerText = `${this.currentSlideIndex + 1} / ${totalSlides}`;
+    const counterEl = document.getElementById("video-slide-progress-text");
+    if (counterEl) counterEl.innerText = `Trang ${this.currentSlideIndex + 1} / ${totalSlides}`;
 
     if (this.isVideoPlaying) {
       this.speakNarrative(slide.narrative);
@@ -739,13 +769,13 @@ class LecturePortal {
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = "vi-VN";
       utter.rate = this.speechRate;
-      utter.pitch = this.voiceGender === "female" ? 1.1 : 0.85;
+      utter.pitch = this.voiceGender === "female" ? 1.15 : 0.85;
 
       utter.onend = () => {
         if (this.isVideoPlaying) {
           setTimeout(() => {
-            this.nextVideoSlide();
-          }, 1200);
+            this.nextSlideVideo();
+          }, 1500);
         }
       };
 
@@ -753,7 +783,7 @@ class LecturePortal {
     } catch (e) {}
   }
 
-  toggleVideoPlay() {
+  togglePlayVideo() {
     this.isVideoPlaying = !this.isVideoPlaying;
     const btn = document.getElementById("btn-toggle-video-play");
 
@@ -772,24 +802,117 @@ class LecturePortal {
     if (this.videoTimer) clearTimeout(this.videoTimer);
   }
 
-  nextVideoSlide() {
+  nextSlideVideo() {
     if (this.currentSlideIndex < this.videoSlideFrames.length - 1) {
       this.currentSlideIndex++;
       this.renderCurrentVideoSlide();
     } else {
       this.stopVideoAutoPlay();
       if (this.speechSynth) this.speechSynth.cancel();
-      window.app.showToast("🎉 Đã hoàn thành trình chiếu video bài giảng!", "success");
+      window.app.showToast("🎉 Đã hoàn thành trình chiếu video hoạt họa bài giảng!", "success");
       const btn = document.getElementById("btn-toggle-video-play");
-      if (btn) btn.innerHTML = "<span>🔄</span> <span>Phát Lại</span>";
+      if (btn) btn.innerHTML = "<span>🔄</span> <span>Phát Lại Từ Đầu</span>";
     }
   }
 
-  prevVideoSlide() {
+  prevSlideVideo() {
     if (this.currentSlideIndex > 0) {
       this.currentSlideIndex--;
       this.renderCurrentVideoSlide();
     }
+  }
+
+  setVoiceGender(gender) {
+    this.voiceGender = gender;
+    window.app.showToast(gender === "female" ? "🎙️ Đã chọn giọng Cô Giáo (Nữ)" : "🎙️ Đã chọn giọng Thầy Giáo (Nam)", "info");
+    if (this.isVideoPlaying) {
+      const slide = this.videoSlideFrames[this.currentSlideIndex];
+      if (slide) this.speakNarrative(slide.narrative);
+    }
+  }
+
+  setSpeechRate(rate) {
+    this.speechRate = parseFloat(rate) || 0.95;
+    window.app.showToast(`⚡ Tốc độ giọng đọc: ${this.speechRate}x`, "info");
+    if (this.isVideoPlaying) {
+      const slide = this.videoSlideFrames[this.currentSlideIndex];
+      if (slide) this.speakNarrative(slide.narrative);
+    }
+  }
+
+  // =========================================================================
+  // OPTION 3: TẢI GIÁO ÁN WORD CV 2345 & GÓI HỌC LIỆU TRỌN BỘ (.ZIP)
+  // =========================================================================
+  async downloadLessonPlanDoc(lectureId) {
+    const lecture = await window.lectureService.getLectureById(lectureId);
+    if (!lecture) return;
+
+    window.app.showToast(`⏳ Đang tạo Kế Hoạch Bài Dạy Word chuẩn Công văn 2345 cho "${lecture.title}"...`, "info");
+    
+    if (window.docExportService?.exportLessonPlanByLecture) {
+      window.docExportService.exportLessonPlanByLecture(lecture);
+      setTimeout(() => {
+        window.app.showToast("🎉 Đã tải xuống Giáo Án Word (.doc) chuẩn Công văn 2345 thành công!", "success");
+      }, 800);
+    }
+  }
+
+  async downloadWorksheet(lectureId) {
+    const lecture = await window.lectureService.getLectureById(lectureId);
+    if (!lecture) return;
+
+    window.app.showToast(`⏳ Đang tạo Phiếu Bài Tập Word cho "${lecture.title}"...`, "info");
+    
+    if (window.docExportService?.exportWorksheetDoc) {
+      window.docExportService.exportWorksheetDoc(lecture);
+      setTimeout(() => {
+        window.app.showToast("🎉 Đã tải xuống Phiếu Bài Tập Word (.doc) thành công!", "success");
+      }, 800);
+    }
+  }
+
+  async downloadBundleZip(lectureId) {
+    const lecture = await window.lectureService.getLectureById(lectureId);
+    if (!lecture) return;
+
+    window.app.showToast(`📦 Đang chuẩn bị trọn gói học liệu cho "${lecture.title}"...`, "info");
+
+    // Tải lần lượt: 1. File PowerPoint, 2. Giáo Án CV 2345, 3. Phiếu Bài Tập
+    setTimeout(() => {
+      this.downloadLecture(lectureId);
+    }, 200);
+
+    setTimeout(() => {
+      this.downloadLessonPlanDoc(lectureId);
+    }, 800);
+
+    setTimeout(() => {
+      this.downloadWorksheet(lectureId);
+    }, 1400);
+
+    setTimeout(() => {
+      window.app.showToast("🎉 Đã xuất trọn bộ Gói Học Liệu (Slide PPTX + Giáo Án Word + Phiếu Bài Tập)!", "success");
+    }, 1800);
+  }
+
+  async downloadLecture(lectureId) {
+    const lecture = await window.lectureService.getLectureById(lectureId);
+    if (!lecture) return;
+
+    window.lectureService.incrementDownloadCount(lectureId);
+    window.app.showToast(`📥 Đang tải file PowerPoint: "${lecture.fileName || 'BaiGiang.pptx'}"...`, "info");
+
+    const a = document.createElement("a");
+    a.href = lecture.fileUrl || "https://example.com/slide.pptx";
+    a.download = lecture.fileName || "BaiGiang_TinHoc.pptx";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setTimeout(() => {
+      window.app.showToast("🎉 Tải file bài giảng thành công!", "success");
+      this.render("main-content-area");
+    }, 800);
   }
 
   // =========================================================================
@@ -891,82 +1014,210 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // AI TÓM TẮT & TRÌNH CHIẾU / TẢI BÀI GIẢNG
+  // ĐỒNG HỒ ĐẾM NGƯỢC HOẠT ĐỘNG NHÓM (GROUP WORK TIMER 1-10 PHÚT)
   // =========================================================================
-  async openAISummary(lectureId) {
-    const lecture = await window.lectureService.getLectureById(lectureId);
-    if (!lecture) return;
-
-    const modal = document.getElementById("lecture-summary-modal");
-    const titleEl = document.getElementById("summary-lec-title");
-    const contentEl = document.getElementById("summary-lec-content");
-
-    if (titleEl) titleEl.innerText = lecture.title;
-    if (contentEl) {
-      contentEl.innerHTML = `
-        <div class="space-y-4 text-xs text-slate-700 leading-relaxed">
-          <div class="p-4 bg-purple-50 rounded-2xl border border-purple-200">
-            <h4 class="font-black text-purple-900 text-sm mb-1">🎯 Mục Tiêu Bài Học (Chuẩn GDPT 2018):</h4>
-            <p>Học sinh nắm vững kiến thức trọng tâm của môn Tin học lớp ${lecture.grade}, rèn luyện kỹ năng thực hành và tư duy số.</p>
-          </div>
-          <div class="p-4 bg-cyan-50 rounded-2xl border border-cyan-200">
-            <h4 class="font-black text-cyan-900 text-sm mb-1">💡 3 Điểm Cốt Lõi Cần Ghi Nhớ:</h4>
-            <ul class="list-disc list-inside space-y-1">
-              <li>Thực hiện đúng quy tắc an toàn khi sử dụng thiết bị công nghệ.</li>
-              <li>Thao tác chính xác trên bài học và hoàn thành các câu hỏi thực nghiệm.</li>
-              <li>Ứng dụng kiến thức vào hoạt động học tập và sinh hoạt gia đình.</li>
-            </ul>
-          </div>
-        </div>
-      `;
-    }
+  openGroupTimerModal() {
+    const modal = document.getElementById("group-timer-modal");
     if (modal) modal.classList.add("active");
+    this.updateTimerDisplay();
   }
 
-  closeSummaryModal() {
-    const modal = document.getElementById("lecture-summary-modal");
+  closeGroupTimerModal() {
+    this.pauseGroupTimer();
+    const modal = document.getElementById("group-timer-modal");
     if (modal) modal.classList.remove("active");
   }
 
-  async previewLecture(lectureId) {
-    const lecture = await window.lectureService.getLectureById(lectureId);
-    if (!lecture) return;
+  setGroupTimerMinutes(minutes) {
+    this.pauseGroupTimer();
+    this.groupTimerSeconds = minutes * 60;
+    this.groupTimerInitial = this.groupTimerSeconds;
+    this.updateTimerDisplay();
+    window.app.showToast(`⏱️ Đã đặt đồng hồ nhóm: ${minutes} Phút!`, "info");
+  }
 
-    window.lectureService.incrementViewCount(lectureId);
+  addTimerSeconds(seconds) {
+    this.groupTimerSeconds += seconds;
+    this.groupTimerInitial = Math.max(this.groupTimerInitial, this.groupTimerSeconds);
+    this.updateTimerDisplay();
+  }
 
-    const modal = document.getElementById("presentation-modal");
-    const iframe = document.getElementById("presentation-iframe");
-    const titleEl = document.getElementById("presentation-title");
-
-    if (titleEl) titleEl.innerText = lecture.title;
-    if (iframe) {
-      iframe.src = lecture.fileUrl || "https://docs.google.com/presentation/d/e/2PACX-1vT1Z5u7.../embed";
+  toggleGroupTimer() {
+    if (this.isGroupTimerRunning) {
+      this.pauseGroupTimer();
+    } else {
+      this.startGroupTimer();
     }
+  }
+
+  startGroupTimer() {
+    if (this.groupTimerSeconds <= 0) return;
+    this.isGroupTimerRunning = true;
+    const btn = document.getElementById("btn-toggle-group-timer");
+    if (btn) btn.innerHTML = "<span>⏸️</span> <span>Tạm Dừng</span>";
+
+    if (this.isLofiMusicOn) {
+      this.startLofiAmbientMusic();
+    }
+
+    if (this.groupTimerInterval) clearInterval(this.groupTimerInterval);
+    this.groupTimerInterval = setInterval(() => {
+      this.groupTimerSeconds--;
+      this.updateTimerDisplay();
+
+      if (this.groupTimerSeconds <= 0) {
+        this.finishGroupTimer();
+      }
+    }, 1000);
+  }
+
+  pauseGroupTimer() {
+    this.isGroupTimerRunning = false;
+    if (this.groupTimerInterval) clearInterval(this.groupTimerInterval);
+    const btn = document.getElementById("btn-toggle-group-timer");
+    if (btn) btn.innerHTML = "<span>▶️</span> <span>Bắt Đầu Đếm Giờ</span>";
+    this.stopLofiAmbientMusic();
+  }
+
+  resetGroupTimer() {
+    this.pauseGroupTimer();
+    this.groupTimerSeconds = this.groupTimerInitial || 180;
+    this.updateTimerDisplay();
+  }
+
+  updateTimerDisplay() {
+    const mins = Math.floor(this.groupTimerSeconds / 60);
+    const secs = this.groupTimerSeconds % 60;
+    const timeStr = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+    const disp = document.getElementById("group-timer-clock-disp");
+    const ring = document.getElementById("group-timer-progress-ring");
+
+    if (disp) disp.innerText = timeStr;
+
+    if (ring && this.groupTimerInitial > 0) {
+      const percent = (this.groupTimerSeconds / this.groupTimerInitial) * 100;
+      ring.style.width = `${percent}%`;
+    }
+  }
+
+  finishGroupTimer() {
+    this.pauseGroupTimer();
+    this.playBellChime();
+    window.app.showToast("🔔 HẾT GIỜ HOẠT ĐỘNG NHÓM! Các nhóm hãy tổng kết kết quả thảo luận!", "warning");
+  }
+
+  toggleLofiMusic() {
+    this.isLofiMusicOn = !this.isLofiMusicOn;
+    const btn = document.getElementById("btn-toggle-lofi-timer");
+    if (btn) {
+      btn.innerHTML = this.isLofiMusicOn ? "<span>🎵 Nhạc Lofi: BẬT</span>" : "<span>🔇 Nhạc Lofi: TẮT</span>";
+    }
+    if (this.isGroupTimerRunning) {
+      if (this.isLofiMusicOn) this.startLofiAmbientMusic();
+      else this.stopLofiAmbientMusic();
+    }
+  }
+
+  startLofiAmbientMusic() {
+    try {
+      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      const filter = this.audioCtx.createBiquadFilter();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(220, this.audioCtx.currentTime);
+
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(400, this.audioCtx.currentTime);
+
+      gain.gain.setValueAtTime(0.04, this.audioCtx.currentTime);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.audioCtx.destination);
+
+      osc.start();
+      this.lofiOscillator = osc;
+    } catch (e) {}
+  }
+
+  stopLofiAmbientMusic() {
+    if (this.lofiOscillator) {
+      try {
+        this.lofiOscillator.stop();
+        this.lofiOscillator.disconnect();
+      } catch (e) {}
+      this.lofiOscillator = null;
+    }
+  }
+
+  playBellChime() {
+    try {
+      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, idx) => {
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime + idx * 0.15);
+
+        gain.gain.setValueAtTime(0.3, this.audioCtx.currentTime + idx * 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + idx * 0.15 + 1.2);
+
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+
+        osc.start(this.audioCtx.currentTime + idx * 0.15);
+        osc.stop(this.audioCtx.currentTime + idx * 0.15 + 1.2);
+      });
+    } catch (e) {}
+  }
+
+  // =========================================================================
+  // XÓA BÀI GIẢNG ĐIỆN TỬ
+  // =========================================================================
+  openDeleteConfirmModal(lectureId, lectureTitle) {
+    this.pendingDeleteId = lectureId;
+    this.pendingDeleteTitle = lectureTitle;
+
+    const modal = document.getElementById("lecture-delete-confirm-modal");
+    const nameEl = document.getElementById("delete-lec-name-target");
+    if (nameEl) nameEl.innerText = `"${lectureTitle}"`;
     if (modal) modal.classList.add("active");
   }
 
-  async downloadLecture(lectureId) {
-    const lecture = await window.lectureService.getLectureById(lectureId);
-    if (!lecture) return;
+  closeDeleteConfirmModal() {
+    this.pendingDeleteId = null;
+    this.pendingDeleteTitle = "";
+    const modal = document.getElementById("lecture-delete-confirm-modal");
+    if (modal) modal.classList.remove("active");
+  }
 
-    window.lectureService.incrementDownloadCount(lectureId);
-    window.app.showToast(`📥 Đang tải file PowerPoint: "${lecture.fileName || 'BaiGiang.pptx'}"...`, "info");
+  async confirmDeleteLecture() {
+    if (!this.pendingDeleteId) return;
+    const lectureId = this.pendingDeleteId;
+    const lectureTitle = this.pendingDeleteTitle;
 
-    const a = document.createElement("a");
-    a.href = lecture.fileUrl || "https://example.com/slide.pptx";
-    a.download = lecture.fileName || "BaiGiang_TinHoc.pptx";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const res = await window.lectureService.deleteLecture(lectureId);
+    this.closeDeleteConfirmModal();
 
-    setTimeout(() => {
-      window.app.showToast("🎉 Tải file bài giảng thành công!", "success");
+    if (res.success) {
+      window.app.showToast(`🗑️ Đã xóa bài giảng "${lectureTitle}" thành công!`, "success");
       this.render("main-content-area");
-    }, 800);
+    } else {
+      window.app.showToast("Không thể xóa bài giảng, vui lòng thử lại!", "error");
+    }
   }
 
   openAnalyticsModal() {
-    window.app.showToast("📈 Đang cập nhật bảng thống kê lượt tải và xem bài giảng...", "info");
+    window.app.showToast("📈 Báo cáo thống kê: Toàn bộ bài giảng đã sẵn sàng với chuẩn GDPT 2018 & CV 2345!", "info");
   }
 }
 

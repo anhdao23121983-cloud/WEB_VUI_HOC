@@ -1040,6 +1040,123 @@ Chúc Thầy Cô và các em học sinh có những tiết học Tin học thậ
     }
   }
 
+  // Xuất Kế Hoạch Bài Dạy Chuẩn Công Văn 2345 theo Bài Giảng Điện Tử
+  exportLessonPlanByLecture(lecture) {
+    const title = lecture.title || "Bài Giảng Tin Học Tiểu Học";
+    const grade = lecture.grade || 3;
+    const author = lecture.authorName || "Thầy Giáo Anh Đào";
+    const bookSeries = lecture.bookSeries || "KNTT";
+    const bookName = bookSeries === "KNTT" ? "Kết Nối Tri Thức Với Cuộc Sống" : (bookSeries === "CD" ? "Cánh Diều" : "Chân Trời Sáng Tạo");
+
+    const planObj = {
+      title: `KẾ HOẠCH BÀI DẠY: ${title.toUpperCase()}`,
+      grade: grade,
+      subject: "Tin Học",
+      bookSeries: bookName,
+      duration: "1 tiết (35 phút)",
+      schoolName: lecture.schoolName || "TRƯỜNG TIỂU HỌC VUI HỌC",
+      teacherName: author,
+      objectives: {
+        knowledge: [
+          `Học sinh nhận biết và hiểu được các kiến thức cốt lõi của bài học ${title}.`,
+          `Nắm vững các quy tắc an toàn khi sử dụng máy tính và thiết bị công nghệ số.`,
+          `Thực hành thành thạo các thao tác cơ bản theo yêu cầu chuẩn GDPT 2018.`
+        ],
+        competencies: [
+          `Năng lực tự chủ và tự học: Tự giác thực hành, giải quyết nhiệm vụ bài học.`,
+          `Năng lực giao tiếp và hợp tác: Tích cực thảo luận nhóm, chia sẻ kết quả với bạn.`,
+          `Năng lực ứng dụng tin học (NLa, NLc, NLe): Vận dụng kỹ năng số vào học tập.`
+        ],
+        qualities: [
+          `Chăm chỉ: Có ý thức học tập nghiêm túc, hoàn thành các bài tập thực hành.`,
+          `Trách nhiệm: Giữ gìn và bảo quản tốt thiết bị máy tính của nhà trường.`
+        ]
+      },
+      equipment: {
+        teacher: "Máy tính giáo viên, Tivi/Máy chiếu, Slide PowerPoint bài giảng, Phần mềm Web Vui Học.",
+        student: "Sách giáo khoa Tin học, Vở ghi, Máy tính học sinh (nếu có)."
+      },
+      activities: [
+        {
+          name: "Hoạt động 1: Khởi động (5 phút)",
+          objective: "Tạo hứng thú và kết nối kiến thức đã có với bài học mới.",
+          content: "Tham gia trò chơi đố vui khởi động 3 phút hoặc xem Video hoạt họa dẫn nhập.",
+          product: "Học sinh trả lời đúng câu hỏi và hào hứng bước vào bài học.",
+          implementation: "GV mở câu hỏi khởi động trên Web Vui Học. HS quan sát, thảo luận nhanh và đưa ra đáp án. GV nhận xét, dẫn dắt vào bài mới."
+        },
+        {
+          name: "Hoạt động 2: Hình thành kiến thức mới (15 phút)",
+          objective: "Khám phá các khái niệm, thiết bị và nguyên lý cốt lõi của bài học.",
+          content: "Quan sát slide trình chiếu, lắng nghe GV giảng giải và phân tích tình huống.",
+          product: "HS hiểu và ghi nhớ được các nội dung trọng tâm vào vở.",
+          implementation: "GV sử dụng bút dạ quang và bút Laser trên slide để nhấn mạnh từ khóa. HS chú ý theo dõi và trả lời các câu hỏi tương tác."
+        },
+        {
+          name: "Hoạt động 3: Luyện tập & Thực hành (10 phút)",
+          objective: "Củng cố kiến thức và rèn luyện kỹ năng thao tác thực tế.",
+          content: "Làm bài tập trắc nghiệm và thử thách thực nghiệm trên Web Vui Học.",
+          product: "Kết quả bài làm đạt chuẩn và tích lũy điểm số/Sao Vàng.",
+          implementation: "GV giao nhiệm vụ thực hành. HS thao tác cá nhân hoặc theo cặp. GV quan sát, hỗ trợ kịp thời các em gặp khó khăn."
+        },
+        {
+          name: "Hoạt động 4: Vận dụng & Mở rộng (5 phút)",
+          objective: "Vận dụng kiến thức bài học vào thực tiễn gia đình và cuộc sống.",
+          content: "Liên hệ ứng dụng thực tế và nhắc nhở an toàn công nghệ số.",
+          product: "HS biết cách ứng dụng điều đã học và thực hiện đúng quy tắc an toàn.",
+          implementation: "GV đặt câu hỏi liên hệ thực tế. HS chia sẻ ý kiến. GV tổng kết, dặn dò HS chuẩn bị cho tiết học sau."
+        }
+      ]
+    };
+
+    this.exportToWord(planObj);
+  }
+
+  // Xuất Phiếu Bài Tập Word (.doc)
+  exportWorksheetDoc(lecture) {
+    const title = lecture.title || "Bài Giảng Tin Học Tiểu Học";
+    const grade = lecture.grade || 3;
+    const author = lecture.authorName || "Thầy Giáo Anh Đào";
+
+    const planObj = {
+      title: `PHIẾU BÀI TẬP CUỐI TIẾT: ${title.toUpperCase()}`,
+      grade: grade,
+      subject: "Tin Học",
+      schoolName: lecture.schoolName || "TRƯỜNG TIỂU HỌC VUI HỌC",
+      teacherName: author,
+      objectives: {
+        knowledge: [`Phiếu bài tập rèn luyện kỹ năng và củng cố kiến thức cho bài học: ${title}.`],
+        competencies: [`Đánh giá năng lực nhận biết và vận dụng kiến thức tin học lớp ${grade}.`],
+        qualities: [`Rèn luyện tính cẩn thận và tư duy logic cho học sinh tiểu học.`]
+      },
+      equipment: { teacher: "Phiếu in giấy A4", student: "Bút viết" },
+      activities: [
+        {
+          name: "Phần 1: Trắc nghiệm ghi nhớ (4 câu)",
+          objective: "Kiểm tra kiến thức cơ bản của bài học.",
+          content: "Khoanh tròn vào chữ cái đặt trước câu trả lời đúng nhất.",
+          product: "Đáp án các câu hỏi trắc nghiệm.",
+          implementation: "Học sinh đọc kỹ đề bài và khoanh tròn đáp án A, B, C hoặc D."
+        },
+        {
+          name: "Phần 2: Nối cột tương ứng",
+          objective: "Rèn luyện khả năng liên kết giữa thuật ngữ và hình ảnh.",
+          content: "Nối cột A (Tên thiết bị/khái niệm) với cột B (Chức năng tương ứng).",
+          product: "Các đường nối chính xác.",
+          implementation: "Học sinh dùng thước kẻ nối các ô tương ứng ở 2 cột."
+        },
+        {
+          name: "Phần 3: Tự luận ngắn & Vận dụng",
+          objective: "Khả năng diễn đạt và liên hệ thực tế.",
+          content: "Em hãy nêu 2 điều cần lưu ý để giữ an toàn khi học máy tính.",
+          product: "Đoạn văn ngắn 2-3 câu trả lời của học sinh.",
+          implementation: "Học sinh viết câu trả lời trực tiếp vào phần kẻ dòng bên dưới."
+        }
+      ]
+    };
+
+    this.exportToWord(planObj);
+  }
+
   slugify(text) {
     return text.toString().toLowerCase()
       .normalize('NFD')
@@ -1052,6 +1169,7 @@ Chúc Thầy Cô và các em học sinh có những tiết học Tin học thậ
 }
 
 window.docExportService = new DocExportService();
+
 
 
 
