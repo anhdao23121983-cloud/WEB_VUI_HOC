@@ -4,10 +4,13 @@
  * 1. 📂 3 Thư mục con: Bài giảng Tin lớp 3, Bài giảng Tin lớp 4, Bài giảng Tin lớp 5
  * 2. 📤 Nút đưa bài giảng lên cho Giáo viên (Đồng bộ Supabase Cloud & Local)
  * 3. 🎨 Bút Laser đỏ & Bút dạ quang khi Trình chiếu Slide (Laser Pointer & Pen Tool)
- * 4. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
- * 5. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
- * 6. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
- * 7. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
+ * 4. ⚡ Đố vui 10s tương tác trực tiếp trên Slide (In-Slide Quick Quiz 10s)
+ * 5. 📖 Sách 3D lật trang siêu thực có âm thanh sột soạt (3D Flipbook E-Book Viewer)
+ * 6. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
+ * 7. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
+ * 8. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
+ * 9. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
+ * 10. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
  */
 
 class LecturePortal {
@@ -31,6 +34,20 @@ class LecturePortal {
     this.speechRate = 0.95; // 0.8 | 0.95 | 1.2
     this.is3DFlipEnabled = true;
 
+    // 3D Flipbook State
+    this.activeFlipbookLecture = null;
+    this.flipbookPages = [];
+    this.currentFlipbookIndex = 0; // Chứa cặp trang: 0 = trang 1-2, 2 = trang 3-4...
+    this.isAutoFlipRunning = false;
+    this.autoFlipTimer = null;
+
+    // In-Slide Quick Quiz 10s State
+    this.inSlideQuizActive = false;
+    this.inSlideQuizTimer = 10;
+    this.inSlideQuizInterval = null;
+    this.currentInSlideQuestion = null;
+    this.isInSlideAnswerRevealed = false;
+
     // Icebreaker Game State
     this.icebreakerActive = false;
     this.icebreakerScore = 0;
@@ -45,7 +62,7 @@ class LecturePortal {
 
     // Drawing Canvas State (Laser & Pen)
     this.isDrawingActive = false;
-    this.drawTool = "highlighter"; // 'laser' | 'highlighter' | 'red_pen' | 'blue_pen' | 'chalk' | 'eraser'
+    this.drawTool = "laser"; // 'laser' | 'highlighter' | 'red_pen' | 'blue_pen' | 'chalk' | 'eraser'
     this.isPainting = false;
     this.activeCanvas = null;
     this.activeCtx = null;
@@ -103,15 +120,15 @@ class LecturePortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser & Dạ quang, Video hoạt họa AI, Giáo án Word CV 2345 và Lọc Học kỳ 1 & 2</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser & Đố vui 10s, Sách 3D lật trang, Video hoạt họa AI và Bảng Vàng Thống Kê</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
             <button onclick="lecturePortal.openGroupTimerModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md">
               <span class="text-base">⏱️</span> <span>Đồng Hồ Nhóm</span>
             </button>
-            <button onclick="lecturePortal.openAnalyticsModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md">
-              <span>📈</span> <span>Thống Kê</span>
+            <button onclick="lecturePortal.openAnalyticsModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Mở Báo Cáo Thống Kê & Bảng Vàng Yêu Thích Của Trường">
+              <span>📈</span> <span>Bảng Vàng & Thống Kê</span>
             </button>
             <button onclick="lectureUploadModal.openModal(${effectiveGrade !== 'all' ? effectiveGrade : 3})" class="btn btn-amber btn-lg font-black shadow-xl flex items-center gap-2 shrink-0 hover:scale-105 transition-all">
               <span class="text-xl">📤</span> <span>Đưa Bài Giảng Lên</span>
@@ -380,30 +397,33 @@ class LecturePortal {
 
                 <!-- Hàng nút hành động đa năng -->
                 <div class="space-y-2 pt-2 border-t border-slate-100">
-                  <!-- Hàng 1: Video hoạt họa AI + Game Khởi động 3 phút -->
+                  <!-- Hàng 1: Video hoạt họa AI + Sách 3D Lật Trang Siêu Thực -->
                   <div class="grid grid-cols-2 gap-2">
                     <button onclick="lecturePortal.openSlideVideoPlayer('${l.id}')" class="btn btn-amber btn-sm font-black flex items-center justify-center gap-1 shadow-sm" title="Tự động chuyển Slide thành Video hoạt họa AI có thuyết minh tiếng Việt">
                       <span>🎬</span> <span>Video Hoạt Họa AI</span>
                     </button>
-                    <button onclick="lecturePortal.openIcebreakerGame('${l.id}')" class="btn btn-emerald btn-sm font-black flex items-center justify-center gap-1 shadow-sm" title="Trò chơi đố vui khởi động 3 phút đầu giờ">
-                      <span>⚡</span> <span>Khởi Động 3P</span>
+                    <button onclick="lecturePortal.openFlipbook('${l.id}')" class="btn bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white btn-sm font-black flex items-center justify-center gap-1 shadow-sm hover:scale-105 transition-all" title="Trình chiếu Sách 3D Lật Trang Siêu Thực có âm thanh sột soạt">
+                      <span>📖</span> <span>Sách 3D Lật Trang</span>
                     </button>
                   </div>
 
-                  <!-- Hàng 2: Tải Giáo Án CV 2345 (.doc) + Phiếu Bài Tập Word -->
-                  <div class="grid grid-cols-2 gap-2">
-                    <button onclick="lecturePortal.downloadLessonPlanDoc('${l.id}')" class="btn btn-outline btn-sm font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200 flex items-center justify-center gap-1" title="Tải Kế hoạch bài dạy Giáo án Word chuẩn Công văn 2345">
-                      <span>📄</span> <span>Giáo Án CV 2345</span>
+                  <!-- Hàng 2: Tải Giáo Án CV 2345 (.doc) + Khởi Động 3P + Phiếu Bài Tập Word -->
+                  <div class="grid grid-cols-3 gap-1.5">
+                    <button onclick="lecturePortal.downloadLessonPlanDoc('${l.id}')" class="btn btn-outline btn-xs font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200 flex items-center justify-center gap-1" title="Tải Kế hoạch bài dạy Giáo án Word chuẩn Công văn 2345">
+                      <span>📄</span> <span>Giáo Án</span>
                     </button>
-                    <button onclick="lecturePortal.downloadWorksheet('${l.id}')" class="btn btn-outline btn-sm font-black text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 flex items-center justify-center gap-1" title="Tải Phiếu bài tập in ấn Word (.doc) cho học sinh">
-                      <span>📝</span> <span>Phiếu Bài Tập</span>
+                    <button onclick="lecturePortal.openIcebreakerGame('${l.id}')" class="btn btn-outline btn-xs font-black text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 flex items-center justify-center gap-1" title="Trò chơi đố vui khởi động 3 phút đầu giờ">
+                      <span>⚡</span> <span>Khởi Động</span>
+                    </button>
+                    <button onclick="lecturePortal.downloadWorksheet('${l.id}')" class="btn btn-outline btn-xs font-black text-cyan-800 bg-cyan-50 hover:bg-cyan-100 border-cyan-200 flex items-center justify-center gap-1" title="Tải Phiếu bài tập in ấn Word (.doc) cho học sinh">
+                      <span>📝</span> <span>Phiếu BT</span>
                     </button>
                   </div>
 
-                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser/Dạ quang) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
+                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser & Đố vui 10s) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
                   <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
-                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser & Bút Dạ Quang">
-                      <span>🎨</span> <span>Trình Chiếu & Bút</span>
+                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser & Đố Vui 10s">
+                      <span>🎨</span> <span>Trình Chiếu & Laser</span>
                     </button>
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
                       <span>📥</span> <span>Tải PPT</span>
@@ -458,6 +478,481 @@ class LecturePortal {
   }
 
   // =========================================================================
+  // OPTION 3: BẢNG VÀNG XẾP HẠNG & BÁO CÁO MỨC ĐỘ YÊU THÍCH BÀI GIẢNG CỦA TRƯỜNG
+  // =========================================================================
+  async openAnalyticsModal() {
+    const modal = document.getElementById("lecture-analytics-modal");
+    const contentEl = document.getElementById("lec-analytics-content");
+    if (!modal || !contentEl) return;
+
+    window.app.showToast("📊 Đang tổng hợp số liệu Bảng Vàng & Mức độ yêu thích...", "info");
+    const summary = await window.lectureService.getAnalyticsSummary();
+
+    const maxViews = Math.max(...Object.values(summary.gradeStats).map(g => g.views), 10);
+
+    contentEl.innerHTML = `
+      <div class="space-y-6 text-xs text-slate-800 animate-pop">
+        <!-- 4 Khung Thống Kê Tổng Quan -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div class="p-3 bg-blue-50 rounded-2xl border border-blue-200">
+            <span class="text-2xl block mb-1">📚</span>
+            <p class="text-xs text-slate-500 font-bold">Tổng Bài Giảng</p>
+            <h4 class="text-xl font-black text-blue-900 font-mono">${summary.totalLectures}</h4>
+          </div>
+          <div class="p-3 bg-cyan-50 rounded-2xl border border-cyan-200">
+            <span class="text-2xl block mb-1">👁️</span>
+            <p class="text-xs text-slate-500 font-bold">Tổng Lượt Xem</p>
+            <h4 class="text-xl font-black text-cyan-900 font-mono">${summary.totalViews}</h4>
+          </div>
+          <div class="p-3 bg-emerald-50 rounded-2xl border border-emerald-200">
+            <span class="text-2xl block mb-1">📥</span>
+            <p class="text-xs text-slate-500 font-bold">Lượt Tải PPT</p>
+            <h4 class="text-xl font-black text-emerald-900 font-mono">${summary.totalDownloads}</h4>
+          </div>
+          <div class="p-3 bg-rose-50 rounded-2xl border border-rose-200">
+            <span class="text-2xl block mb-1">⭐</span>
+            <p class="text-xs text-slate-500 font-bold">Đã Yêu Thích</p>
+            <h4 class="text-xl font-black text-rose-900 font-mono">${summary.totalFavorites}</h4>
+          </div>
+        </div>
+
+        <!-- BẢNG VÀNG: TOP 5 BÀI GIẢNG ĐƯỢC YÊU THÍCH & XEM NHIỀU NHẤT -->
+        <div class="space-y-2.5">
+          <h4 class="font-black text-slate-900 text-sm flex items-center gap-1.5">
+            <span>🏆 BẢNG VÀNG BÀI GIẢNG YÊU THÍCH NHẤT TRƯỜNG</span>
+            <span class="badge badge-amber text-[10px] font-black">TOP 5</span>
+          </h4>
+
+          <div class="space-y-2">
+            ${summary.topLectures.map((item, index) => {
+              const medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣"];
+              const medalColors = ["bg-amber-50 border-amber-300", "bg-slate-100 border-slate-300", "bg-amber-100/50 border-amber-200", "bg-white border-slate-200", "bg-white border-slate-200"];
+
+              return `
+                <div class="p-3 rounded-2xl border ${medalColors[index] || 'bg-white border-slate-200'} flex items-center justify-between gap-3 shadow-xs hover:scale-101 transition-all">
+                  <div class="flex items-center gap-3">
+                    <span class="text-2xl">${medals[index] || (index + 1)}</span>
+                    <div>
+                      <h5 class="font-black text-slate-900 text-xs line-clamp-1">${item.title}</h5>
+                      <p class="text-[11px] text-slate-500">Lớp ${item.grade} • ${item.authorName || 'Thầy Anh Đào'} • ${item.bookSeries || 'KNTT'}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 text-right shrink-0">
+                    <div>
+                      <span class="badge badge-cyan font-black text-[10px]">👁️ ${item.viewCount || 0}</span>
+                      <span class="badge badge-emerald font-black text-[10px] ml-1">📥 ${item.downloadCount || 0}</span>
+                    </div>
+                    <button onclick="lecturePortal.previewLecture('${item.id}'); document.getElementById('lecture-analytics-modal').classList.remove('active');" class="btn btn-primary btn-xs font-bold">
+                      Xem
+                    </button>
+                  </div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </div>
+
+        <!-- Tỷ Lệ Tương Tác Theo Khối Lớp -->
+        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+          <h4 class="font-black text-slate-900 text-xs">📊 Phân Bố Học Liệu Theo Khối Lớp:</h4>
+          
+          <div class="space-y-2">
+            <div>
+              <div class="flex justify-between text-[11px] font-bold text-slate-700 mb-1">
+                <span>🎒 Khối Lớp 3: ${summary.gradeStats[3].count} bài (${summary.gradeStats[3].views} lượt xem)</span>
+                <span>${Math.round((summary.gradeStats[3].views / Math.max(summary.totalViews, 1)) * 100)}%</span>
+              </div>
+              <div class="w-full bg-slate-200 rounded-full h-2">
+                <div class="bg-blue-600 h-2 rounded-full" style="width: ${Math.max(5, (summary.gradeStats[3].views / Math.max(summary.totalViews, 1)) * 100)}%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[11px] font-bold text-slate-700 mb-1">
+                <span>🚀 Khối Lớp 4: ${summary.gradeStats[4].count} bài (${summary.gradeStats[4].views} lượt xem)</span>
+                <span>${Math.round((summary.gradeStats[4].views / Math.max(summary.totalViews, 1)) * 100)}%</span>
+              </div>
+              <div class="w-full bg-slate-200 rounded-full h-2">
+                <div class="bg-purple-600 h-2 rounded-full" style="width: ${Math.max(5, (summary.gradeStats[4].views / Math.max(summary.totalViews, 1)) * 100)}%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[11px] font-bold text-slate-700 mb-1">
+                <span>⭐ Khối Lớp 5: ${summary.gradeStats[5].count} bài (${summary.gradeStats[5].views} lượt xem)</span>
+                <span>${Math.round((summary.gradeStats[5].views / Math.max(summary.totalViews, 1)) * 100)}%</span>
+              </div>
+              <div class="w-full bg-slate-200 rounded-full h-2">
+                <div class="bg-emerald-600 h-2 rounded-full" style="width: ${Math.max(5, (summary.gradeStats[5].views / Math.max(summary.totalViews, 1)) * 100)}%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    modal.classList.add("active");
+  }
+
+  // =========================================================================
+  // OPTION 4: ĐỐ VUI 10S TRÊN SLIDE (IN-SLIDE QUICK QUIZ 10S BLITZ)
+  // =========================================================================
+  toggleInSlideQuiz() {
+    const overlay = document.getElementById("in-slide-quiz-overlay");
+    if (!overlay) return;
+
+    this.inSlideQuizActive = !this.inSlideQuizActive;
+    if (this.inSlideQuizActive) {
+      overlay.classList.remove("hidden");
+      this.loadInSlideQuestion();
+      this.startInSlideCountdown();
+    } else {
+      overlay.classList.add("hidden");
+      if (this.inSlideQuizInterval) clearInterval(this.inSlideQuizInterval);
+    }
+  }
+
+  loadInSlideQuestion() {
+    const defaultQ = {
+      question: "Thiết bị nào sau đây dùng để hiển thị hình ảnh và kết quả làm việc của máy tính?",
+      options: ["A. Màn hình", "B. Bàn phím", "C. Chuột", "D. Thân máy"],
+      correct: 0,
+      explanation: "Màn hình là thiết bị xuất hiển thị hình ảnh cho người dùng quan sát."
+    };
+
+    const questions = [
+      defaultQ,
+      {
+        question: "Hai phím cơ sở có gờ nổi trên hàng phím cơ sở là hai phím nào?",
+        options: ["A. Phím F và J", "B. Phím G và H", "C. Phím A và L", "D. Phím D và K"],
+        correct: 0,
+        explanation: "Phím F (ngón trỏ trái) và phím J (ngón trỏ phải) là hai phím có gờ nổi mốc đặt tay."
+      },
+      {
+        question: "Để lưu bài tập vào thư mục của em, em nên đặt tên tệp tin như thế nào?",
+        options: ["A. Khong_dau_ngan_gon", "B. ?*:/\\", "C. Để trống tên", "D. Tùy ý dài 100 từ"],
+        correct: 0,
+        explanation: "Nên đặt tên tệp tin ngắn gọn, không dấu hoặc có ý nghĩa rõ ràng để dễ tìm kiếm."
+      },
+      {
+        question: "Khoảng cách chuẩn từ mắt đến màn hình máy tính để bảo vệ thị lực là bao nhiêu?",
+        options: ["A. 50cm đến 80cm", "B. 10cm", "C. 20cm", "D. Càng gần càng tốt"],
+        correct: 0,
+        explanation: "Khoảng cách từ 50cm đến 80cm (khoảng 1 sải tay) giúp bảo vệ thị lực và tránh mỏi mắt."
+      }
+    ];
+
+    this.currentInSlideQuestion = questions[Math.floor(Math.random() * questions.length)];
+    this.isInSlideAnswerRevealed = false;
+
+    const qBox = document.getElementById("in-slide-question-box");
+    const optGrid = document.getElementById("in-slide-options-grid");
+    const btnReveal = document.getElementById("btn-reveal-answer");
+
+    if (qBox) qBox.innerText = `❓ ${this.currentInSlideQuestion.question}`;
+    if (btnReveal) btnReveal.innerHTML = "📢 Công Bố Đáp Án";
+
+    if (optGrid) {
+      optGrid.innerHTML = this.currentInSlideQuestion.options.map((opt, idx) => `
+        <button id="in-slide-opt-${idx}" onclick="lecturePortal.selectInSlideOption(${idx})" class="p-2 bg-slate-900 hover:bg-cyan-900 border border-slate-700 hover:border-cyan-400 rounded-xl text-left font-bold text-[11px] text-white transition-all">
+          ${opt}
+        </button>
+      `).join("");
+    }
+  }
+
+  startInSlideCountdown() {
+    if (this.inSlideQuizInterval) clearInterval(this.inSlideQuizInterval);
+    this.inSlideQuizTimer = 10;
+
+    const timerBadge = document.getElementById("in-slide-timer-badge");
+    const progressEl = document.getElementById("in-slide-timer-progress");
+
+    if (timerBadge) timerBadge.innerText = "10s";
+    if (progressEl) progressEl.style.width = "100%";
+
+    this.inSlideQuizInterval = setInterval(() => {
+      this.inSlideQuizTimer--;
+      if (timerBadge) timerBadge.innerText = `${this.inSlideQuizTimer}s`;
+
+      if (progressEl) {
+        progressEl.style.width = `${(this.inSlideQuizTimer / 10) * 100}%`;
+      }
+
+      this.playTickSound();
+
+      if (this.inSlideQuizTimer <= 0) {
+        clearInterval(this.inSlideQuizInterval);
+        if (timerBadge) timerBadge.innerText = "HẾT GIỜ!";
+        this.revealInSlideAnswer();
+      }
+    }, 1000);
+  }
+
+  selectInSlideOption(index) {
+    if (this.isInSlideAnswerRevealed) return;
+    this.revealInSlideAnswer(index);
+  }
+
+  revealInSlideAnswer(userSelectedIndex = null) {
+    if (this.isInSlideAnswerRevealed) return;
+    this.isInSlideAnswerRevealed = true;
+    if (this.inSlideQuizInterval) clearInterval(this.inSlideQuizInterval);
+
+    const q = this.currentInSlideQuestion;
+    if (!q) return;
+
+    const correctBtn = document.getElementById(`in-slide-opt-${q.correct}`);
+    if (correctBtn) {
+      correctBtn.classList.remove("bg-slate-900", "border-slate-700");
+      correctBtn.classList.add("bg-emerald-600", "border-emerald-300", "text-white", "animate-bounce");
+    }
+
+    if (userSelectedIndex !== null && userSelectedIndex !== q.correct) {
+      const wrongBtn = document.getElementById(`in-slide-opt-${userSelectedIndex}`);
+      if (wrongBtn) {
+        wrongBtn.classList.remove("bg-slate-900", "border-slate-700");
+        wrongBtn.classList.add("bg-rose-600", "border-rose-300", "text-white");
+      }
+    }
+
+    this.playTingSound();
+
+    if (window.Simulation3D?.triggerFireworks) {
+      window.Simulation3D.triggerFireworks();
+    }
+
+    window.app.showToast(`🎉 Đáp án chính xác là: ${q.options[q.correct]}!`, "success");
+  }
+
+  restartInSlideQuiz() {
+    this.loadInSlideQuestion();
+    this.startInSlideCountdown();
+  }
+
+  playTickSound() {
+    try {
+      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(800, this.audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.05, this.audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.08);
+
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+      osc.start();
+      osc.stop(this.audioCtx.currentTime + 0.08);
+    } catch (e) {}
+  }
+
+  playTingSound() {
+    try {
+      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+
+      [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime + idx * 0.1);
+        gain.gain.setValueAtTime(0.2, this.audioCtx.currentTime + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + idx * 0.1 + 0.8);
+
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.start(this.audioCtx.currentTime + idx * 0.1);
+        osc.stop(this.audioCtx.currentTime + idx * 0.1 + 0.8);
+      });
+    } catch (e) {}
+  }
+
+  // =========================================================================
+  // OPTION 5: TRÌNH CHIẾU SÁCH 3D LẬT TRANG SIÊU THỰC (3D FLIPBOOK E-BOOK VIEWER)
+  // =========================================================================
+  async openFlipbook(lectureId) {
+    const lecture = await window.lectureService.getLectureById(lectureId);
+    if (!lecture) return;
+
+    this.activeFlipbookLecture = lecture;
+    this.flipbookPages = window.lectureService.generateFlipbookPages(lecture);
+    this.currentFlipbookIndex = 0;
+    this.isAutoFlipRunning = false;
+
+    const modal = document.getElementById("lecture-flipbook-modal");
+    const titleEl = document.getElementById("flipbook-title-disp");
+
+    if (titleEl) titleEl.innerText = `SÁCH 3D: ${lecture.title.toUpperCase()}`;
+    if (modal) modal.classList.add("active");
+
+    this.renderFlipbookPages();
+    this.playPageFlipSound();
+  }
+
+  closeFlipbookModal() {
+    this.stopAutoFlipbook();
+    const modal = document.getElementById("lecture-flipbook-modal");
+    if (modal) modal.classList.remove("active");
+    this.activeFlipbookLecture = null;
+  }
+
+  renderFlipbookPages() {
+    const leftEl = document.getElementById("flipbook-left-page");
+    const rightEl = document.getElementById("flipbook-right-page");
+    const indicatorEl = document.getElementById("flipbook-page-indicator");
+
+    if (!leftEl || !rightEl) return;
+
+    const totalPages = this.flipbookPages.length;
+    const pageL = this.flipbookPages[this.currentFlipbookIndex];
+    const pageR = this.flipbookPages[this.currentFlipbookIndex + 1];
+
+    if (indicatorEl) {
+      indicatorEl.innerText = `Trang ${this.currentFlipbookIndex + 1} - ${Math.min(this.currentFlipbookIndex + 2, totalPages)} / ${totalPages}`;
+    }
+
+    // Render Trang Trái
+    if (pageL) {
+      leftEl.innerHTML = `
+        <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+          <span class="badge badge-cyan font-black text-[10px]">${pageL.badge}</span>
+          <span class="text-xs font-bold text-slate-400">Trang ${pageL.pageNum}</span>
+        </div>
+
+        <div class="my-auto py-2">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-2xl">${pageL.icon}</span>
+            <h4 class="font-black text-sm md:text-base text-slate-900">${pageL.title}</h4>
+          </div>
+          ${pageL.content}
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-slate-200 text-[10px] text-slate-400">
+          <span>📖 Sách Giáo Khoa Tin Học GDPT 2018</span>
+          <span>Trang ${pageL.pageNum}</span>
+        </div>
+      `;
+    } else {
+      leftEl.innerHTML = `<div class="my-auto text-center text-slate-300 font-bold">Trang trống</div>`;
+    }
+
+    // Render Trang Phải
+    if (pageR) {
+      rightEl.innerHTML = `
+        <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+          <span class="badge badge-amber font-black text-[10px]">${pageR.badge}</span>
+          <span class="text-xs font-bold text-slate-400">Trang ${pageR.pageNum}</span>
+        </div>
+
+        <div class="my-auto py-2">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-2xl">${pageR.icon}</span>
+            <h4 class="font-black text-sm md:text-base text-slate-900">${pageR.title}</h4>
+          </div>
+          ${pageR.content}
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-slate-200 text-[10px] text-slate-400">
+          <span>${this.activeFlipbookLecture.title}</span>
+          <span>Trang ${pageR.pageNum}</span>
+        </div>
+      `;
+    } else {
+      rightEl.innerHTML = `
+        <div class="my-auto text-center space-y-2 p-6 bg-slate-50 rounded-2xl border border-slate-200">
+          <span class="text-5xl block">🎉</span>
+          <h4 class="font-black text-slate-900 text-sm">HẾT BÀI HỌC</h4>
+          <p class="text-xs text-slate-500">Em hãy đăng nhập Web Vui Học để làm bài tập trắc nghiệm và thí nghiệm 3D nhé!</p>
+        </div>
+      `;
+    }
+  }
+
+  nextFlipbookPage() {
+    if (this.currentFlipbookIndex + 2 < this.flipbookPages.length) {
+      this.currentFlipbookIndex += 2;
+      this.renderFlipbookPages();
+      this.playPageFlipSound();
+    } else {
+      window.app.showToast("📖 Đã đến trang cuối cùng của bài học!", "info");
+      this.stopAutoFlipbook();
+    }
+  }
+
+  prevFlipbookPage() {
+    if (this.currentFlipbookIndex >= 2) {
+      this.currentFlipbookIndex -= 2;
+      this.renderFlipbookPages();
+      this.playPageFlipSound();
+    }
+  }
+
+  toggleAutoFlipbook() {
+    this.isAutoFlipRunning = !this.isAutoFlipRunning;
+    const btn = document.getElementById("btn-toggle-auto-flip");
+
+    if (this.isAutoFlipRunning) {
+      if (btn) btn.innerHTML = "<span>⏸️</span> <span>Dừng Tự Động Lật</span>";
+      window.app.showToast("▶️ Bắt đầu tự động lật trang mỗi 5 giây!", "info");
+
+      this.autoFlipTimer = setInterval(() => {
+        if (this.currentFlipbookIndex + 2 < this.flipbookPages.length) {
+          this.nextFlipbookPage();
+        } else {
+          this.currentFlipbookIndex = 0;
+          this.renderFlipbookPages();
+          this.playPageFlipSound();
+        }
+      }, 5000);
+    } else {
+      this.stopAutoFlipbook();
+    }
+  }
+
+  stopAutoFlipbook() {
+    this.isAutoFlipRunning = false;
+    if (this.autoFlipTimer) clearInterval(this.autoFlipTimer);
+    const btn = document.getElementById("btn-toggle-auto-flip");
+    if (btn) btn.innerHTML = "<span>▶️</span> <span>Tự Động Lật (5s)</span>";
+  }
+
+  playPageFlipSound() {
+    try {
+      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+
+      // Mô phỏng âm thanh lật giấy sột soạt (white noise burst with bandpass filter)
+      const bufferSize = this.audioCtx.sampleRate * 0.15; // 150ms
+      const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+      const output = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      const whiteNoise = this.audioCtx.createBufferSource();
+      whiteNoise.buffer = buffer;
+
+      const filter = this.audioCtx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(1200, this.audioCtx.currentTime);
+      filter.Q.setValueAtTime(1.5, this.audioCtx.currentTime);
+
+      const gain = this.audioCtx.createGain();
+      gain.gain.setValueAtTime(0.12, this.audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.15);
+
+      whiteNoise.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.audioCtx.destination);
+
+      whiteNoise.start();
+    } catch (e) {}
+  }
+
+  // =========================================================================
   // OPTION 1: TRÌNH CHIẾU SLIDE & BẢNG VẼ BÚT LASER / DẠ QUANG
   // =========================================================================
   async previewLecture(lectureId) {
@@ -483,6 +978,7 @@ class LecturePortal {
     const modal = document.getElementById("lecture-preview-modal");
     if (modal) modal.classList.remove("active");
     this.disableDrawingMode("lec-preview-canvas");
+    if (this.inSlideQuizActive) this.toggleInSlideQuiz();
   }
 
   toggleDrawingMode(canvasId) {
@@ -535,7 +1031,6 @@ class LecturePortal {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
 
-    // Resize canvas đúng kích thước khung
     canvas.width = canvas.offsetWidth || 900;
     canvas.height = canvas.offsetHeight || 550;
 
@@ -577,7 +1072,7 @@ class LecturePortal {
       ctx.lineTo(curX, curY);
 
       if (this.drawTool === "highlighter") {
-        ctx.strokeStyle = "rgba(250, 204, 21, 0.4)"; // Dạ quang vàng bán trong suốt
+        ctx.strokeStyle = "rgba(250, 204, 21, 0.4)";
         ctx.lineWidth = 22;
         ctx.lineCap = "square";
         ctx.globalCompositeOperation = "source-over";
@@ -626,7 +1121,6 @@ class LecturePortal {
     if (!this.activeCtx) return;
     const ctx = this.activeCtx;
 
-    // Vẽ chấm laser đỏ nhấp nháy phát sáng
     ctx.save();
     ctx.beginPath();
     ctx.arc(x, y, 7, 0, Math.PI * 2);
@@ -641,7 +1135,6 @@ class LecturePortal {
     ctx.fill();
     ctx.restore();
 
-    // Tự động làm mờ vệt laser sau 400ms
     if (this.laserTimer) clearTimeout(this.laserTimer);
     this.laserTimer = setTimeout(() => {
       if (this.drawTool === "laser") {
@@ -660,7 +1153,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 2: VIDEO HOẠT HỌA AI THUYẾT MINH & TỰ ĐỘNG CHUYỂN SLIDE
+  // VIDEO HOẠT HỌA AI THUYẾT MINH & TỰ ĐỘNG CHUYỂN SLIDE
   // =========================================================================
   async openSlideVideoPlayer(lectureId) {
     const lecture = await window.lectureService.getLectureById(lectureId);
@@ -841,7 +1334,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 3: TẢI GIÁO ÁN WORD CV 2345 & GÓI HỌC LIỆU TRỌN BỘ (.ZIP)
+  // TẢI GIÁO ÁN WORD CV 2345 & GÓI HỌC LIỆU TRỌN BỘ (.ZIP)
   // =========================================================================
   async downloadLessonPlanDoc(lectureId) {
     const lecture = await window.lectureService.getLectureById(lectureId);
@@ -877,7 +1370,6 @@ class LecturePortal {
 
     window.app.showToast(`📦 Đang chuẩn bị trọn gói học liệu cho "${lecture.title}"...`, "info");
 
-    // Tải lần lượt: 1. File PowerPoint, 2. Giáo Án CV 2345, 3. Phiếu Bài Tập
     setTimeout(() => {
       this.downloadLecture(lectureId);
     }, 200);
@@ -1214,10 +1706,6 @@ class LecturePortal {
     } else {
       window.app.showToast("Không thể xóa bài giảng, vui lòng thử lại!", "error");
     }
-  }
-
-  openAnalyticsModal() {
-    window.app.showToast("📈 Báo cáo thống kê: Toàn bộ bài giảng đã sẵn sàng với chuẩn GDPT 2018 & CV 2345!", "info");
   }
 }
 

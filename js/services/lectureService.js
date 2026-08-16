@@ -385,30 +385,176 @@ class LectureService {
     ];
   }
 
-  // 11. Tạo bộ câu hỏi khởi động đố vui 3 phút
-  generateIcebreakerQuestions(lecture) {
+  // 12. Tổng hợp số liệu thống kê lượt xem, lượt tải & Bảng vàng yêu thích
+  async getAnalyticsSummary() {
+    const all = await this.getAllLectures();
+    const totalLectures = all.length;
+    let totalViews = 0;
+    let totalDownloads = 0;
+
+    const gradeStats = { 3: { count: 0, views: 0, downloads: 0 }, 4: { count: 0, views: 0, downloads: 0 }, 5: { count: 0, views: 0, downloads: 0 } };
+    const seriesStats = { "KNTT": 0, "CD": 0, "CTST": 0 };
+    const favoriteIds = this.getFavoriteIds();
+
+    all.forEach(l => {
+      totalViews += (l.viewCount || 0);
+      totalDownloads += (l.downloadCount || 0);
+
+      const g = l.grade || 3;
+      if (gradeStats[g]) {
+        gradeStats[g].count++;
+        gradeStats[g].views += (l.viewCount || 0);
+        gradeStats[g].downloads += (l.downloadCount || 0);
+      }
+
+      const s = l.bookSeries || "KNTT";
+      seriesStats[s] = (seriesStats[s] || 0) + 1;
+    });
+
+    const topLectures = [...all].sort((a, b) => {
+      const scoreA = (a.viewCount || 0) * 2 + (a.downloadCount || 0) * 3 + (favoriteIds.includes(a.id) ? 20 : 0);
+      const scoreB = (b.viewCount || 0) * 2 + (b.downloadCount || 0) * 3 + (favoriteIds.includes(b.id) ? 20 : 0);
+      return scoreB - scoreA;
+    }).slice(0, 5);
+
+    return {
+      totalLectures,
+      totalViews,
+      totalDownloads,
+      totalFavorites: favoriteIds.length,
+      gradeStats,
+      seriesStats,
+      topLectures
+    };
+  }
+
+  // 13. Tạo các trang sách 3D cho E-Book Flipbook Viewer
+  generateFlipbookPages(lecture) {
+    const title = lecture.title || "Bài Giảng Tin Học Tiểu Học";
     const grade = lecture.grade || 3;
+    const author = lecture.authorName || "Thầy Giáo Anh Đào";
+
     return [
       {
-        question: `Thiết bị nào sau đây là thiết bị đưa thông tin vào máy tính (Khối ${grade})?`,
-        options: ["A. Bàn phím và Chuột", "B. Màn hình", "C. Máy in", "D. Loa"],
-        correct: 0,
-        explanation: "Bàn phím và Chuột giúp em nhập chữ và điều khiển thông tin vào máy tính."
+        pageNum: 1,
+        title: "BÌA SÁCH BÀI HỌC",
+        badge: `TIN HỌC LỚP ${grade}`,
+        icon: "📘",
+        content: `
+          <div class="text-center space-y-4 my-auto p-4 bg-gradient-to-b from-blue-50 to-indigo-50 rounded-2xl border border-blue-200">
+            <span class="text-6xl block animate-bounce">💻</span>
+            <h2 class="text-xl font-black text-blue-950 uppercase leading-snug">${title}</h2>
+            <div class="inline-block px-3 py-1 bg-blue-600 text-white font-black text-xs rounded-full">
+              BỘ SÁCH ${lecture.bookSeries || 'KNTT'} • CHUẨN GDPT 2018
+            </div>
+            <p class="text-xs text-slate-600 font-semibold pt-2">Giáo viên biên soạn: <b>${author}</b></p>
+          </div>
+        `
       },
       {
-        question: "Khi ngồi học máy tính, tư thế nào sau đây là đúng và bảo vệ sức khỏe?",
-        options: ["A. Ngồi cúi sát màn hình", "B. Ngồi thẳng lưng, mắt cách màn hình 50-80cm", "C. Nằm ra bàn khi gõ phím", "D. Bắt chéo chân lên ghế"],
-        correct: 1,
-        explanation: "Ngồi thẳng lưng giúp không bị cong vẹo cột sống và giữ khoảng cách bảo vệ mắt."
+        pageNum: 2,
+        title: "MỤC TIÊU & YÊU CẦU CẦN ĐẠT",
+        badge: "CHUẨN CV 2345",
+        icon: "🎯",
+        content: `
+          <div class="space-y-3 text-xs leading-relaxed">
+            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+              <h4 class="font-black text-emerald-900 mb-1">1. Kiến thức cốt lõi:</h4>
+              <p class="text-slate-700">Học sinh nhận biết đúng các thiết bị/khái niệm trong bài học ${title}. Nắm vững các bước thực hành an toàn.</p>
+            </div>
+            <div class="p-3 bg-purple-50 rounded-xl border border-purple-200">
+              <h4 class="font-black text-purple-900 mb-1">2. Năng lực tin học (NLa, NLc):</h4>
+              <p class="text-slate-700">Thao tác thành thạo trên thiết bị và phần mềm học tập, tự giác rèn luyện kỹ năng số.</p>
+            </div>
+            <div class="p-3 bg-amber-50 rounded-xl border border-amber-200">
+              <h4 class="font-black text-amber-900 mb-1">3. Phẩm chất:</h4>
+              <p class="text-slate-700">Chăm chỉ, trách nhiệm trong việc bảo vệ trang thiết bị phòng máy tính trường học.</p>
+            </div>
+          </div>
+        `
       },
       {
-        question: "Đâu là biểu tượng chuẩn của tệp trình chiếu PowerPoint?",
-        options: ["A. Chữ W màu xanh dương", "B. Chữ X màu xanh lá", "C. Chữ P màu cam đỏ", "D. Chữ N màu tím"],
-        correct: 2,
-        explanation: "PowerPoint có biểu tượng chữ P màu cam/đỏ đặc trưng."
+        pageNum: 3,
+        title: "KHÁM PHÁ KIẾN THỨC",
+        badge: "HÌNH THÀNH KIẾN THỨC",
+        icon: "💡",
+        content: `
+          <div class="space-y-2.5 text-xs text-slate-700">
+            <p class="font-bold text-slate-900">Em hãy quan sát hình ảnh và trả lời các câu hỏi:</p>
+            <div class="p-4 bg-cyan-50 rounded-2xl border border-cyan-200 text-center space-y-2">
+              <span class="text-5xl block">🖥️ 🖱️ ⌨️</span>
+              <p class="font-black text-cyan-900 text-xs">Các thiết bị công nghệ quen thuộc trong học tập</p>
+            </div>
+            <ul class="list-disc list-inside space-y-1.5 pt-1">
+              <li>Mỗi bộ phận của máy tính đều đảm nhận một nhiệm vụ riêng biệt.</li>
+              <li>Thông tin được đưa vào, xử lý và hiển thị qua các thiết bị đầu ra.</li>
+            </ul>
+          </div>
+        `
+      },
+      {
+        pageNum: 4,
+        title: "LUYỆN TẬP & THỰC HÀNH",
+        badge: "HOẠT ĐỘNG THỰC TẾ",
+        icon: "⚡",
+        content: `
+          <div class="space-y-3 text-xs">
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+              <p class="font-bold text-slate-900">Nhiệm vụ 1: Nhận diện nhanh</p>
+              <p class="text-slate-600">Em hãy chỉ ra đâu là phím bấm cơ sở có gờ nổi trên bàn phím máy tính?</p>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+              <p class="font-bold text-slate-900">Nhiệm vụ 2: Thao tác chuột</p>
+              <p class="text-slate-600">Thực hiện nhấp đúp chuột để mở một thư mục bài tập trên màn hình nền.</p>
+            </div>
+            <div class="p-2.5 bg-amber-100 rounded-xl text-amber-900 font-bold text-center">
+              ⭐ Tích lũy +20 Sao Vàng khi hoàn thành bài tập!
+            </div>
+          </div>
+        `
+      },
+      {
+        pageNum: 5,
+        title: "VẬN DỤNG THỰC TIỄN",
+        badge: "LIÊN HỆ ĐỜI SỐNG",
+        icon: "🌱",
+        content: `
+          <div class="space-y-2.5 text-xs text-slate-700 leading-relaxed">
+            <p class="font-bold text-slate-900">Ứng dụng kiến thức vào sinh hoạt gia đình:</p>
+            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 space-y-1">
+              <p class="font-bold text-emerald-900">1. Sắp xếp đồ dùng học tập:</p>
+              <p>Phân loại sách vở, đồ chơi theo từng ngăn kéo giống như cách lưu trữ tệp tin trong thư mục.</p>
+            </div>
+            <div class="p-3 bg-blue-50 rounded-xl border border-blue-200 space-y-1">
+              <p class="font-bold text-blue-900">2. An toàn số:</p>
+              <p>Hỏi ý kiến cha mẹ trước khi truy cập các trang web mới trên Internet.</p>
+            </div>
+          </div>
+        `
+      },
+      {
+        pageNum: 6,
+        title: "GHI NHỚ & DẶN DÒ",
+        badge: "TỔNG KẾT TIẾT HỌC",
+        icon: "🏆",
+        content: `
+          <div class="space-y-3 text-xs">
+            <div class="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-300 space-y-2">
+              <span class="text-3xl block text-center">🎉</span>
+              <h4 class="font-black text-amber-950 text-center uppercase">Em Cần Ghi Nhớ:</h4>
+              <ul class="list-disc list-inside space-y-1 text-slate-800 font-semibold">
+                <li>Sử dụng thiết bị đúng quy tắc an toàn.</li>
+                <li>Thực hiện tư thế ngồi học thẳng lưng để bảo vệ cột sống và mắt.</li>
+                <li>Ôn tập lại bài học và làm bài tập trên Web Vui Học.</li>
+              </ul>
+            </div>
+            <p class="text-center text-slate-500 italic text-[11px] pt-1">Hẹn gặp lại các em ở bài học tiếp theo!</p>
+          </div>
+        `
       }
     ];
   }
 }
 
 window.lectureService = new LectureService();
+

@@ -814,20 +814,23 @@
 
   <!-- MODAL 7: TRÌNH CHIẾU BÀI GIẢNG ĐIỆN TỬ TRỰC TUYẾN & BẢNG VẼ BÚT DẠ QUANG (LECTURE PREVIEW MODAL) -->
   <div id="lecture-preview-modal" class="modal-backdrop">
-    <div class="modal-content p-4 md:p-6 max-w-5xl h-[88vh] flex flex-col space-y-3 animate-pop">
+    <div class="modal-content p-4 md:p-6 max-w-5xl h-[90vh] flex flex-col space-y-3 animate-pop">
       <div class="flex items-center justify-between pb-2 border-b border-slate-200 shrink-0">
         <div class="flex items-center gap-2">
           <span class="text-2xl p-1.5 bg-amber-100 rounded-xl">📊</span>
           <div>
             <h3 id="lec-preview-title" class="text-base font-black text-slate-900">Trình Chiếu Bài Giảng Điện Tử</h3>
-            <p class="text-[11px] text-cyan-700 font-bold">Chế Độ Xem, Bút Vẽ Trực Quan & Trình Chiếu Trực Tuyến</p>
+            <p class="text-[11px] text-cyan-700 font-bold">Chế Độ Xem, Bút Vẽ Laser & Đố Vui 10s Tương Tác</p>
           </div>
         </div>
 
-        <!-- Toolbar Bút Vẽ Giảng Bài -->
+        <!-- Toolbar Bút Vẽ & Đố Vui Giảng Bài -->
         <div class="flex items-center gap-2">
+          <button onclick="lecturePortal.toggleInSlideQuiz()" class="btn bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all">
+            <span>⚡</span> <span>Đố Vui 10s Trên Slide</span>
+          </button>
           <button onclick="lecturePortal.toggleDrawingMode('lec-preview-canvas')" class="btn btn-amber btn-xs font-black shadow-sm flex items-center gap-1">
-            <span>🎨</span> <span>Bút Vẽ Slide</span>
+            <span>🎨</span> <span>Bút Vẽ & Laser</span>
           </button>
           <button onclick="lecturePortal.closePreviewModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
         </div>
@@ -837,8 +840,12 @@
       <div id="drawing-toolbar-lec-preview-canvas" class="hidden p-2 bg-slate-900 text-white rounded-xl border border-slate-700 flex items-center justify-between gap-2 shadow-xl shrink-0 text-xs">
         <div class="flex items-center gap-1.5 flex-wrap">
           <span class="text-slate-400 font-bold mr-1">🖌️ Công cụ vẽ:</span>
+          <button onclick="lecturePortal.setDrawTool('laser')" class="px-2.5 py-1 rounded-lg font-bold bg-rose-600 text-white shadow flex items-center gap-1">
+            <span class="animate-ping text-xs">🔴</span> <span>Bút Laser Đỏ</span>
+          </button>
           <button onclick="lecturePortal.setDrawTool('highlighter')" class="px-2.5 py-1 rounded-lg font-bold bg-amber-400 text-slate-900 shadow">✨ Bút Dạ Quang Vàng</button>
-          <button onclick="lecturePortal.setDrawTool('red_pen')" class="px-2.5 py-1 rounded-lg font-bold bg-rose-600 text-white shadow">🔴 Bút Đỏ</button>
+          <button onclick="lecturePortal.setDrawTool('red_pen')" class="px-2.5 py-1 rounded-lg font-bold bg-rose-700 text-white shadow">🔴 Bút Đỏ</button>
+          <button onclick="lecturePortal.setDrawTool('blue_pen')" class="px-2.5 py-1 rounded-lg font-bold bg-blue-600 text-white shadow">🔵 Bút Xanh</button>
           <button onclick="lecturePortal.setDrawTool('chalk')" class="px-2.5 py-1 rounded-lg font-bold bg-white text-slate-900 shadow">⚪ Phấn Trắng</button>
           <button onclick="lecturePortal.setDrawTool('eraser')" class="px-2.5 py-1 rounded-lg font-bold bg-slate-700 text-slate-200">🧹 Tẩy Xóa</button>
         </div>
@@ -847,14 +854,51 @@
         </button>
       </div>
 
-      <!-- Khung Chiếu Chứa Iframe và Canvas Vẽ -->
+      <!-- Khung Chiếu Chứa Iframe, Canvas Vẽ và Widget Đố Vui 10s -->
       <div class="flex-1 bg-slate-900 rounded-2xl overflow-hidden shadow-inner relative flex items-center justify-center">
         <iframe id="lec-preview-iframe" class="w-full h-full border-0" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
         <canvas id="lec-preview-canvas" class="absolute inset-0 z-20 pointer-events-none w-full h-full"></canvas>
+
+        <!-- WIDGET ĐỐ VUI 10S TRÊN SLIDE (IN-SLIDE QUIZ OVERLAY) -->
+        <div id="in-slide-quiz-overlay" class="hidden absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-slate-950/95 text-white p-4 rounded-3xl border-2 border-amber-400 shadow-2xl backdrop-blur-xl z-30 space-y-3 animate-pop">
+          <div class="flex items-center justify-between pb-1 border-b border-white/20">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xl animate-bounce">⚡</span>
+              <span class="font-black text-amber-300 text-xs">ĐỐ VUI NHANH 10 GIÂY</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="in-slide-timer-badge" class="badge badge-amber font-black text-xs font-mono animate-pulse">10s</span>
+              <button onclick="lecturePortal.toggleInSlideQuiz()" class="text-slate-400 hover:text-white font-bold text-sm">✕</button>
+            </div>
+          </div>
+
+          <!-- Thanh Đếm Lùi Đa Sắc -->
+          <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div id="in-slide-timer-progress" class="bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 h-2 rounded-full transition-all duration-1000" style="width: 100%"></div>
+          </div>
+
+          <!-- Nội Dung Câu Hỏi -->
+          <div id="in-slide-question-box" class="text-xs font-bold text-slate-100 leading-snug">
+            Đang tải câu hỏi tương tác...
+          </div>
+
+          <!-- 4 Đáp Án A B C D -->
+          <div id="in-slide-options-grid" class="grid grid-cols-2 gap-2 text-xs"></div>
+
+          <!-- Nút Công Bố & Đổi Câu -->
+          <div class="flex items-center justify-between pt-1 border-t border-white/10 text-[11px]">
+            <button onclick="lecturePortal.restartInSlideQuiz()" class="text-cyan-300 hover:underline font-bold flex items-center gap-1">
+              <span>🔄</span> <span>Đổi Câu Khác</span>
+            </button>
+            <button id="btn-reveal-answer" onclick="lecturePortal.revealInSlideAnswer()" class="btn btn-amber btn-xs font-black shadow-md">
+              📢 Công Bố Đáp Án
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="flex items-center justify-between pt-2 border-t border-slate-200 shrink-0 text-xs">
-        <span class="text-slate-500 font-semibold">💡 Thầy Cô có thể bấm <b>'🎨 Bút Vẽ Slide'</b> để khoanh tròn, gạch chân từ khóa trực tiếp lên màn hình giảng dạy.</span>
+        <span class="text-slate-500 font-semibold">💡 Thầy Cô có thể bấm <b>'🎨 Bút Vẽ & Laser'</b> hoặc <b>'⚡ Đố Vui 10s'</b> để tương tác trực tiếp cùng học sinh.</span>
         <button onclick="lecturePortal.closePreviewModal()" class="btn btn-outline btn-sm">Đóng Trình Chiếu</button>
       </div>
     </div>
@@ -1567,6 +1611,64 @@
         <button onclick="document.getElementById('simulation-certificate-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
       </div>
       <div id="simulation-certificate-content" class="py-2"></div>
+    </div>
+  </div>
+
+  <!-- MODAL 32: TRÌNH CHIẾU SÁCH 3D LẬT TRANG SIÊU THỰC (3D FLIPBOOK E-BOOK VIEWER) -->
+  <div id="lecture-flipbook-modal" class="modal-backdrop">
+    <div class="modal-content p-4 md:p-6 max-w-5xl h-[88vh] flex flex-col justify-between space-y-3 animate-pop bg-slate-900 border-2 border-amber-400 text-white">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-amber-400/20 text-amber-300 rounded-xl">📖</span>
+          <div>
+            <h3 id="flipbook-title-disp" class="text-base font-black text-amber-300">SÁCH GIÁO KHOA 3D LẬT TRANG SIÊU THỰC</h3>
+            <p class="text-[11px] text-cyan-300 font-semibold">Hiệu ứng lật trang 3D mượt mà kèm âm thanh sột soạt chân thực</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span id="flipbook-page-indicator" class="badge bg-amber-400 text-slate-950 font-black text-xs">Trang 1 - 2 / 8</span>
+          <button onclick="lecturePortal.closeFlipbookModal()" class="text-slate-400 text-2xl font-bold hover:text-white">✕</button>
+        </div>
+      </div>
+
+      <!-- Khung Trình Chiếu Sách 3D Mở Đôi (Left Page & Right Page) -->
+      <div class="flex-1 w-full relative flex items-center justify-center p-2 perspective-1500 overflow-hidden">
+        <div id="flipbook-book-container" class="w-full max-w-4xl h-full flex items-center justify-center relative select-none">
+          <!-- Gáy sách trung tâm 3D -->
+          <div class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-8 bg-gradient-to-r from-slate-900/60 via-black/80 to-slate-900/60 z-20 pointer-events-none rounded-sm shadow-2xl"></div>
+
+          <!-- Trang Trái -->
+          <div id="flipbook-left-page" class="w-1/2 h-[92%] bg-white text-slate-900 p-6 md:p-8 rounded-l-3xl shadow-2xl border-r border-slate-200 flex flex-col justify-between relative overflow-hidden transition-all duration-500">
+            <!-- Nội dung trang trái -->
+          </div>
+
+          <!-- Trang Phải -->
+          <div id="flipbook-right-page" class="w-1/2 h-[92%] bg-white text-slate-900 p-6 md:p-8 rounded-r-3xl shadow-2xl border-l border-slate-200 flex flex-col justify-between relative overflow-hidden transition-all duration-500">
+            <!-- Nội dung trang phải -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Thanh Điều Khiển Lật Trang & Tự Động Lật -->
+      <div class="flex items-center justify-between pt-2 border-t border-slate-800 shrink-0 text-xs flex-wrap gap-2">
+        <div class="flex items-center gap-2">
+          <button onclick="lecturePortal.prevFlipbookPage()" class="btn bg-slate-800 hover:bg-slate-700 text-white font-bold btn-sm flex items-center gap-1 border border-slate-700">
+            <span>◀</span> <span>Lật Trang Trước</span>
+          </button>
+          <button id="btn-toggle-auto-flip" onclick="lecturePortal.toggleAutoFlipbook()" class="btn btn-amber btn-sm font-black flex items-center gap-1 shadow-md">
+            <span>▶️</span> <span>Tự Động Lật (5s)</span>
+          </button>
+          <button onclick="lecturePortal.nextFlipbookPage()" class="btn bg-slate-800 hover:bg-slate-700 text-white font-bold btn-sm flex items-center gap-1 border border-slate-700">
+            <span>Lật Trang Sau</span> <span>▶</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-3 text-slate-400">
+          <span class="text-[11px] hidden sm:inline">💡 Thầy Cô có thể bấm vào mép trang hoặc dùng phím mũi tên ◀ ▶ để lật sách.</span>
+          <button onclick="lecturePortal.closeFlipbookModal()" class="btn btn-outline btn-xs text-slate-300 border-slate-700">Đóng Sách 3D</button>
+        </div>
+      </div>
     </div>
   </div>
 
