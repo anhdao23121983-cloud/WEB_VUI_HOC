@@ -192,15 +192,102 @@ class SupabaseService {
           game_id: gameId,
           score: score,
           stars_earned: stars,
-          completed_at: new Date().toISOString()
+  isReady() {
+    return this.isLive && !!this.client;
+  }
+
+  // 5. TẶNG SAO KHEN THƯỞNG TRỰC TIẾP TRÊN LỚP (ĐỒNG BỘ SUPABASE & LOCALSTORAGE)
+  async awardStarsDirectly(studentName, starsToAdd = 10, reason = "Trả lời đúng câu hỏi trên Slide") {
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (!db.users) db.users = [];
+    if (!db.leaderboard) db.leaderboard = [];
+
+    let student = db.users.find(u => (u.name || "").toLowerCase() === studentName.toLowerCase() || (u.username || "").toLowerCase() === studentName.toLowerCase());
+    let currentStars = 0;
+
+    if (student) {
+      student.stars = (student.stars || 0) + starsToAdd;
+      currentStars = student.stars;
+    } else {
+      // Nếu chưa có trong danh sách local, tạo hồ sơ học sinh
+      student = {
+        id: "u_" + Date.now(),
+        username: studentName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+        name: studentName,
+        role: "student",
+        className: "3A",
+        stars: 50 + starsToAdd,
+        avatar: "⭐"
+      };
+      db.users.push(student);
+      currentStars = student.stars;
+    }
+
+    // Cập nhật Bảng Vàng (Leaderboard)
+    let leader = db.leaderboard.find(l => (l.name || "").toLowerCase() === studentName.toLowerCase());
+    if (leader) {
+      leader.stars = currentStars;
+    } else {
+      db.leaderboard.push({
+        rank: db.leaderboard.length + 1,
+        name: studentName,
+        class: student.className || "3A",
+        stars: currentStars,
+        badge: "⭐ Ngôi Sao Giờ Học",
+        avatar: student.avatar || "🎒"
+      });
+    }
+
+    db.leaderboard.sort((a, b) => b.stars - a.stars);
+    db.leaderboard.forEach((item, idx) => item.rank = idx + 1);
+    localStorage.setItem("app_mock_db", JSON.stringify(db));
+
+    // Cập nhật current user nếu trùng
+    const currentUser = JSON.parse(localStorage.getItem("app_current_user"));
+    if (currentUser && ((currentUser.name || "").toLowerCase() === studentName.toLowerCase() || (currentUser.username || "").toLowerCase() === studentName.toLowerCase())) {
+      currentUser.stars = currentStars;
+      localStorage.setItem("app_current_user", JSON.stringify(currentUser));
+      if (window.authService) window.authService.currentUser = currentUser;
+    }
+
+    // ĐỒNG BỘ LÊN CƠ SỞ DỮ LIỆU SUPABASE CLOUD (TABLE: student_rewards & app_users)
+    if (this.isReady()) {
+      try {
+        // 1. Ghi log khen thưởng vào bảng student_rewards
+        await this.client.from("student_rewards").insert([{
+          student_name: studentName,
+          stars_added: starsToAdd,
+          reason: reason,
+          awarded_by: currentUser ? (currentUser.name || currentUser.username) : "Giáo Viên",
+          created_at: new Date().toISOString()
         }]);
+
+        // 2. Cập nhật số sao tích lũy trong app_users nếu có tài khoản
+        const { data: userRow } = await this.client
+          .from("app_users")
+          .select("id, stars")
+          .ilike("full_name", studentName)
+          .maybeSingle();
+
+        if (userRow) {
+          await this.client
+            .from("app_users")
+            .update({ stars: (userRow.stars || 0) + starsToAdd })
+            .eq("id", userRow.id);
+        }
       } catch (err) {
-        console.warn("Lỗi ghi nhận điểm lên Supabase:", err);
+        console.warn("Lưu khen thưởng lên Supabase Cloud có cảnh báo (dữ liệu đã an toàn trên Local):", err);
       }
     }
 
-    return { success: true, updatedStars: student ? student.stars : stars };
+    return {
+      success: true,
+      studentName: studentName,
+      starsAdded: starsToAdd,
+      totalStars: currentStars
+    };
   }
 }
 
 window.supabaseService = new SupabaseService();
+

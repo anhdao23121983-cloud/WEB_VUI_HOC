@@ -264,6 +264,17 @@ class AuthService {
 
     return { success: true, user: this.currentUser };
   }
+
+  // =========================================================================
+  // 5. TẶNG SAO KHEN THƯỞNG CHO HỌC SINH (ĐỒNG BỘ SUPABASE & BẢNG VÀNG)
+  // =========================================================================
+  async awardStarsToStudent(studentName, starsToAdd = 10, reason = "Trả lời đúng câu hỏi trên Slide") {
+    if (window.supabaseService?.awardStarsDirectly) {
+      return await window.supabaseService.awardStarsDirectly(studentName, starsToAdd, reason);
+    }
+    return { success: false, error: "Dịch vụ tặng sao chưa sẵn sàng!" };
+  }
 }
 
 window.authService = new AuthService();
+

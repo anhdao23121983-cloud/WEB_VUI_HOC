@@ -8,12 +8,14 @@
  * 5. 🧩 Trò chơi Ô Chữ Bí Mật 3D & ⚙️ Soạn Ô Chữ Tùy Biến (Custom Crossword Maker)
  * 6. 🎡 Vòng Quay May Mắn gọi tên học sinh ngẫu nhiên trên Slide (In-Slide Lucky Wheel)
  * 7. 🔔 Đấu Trường Rung Chuông Vàng 3D củng cố bài học (In-Slide Golden Bell Arena)
- * 8. 📖 Sách 3D lật trang siêu thực có 🌙 Chế Độ Ban Đêm Neon & 🔊 Giọng đọc AI E-Book
- * 9. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
- * 10. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
- * 11. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
- * 12. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
- * 13. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
+ * 8. 🃏 Trò chơi Ghép Thẻ Trí Nhớ 3D trên Slide (In-Slide 3D Memory Card Match)
+ * 9. ⭐ Bảng Khen Thưởng & Tặng Sao Vàng Trực Tiếp (Đồng bộ Supabase Database & Leaderboard)
+ * 10. 📖 Sách 3D lật trang siêu thực có 🌙 Chế Độ Ban Đêm Neon & 🔊 Giọng đọc AI E-Book
+ * 11. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
+ * 12. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
+ * 13. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
+ * 14. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
+ * 15. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
  */
 
 class LecturePortal {
@@ -78,6 +80,18 @@ class LecturePortal {
     this.goldenBellSurvivors = 35;
     this.isGoldenBellRevealed = false;
     this.goldenBellQuestions = [];
+
+    // In-Slide 3D Memory Card Match State
+    this.memoryCardActive = false;
+    this.memoryCards = [];
+    this.flippedCards = [];
+    this.matchedPairs = 0;
+    this.memoryFlips = 0;
+    this.isMemoryLock = false;
+
+    // In-Slide Star Awarding State
+    this.starAwardActive = false;
+    this.recentStarLogs = [];
 
     // Icebreaker Game State
     this.icebreakerActive = false;
@@ -151,7 +165,7 @@ class LecturePortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser, Rung Chuông Vàng & Vòng quay gọi tên, Sách 3D Ban Đêm Neon và Bảng Vàng Thống Kê</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser, Ghép Thẻ 3D, Rung Chuông Vàng, Tặng Sao Trực Tiếp và Bảng Vàng Thống Kê</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
@@ -451,9 +465,9 @@ class LecturePortal {
                     </button>
                   </div>
 
-                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser, Rung Chuông Vàng, Ô chữ 3D & Vòng quay) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
+                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser, Ghép thẻ 3D, Rung Chuông, Vòng quay) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
                   <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
-                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser, Rung Chuông Vàng & Vòng Quay May Mắn">
+                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser, Ghép Thẻ 3D, Rung Chuông Vàng & Tặng Sao Trực Tiếp">
                       <span>🎨</span> <span>Trình Chiếu & Laser</span>
                     </button>
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
@@ -506,6 +520,248 @@ class LecturePortal {
   handleSearch(query) {
     this.searchQuery = query;
     this.render("main-content-area");
+  }
+
+  // =========================================================================
+  // OPTION 2: BẢNG KHEN THƯỞNG & TẶNG SAO VÀNG TRỰC TIẾP (ĐỒNG BỘ SUPABASE)
+  // =========================================================================
+  toggleInSlideStarAward(prefilledStudentName = "", defaultReason = "Phát biểu đúng và tích cực xây dựng bài học trên Slide") {
+    const overlay = document.getElementById("in-slide-star-award-overlay");
+    if (!overlay) return;
+
+    this.starAwardActive = !this.starAwardActive;
+    if (this.starAwardActive) {
+      overlay.classList.remove("hidden");
+      
+      const nameInput = document.getElementById("star-award-student-name");
+      const reasonInput = document.getElementById("star-award-reason");
+
+      if (nameInput) nameInput.value = prefilledStudentName || (this.wheelNames[0] ? this.wheelNames[0].replace(/^\d+\.\s*/, '') : "Học Sinh Xuất Sắc");
+      if (reasonInput) reasonInput.value = defaultReason;
+
+      this.renderRecentStarLogs();
+    } else {
+      overlay.classList.add("hidden");
+    }
+  }
+
+  async submitStarAward(starsToAdd = 10) {
+    const nameInput = document.getElementById("star-award-student-name");
+    const reasonInput = document.getElementById("star-award-reason");
+
+    const rawName = (nameInput ? nameInput.value : "").trim();
+    const studentName = rawName.replace(/^\d+\.\s*/, '');
+    const reason = (reasonInput ? reasonInput.value : "").trim() || "Thưởng sao tích cực trên Slide";
+
+    if (!studentName) {
+      window.app.showToast("Vui lòng nhập tên học sinh được khen thưởng!", "warning");
+      return;
+    }
+
+    window.app.showToast(`⭐ Đang cộng +${starsToAdd} Sao Vàng cho bạn "${studentName}"...`, "info");
+
+    const result = await window.authService.awardStarsToStudent(studentName, starsToAdd, reason);
+
+    if (result.success) {
+      this.playStarTingSound();
+
+      if (window.Simulation3D?.triggerFireworks) {
+        window.Simulation3D.triggerFireworks();
+      }
+
+      this.recentStarLogs.unshift({
+        name: studentName,
+        stars: starsToAdd,
+        reason: reason,
+        time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      });
+
+      this.renderRecentStarLogs();
+
+      window.app.showToast(`🎉 Đã tặng +${starsToAdd} Sao Vàng cho bạn "${studentName}"! Tổng sao: ${result.totalStars} ⭐`, "success");
+    } else {
+      window.app.showToast("Có lỗi khi tặng sao, vui lòng thử lại!", "error");
+    }
+  }
+
+  renderRecentStarLogs() {
+    const listEl = document.getElementById("star-award-log-items");
+    if (!listEl) return;
+
+    if (this.recentStarLogs.length === 0) {
+      listEl.innerHTML = `<p class="italic text-slate-600">Chưa có lượt tặng sao nào trong tiết học này.</p>`;
+      return;
+    }
+
+    listEl.innerHTML = this.recentStarLogs.map(log => `
+      <div class="flex items-center justify-between p-1.5 bg-slate-950/80 rounded-xl border border-amber-400/20">
+        <div>
+          <span class="font-black text-amber-300">⭐ +${log.stars}</span>
+          <span class="font-bold text-white ml-1">${log.name}</span>
+          <span class="text-slate-500 text-[10px] block">${log.reason}</span>
+        </div>
+        <span class="text-[10px] text-slate-400 font-mono">${log.time}</span>
+      </div>
+    `).join("");
+  }
+
+  playStarTingSound() {
+    try {
+      if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+
+      // Âm thanh chùm sao vàng rơi leng keng (Harmonic Harp/Bell chime)
+      [587.33, 739.99, 880.00, 1174.66, 1479.98, 1760.00].forEach((freq, idx) => {
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime + idx * 0.08);
+
+        gain.gain.setValueAtTime(0.25, this.audioCtx.currentTime + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + idx * 0.08 + 0.6);
+
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+
+        osc.start(this.audioCtx.currentTime + idx * 0.08);
+        osc.stop(this.audioCtx.currentTime + idx * 0.08 + 0.6);
+      });
+    } catch (e) {}
+  }
+
+  // =========================================================================
+  // OPTION 4: TRÒ CHƠI GHÉP THẺ TRÍ NHỚ 3D TRÊN SLIDE (IN-SLIDE MEMORY CARD MATCH)
+  // =========================================================================
+  toggleInSlideMemoryCard() {
+    const overlay = document.getElementById("in-slide-memory-card-overlay");
+    if (!overlay) return;
+
+    this.memoryCardActive = !this.memoryCardActive;
+    if (this.memoryCardActive) {
+      if (this.inSlideQuizActive) this.toggleInSlideQuiz();
+      if (this.crosswordActive) this.toggleInSlideCrossword();
+      if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
+      if (this.goldenBellActive) this.toggleInSlideGoldenBell();
+      overlay.classList.remove("hidden");
+      this.initMemoryCardGame();
+    } else {
+      overlay.classList.add("hidden");
+    }
+  }
+
+  initMemoryCardGame() {
+    const items = [
+      { id: 1, icon: "🖥️", name: "Màn hình" },
+      { id: 2, icon: "🖱️", name: "Chuột máy" },
+      { id: 3, icon: "⌨️", name: "Bàn phím" },
+      { id: 4, icon: "🖨️", name: "Máy in" },
+      { id: 5, icon: "🤖", name: "Robot" },
+      { id: 6, icon: "🌐", name: "Internet" }
+    ];
+
+    // Nhân đôi tạo 6 cặp (12 thẻ) và xáo trộn ngẫu nhiên
+    const deck = [...items, ...items].map((item, index) => ({
+      uniqueId: index,
+      id: item.id,
+      icon: item.icon,
+      name: item.name,
+      flipped: false,
+      matched: false
+    })).sort(() => Math.random() - 0.5);
+
+    this.memoryCards = deck;
+    this.flippedCards = [];
+    this.matchedPairs = 0;
+    this.memoryFlips = 0;
+    this.isMemoryLock = false;
+
+    this.renderMemoryGrid();
+  }
+
+  renderMemoryGrid() {
+    const grid = document.getElementById("in-slide-memory-grid");
+    const flipsEl = document.getElementById("memory-card-flips");
+    const matchesEl = document.getElementById("memory-card-matches");
+
+    if (flipsEl) flipsEl.innerText = `Lượt lật: ${this.memoryFlips}`;
+    if (matchesEl) matchesEl.innerText = `Đã ghép: ${this.matchedPairs} / 6`;
+
+    if (!grid) return;
+
+    grid.innerHTML = this.memoryCards.map((card, idx) => {
+      const isVisible = card.flipped || card.matched;
+
+      return `
+        <div onclick="lecturePortal.flipMemoryCard(${idx})" class="h-28 md:h-32 rounded-2xl cursor-pointer select-none transition-all duration-500 transform ${isVisible ? 'rotate-y-180 scale-105' : 'hover:scale-102 hover:border-pink-400'}">
+          <div class="w-full h-full rounded-2xl border-2 flex flex-col items-center justify-center p-2 shadow-lg transition-all duration-300 ${isVisible ? (card.matched ? 'bg-gradient-to-br from-emerald-600 to-teal-800 border-emerald-300 text-white animate-pop ring-2 ring-emerald-400' : 'bg-gradient-to-br from-pink-600 to-rose-800 border-pink-300 text-white') : 'bg-slate-900 border-slate-700 hover:bg-slate-800 text-transparent'}">
+            ${isVisible ? `
+              <span class="text-3xl md:text-4xl block mb-1 filter drop-shadow-md">${card.icon}</span>
+              <span class="text-[11px] font-black text-center tracking-tight leading-tight">${card.name}</span>
+            ` : `
+              <span class="text-2xl text-pink-400 opacity-60">❓</span>
+            `}
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  flipMemoryCard(index) {
+    if (this.isMemoryLock) return;
+    const card = this.memoryCards[index];
+    if (!card || card.flipped || card.matched) return;
+
+    card.flipped = true;
+    this.flippedCards.push({ card, index });
+    this.playTickSound();
+    this.renderMemoryGrid();
+
+    if (this.flippedCards.length === 2) {
+      this.memoryFlips++;
+      this.isMemoryLock = true;
+
+      const [first, second] = this.flippedCards;
+
+      if (first.card.id === second.card.id) {
+        // Khớp cặp thẻ!
+        setTimeout(() => {
+          first.card.matched = true;
+          second.card.matched = true;
+          this.matchedPairs++;
+          this.flippedCards = [];
+          this.isMemoryLock = false;
+          this.playTingSound();
+          this.renderMemoryGrid();
+
+          if (this.matchedPairs === 6) {
+            this.celebrateMemoryGameWin();
+          }
+        }, 500);
+      } else {
+        // Chưa khớp -> Úp lại sau 1s
+        setTimeout(() => {
+          first.card.flipped = false;
+          second.card.flipped = false;
+          this.flippedCards = [];
+          this.isMemoryLock = false;
+          this.renderMemoryGrid();
+        }, 900);
+      }
+    }
+  }
+
+  celebrateMemoryGameWin() {
+    this.playStarTingSound();
+    if (window.Simulation3D?.triggerFireworks) {
+      window.Simulation3D.triggerFireworks();
+    }
+    window.app.showToast(`🎉 XUẤT SẮC! Cả lớp đã ghép đúng tất cả 6 cặp thẻ trong ${this.memoryFlips} lượt lật!`, "success");
+    this.openStarAwardModalForMemoryWinner();
+  }
+
+  openStarAwardModalForMemoryWinner() {
+    this.toggleInSlideStarAward(this.wheelNames[0] ? this.wheelNames[0].replace(/^\d+\.\s*/, '') : "Nhóm Ghép Thẻ Xuất Sắc", "Hoàn thành xuất sắc trò chơi Ghép Thẻ Trí Nhớ 3D");
   }
 
   // =========================================================================
@@ -635,6 +891,7 @@ class LecturePortal {
       if (this.crosswordActive) this.toggleInSlideCrossword();
       if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
       if (this.goldenBellActive) this.toggleInSlideGoldenBell();
+      if (this.memoryCardActive) this.toggleInSlideMemoryCard();
       overlay.classList.remove("hidden");
       this.loadInSlideQuestion();
       this.startInSlideCountdown();
@@ -761,7 +1018,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 5: ĐẤU TRƯỜNG RUNG CHUÔNG VÀNG 3D TRÊN SLIDE (IN-SLIDE GOLDEN BELL)
+  // ĐẤU TRƯỜNG RUNG CHUÔNG VÀNG 3D TRÊN SLIDE (IN-SLIDE GOLDEN BELL)
   // =========================================================================
   toggleInSlideGoldenBell() {
     const overlay = document.getElementById("in-slide-golden-bell-overlay");
@@ -772,6 +1029,7 @@ class LecturePortal {
       if (this.inSlideQuizActive) this.toggleInSlideQuiz();
       if (this.crosswordActive) this.toggleInSlideCrossword();
       if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
+      if (this.memoryCardActive) this.toggleInSlideMemoryCard();
       overlay.classList.remove("hidden");
       this.initGoldenBellArena();
     } else {
@@ -905,7 +1163,6 @@ class LecturePortal {
 
     this.ringGoldenBellSound();
 
-    // Mô phỏng số lượng thí sinh trụ lại qua từng vòng
     const survivorDrop = [35, 28, 19, 10, 3];
     this.goldenBellSurvivors = survivorDrop[this.goldenBellQIndex] || 3;
     const survivorsEl = document.getElementById("golden-bell-survivors");
@@ -931,16 +1188,15 @@ class LecturePortal {
       if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
 
-      // Âm thanh chuông vàng ngân vang đặc trưng (587.33Hz D5 + 1174.66Hz)
       const osc1 = this.audioCtx.createOscillator();
       const osc2 = this.audioCtx.createOscillator();
       const gain = this.audioCtx.createGain();
 
       osc1.type = "sine";
-      osc1.frequency.setValueAtTime(587.33, this.audioCtx.currentTime); // Nốt D5
+      osc1.frequency.setValueAtTime(587.33, this.audioCtx.currentTime);
 
       osc2.type = "triangle";
-      osc2.frequency.setValueAtTime(1174.66, this.audioCtx.currentTime); // Nốt D6
+      osc2.frequency.setValueAtTime(1174.66, this.audioCtx.currentTime);
 
       gain.gain.setValueAtTime(0.4, this.audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 1.8);
@@ -971,7 +1227,11 @@ class LecturePortal {
           <div class="inline-block p-4 bg-amber-400/20 border-2 border-amber-400 rounded-3xl text-amber-200 font-bold text-xs md:text-sm">
             🏆 Chúc mừng <b>3 Thí Sinh Xuất Sắc Nhất Lớp</b> đã vượt qua cả 5 câu hỏi và Rung Chuông Vàng thành công!
           </div>
-          <p class="text-xs text-slate-400">Thầy Cô hãy tuyên dương và trao Huy Hiệu Sao Vàng cho các bạn nhé!</p>
+          <div class="pt-2">
+            <button onclick="lecturePortal.toggleInSlideStarAward('Quán Quân Rung Chuông Vàng', 'Vượt qua 5/5 câu hỏi và Rung Chuông Vàng thành công')" class="btn btn-amber btn-md font-black shadow-xl hover:scale-105 transition-all">
+              ⭐ Tặng +50 Sao Cho Quán Quân
+            </button>
+          </div>
         </div>
       `;
     }
@@ -995,6 +1255,7 @@ class LecturePortal {
       if (this.inSlideQuizActive) this.toggleInSlideQuiz();
       if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
       if (this.goldenBellActive) this.toggleInSlideGoldenBell();
+      if (this.memoryCardActive) this.toggleInSlideMemoryCard();
       overlay.classList.remove("hidden");
       if (!this.crosswordData) {
         this.loadPresetCrossword('computer');
@@ -1240,6 +1501,7 @@ class LecturePortal {
       window.Simulation3D.triggerFireworks();
     }
     window.app.showToast(`👑 CHÚC MỪNG CẢ LỚP ĐÃ GIẢI ĐƯỢC TỪ KHÓA BÍ MẬT: "${this.crosswordData.secretKeyword}"!`, "success");
+    this.toggleInSlideStarAward("Cả Lớp Xuất Sắc", `Giải thành công từ khóa Ô Chữ Bí Mật: ${this.crosswordData.secretKeyword}`);
   }
 
   renderAlphabetButtons() {
@@ -1280,6 +1542,7 @@ class LecturePortal {
       if (this.inSlideQuizActive) this.toggleInSlideQuiz();
       if (this.crosswordActive) this.toggleInSlideCrossword();
       if (this.goldenBellActive) this.toggleInSlideGoldenBell();
+      if (this.memoryCardActive) this.toggleInSlideMemoryCard();
       overlay.classList.remove("hidden");
       
       const input = document.getElementById("lucky-wheel-names-input");
@@ -1414,7 +1677,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 1: SÁCH 3D LẬT TRANG & CHẾ ĐỘ BAN ĐÊM NEON (DARK NEON MODE)
+  // SÁCH 3D LẬT TRANG & CHẾ ĐỘ BAN ĐÊM NEON (DARK NEON MODE)
   // =========================================================================
   toggleFlipbookDarkMode() {
     this.isFlipbookDarkMode = !this.isFlipbookDarkMode;
@@ -1478,7 +1741,6 @@ class LecturePortal {
       indicatorEl.innerText = `Trang ${this.currentFlipbookIndex + 1} - ${Math.min(this.currentFlipbookIndex + 2, totalPages)} / ${totalPages}`;
     }
 
-    // Phong cách Ban Đêm Neon vs Ban Ngày
     const pageClassDark = "bg-slate-950 text-slate-100 border-slate-800 shadow-[0_0_30px_rgba(6,182,212,0.15)] ring-1 ring-cyan-500/30";
     const pageClassLight = "bg-white text-slate-900 border-slate-200 shadow-2xl";
 
@@ -1490,7 +1752,6 @@ class LecturePortal {
       rightEl.className = `w-1/2 h-[92%] p-6 md:p-8 rounded-r-3xl border-l flex flex-col justify-between relative overflow-hidden transition-all duration-500 ${pageClassLight}`;
     }
 
-    // Render Trang Trái
     if (pageL) {
       leftEl.innerHTML = `
         <div class="flex items-center justify-between pb-2 border-b ${this.isFlipbookDarkMode ? 'border-slate-800' : 'border-slate-200'}">
@@ -1515,7 +1776,6 @@ class LecturePortal {
       leftEl.innerHTML = `<div class="my-auto text-center text-slate-300 font-bold">Trang trống</div>`;
     }
 
-    // Render Trang Phải
     if (pageR) {
       rightEl.innerHTML = `
         <div class="flex items-center justify-between pb-2 border-b ${this.isFlipbookDarkMode ? 'border-slate-800' : 'border-slate-200'}">
@@ -1724,6 +1984,8 @@ class LecturePortal {
     if (this.crosswordActive) this.toggleInSlideCrossword();
     if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
     if (this.goldenBellActive) this.toggleInSlideGoldenBell();
+    if (this.memoryCardActive) this.toggleInSlideMemoryCard();
+    if (this.starAwardActive) this.toggleInSlideStarAward();
   }
 
   toggleDrawingMode(canvasId) {
