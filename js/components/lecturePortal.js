@@ -5,13 +5,14 @@
  * 2. 📤 Nút đưa bài giảng lên cho Giáo viên (Đồng bộ Supabase Cloud & Local)
  * 3. 🎨 Bút Laser đỏ & Bút dạ quang khi Trình chiếu Slide (Laser Pointer & Pen Tool)
  * 4. ⚡ Đố vui 10s tương tác trực tiếp trên Slide (In-Slide Quick Quiz 10s)
- * 5. 🧩 Trò chơi Ô Chữ Bí Mật 3D tương tác trên Slide (In-Slide 3D Crossword Puzzle)
- * 6. 📖 Sách 3D lật trang siêu thực có âm thanh sột soạt & 🔊 Giọng đọc AI E-Book
- * 7. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
- * 8. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
- * 9. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
- * 10. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
- * 11. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
+ * 5. 🧩 Trò chơi Ô Chữ Bí Mật 3D & ⚙️ Soạn Ô Chữ Tùy Biến (Custom Crossword Maker)
+ * 6. 🎡 Vòng Quay May Mắn gọi tên học sinh ngẫu nhiên trên Slide (In-Slide Lucky Wheel)
+ * 7. 📖 Sách 3D lật trang siêu thực có âm thanh sột soạt & 🔊 Giọng đọc AI E-Book
+ * 8. 📈 Bảng Vàng Xếp Hạng & Báo Cáo Mức Độ Yêu Thích Bài Giảng Của Trường
+ * 9. 🎬 Video hoạt họa thuyết minh AI đa giọng đọc và chuyển cảnh tự động
+ * 10. 📄 Tải Giáo Án Word chuẩn Công văn 2345 & 📦 Gói Học Liệu Trọn Bộ
+ * 11. 🍂 Lọc Học Kỳ 1 & 🌸 Học Kỳ 2 theo chương trình GDPT 2018
+ * 12. ⏱️ Đồng hồ hoạt động nhóm 1-10P có Nhạc Lofi & Chuông báo hết giờ
  */
 
 class LecturePortal {
@@ -54,6 +55,18 @@ class LecturePortal {
     this.crosswordActive = false;
     this.selectedCrosswordRow = 0;
     this.crosswordData = null;
+
+    // In-Slide Lucky Wheel State
+    this.luckyWheelActive = false;
+    this.wheelNames = [
+      "1. Minh Anh", "2. Bảo Nam", "3. Linh Chi", "4. Gia Huy", "5. Tuấn Kiệt",
+      "6. Thảo Nguyên", "7. Quốc Hưng", "8. Ngọc Mai", "9. Đức Trọng", "10. Hà My",
+      "11. Hoàng Long", "12. Phương Linh", "13. Hải Đăng", "14. Quỳnh Anh", "15. Đăng Khoa",
+      "16. Khánh An", "17. Tiến Đạt", "18. Cẩm Tú", "19. Hữu Phước", "20. Bảo Châu"
+    ];
+    this.wheelAngle = 0;
+    this.isWheelSpinning = false;
+    this.wheelAnimId = null;
 
     // Icebreaker Game State
     this.icebreakerActive = false;
@@ -127,7 +140,7 @@ class LecturePortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser & Ô chữ 3D, Sách 3D có Giọng đọc AI, Video hoạt họa và Bảng Vàng Thống Kê</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser, Ô chữ 3D & Vòng quay gọi tên, Sách 3D có Giọng đọc AI và Bảng Vàng Thống Kê</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
@@ -427,9 +440,9 @@ class LecturePortal {
                     </button>
                   </div>
 
-                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser & Ô chữ 3D) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
+                  <!-- Hàng 3: Trình chiếu Slide (Có Bút Laser & Ô chữ 3D & Vòng quay) + Tải PPT + Gói Trọn Bộ + Sửa + Xóa -->
                   <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
-                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser & Ô Chữ Bí Mật 3D">
+                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Bút Laser, Ô Chữ Bí Mật 3D & Vòng Quay May Mắn">
                       <span>🎨</span> <span>Trình Chiếu & Laser</span>
                     </button>
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
@@ -485,7 +498,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 3: BẢNG VÀNG XẾP HẠNG & BÁO CÁO MỨC ĐỘ YÊU THÍCH BÀI GIẢNG CỦA TRƯỜNG
+  // BẢNG VÀNG XẾP HẠNG & BÁO CÁO MỨC ĐỘ YÊU THÍCH BÀI GIẢNG CỦA TRƯỜNG
   // =========================================================================
   async openAnalyticsModal() {
     const modal = document.getElementById("lecture-analytics-modal");
@@ -600,7 +613,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 4: ĐỐ VUI 10S TRÊN SLIDE (IN-SLIDE QUICK QUIZ 10S BLITZ)
+  // ĐỐ VUI 10S TRÊN SLIDE (IN-SLIDE QUICK QUIZ 10S BLITZ)
   // =========================================================================
   toggleInSlideQuiz() {
     const overlay = document.getElementById("in-slide-quiz-overlay");
@@ -608,7 +621,8 @@ class LecturePortal {
 
     this.inSlideQuizActive = !this.inSlideQuizActive;
     if (this.inSlideQuizActive) {
-      if (this.crosswordActive) this.toggleInSlideCrossword(); // Đóng ô chữ nếu đang mở
+      if (this.crosswordActive) this.toggleInSlideCrossword();
+      if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
       overlay.classList.remove("hidden");
       this.loadInSlideQuestion();
       this.startInSlideCountdown();
@@ -735,7 +749,7 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 5: TRÒ CHƠI Ô CHỮ BÍ MẬT 3D TRÊN SLIDE (IN-SLIDE 3D CROSSWORD PUZZLE)
+  // OPTION 3: TRÒ CHƠI Ô CHỮ BÍ MẬT 3D & SOẠN TÙY BIẾN (CUSTOM CROSSWORD MAKER)
   // =========================================================================
   toggleInSlideCrossword() {
     const overlay = document.getElementById("in-slide-crossword-overlay");
@@ -743,74 +757,184 @@ class LecturePortal {
 
     this.crosswordActive = !this.crosswordActive;
     if (this.crosswordActive) {
-      if (this.inSlideQuizActive) this.toggleInSlideQuiz(); // Đóng đố vui nếu đang mở
+      if (this.inSlideQuizActive) this.toggleInSlideQuiz();
+      if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
       overlay.classList.remove("hidden");
-      this.initCrosswordGame();
+      if (!this.crosswordData) {
+        this.loadPresetCrossword('computer');
+      } else {
+        this.renderCrosswordGrid();
+        this.renderAlphabetButtons();
+        this.selectCrosswordRow(0);
+      }
     } else {
       overlay.classList.add("hidden");
     }
   }
 
-  initCrosswordGame() {
-    this.crosswordData = {
-      secretKeyword: "MAYTINH",
-      rows: [
-        {
-          id: 0,
-          word: "MANHINH",
-          clue: "Thiết bị dùng để hiển thị chữ và hình ảnh cho người dùng nhìn thấy.",
-          revealed: false,
-          keyCharIndex: 0 // Chữ M
-        },
-        {
-          id: 1,
-          word: "ANTOAN",
-          clue: "Quy tắc hàng đầu khi sử dụng điện và thiết bị công nghệ trong phòng máy.",
-          revealed: false,
-          keyCharIndex: 0 // Chữ A
-        },
-        {
-          id: 2,
-          word: "YNGHIA",
-          clue: "Đặt tên thư mục hoặc tệp tin phải rõ ràng và có...",
-          revealed: false,
-          keyCharIndex: 0 // Chữ Y
-        },
-        {
-          id: 3,
-          word: "THUMUC",
-          clue: "Nơi lưu trữ và sắp xếp các tệp tin bài học như một ngăn kéo tủ.",
-          revealed: false,
-          keyCharIndex: 0 // Chữ T
-        },
-        {
-          id: 4,
-          word: "INTERNET",
-          clue: "Mạng lưới thông tin toàn cầu kết nối hàng triệu máy tính.",
-          revealed: false,
-          keyCharIndex: 0 // Chữ I
-        },
-        {
-          id: 5,
-          word: "NHAPCHU",
-          clue: "Thao tác gõ các ký tự văn bản thông qua bàn phím.",
-          revealed: false,
-          keyCharIndex: 0 // Chữ N
-        },
-        {
-          id: 6,
-          word: "HOCBAI",
-          clue: "Mục đích chính của em khi sử dụng Web Vui Học mỗi ngày.",
-          revealed: false,
-          keyCharIndex: 0 // Chữ H
-        }
-      ]
+  openCrosswordMakerModal() {
+    const modal = document.getElementById("crossword-maker-modal");
+    if (!modal) return;
+
+    const kwInput = document.getElementById("maker-secret-keyword");
+    const rowsInput = document.getElementById("maker-rows-input");
+
+    if (this.crosswordData) {
+      if (kwInput) kwInput.value = this.crosswordData.secretKeyword;
+      if (rowsInput) {
+        rowsInput.value = this.crosswordData.rows.map(r => `${r.word} | ${r.clue}`).join("\n");
+      }
+    }
+
+    modal.classList.add("active");
+  }
+
+  loadPresetCrossword(topicKey) {
+    const presets = {
+      computer: {
+        title: "CHỦ ĐỀ: MÁY TÍNH & THIẾT BỊ SỐ",
+        secretKeyword: "MAYTINH",
+        rows: [
+          { word: "MANHINH", clue: "Thiết bị dùng để hiển thị chữ và hình ảnh cho người dùng nhìn thấy.", revealed: false, keyCharIndex: 0 },
+          { word: "ANTOAN", clue: "Quy tắc hàng đầu khi sử dụng điện và thiết bị công nghệ trong phòng máy.", revealed: false, keyCharIndex: 0 },
+          { word: "YNGHIA", clue: "Đặt tên thư mục hoặc tệp tin phải rõ ràng và có...", revealed: false, keyCharIndex: 0 },
+          { word: "THUMUC", clue: "Nơi lưu trữ và sắp xếp các tệp tin bài học như một ngăn kéo tủ.", revealed: false, keyCharIndex: 0 },
+          { word: "INTERNET", clue: "Mạng lưới thông tin toàn cầu kết nối hàng triệu máy tính.", revealed: false, keyCharIndex: 0 },
+          { word: "NHAPCHU", clue: "Thao tác gõ các ký tự văn bản thông qua bàn phím.", revealed: false, keyCharIndex: 0 },
+          { word: "HOCBAI", clue: "Mục đích chính của em khi sử dụng Web Vui Học mỗi ngày.", revealed: false, keyCharIndex: 0 }
+        ]
+      },
+      safety: {
+        title: "CHỦ ĐỀ: AN TOÀN & BẢN QUYỀN SỐ",
+        secretKeyword: "ANTOAN",
+        rows: [
+          { word: "AMTHANH", clue: "Tín hiệu phát ra từ loa hoặc tai nghe khi nghe nhạc.", revealed: false, keyCharIndex: 0 },
+          { word: "NHACNHO", clue: "Hành động Thầy Cô khuyên bảo khi học sinh dùng máy sai cách.", revealed: false, keyCharIndex: 0 },
+          { word: "THONGTIN", clue: "Dữ liệu cá nhân cần bảo mật và không tùy tiện chia sẻ trên mạng.", revealed: false, keyCharIndex: 0 },
+          { word: "ONGBATIN", clue: "Hỏi ý kiến người lớn trước khi truy cập trang web lạ.", revealed: false, keyCharIndex: 0 },
+          { word: "ANTOANSO", clue: "Kỹ năng sống cần thiết trong thời đại công nghệ 4.0.", revealed: false, keyCharIndex: 0 },
+          { word: "NGANHANG", clue: "Nơi tuyệt đối không cung cấp mã OTP cho người lạ.", revealed: false, keyCharIndex: 0 }
+        ]
+      },
+      scratch: {
+        title: "CHỦ ĐỀ: LẬP TRÌNH SCRATCH NHÍ",
+        secretKeyword: "SCRATCH",
+        rows: [
+          { word: "SANXUAT", clue: "Tạo ra sản phẩm trò chơi hoặc hoạt hình của riêng em.", revealed: false, keyCharIndex: 0 },
+          { word: "CHUOT", clue: "Thiết bị dùng để kéo thả các khối lệnh nhiều màu sắc.", revealed: false, keyCharIndex: 0 },
+          { word: "ROBOT", clue: "Thiết bị thông minh có thể lập trình để di chuyển và tự động hóa.", revealed: false, keyCharIndex: 0 },
+          { word: "AMTHANH", clue: "Khối lệnh màu hồng tím giúp nhân vật phát tiếng kêu Meow.", revealed: false, keyCharIndex: 0 },
+          { word: "TOADO", clue: "Vị trí trục X và Y của nhân vật trên sân khấu lập trình.", revealed: false, keyCharIndex: 0 },
+          { word: "CHUYENDONG", clue: "Khối lệnh màu xanh dương giúp nhân vật di chuyển 10 bước.", revealed: false, keyCharIndex: 0 },
+          { word: "HINHNEN", clue: "Phông nền sân khấu Backdrop trang trí cho dự án Scratch.", revealed: false, keyCharIndex: 0 }
+        ]
+      },
+      word: {
+        title: "CHỦ ĐỀ: SOẠN THẢO VĂN BẢN WORD",
+        secretKeyword: "VANBAN",
+        rows: [
+          { word: "VIETCHU", clue: "Thao tác gõ nội dung bài thơ hoặc câu chuyện vào trang Word.", revealed: false, keyCharIndex: 0 },
+          { word: "ANHTRANG", clue: "Chèn hình ảnh minh họa sinh động vào tài liệu văn bản.", revealed: false, keyCharIndex: 0 },
+          { word: "NGONNGU", clue: "Bộ gõ tiếng Việt Unikey kiểu gõ Telex hoặc Vni quen thuộc.", revealed: false, keyCharIndex: 0 },
+          { word: "BANGTIN", clue: "Chèn bảng dữ liệu gồm nhiều hàng và cột trong Word.", revealed: false, keyCharIndex: 0 },
+          { word: "ANDANH", clue: "Chọn kiểu chữ in đậm, in nghiêng hoặc gạch chân.", revealed: false, keyCharIndex: 0 },
+          { word: "NHIEUMAU", clue: "Đổi màu sắc rực rỡ cho chữ cái tiêu đề bài viết.", revealed: false, keyCharIndex: 0 }
+        ]
+      },
+      folder: {
+        title: "CHỦ ĐỀ: THƯ MỤC VÀ TỆP TIN",
+        secretKeyword: "THUMUC",
+        rows: [
+          { word: "THUMUCME", clue: "Thư mục lớn nhất chứa các thư mục con bên trong.", revealed: false, keyCharIndex: 0 },
+          { word: "HINHANH", clue: "Tệp tin có đuôi mở rộng .png hoặc .jpg lưu ảnh chụp.", revealed: false, keyCharIndex: 0 },
+          { word: "UNIXFILE", clue: "Hệ điều hành quản lý tệp tin và cây thư mục an toàn.", revealed: false, keyCharIndex: 0 },
+          { word: "MAYTINH", clue: "Ổ đĩa C, D hoặc USB lưu giữ toàn bộ dữ liệu học tập.", revealed: false, keyCharIndex: 0 },
+          { word: "USERDATA", clue: "Dữ liệu riêng của từng người dùng trên máy tính.", revealed: false, keyCharIndex: 0 },
+          { word: "CHINHDUA", clue: "Thao tác đổi tên Rename hoặc di chuyển tệp tin.", revealed: false, keyCharIndex: 0 }
+        ]
+      },
+      internet: {
+        title: "CHỦ ĐỀ: MẠNG INTERNET TOÀN CẦU",
+        secretKeyword: "INTERNET",
+        rows: [
+          { word: "INTERNET", clue: "Mạng lưới kết nối máy tính không giới hạn trên toàn thế giới.", revealed: false, keyCharIndex: 0 },
+          { word: "NETIZEN", clue: "Công dân số tham gia giao tiếp văn minh trên môi trường mạng.", revealed: false, keyCharIndex: 0 },
+          { word: "TIMKIEM", clue: "Sử dụng máy tìm kiếm Google để tra cứu thông tin học tập.", revealed: false, keyCharIndex: 0 },
+          { word: "EMAIL", clue: "Thư điện tử giúp gửi tài liệu nhanh chóng qua mạng.", revealed: false, keyCharIndex: 0 },
+          { word: "ROUTER", clue: "Thiết bị phát sóng Wifi kết nối mạng không dây trong nhà.", revealed: false, keyCharIndex: 0 },
+          { word: "NETWORK", clue: "Mạng máy tính cục bộ kết nối các máy trong phòng tin học.", revealed: false, keyCharIndex: 0 },
+          { word: "ELEARN", clue: "Học tập trực tuyến trên Web Vui Học mọi lúc mọi nơi.", revealed: false, keyCharIndex: 0 },
+          { word: "TRINHDUYET", clue: "Phần mềm Chrome hoặc Cốc Cốc dùng để lướt web.", revealed: false, keyCharIndex: 0 }
+        ]
+      }
     };
+
+    const chosen = presets[topicKey] || presets.computer;
+    this.crosswordData = JSON.parse(JSON.stringify(chosen));
+    this.selectedCrosswordRow = 0;
+
+    const modal = document.getElementById("crossword-maker-modal");
+    if (modal) modal.classList.remove("active");
+
+    const titleDisp = document.getElementById("crossword-title-display");
+    if (titleDisp) titleDisp.innerText = this.crosswordData.title;
+
+    this.renderCrosswordGrid();
+    this.renderAlphabetButtons();
+    this.selectCrosswordRow(0);
+
+    window.app.showToast(`🎉 Đã tải bộ ô chữ: "${chosen.title}"!`, "success");
+  }
+
+  saveCustomCrosswordFromForm() {
+    const kwInput = document.getElementById("maker-secret-keyword");
+    const rowsInput = document.getElementById("maker-rows-input");
+
+    if (!kwInput || !rowsInput) return;
+
+    const keyword = kwInput.value.trim().toUpperCase().replace(/[^A-Z]/g, '');
+    const lines = rowsInput.value.split("\n").filter(l => l.trim().length > 0);
+
+    if (keyword.length < 3) {
+      window.app.showToast("Từ khóa bí mật phải có ít nhất 3 chữ cái in hoa!", "warning");
+      return;
+    }
+
+    if (lines.length < 3) {
+      window.app.showToast("Thầy Cô hãy nhập ít nhất 3 hàng câu đố!", "warning");
+      return;
+    }
+
+    const rows = lines.map((line, idx) => {
+      const parts = line.split("|");
+      const word = (parts[0] || `HANG${idx + 1}`).trim().toUpperCase().replace(/[^A-Z]/g, '');
+      const clue = (parts[1] || `Gợi ý câu đố cho hàng ${idx + 1}`).trim();
+      return {
+        word: word.length > 0 ? word : `TU${idx + 1}`,
+        clue: clue,
+        revealed: false,
+        keyCharIndex: 0
+      };
+    });
+
+    this.crosswordData = {
+      title: `BỘ Ô CHỮ TÙY BIẾN: "${keyword}"`,
+      secretKeyword: keyword,
+      rows: rows
+    };
+
+    const modal = document.getElementById("crossword-maker-modal");
+    if (modal) modal.classList.remove("active");
+
+    const titleDisp = document.getElementById("crossword-title-display");
+    if (titleDisp) titleDisp.innerText = this.crosswordData.title;
 
     this.selectedCrosswordRow = 0;
     this.renderCrosswordGrid();
     this.renderAlphabetButtons();
     this.selectCrosswordRow(0);
+
+    window.app.showToast(`🎉 Đã áp dụng thành công bộ ô chữ tùy biến "${keyword}"!`, "success");
   }
 
   renderCrosswordGrid() {
@@ -845,6 +969,8 @@ class LecturePortal {
     this.renderCrosswordGrid();
 
     const row = this.crosswordData.rows[rowIndex];
+    if (!row) return;
+
     const clueLabel = document.getElementById("crossword-clue-label");
     const clueText = document.getElementById("crossword-clue-text");
 
@@ -861,7 +987,6 @@ class LecturePortal {
     this.playTingSound();
     window.app.showToast(`🎉 Đã mở khóa hàng ${this.selectedCrosswordRow + 1}: ${row.word}!`, "success");
 
-    // Kiểm tra nếu đã mở hết
     if (this.crosswordData.rows.every(r => r.revealed)) {
       this.celebrateCrosswordWin();
     }
@@ -878,7 +1003,7 @@ class LecturePortal {
     if (window.Simulation3D?.triggerFireworks) {
       window.Simulation3D.triggerFireworks();
     }
-    window.app.showToast(`👑 CHÚC MỪNG CẢ LỚP ĐÃ GIẢI ĐƯỢC TỪ KHÓA BÍ MẬT: "MÁY TÍNH"!`, "success");
+    window.app.showToast(`👑 CHÚC MỪNG CẢ LỚP ĐÃ GIẢI ĐƯỢC TỪ KHÓA BÍ MẬT: "${this.crosswordData.secretKeyword}"!`, "success");
   }
 
   renderAlphabetButtons() {
@@ -908,7 +1033,153 @@ class LecturePortal {
   }
 
   // =========================================================================
-  // OPTION 3: SÁCH 3D LẬT TRANG & GIỌNG ĐỌC AI E-BOOK READ-ALOUD
+  // OPTION 5: VÒNG QUAY MAY MẮN GỌI TÊN HỌC SINH 3D (IN-SLIDE LUCKY WHEEL)
+  // =========================================================================
+  toggleInSlideLuckyWheel() {
+    const overlay = document.getElementById("in-slide-lucky-wheel-overlay");
+    if (!overlay) return;
+
+    this.luckyWheelActive = !this.luckyWheelActive;
+    if (this.luckyWheelActive) {
+      if (this.inSlideQuizActive) this.toggleInSlideQuiz();
+      if (this.crosswordActive) this.toggleInSlideCrossword();
+      overlay.classList.remove("hidden");
+      
+      const input = document.getElementById("lucky-wheel-names-input");
+      if (input) input.value = this.wheelNames.join("\n");
+
+      this.drawLuckyWheel();
+    } else {
+      overlay.classList.add("hidden");
+    }
+  }
+
+  updateWheelNames(text) {
+    const list = text.split("\n").map(n => n.trim()).filter(n => n.length > 0);
+    if (list.length >= 2) {
+      this.wheelNames = list;
+      this.drawLuckyWheel();
+      window.app.showToast(`🎯 Đã cập nhật danh sách ${list.length} học sinh cho vòng quay!`, "info");
+    } else {
+      window.app.showToast("Cần ít nhất 2 học sinh để tạo vòng quay!", "warning");
+    }
+  }
+
+  resetWheelToNumberList() {
+    const list = [];
+    for (let i = 1; i <= 35; i++) {
+      list.push(`Số ${i < 10 ? '0' : ''}${i}`);
+    }
+    this.wheelNames = list;
+    const input = document.getElementById("lucky-wheel-names-input");
+    if (input) input.value = this.wheelNames.join("\n");
+    this.drawLuckyWheel();
+    window.app.showToast("🔢 Đã chuyển sang danh sách 35 số thứ tự học sinh!", "info");
+  }
+
+  drawLuckyWheel() {
+    const canvas = document.getElementById("lucky-wheel-canvas");
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    const numSlices = this.wheelNames.length;
+    const sliceAngle = (Math.PI * 2) / numSlices;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = centerX - 8;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const colors = [
+      "#3b82f6", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6",
+      "#06b6d4", "#f97316", "#14b8a6", "#6366f1", "#84cc16"
+    ];
+
+    for (let i = 0; i < numSlices; i++) {
+      const angle = this.wheelAngle + i * sliceAngle;
+
+      // Vẽ lát cắt hình quạt
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "#ffffff";
+      ctx.stroke();
+
+      // Vẽ chữ tên học sinh
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(angle + sliceAngle / 2);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = numSlices > 25 ? "bold 9px sans-serif" : (numSlices > 15 ? "bold 11px sans-serif" : "bold 13px sans-serif");
+      ctx.shadowColor = "rgba(0,0,0,0.8)";
+      ctx.shadowBlur = 4;
+      
+      const displayName = this.wheelNames[i].length > 14 ? this.wheelNames[i].substring(0, 12) + ".." : this.wheelNames[i];
+      ctx.fillText(displayName, radius - 15, 4);
+      ctx.restore();
+    }
+  }
+
+  spinLuckyWheel() {
+    if (this.isWheelSpinning) return;
+    this.isWheelSpinning = true;
+
+    const winnerNameEl = document.getElementById("lucky-wheel-winner-name");
+    const winnerBoxEl = document.getElementById("lucky-wheel-winner-box");
+    if (winnerNameEl) winnerNameEl.innerText = "Đang quay cuồng nhiệt...";
+    if (winnerBoxEl) winnerBoxEl.classList.remove("border-amber-400", "bg-amber-950/60");
+
+    let currentVelocity = 0.35 + Math.random() * 0.25; // Tốc độ quay ban đầu
+    const deceleration = 0.988; // Giảm tốc độ ma sát tự nhiên
+    let lastSliceIndex = -1;
+
+    const animateSpin = () => {
+      this.wheelAngle += currentVelocity;
+      currentVelocity *= deceleration;
+
+      const numSlices = this.wheelNames.length;
+      const sliceAngle = (Math.PI * 2) / numSlices;
+      const normalizedAngle = (Math.PI * 1.5 - (this.wheelAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const currentSliceIndex = Math.floor(normalizedAngle / sliceAngle) % numSlices;
+
+      if (currentSliceIndex !== lastSliceIndex) {
+        this.playTickSound();
+        lastSliceIndex = currentSliceIndex;
+      }
+
+      this.drawLuckyWheel();
+
+      if (currentVelocity > 0.002) {
+        this.wheelAnimId = requestAnimationFrame(animateSpin);
+      } else {
+        this.isWheelSpinning = false;
+        const winner = this.wheelNames[currentSliceIndex];
+        
+        if (winnerNameEl) winnerNameEl.innerText = `🎉 ${winner}!`;
+        if (winnerBoxEl) {
+          winnerBoxEl.classList.add("border-amber-400", "bg-amber-950/60", "animate-bounce");
+        }
+
+        this.playTingSound();
+
+        if (window.Simulation3D?.triggerFireworks) {
+          window.Simulation3D.triggerFireworks();
+        }
+
+        window.app.showToast(`⭐ Mời bạn [${winner}] đứng lên phát biểu nhé!`, "success");
+      }
+    };
+
+    this.wheelAnimId = requestAnimationFrame(animateSpin);
+  }
+
+  // =========================================================================
+  // SÁCH 3D LẬT TRANG & GIỌNG ĐỌC AI E-BOOK READ-ALOUD
   // =========================================================================
   async openFlipbook(lectureId) {
     const lecture = await window.lectureService.getLectureById(lectureId);
@@ -1185,6 +1456,7 @@ class LecturePortal {
     this.disableDrawingMode("lec-preview-canvas");
     if (this.inSlideQuizActive) this.toggleInSlideQuiz();
     if (this.crosswordActive) this.toggleInSlideCrossword();
+    if (this.luckyWheelActive) this.toggleInSlideLuckyWheel();
   }
 
   toggleDrawingMode(canvasId) {

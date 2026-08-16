@@ -826,6 +826,9 @@
 
         <!-- Toolbar Bút Vẽ & Đố Vui Giảng Bài -->
         <div class="flex items-center gap-2">
+          <button onclick="lecturePortal.toggleInSlideLuckyWheel()" class="btn bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mở Vòng Quay May Mắn gọi tên học sinh ngẫu nhiên">
+            <span>🎡</span> <span>Vòng Quay Gọi Tên</span>
+          </button>
           <button onclick="lecturePortal.toggleInSlideCrossword()" class="btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mở trò chơi Ô Chữ Bí Mật 3D tương tác trên Slide">
             <span>🧩</span> <span>Ô Chữ Bí Mật 3D</span>
           </button>
@@ -857,12 +860,12 @@
         </button>
       </div>
 
-      <!-- Khung Chiếu Chứa Iframe, Canvas Vẽ, Widget Đố Vui 10s và Ô Chữ Bí Mật 3D -->
+      <!-- Khung Chiếu Chứa Iframe, Canvas Vẽ, Widget Đố Vui 10s, Ô Chữ 3D và Vòng Quay May Mắn -->
       <div class="flex-1 bg-slate-900 rounded-2xl overflow-hidden shadow-inner relative flex items-center justify-center">
         <iframe id="lec-preview-iframe" class="w-full h-full border-0" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
         <canvas id="lec-preview-canvas" class="absolute inset-0 z-20 pointer-events-none w-full h-full"></canvas>
 
-        <!-- WIDGET ĐỐ VUI 10S TRÊN SLIDE (IN-SLIDE QUIZ OVERLAY) -->
+        <!-- WIDGET 1: ĐỐ VUI 10S TRÊN SLIDE (IN-SLIDE QUIZ OVERLAY) -->
         <div id="in-slide-quiz-overlay" class="hidden absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-slate-950/95 text-white p-4 rounded-3xl border-2 border-amber-400 shadow-2xl backdrop-blur-xl z-30 space-y-3 animate-pop">
           <div class="flex items-center justify-between pb-1 border-b border-white/20">
             <div class="flex items-center gap-1.5">
@@ -899,17 +902,24 @@
           </div>
         </div>
 
-        <!-- WIDGET Ô CHỮ BÍ MẬT 3D TRÊN SLIDE (IN-SLIDE 3D CROSSWORD OVERLAY) -->
+        <!-- WIDGET 2: Ô CHỮ BÍ MẬT 3D TRÊN SLIDE (IN-SLIDE 3D CROSSWORD OVERLAY) -->
         <div id="in-slide-crossword-overlay" class="hidden absolute inset-4 bg-slate-950/95 text-white p-5 rounded-3xl border-2 border-indigo-400 shadow-2xl backdrop-blur-xl z-30 flex flex-col justify-between space-y-3 animate-pop">
           <div class="flex items-center justify-between pb-2 border-b border-indigo-500/40 shrink-0">
             <div class="flex items-center gap-2">
               <span class="text-2xl p-1 bg-indigo-500/20 text-indigo-300 rounded-xl">🧩</span>
               <div>
-                <h4 class="font-black text-indigo-300 text-sm md:text-base">TRÒ CHƠI Ô CHỮ BÍ MẬT 3D</h4>
+                <h4 id="crossword-title-display" class="font-black text-indigo-300 text-sm md:text-base">TRÒ CHƠI Ô CHỮ BÍ MẬT 3D</h4>
                 <p class="text-[10px] text-cyan-300">Giải các hàng ngang để mở khóa TỪ KHÓA BÍ MẬT của bài học</p>
               </div>
             </div>
-            <button onclick="lecturePortal.toggleInSlideCrossword()" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
+            
+            <div class="flex items-center gap-2">
+              <!-- Nút Soạn / Đổi Bộ Ô Chữ -->
+              <button onclick="lecturePortal.openCrosswordMakerModal()" class="btn bg-indigo-700 hover:bg-indigo-600 text-white btn-xs font-black shadow-sm flex items-center gap-1 border border-indigo-400">
+                <span>⚙️</span> <span>Soạn / Đổi Ô Chữ</span>
+              </button>
+              <button onclick="lecturePortal.toggleInSlideCrossword()" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
+            </div>
           </div>
 
           <!-- Khung Bảng Ô Chữ 3D -->
@@ -931,6 +941,63 @@
             <div class="flex items-center gap-1.5 flex-wrap" id="crossword-alphabet-buttons"></div>
             <button onclick="lecturePortal.revealSecretKeyword()" class="btn bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 btn-xs font-black shadow-lg hover:scale-105 transition-all">
               👑 Mở Toàn Bộ Ô Chữ
+            </button>
+          </div>
+        </div>
+
+        <!-- WIDGET 3: VÒNG QUAY MAY MẮN GỌI TÊN HỌC SINH 3D (IN-SLIDE LUCKY WHEEL OVERLAY) -->
+        <div id="in-slide-lucky-wheel-overlay" class="hidden absolute inset-4 md:inset-8 bg-slate-950/95 text-white p-5 rounded-3xl border-2 border-emerald-400 shadow-2xl backdrop-blur-xl z-30 flex flex-col justify-between space-y-3 animate-pop">
+          <div class="flex items-center justify-between pb-2 border-b border-emerald-500/40 shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl p-1 bg-emerald-500/20 text-emerald-300 rounded-xl animate-spin">🎡</span>
+              <div>
+                <h4 class="font-black text-emerald-300 text-sm md:text-base">VÒNG QUAY MAY MẮN GỌI TÊN HỌC SINH</h4>
+                <p class="text-[10px] text-cyan-300">Quay ngẫu nhiên học sinh trong lớp lên bảng trả lời câu hỏi</p>
+              </div>
+            </div>
+            <button onclick="lecturePortal.toggleInSlideLuckyWheel()" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
+          </div>
+
+          <!-- Khu vực Vòng Quay Canvas & Bảng Vinh Danh -->
+          <div class="flex-1 flex flex-col md:flex-row items-center justify-center gap-6 py-2">
+            <!-- Vòng Quay Canvas -->
+            <div class="relative flex items-center justify-center">
+              <!-- Kim chỉ định hướng -->
+              <div class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 text-3xl filter drop-shadow-lg animate-bounce">
+                🔻
+              </div>
+              <canvas id="lucky-wheel-canvas" width="320" height="320" class="rounded-full shadow-2xl border-4 border-amber-400"></canvas>
+              
+              <!-- Nút Quay Trung Tâm -->
+              <button id="btn-spin-lucky-wheel" onclick="lecturePortal.spinLuckyWheel()" class="absolute inset-auto w-16 h-16 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 font-black text-xs shadow-2xl border-2 border-white flex flex-col items-center justify-center hover:scale-110 active:scale-95 transition-all z-10">
+                <span class="text-base">🎯</span>
+                <span>QUAY</span>
+              </button>
+            </div>
+
+            <!-- Bảng Vinh Danh Học Sinh May Mắn & Cấu Hình Danh Sách -->
+            <div class="w-full md:w-72 space-y-3 text-xs">
+              <div id="lucky-wheel-winner-box" class="p-4 bg-emerald-950/60 border-2 border-emerald-400 rounded-2xl text-center space-y-1">
+                <span class="text-3xl block">⭐</span>
+                <p class="text-xs text-emerald-300 font-bold uppercase">Học Sinh May Mắn:</p>
+                <h3 id="lucky-wheel-winner-name" class="text-lg font-black text-amber-300 font-mono">Sẵn sàng quay...</h3>
+              </div>
+
+              <!-- Tùy Chỉnh Danh Sách Học Sinh -->
+              <div class="space-y-1.5 p-3 bg-slate-900 rounded-2xl border border-slate-800">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="font-bold text-slate-300">Danh Sách Học Sinh:</span>
+                  <button onclick="lecturePortal.resetWheelToNumberList()" class="text-cyan-400 hover:underline font-bold">Dùng STT (1-35)</button>
+                </div>
+                <textarea id="lucky-wheel-names-input" rows="3" onchange="lecturePortal.updateWheelNames(this.value)" class="form-control text-[11px] bg-slate-950 border-slate-700 text-white" placeholder="Nhập tên học sinh (mỗi bạn 1 dòng)..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-1 border-t border-emerald-500/40 shrink-0 text-xs">
+            <span class="text-slate-400 text-[11px]">💡 Bấm nút <b>'🎯 QUAY'</b> hoặc phím cách (Space) để kích hoạt vòng quay.</span>
+            <button onclick="lecturePortal.spinLuckyWheel()" class="btn btn-amber btn-xs font-black shadow-md">
+              🎯 Quay Ngay
             </button>
           </div>
         </div>
@@ -1718,6 +1785,77 @@
           <span class="text-[11px] hidden md:inline">💡 Thầy Cô có thể bấm <b>'🔊 Đọc Sách AI'</b> để AI tự động thuyết minh từng trang sách.</span>
           <button onclick="lecturePortal.closeFlipbookModal()" class="btn btn-outline btn-xs text-slate-300 border-slate-700">Đóng Sách 3D</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 33: TÙY BIẾN & SOẠN BỘ Ô CHỮ BÍ MẬT 3D (CUSTOM CROSSWORD MAKER) -->
+  <div id="crossword-maker-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-indigo-100 text-indigo-800 rounded-xl">🧩</span>
+          <div>
+            <h3 class="text-base font-black text-slate-900">SOẠN VÀ TÙY BIẾN Ô CHỮ BÍ MẬT 3D</h3>
+            <p class="text-xs text-slate-500 font-semibold">Tự tạo bộ ô chữ theo bài học hoặc chọn nhanh các chủ đề chuẩn GDPT 2018</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('crossword-maker-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+
+      <!-- 5 Chủ Đề Ô Chữ Có Sẵn Cho Giáo Viên Chọn Nhanh -->
+      <div class="space-y-2">
+        <label class="text-xs font-black text-slate-800 flex items-center gap-1">
+          <span>📚 Chọn Nhanh Bộ Ô Chữ Theo Chủ Đề Có Sẵn:</span>
+        </label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+          <button onclick="lecturePortal.loadPresetCrossword('computer')" class="p-3 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-2xl text-left font-bold text-indigo-900 transition-all flex flex-col justify-between">
+            <span>💻 1. MÁY TÍNH & THIẾT BỊ</span>
+            <span class="text-[10px] text-slate-500 font-normal mt-1">Từ khóa: MAYTINH (7 Hàng)</span>
+          </button>
+          <button onclick="lecturePortal.loadPresetCrossword('safety')" class="p-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-2xl text-left font-bold text-amber-900 transition-all flex flex-col justify-between">
+            <span>🛡️ 2. AN TOÀN & BẢN QUYỀN</span>
+            <span class="text-[10px] text-slate-500 font-normal mt-1">Từ khóa: ANTOAN (6 Hàng)</span>
+          </button>
+          <button onclick="lecturePortal.loadPresetCrossword('scratch')" class="p-3 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-2xl text-left font-bold text-emerald-900 transition-all flex flex-col justify-between">
+            <span>🐱 3. LẬP TRÌNH SCRATCH</span>
+            <span class="text-[10px] text-slate-500 font-normal mt-1">Từ khóa: SCRATCH (7 Hàng)</span>
+          </button>
+          <button onclick="lecturePortal.loadPresetCrossword('word')" class="p-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-2xl text-left font-bold text-blue-900 transition-all flex flex-col justify-between">
+            <span>📝 4. SOẠN THẢO VĂN BẢN</span>
+            <span class="text-[10px] text-slate-500 font-normal mt-1">Từ khóa: VANBAN (6 Hàng)</span>
+          </button>
+          <button onclick="lecturePortal.loadPresetCrossword('folder')" class="p-3 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-2xl text-left font-bold text-purple-900 transition-all flex flex-col justify-between">
+            <span>📁 5. THƯ MỤC & TỆP TIN</span>
+            <span class="text-[10px] text-slate-500 font-normal mt-1">Từ khóa: THUMUC (6 Hàng)</span>
+          </button>
+          <button onclick="lecturePortal.loadPresetCrossword('internet')" class="p-3 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 rounded-2xl text-left font-bold text-cyan-900 transition-all flex flex-col justify-between">
+            <span>🌐 6. MẠNG INTERNET</span>
+            <span class="text-[10px] text-slate-500 font-normal mt-1">Từ khóa: INTERNET (8 Hàng)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Form Nhập Tự Soạn Ô Chữ -->
+      <div class="space-y-3 pt-2 border-t border-slate-200 text-xs">
+        <h4 class="font-black text-slate-900">✏️ Hoặc Thầy Cô Tự Nhập Bộ Ô Chữ Riêng:</h4>
+        
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">TỪ KHÓA BÍ MẬT (Chữ in hoa không dấu):</label>
+          <input type="text" id="maker-secret-keyword" class="form-control text-xs font-black uppercase tracking-widest text-indigo-700" placeholder="VD: MAYTINH, ROBOT, TINHOC..." value="MAYTINH">
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">DANH SÁCH CÂU HỎI VÀ TỪ HÀNG NGANG (Định dạng: TỪ_HÀNG_NGANG | Câu hỏi gợi ý):</label>
+          <textarea id="maker-rows-input" rows="6" class="form-control text-xs font-mono" placeholder="MANHINH | Thiết bị hiển thị hình ảnh&#10;ANTOAN | Quy tắc bảo vệ bản thân và thiết bị&#10;YNGHIA | Đặt tên tệp tin cần có..."></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+        <button onclick="document.getElementById('crossword-maker-modal').classList.remove('active')" class="btn btn-outline btn-sm">Hủy</button>
+        <button onclick="lecturePortal.saveCustomCrosswordFromForm()" class="btn btn-indigo btn-sm font-black shadow-md flex items-center gap-1">
+          <span>💾</span> <span>Áp Dụng Bộ Ô Chữ Này</span>
+        </button>
       </div>
     </div>
   </div>
