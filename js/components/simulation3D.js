@@ -1,5 +1,5 @@
 /**
- * SIMULATION 3D COMPONENT - PHÒNG THÍ NGHIỆM 3D & HỌC LIỆU SỐ TIN HỌC TIỂU HỌC 3-5
+ * SIMULATION 3D COMPONENT - PHÒNG MÔ PHỎNG 3D & HỌC LIỆU SỐ TIN HỌC TIỂU HỌC 3-5
  * Tích hợp toàn diện 7 Chủ Đề Thực Nghiệm & Tính Năng Đột Phá:
  * 1. 📘 Bài 7: Sắp Xếp Để Dễ Tìm (Tủ Đồ 3 Tầng & Bàn Học 3D)
  * 2. 📁 Bài 8: Khám Phá Thư Mục (Màn Hình Desktop Ảo, Tạo & Quản Lý Folder 3D)
@@ -10,7 +10,7 @@
  * 7. 🖥️ Lắp Ráp Máy Tính 3D (Build Your PC 3D Lab)
  * 8. 🌙 CHẾ ĐỘ BAN ĐÊM NEON PHÁT SÁNG (Dark Neon Room Mode & Cyberpunk Lab)
  * 9. 🎆 HIỆU ỨNG PHÁO HOA 3D & CONFETTI CHÚC MỪNG ĐIỂM 10 (Particle Engine)
- * 10. ☁️ Tự Động Đồng Bộ Điểm Thí Nghiệm Lên Supabase Cloud Database
+ * 10. ☁️ Tự Động Đồng Bộ Điểm Mô Phỏng Lên Supabase Cloud Database
  * 11. 🎵 Background Music Synthesizer: Nhạc nền vui nhộn Web Audio API
  * 12. 🏆 Bảng Xếp Hạng Top 10 Speedrun Sắp Xếp Nhanh Nhất (Leaderboard)
  * 13. 🎖️ In Chứng Chỉ Huấn Luyện Viên Robot & Kỹ Sư Tin Học Nhí (PDF A4)
@@ -178,14 +178,28 @@ class Simulation3D {
     const top10 = records.slice(0, 10).map((r, i) => ({ ...r, rank: i + 1 }));
     localStorage.setItem("exam_3d_speedrun_leaderboard", JSON.stringify(top10));
 
+    // Đồng bộ trực tiếp lên Supabase Cloud Database
+    if (window.supabaseService?.recordSimulationProgress) {
+      window.supabaseService.recordSimulationProgress({
+        studentName: user.name || "Nguyễn Văn An",
+        studentClass: user.className || "3A",
+        simulationKey: "lesson_7_organize",
+        simulationTitle: "Mô Phỏng 3D: Sắp Xếp Để Dễ Tìm",
+        score: 10,
+        starsEarned: timeSec < 20 ? 30 : 20,
+        timeSpentSeconds: Math.round(timeSec),
+        details: { mode: "speedrun_organize", completedItems: 10 }
+      });
+    }
+
     if (window.examService?.syncSimulationScoreToCloud) {
       window.examService.syncSimulationScoreToCloud({
         labName: "Sắp Xếp Để Dễ Tìm 3D",
         score: 10,
         durationSpentSeconds: Math.round(timeSec)
       });
-      window.app.showToast("☁️ Đã đồng bộ điểm 10.0 và kỷ lục lên Supabase Cloud!", "success");
     }
+    window.app.showToast("☁️ Đã đồng bộ điểm 10.0 và kỷ lục Mô Phỏng 3D lên Supabase Cloud!", "success");
   }
 
   // =========================================================================
@@ -418,23 +432,23 @@ class Simulation3D {
     if (this.currentLesson === 'internet') titleText = "MẠNG INTERNET & TRÌNH DUYỆT WEB 3D";
     if (this.currentLesson === 'robot') titleText = "ROBOT DỌN DẸP & VẼ TRANH HÌNH HỌC 3D";
     if (this.currentLesson === 'safety') titleText = "AN TOÀN KHI SỬ DỤNG MÁY TÍNH & ĐỐ VUI BLITZ 10S";
-    if (this.currentLesson === 'pc_builder') titleText = "THÍ NGHIỆM LẮP RÁP MÁY TÍNH 3D (BUILD YOUR PC)";
+    if (this.currentLesson === 'pc_builder') titleText = "MÔ PHỎNG LẮP RÁP MÁY TÍNH 3D (BUILD YOUR PC)";
 
     const darkClass = this.isDarkMode ? "bg-slate-950 text-slate-100 p-4 md:p-6 rounded-3xl border-2 border-cyan-500/40 shadow-[0_0_50px_rgba(6,182,212,0.15)]" : "";
 
     container.innerHTML = `
       <div class="space-y-6 animate-pop ${darkClass}">
-        <!-- Banner Thí Nghiệm Đa Năng -->
+        <!-- Banner Mô Phỏng Đa Năng -->
         <div class="banner-anhdao flex flex-col md:flex-row items-center justify-between gap-6">
           <div class="space-y-2">
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="badge badge-amber font-black">🧪 PHÒNG THÍ NGHIỆM 3D & AR ẢO</span>
+              <span class="badge badge-amber font-black">🧪 PHÒNG MÔ PHỎNG 3D & AR ẢO</span>
               <span class="badge bg-white/20 text-white font-bold">GDPT 2018 • HỌC LIỆU SỐ TOÀN DIỆN</span>
               ${this.isDarkMode ? `<span class="badge bg-cyan-500 text-slate-950 font-black animate-pulse">🌙 NEON CYBER LAB</span>` : ''}
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">${titleText}</h2>
             <p class="text-cyan-100 text-xs md:text-sm max-w-2xl">
-              Hệ sinh thái học liệu số và thí nghiệm 3D tương tác toàn diện: Sắp xếp dữ liệu, Phần cứng 3D, Mạng Internet, Robot vẽ tranh và Lắp ráp máy tính!
+              Hệ sinh thái học liệu số và mô phỏng 3D tương tác toàn diện: Sắp xếp dữ liệu, Phần cứng 3D, Mạng Internet, Robot vẽ tranh và Lắp ráp máy tính!
             </p>
           </div>
 
@@ -468,7 +482,7 @@ class Simulation3D {
           </div>
         </div>
 
-        <!-- 7 Nút Chọn Chủ Đề Bài Thí Nghiệm -->
+        <!-- 7 Nút Chọn Chủ Đề Bài Mô Phỏng 3D -->
         <div class="flex items-center justify-between ${this.isDarkMode ? 'bg-slate-900/90 border-cyan-500/30' : 'bg-white border-slate-200'} p-3.5 rounded-2xl border shadow-sm flex-wrap gap-2">
           <div class="flex items-center gap-1.5 flex-wrap">
             <button onclick="simulation3D.selectLesson(7)" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 7 ? 'bg-indigo-600 text-white shadow-md scale-102 ring-2 ring-indigo-300' : this.isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
@@ -505,7 +519,7 @@ class Simulation3D {
           </button>
         </div>
 
-        <!-- Khung Nội Dung Chính Của Thí Nghiệm -->
+        <!-- Khung Nội Dung Chính Của Mô Phỏng 3D -->
         <div id="sim-main-viewport" class="space-y-6">
           ${this.renderCurrentModeView()}
         </div>
@@ -531,14 +545,14 @@ class Simulation3D {
     } else if (lessonNum === 'robot') {
       this.currentMode = "robot";
       this.robotSubTab = "clean";
-      this.speak("Thí nghiệm Robot dọn dẹp và vẽ tranh hình học 3D!");
+      this.speak("Mô phỏng Robot dọn dẹp và vẽ tranh hình học 3D!");
     } else if (lessonNum === 'safety') {
       this.currentMode = "safety";
       this.safetySubTab = "scenarios";
-      this.speak("Thí nghiệm An toàn khi sử dụng máy tính và đố vui chớp nhoáng 10 giây!");
+      this.speak("Mô phỏng An toàn khi sử dụng máy tính và đố vui chớp nhoáng 10 giây!");
     } else if (lessonNum === 'pc_builder') {
       this.currentMode = "pc_builder";
-      this.speak("Thí nghiệm Lắp ráp máy tính 3D!");
+      this.speak("Mô phỏng Lắp ráp máy tính 3D!");
     }
     this.render("main-content-area");
   }
@@ -1167,8 +1181,24 @@ class Simulation3D {
 
       const allPlaced = this.pcParts.every(p => p.placed);
       if (allPlaced) {
+        const user = window.authService?.getUser() || { name: "Nguyễn Văn An", className: "3A" };
+        if (window.supabaseService?.recordSimulationProgress) {
+          window.supabaseService.recordSimulationProgress({
+            studentName: user.name || "Nguyễn Văn An",
+            studentClass: user.className || "3A",
+            simulationKey: "pc_builder",
+            simulationTitle: "Mô Phỏng 3D: Lắp Ráp Máy Tính",
+            score: 10,
+            starsEarned: 25,
+            timeSpentSeconds: 60,
+            details: { partsInstalled: 5 }
+          });
+        }
         if (window.examService?.syncSimulationScoreToCloud) {
           window.examService.syncSimulationScoreToCloud({ labName: "Lắp Ráp Máy Tính 3D", score: 10, durationSpentSeconds: 60 });
+        }
+        if (window.ttsService?.playApplause) {
+          window.ttsService.playApplause(3.0, false);
         }
         setTimeout(() => {
           this.speak("Chúc mừng em đã lắp ráp hoàn thành toàn bộ bộ máy tính 3D!");
@@ -1218,7 +1248,7 @@ class Simulation3D {
             <h4 class="text-2xl font-black text-amber-700 underline uppercase">${user.name || "Nguyễn Văn An"}</h4>
             <p class="text-xs text-slate-600 font-bold">Học sinh Lớp: <b>${user.className || "3A"}</b></p>
             <p class="text-xs text-slate-700 max-w-xl mx-auto leading-relaxed pt-2">
-              Đã hoàn thành xuất sắc toàn bộ các bài <b>Thí Nghiệm 3D Sắp Xếp Dữ Liệu, Lập Trình Robot AI, Mạng Internet và Lắp Ráp Máy Tính</b> đạt thành tích Tuyệt Đối <b>100/100 Điểm</b>!
+              Đã hoàn thành xuất sắc toàn bộ các bài <b>Mô Phỏng 3D Sắp Xếp Dữ Liệu, Lập Trình Robot AI, Mạng Internet và Lắp Ráp Máy Tính</b> đạt thành tích Tuyệt Đối <b>100/100 Điểm</b>!
             </p>
           </div>
 

@@ -201,6 +201,10 @@ class QuizPlayModal {
       }
     }
 
+    if (percent >= 80 && window.ttsService?.playApplause) {
+      window.ttsService.playApplause(3.0, true);
+    }
+
     container.innerHTML = `
       <div class="text-center py-6 space-y-5 animate-pop">
         <span class="text-6xl block animate-bounce">${percent >= 80 ? "🏆" : percent >= 50 ? "⭐" : "💪"}</span>

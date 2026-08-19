@@ -41,18 +41,15 @@
       <button onclick="window.location.hash='teacher'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">👩‍🏫 Giáo Viên (CV 2345)</button>
       <button onclick="window.location.hash='lectures'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-amber-800 bg-amber-50 hover:bg-amber-100 transition-all">📊 Bài Giảng Điện Tử</button>
       <button onclick="window.location.hash='exams'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition-all">📝 Kiểm Tra</button>
-      <button onclick="window.location.hash='lab3d'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-purple-800 bg-purple-50 hover:bg-purple-100 transition-all">🧪 Thí Nghiệm 3D (Bài 7)</button>
+      <button onclick="window.location.hash='lab3d'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-purple-800 bg-purple-50 hover:bg-purple-100 transition-all">🧪 Mô Phỏng 3D</button>
+      <button onclick="window.location.hash='arena'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-rose-800 bg-rose-50 hover:bg-rose-100 transition-all">⚡ Đấu Trường Tin Học</button>
       <button onclick="window.location.hash='student'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">🎒 Học Sinh (Lớp 3-5)</button>
       <button onclick="window.location.hash='gamehub'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">🎮 Game Hub</button>
       <button onclick="app.openAboutModal()" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-all">🌸 Giới Thiệu</button>
     </nav>
 
-    <!-- User Box & Database Status -->
+    <!-- User Box -->
     <div class="flex items-center gap-3">
-      <span id="db-status-badge" class="hidden sm:inline-flex badge badge-cyan font-bold cursor-pointer" onclick="teacherPortal.openSettingsModal()">
-        ● Local DB (Demo Mode)
-      </span>
-
       <!-- Box khi đã đăng nhập -->
       <div id="nav-user-box" class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
         <span id="nav-user-avatar" class="text-lg cursor-pointer" onclick="app.openProfileModal()" title="Bấm để đổi ảnh đại diện">👩‍🏫</span>
@@ -106,7 +103,10 @@
               👩‍🏫 Portal Giáo Viên (Soạn CV 2345)
             </button>
             <button onclick="window.location.hash='lab3d'" class="btn btn-purple btn-lg font-black shadow-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
-              🧪 Thí Nghiệm 3D (Bài 7)
+              🧪 Mô Phỏng 3D
+            </button>
+            <button onclick="window.location.hash='arena'" class="btn btn-rose btn-lg font-black shadow-lg bg-gradient-to-r from-rose-600 to-red-600 text-white">
+              ⚡ Đấu Trường Tin Học
             </button>
             <button onclick="window.location.hash='student'" class="btn btn-amber btn-lg font-black shadow-lg">
               🎒 Portal Học Sinh (Khám Phá)
@@ -576,7 +576,7 @@
       </div>
       <div>
         <h3 class="text-lg font-black text-slate-900">ANH ĐÀO • CLASSROOM</h3>
-        <p class="text-xs text-cyan-700 font-bold uppercase mt-0.5">Biểu Tượng Học Liệu & Vui Học Tin Học Tiểu Học</p>
+        <p class="text-xs text-cyan-700 font-bold uppercase mt-0.5">Biểu Tượng Học Liệu & Vui Học Tin Học</p>
         <p class="text-xs text-slate-500 mt-2 leading-relaxed">
           Logo chính thức đại diện cho tinh thần sáng tạo, ứng dụng công nghệ và lan tỏa tri thức Tin học GDPT 2018 đến các thế hệ học sinh.
         </p>
@@ -714,7 +714,7 @@
 
         <div class="p-3.5 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 space-y-1">
           <h5 class="font-black text-xs">🌟 Sứ Mệnh Giáo Dục:</h5>
-          <p class="text-[11px]">"Biến mỗi giờ học Tin học tiểu học thành một hành trình phiêu lưu kỳ thú, nơi các em không chỉ học lý thuyết mà còn được trực tiếp cầm nắm, tương tác và sáng tạo công nghệ tương lai!"</p>
+          <p class="text-[11px]">"Biến mỗi giờ học Tin học thành một hành trình phiêu lưu kỳ thú, nơi các em không chỉ học lý thuyết mà còn được trực tiếp cầm nắm, tương tác và sáng tạo công nghệ tương lai!"</p>
         </div>
       </div>
 
@@ -917,6 +917,9 @@
             <span>CỔ VŨ CÔ GIÁO:</span>
           </div>
           <div class="flex items-center gap-1.5 flex-wrap">
+            <button onclick="ttsService.playApplause(3.5, true)" class="px-2.5 py-1 rounded-xl font-black bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 hover:scale-105 active:scale-95 shadow-md flex items-center gap-1 transition-all" title="Bật tiếng vỗ tay rộn ràng cả lớp chúc mừng điểm 10!">
+              <span>👏</span> <span>Vỗ Tay Điểm 10</span>
+            </button>
             <button onclick="ttsService.playPraise('excellent')" class="px-2.5 py-1 rounded-xl font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-sm flex items-center gap-1 transition-all hover:scale-105 active:scale-95" title="Cô khen: Xuất sắc lắm em ơi! +15 Sao Vàng">
               <span>🎉</span> <span>Xuất Sắc</span>
             </button>
@@ -1103,7 +1106,7 @@
             <div class="flex items-center gap-2">
               <span class="text-3xl p-1 bg-amber-400/20 text-amber-300 rounded-xl animate-bounce">🔔</span>
               <div>
-                <h4 class="font-black text-amber-300 text-sm md:text-base">ĐẤU TRƯỜNG RUNG CHUÔNG VÀNG 3D</h4>
+                <h4 class="font-black text-amber-300 text-sm md:text-base">⚡ ĐẤU TRƯỜNG TIN HỌC ⚡</h4>
                 <p class="text-[10px] text-cyan-300 font-semibold">5 câu hỏi thử thách củng cố kiến thức - Tìm Quán Quân Tin Học</p>
               </div>
             </div>
@@ -2222,7 +2225,7 @@
     </div>
   </div>
 
-  <!-- MODAL 30: TOÀN MÀN HÌNH THÍ NGHIỆM 3D TIN HỌC 3 - BÀI 7 (SIMULATION 3D MODAL) -->
+  <!-- MODAL 30: TOÀN MÀN HÌNH MÔ PHỎNG 3D TIN HỌC 3 - BÀI 7 (SIMULATION 3D MODAL) -->
   <div id="simulation-3d-modal" class="modal-backdrop">
     <div class="modal-content p-4 md:p-6 max-w-5xl w-full h-[90vh] flex flex-col space-y-3 animate-pop">
       <div class="flex items-center justify-between pb-2 border-b border-slate-200 shrink-0">
@@ -2230,7 +2233,7 @@
           <span class="text-2xl p-1 bg-purple-100 rounded-xl">🧪</span>
           <div>
             <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
-              <span>PHÒNG THÍ NGHIỆM 3D: TIN HỌC LỚP 3 • BÀI 7</span>
+              <span>PHÒNG MÔ PHỎNG 3D: TIN HỌC LỚP 3 • BÀI 7</span>
               <span class="badge bg-purple-600 text-white text-[10px] font-black">FULLSCREEN LAB</span>
             </h3>
             <p class="text-xs text-slate-500 font-semibold">Chủ đề C: Sắp xếp để dễ tìm • Trực quan hóa phân loại đồ vật & cây thư mục máy tính</p>
@@ -2265,7 +2268,7 @@
           <span class="text-2xl p-1.5 bg-amber-100 rounded-xl animate-bounce">🎖️</span>
           <div>
             <h3 class="text-lg font-black text-slate-900">CHỨNG CHỈ HUẤN LUYỆN VIÊN ROBOT & KỸ SƯ NHÍ</h3>
-            <p class="text-xs text-slate-500 font-semibold">Tuyên dương thành tích hoàn thành các bài Thí nghiệm 3D & Lập trình Robot</p>
+            <p class="text-xs text-slate-500 font-semibold">Tuyên dương thành tích hoàn thành các bài Mô Phỏng 3D & Lập trình Robot</p>
           </div>
         </div>
         <button onclick="document.getElementById('simulation-certificate-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
@@ -2785,10 +2788,10 @@
       <!-- Header Buzzer -->
       <div class="flex items-center justify-between pb-3 border-b border-rose-500/40">
         <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-rose-500/20 text-rose-300 rounded-xl animate-bounce">🔔</span>
+          <span class="text-2xl p-1.5 bg-rose-500/20 text-rose-300 rounded-xl animate-bounce">⚡</span>
           <div>
-            <h3 class="text-base font-black text-rose-400">ĐẤU TRƯỜNG BẤM CHUÔNG TRỰC TUYẾN</h3>
-            <p class="text-xs text-slate-400">Học sinh quét mã QR bằng điện thoại để biến màn hình thành nút bấm chuông</p>
+            <h3 class="text-base font-black text-rose-400">⚡ ĐẤU TRƯỜNG TIN HỌC ⚡</h3>
+            <p class="text-xs text-slate-400">Học sinh quét mã QR bằng điện thoại để biến màn hình thành nút bấm chuông tranh tài</p>
           </div>
         </div>
         <button onclick="document.getElementById('realtime-class-buzzer-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-white">✕</button>
@@ -2920,7 +2923,7 @@
   <footer class="mt-auto bg-white border-t border-slate-200 py-6 px-4 text-center text-xs text-slate-500 flex flex-col items-center justify-center gap-2">
     <div class="flex items-center gap-2">
       <img src="logo.png" alt="Logo Anh Đào" class="w-7 h-7 object-contain">
-      <p class="font-bold text-slate-700">🎓 Classroom App - Hệ thống Học liệu & Vui học Tin học Tiểu học 3-5</p>
+      <p class="font-bold text-slate-700">🎓 Classroom App - Hệ thống Học liệu & Vui học Tin học 3-5</p>
     </div>
     <p class="text-[11px]">Thiết kế theo chuẩn Công văn 2345/BGDĐT & Chương trình GDPT 2018 | Tác giả: <b>anhdao23121983</b></p>
   </footer>
@@ -2943,6 +2946,7 @@
   <script src="js/services/ttsService.js"></script>
   <script src="js/services/lectureService.js"></script>
   <script src="js/services/examService.js"></script>
+  <script src="js/services/arenaService.js"></script>
   <script src="js/components/adminPortal.js"></script>
   <script src="js/components/quizAuthorModal.js"></script>
   <script src="js/components/quizPlayModal.js"></script>
@@ -2951,6 +2955,7 @@
   <script src="js/components/examUploadModal.js"></script>
   <script src="js/components/examPortal.js"></script>
   <script src="js/components/simulation3D.js"></script>
+  <script src="js/components/arenaPortal.js"></script>
   <script src="js/components/teacherPortal.js"></script>
   <script src="js/components/studentPortal.js"></script>
   <script src="js/components/gameHub.js"></script>

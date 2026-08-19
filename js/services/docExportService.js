@@ -237,7 +237,7 @@ class DocExportService {
           <tr>
             <td style="width: 45%; text-align: center; font-size: 10.5pt;">
               <b>TRƯỜNG TIỂU HỌC VUI HỌC</b><br>
-              <b>TỔ TIN HỌC TIỂU HỌC</b>
+              <b>TỔ TIN HỌC</b>
             </td>
             <td style="width: 55%; text-align: center; font-size: 10.5pt;">
               <b>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</b><br>
@@ -280,7 +280,7 @@ class DocExportService {
         </div>
 
         <div class="question-item">
-          <b>Câu 3:</b> Phẩm chất nào được rèn luyện nhiều nhất trong giờ học Tin học tiểu học?
+          <b>Câu 3:</b> Phẩm chất nào được rèn luyện nhiều nhất trong giờ học Tin học?
           <div class="options-grid">
             A. Ý thức giữ gìn tài sản chung và bảo vệ an toàn thông tin cá nhân.<br>
             B. Tranh giành máy tính với các bạn trong lớp.<br>
@@ -887,7 +887,7 @@ class DocExportService {
     // Thêm tệp hướng dẫn README
     const folderTitle = grade !== 'all' ? `KHỐI LỚP ${grade}` : "TẤT CẢ CÁC KHỐI 3-4-5";
     const readmeContent = `===================================================================
-TRƯỜNG TIỂU HỌC VUI HỌC - HỌC LIỆU SỐ TIN HỌC TIỂU HỌC
+TRƯỜNG TIỂU HỌC VUI HỌC - HỌC LIỆU SỐ TIN HỌC
 BỘ ĐỀ KIỂM TRA ĐỊNH KỲ MÔN TIN HỌC (${folderTitle})
 Quy chuẩn: Thông tư 27/2020/TT-BGDĐT & Chương trình GDPT 2018
 Tác giả / Giáo viên: Cô Giáo Anh Đào
@@ -1042,7 +1042,7 @@ Chúc Thầy Cô và các em học sinh có những tiết học Tin học thậ
 
   // Xuất Kế Hoạch Bài Dạy Chuẩn Công Văn 2345 theo Bài Giảng Điện Tử
   exportLessonPlanByLecture(lecture) {
-    const title = lecture.title || "Bài Giảng Tin Học Tiểu Học";
+    const title = lecture.title || "Bài Giảng Tin Học";
     const grade = lecture.grade || 3;
     const author = lecture.authorName || "Cô Giáo Anh Đào";
     const bookSeries = lecture.bookSeries || "KNTT";
@@ -1113,7 +1113,7 @@ Chúc Thầy Cô và các em học sinh có những tiết học Tin học thậ
 
   // Xuất Phiếu Bài Tập Word (.doc)
   exportWorksheetDoc(lecture) {
-    const title = lecture.title || "Bài Giảng Tin Học Tiểu Học";
+    const title = lecture.title || "Bài Giảng Tin Học";
     const grade = lecture.grade || 3;
     const author = lecture.authorName || "Cô Giáo Anh Đào";
 

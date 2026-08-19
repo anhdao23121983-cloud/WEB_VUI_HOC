@@ -1823,7 +1823,7 @@ class LecturePortal {
         <div class="my-auto text-center space-y-2 p-6 ${this.isFlipbookDarkMode ? 'bg-slate-900 border-slate-800 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'} rounded-2xl border">
           <span class="text-5xl block">🎉</span>
           <h4 class="font-black text-amber-300 text-sm">HẾT BÀI HỌC</h4>
-          <p class="text-xs">Em hãy đăng nhập Web Vui Học để làm bài tập trắc nghiệm và thí nghiệm 3D nhé!</p>
+          <p class="text-xs">Em hãy đăng nhập Web Vui Học để làm bài tập trắc nghiệm và mô phỏng 3D nhé!</p>
         </div>
       `;
     }

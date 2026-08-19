@@ -77,6 +77,9 @@ class Application {
     } else if (route === "lab3d" || route === "experiment3d") {
       document.getElementById("portal-view")?.classList.remove("hidden");
       window.simulation3D.render("main-content-area");
+    } else if (route === "arena" || route === "dautruong") {
+      document.getElementById("portal-view")?.classList.remove("hidden");
+      window.arenaPortal.render("main-content-area");
     } else {
       document.getElementById("landing-view")?.classList.remove("hidden");
     }

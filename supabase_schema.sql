@@ -5,6 +5,10 @@
 -- ==============================================================================
 
 -- 1. XÓA CẤU TRÚC CŨ ĐỂ TẠO LẠI ĐỒNG BỘ 100%
+DROP TABLE IF EXISTS public.arena_matches CASCADE;
+DROP TABLE IF EXISTS public.arena_questions CASCADE;
+DROP TABLE IF EXISTS public.simulation_logs CASCADE;
+DROP TABLE IF EXISTS public.student_rewards CASCADE;
 DROP TABLE IF EXISTS public.lecture_slides CASCADE;
 DROP TABLE IF EXISTS public.lesson_quizzes CASCADE;
 DROP TABLE IF EXISTS public.app_users CASCADE;
@@ -133,6 +137,61 @@ CREATE TABLE public.student_progress (
     completed_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 9. TẠO BẢNG NHẬT KÝ & TIẾN ĐỘ THỰC HÀNH MÔ PHỎNG 3D (SIMULATION_LOGS)
+CREATE TABLE public.simulation_logs (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    student_name TEXT NOT NULL,
+    student_class TEXT DEFAULT '3A',
+    simulation_key TEXT NOT NULL, -- 'lesson_7_organize', 'robot_cleaner', 'pc_builder', 'safety_blitz', 'internet_flow'
+    simulation_title TEXT NOT NULL,
+    score NUMERIC(5,2) DEFAULT 10.0,
+    stars_earned INTEGER DEFAULT 20,
+    time_spent_seconds INTEGER DEFAULT 30,
+    details JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 10. TẠO BẢNG LỊCH SỬ THƯỞNG SAO TRỰC TIẾP (STUDENT_REWARDS)
+CREATE TABLE public.student_rewards (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    student_name TEXT NOT NULL,
+    stars_added INTEGER DEFAULT 10,
+    reason TEXT DEFAULT 'Thực hành xuất sắc',
+    awarded_by TEXT DEFAULT 'Cô Giáo Anh Đào',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 11. TẠO BẢNG NGÂN HÀNG CÂU HỎI ĐẤU TRƯỜNG TIN HỌC (ARENA_QUESTIONS)
+CREATE TABLE public.arena_questions (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    question TEXT NOT NULL,
+    options JSONB NOT NULL DEFAULT '[]'::jsonb, -- Mảng 4 đáp án ["A...", "B...", "C...", "D..."]
+    correct_index INTEGER NOT NULL DEFAULT 0,  -- 0: A, 1: B, 2: C, 3: D
+    explanation TEXT DEFAULT '',
+    grade_level INTEGER NOT NULL DEFAULT 3,
+    topic TEXT DEFAULT 'Kiến thức chung',
+    difficulty TEXT DEFAULT 'medium',          -- easy, medium, hard
+    time_limit_seconds INTEGER DEFAULT 15,
+    stars_reward INTEGER DEFAULT 20,
+    created_by TEXT DEFAULT 'Cô Giáo Anh Đào',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 12. TẠO BẢNG LỊCH SỬ THI ĐẤU ĐẤU TRƯỜNG (ARENA_MATCHES)
+CREATE TABLE public.arena_matches (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    student_name TEXT NOT NULL,
+    student_class TEXT DEFAULT '3A',
+    grade_level INTEGER NOT NULL DEFAULT 3,
+    score NUMERIC(5,2) DEFAULT 0,
+    stars_earned INTEGER DEFAULT 0,
+    total_correct INTEGER DEFAULT 0,
+    total_questions INTEGER DEFAULT 5,
+    duration_seconds INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ==============================================================================
 -- BẬT BẢO MẬT CẤP HÀNG (ROW LEVEL SECURITY - RLS) & PHÂN QUYỀN TRUY CẬP
 -- ==============================================================================
@@ -143,6 +202,10 @@ ALTER TABLE public.lecture_slides ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exam_assessments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.educational_games ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.student_progress ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.simulation_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.student_rewards ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.arena_questions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.arena_matches ENABLE ROW LEVEL SECURITY;
 
 -- Cấp quyền truy cập mở cho Website
 CREATE POLICY "Allow public all app_users" ON public.app_users FOR ALL USING (true);
@@ -152,6 +215,10 @@ CREATE POLICY "Allow public all lecture_slides" ON public.lecture_slides FOR ALL
 CREATE POLICY "Allow public all exam_assessments" ON public.exam_assessments FOR ALL USING (true);
 CREATE POLICY "Allow public all educational_games" ON public.educational_games FOR ALL USING (true);
 CREATE POLICY "Allow public all student_progress" ON public.student_progress FOR ALL USING (true);
+CREATE POLICY "Allow public all simulation_logs" ON public.simulation_logs FOR ALL USING (true);
+CREATE POLICY "Allow public all student_rewards" ON public.student_rewards FOR ALL USING (true);
+CREATE POLICY "Allow public all arena_questions" ON public.arena_questions FOR ALL USING (true);
+CREATE POLICY "Allow public all arena_matches" ON public.arena_matches FOR ALL USING (true);
 
 -- ==============================================================================
 -- DỮ LIỆU MẪU BAN ĐẦU (SEED DATA)
@@ -331,4 +398,75 @@ VALUES
     'Bài kiểm tra nhanh 15 phút đầu giờ: 10 câu trắc nghiệm nhanh kiểm tra nhận biết bàn phím, chuột và màn hình.'
   )
 ON CONFLICT (id) DO NOTHING;
+
+-- 5. Chèn nhật ký mẫu thực hành Mô Phỏng 3D
+INSERT INTO public.simulation_logs (student_name, student_class, simulation_key, simulation_title, score, stars_earned, time_spent_seconds, details)
+VALUES
+  ('Nguyễn Văn An', '3A', 'lesson_7_organize', 'Mô Phỏng 3D: Sắp Xếp Để Dễ Tìm', 10.0, 30, 14, '{"mode": "speedrun_organize", "completedItems": 10}'::jsonb),
+  ('Lê Thị Mai', '4B', 'robot_cleaner', 'Mô Phỏng 3D: Robot Dọn Dẹp AI', 10.0, 25, 45, '{"mode": "robot_clean", "cleanedItems": 5}'::jsonb),
+  ('Trần Đức Nam', '5A', 'pc_builder', 'Mô Phỏng 3D: Lắp Ráp Máy Tính', 10.0, 25, 60, '{"mode": "pc_builder", "partsInstalled": 5}'::jsonb)
+ON CONFLICT (id) DO NOTHING;
+
+-- 6. Chèn ngân hàng câu hỏi mẫu Đấu Trường Tin Học
+INSERT INTO public.arena_questions (question, options, correct_index, explanation, grade_level, topic, difficulty, time_limit_seconds, stars_reward, created_by)
+VALUES
+  (
+    'Bộ phận nào của máy tính để bàn được coi là "bộ não" điều khiển mọi hoạt động?',
+    '["A. Màn hình máy tính", "B. Thân máy (CPU)", "C. Bàn phím", "D. Chuột máy tính"]'::jsonb,
+    1,
+    'Thân máy tính chứa bộ vi xử lý CPU, đóng vai trò như bộ não điều khiển và xử lý thông tin.',
+    3,
+    'Phần cứng máy tính',
+    'easy',
+    15,
+    20,
+    'Cô Giáo Anh Đào'
+  ),
+  (
+    'Theo bài 7 Tin học 3, vì sao chúng ta nên sắp xếp đồ vật và tệp tin ngăn nắp?',
+    '["A. Để đồ vật trông đẹp mắt hơn", "B. Để giúp tìm kiếm nhanh chóng và dễ dàng", "C. Để máy tính chạy nhanh hơn", "D. Để không bị thầy cô nhắc nhở"]'::jsonb,
+    1,
+    'Sắp xếp dữ liệu và đồ dùng học tập ngăn nắp, khoa học giúp chúng ta tìm kiếm nhanh chóng và tiết kiệm thời gian.',
+    3,
+    'Sắp xếp dữ liệu',
+    'easy',
+    15,
+    20,
+    'Cô Giáo Anh Đào'
+  ),
+  (
+    'Trong máy tính, thư mục (Folder) dùng để làm gì?',
+    '["A. Dùng để xem video và nghe nhạc", "B. Dùng để chứa các tệp tin và các thư mục con", "C. Dùng để kết nối Internet", "D. Dùng để gõ văn bản"]'::jsonb,
+    1,
+    'Thư mục giống như các ngăn tủ, dùng để chứa và phân loại các tệp tin (File) và thư mục con một cách có hệ thống.',
+    4,
+    'Thư mục & Tệp',
+    'medium',
+    15,
+    25,
+    'Cô Giáo Anh Đào'
+  ),
+  (
+    'Mật khẩu nào sau đây được coi là mật khẩu AN TOÀN và BẢO MẬT NHẤT?',
+    '["A. 123456", "B. tinhoc2026", "C. AnhDao@TinHoc#2026", "D. ten_cua_em"]'::jsonb,
+    2,
+    'Mật khẩu an toàn cần có ít nhất 8 ký tự, kết hợp chữ hoa, chữ thường, chữ số và ký tự đặc biệt (@, #, $...).',
+    5,
+    'Mạng Internet & An toàn số',
+    'medium',
+    15,
+    25,
+    'Cô Giáo Anh Đào'
+  )
+ON CONFLICT (id) DO NOTHING;
+
+-- 7. Chèn lịch sử thi đấu mẫu Đấu Trường Tin Học
+INSERT INTO public.arena_matches (student_name, student_class, grade_level, score, stars_earned, total_correct, total_questions, duration_seconds)
+VALUES
+  ('Trần Đức Nam', '5A', 5, 100.0, 50, 5, 5, 18),
+  ('Nguyễn Văn An', '3A', 3, 100.0, 50, 5, 5, 22),
+  ('Lê Thị Mai', '4B', 4, 90.0, 40, 4, 5, 25)
+ON CONFLICT (id) DO NOTHING;
+
+
 

@@ -459,6 +459,77 @@ class TTSService {
       });
     } catch (e) {}
   }
+
+  /**
+   * PHÁT TIẾNG VỖ TAY GIÒN GIÃ & HOAN HÔ CHÚC MỪNG ĐIỂM 10 (WEB AUDIO API)
+   * Tạo tiếng vỗ tay rộn ràng bằng chùm Noise Bursts và hợp âm kèn Fanfare
+   */
+  playApplause(duration = 3.0, withCheerVoice = true) {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      // 1. Tạo chùm 40 tiếng vỗ tay ngẫu nhiên gối đầu nhau (Multi-burst Claps)
+      const clapCount = 40;
+      for (let i = 0; i < clapCount; i++) {
+        const timeOffset = Math.random() * (duration - 0.2);
+        const clapDuration = 0.04 + Math.random() * 0.05;
+        
+        const bufferSize = Math.floor(audioCtx.sampleRate * clapDuration);
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let j = 0; j < bufferSize; j++) {
+          data[j] = (Math.random() * 2 - 1) * Math.exp(-j / (bufferSize * 0.35));
+        }
+
+        const source = audioCtx.createBufferSource();
+        source.buffer = buffer;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = "bandpass";
+        filter.frequency.setValueAtTime(800 + Math.random() * 1400, audioCtx.currentTime + timeOffset);
+        filter.Q.setValueAtTime(1.8, audioCtx.currentTime + timeOffset);
+
+        const gain = audioCtx.createGain();
+        const baseGain = 0.08 + Math.random() * 0.16;
+        gain.gain.setValueAtTime(baseGain, audioCtx.currentTime + timeOffset);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + timeOffset + clapDuration);
+
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        source.start(audioCtx.currentTime + timeOffset);
+        source.stop(audioCtx.currentTime + timeOffset + clapDuration);
+      }
+
+      // 2. Kèn đồng Fanfare rực rỡ chúc mừng
+      const fanfareNotes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+      fanfareNotes.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.12);
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime + idx * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.12 + 0.9);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + idx * 0.12);
+        osc.stop(audioCtx.currentTime + idx * 0.12 + 0.9);
+      });
+
+      // 3. Giọng cô giáo khen thưởng tự động
+      if (withCheerVoice) {
+        setTimeout(() => {
+          this.speak("Xuất sắc quá! Cả lớp hãy cùng vỗ tay thật lớn khen ngợi bạn nào!");
+        }, 200);
+      }
+
+      window.app?.showToast?.("👏 Tiếng vỗ tay hoan hô rộn ràng cả lớp!", "success");
+    } catch (e) {
+      console.warn("Không thể phát tiếng vỗ tay:", e);
+    }
+  }
 }
 
 window.ttsService = new TTSService();

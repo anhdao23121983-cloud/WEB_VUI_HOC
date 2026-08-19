@@ -321,7 +321,7 @@ class LectureService {
 
   // 10. Tự động sinh phân cảnh Video hoạt họa AI từ Slide (Auto AI Video Generator)
   generateSlideFrames(lecture) {
-    const title = lecture.title || "Bài Giảng Tin Học Tiểu Học";
+    const title = lecture.title || "Bài Giảng Tin Học";
     const grade = lecture.grade || 3;
     const author = lecture.authorName || "Cô Giáo Anh Đào";
 
@@ -430,7 +430,7 @@ class LectureService {
 
   // 13. Tạo các trang sách 3D cho E-Book Flipbook Viewer
   generateFlipbookPages(lecture) {
-    const title = lecture.title || "Bài Giảng Tin Học Tiểu Học";
+    const title = lecture.title || "Bài Giảng Tin Học";
     const grade = lecture.grade || 3;
     const author = lecture.authorName || "Cô Giáo Anh Đào";
 

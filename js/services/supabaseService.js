@@ -192,6 +192,16 @@ class SupabaseService {
           game_id: gameId,
           score: score,
           stars_earned: stars,
+          completed_at: new Date().toISOString()
+        }]);
+      } catch (err) {
+        console.warn("Lỗi lưu điểm game lên Supabase:", err);
+      }
+    }
+
+    return { success: true };
+  }
+
   isReady() {
     return this.isLive && !!this.client;
   }
@@ -286,6 +296,104 @@ class SupabaseService {
       starsAdded: starsToAdd,
       totalStars: currentStars
     };
+  }
+
+  // 6. LƯU TIẾN ĐỘ & KẾT QUẢ THỰC HÀNH MÔ PHỎNG 3D (ĐỒNG BỘ SUPABASE & LOCALSTORAGE)
+  async recordSimulationProgress(params = {}) {
+    const {
+      studentName = "Nguyễn Văn An",
+      studentClass = "3A",
+      simulationKey = "lesson_7_organize",
+      simulationTitle = "Mô Phỏng 3D: Sắp Xếp Để Dễ Tìm",
+      score = 10,
+      starsEarned = 20,
+      timeSpentSeconds = 30,
+      details = {}
+    } = params;
+
+    // 1. Lưu dự phòng vào Local Storage
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (!db.simulation_logs) db.simulation_logs = [];
+    const logItem = {
+      id: "sim_" + Date.now(),
+      studentName,
+      studentClass,
+      simulationKey,
+      simulationTitle,
+      score,
+      starsEarned,
+      timeSpentSeconds,
+      details,
+      createdAt: new Date().toISOString()
+    };
+    db.simulation_logs.unshift(logItem);
+    localStorage.setItem("app_mock_db", JSON.stringify(db));
+
+    // Thưởng sao trực tiếp cho học sinh
+    if (starsEarned > 0) {
+      await this.awardStarsDirectly(studentName, starsEarned, `Hoàn thành xuất sắc ${simulationTitle}`);
+    }
+
+    // 2. Đồng bộ lên bảng simulation_logs & student_progress của Supabase
+    if (this.isReady()) {
+      try {
+        await this.client.from("simulation_logs").insert([{
+          student_name: studentName,
+          student_class: studentClass,
+          simulation_key: simulationKey,
+          simulation_title: simulationTitle,
+          score: score,
+          stars_earned: starsEarned,
+          time_spent_seconds: timeSpentSeconds,
+          details: details,
+          created_at: new Date().toISOString()
+        }]);
+
+        await this.client.from("student_progress").insert([{
+          student_name: studentName,
+          game_id: `sim_${simulationKey}`,
+          score: Math.round(score * 10),
+          stars_earned: starsEarned,
+          completed_at: new Date().toISOString()
+        }]);
+
+        console.log("✅ Đã đồng bộ kết quả Mô Phỏng 3D lên Supabase Cloud thành công!");
+      } catch (err) {
+        console.warn("Đồng bộ simulation_logs lên Supabase có cảnh báo (dữ liệu an toàn trên Local):", err);
+      }
+    }
+
+    return { success: true, log: logItem };
+  }
+
+  // 7. LẤY NHẬT KÝ THỰC HÀNH MÔ PHỎNG 3D
+  async getSimulationLogs(simulationKey = null) {
+    if (this.isReady()) {
+      try {
+        let query = this.client
+          .from("simulation_logs")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (simulationKey) {
+          query = query.eq("simulation_key", simulationKey);
+        }
+
+        const { data, error } = await query;
+        if (!error && data && data.length > 0) {
+          return data;
+        }
+      } catch (err) {
+        console.warn("Lỗi đọc simulation_logs từ Supabase:", err);
+      }
+    }
+
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    let logs = db.simulation_logs || [];
+    if (simulationKey) {
+      logs = logs.filter(l => l.simulationKey === simulationKey);
+    }
+    return logs;
   }
 }
 

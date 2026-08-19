@@ -213,12 +213,12 @@ const MOCK_DATABASE = {
     },
     {
       id: "game_cyber_quiz",
-      title: "🛡️ Đố Vui Tin Học & An Toàn Số",
+      title: "⚡ Đấu Trường Tin Học",
       grade: 5,
       type: "quiz_challenge",
-      icon: "💡",
-      description: "Thử thách trắc nghiệm 10 câu hỏi siêu tốc về mạng Internet và bảo vệ mật khẩu an toàn!",
-      badge: "Vệ Binh Không Gian Mạng"
+      icon: "⚡",
+      description: "Đấu trường kiến thức Tin học & an toàn số sôi động, thử thách trắc nghiệm 10 câu hỏi siêu tốc tranh tài bảng vàng!",
+      badge: "Quán Quân Đấu Trường"
     },
     {
       id: "game_3d_computer_power",

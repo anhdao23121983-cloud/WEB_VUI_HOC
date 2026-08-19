@@ -54,21 +54,21 @@ class StudentPortal {
           `).join("")}
         </div>
 
-        <!-- Banner Thí Nghiệm 3D Nổi Bật Dành Riêng Cho Lớp 3 -->
+        <!-- Banner Mô Phỏng 3D Nổi Bật Dành Riêng Cho Lớp 3 -->
         ${this.currentGrade === 3 ? `
           <div class="p-5 bg-gradient-to-r from-purple-900 via-indigo-900 to-cyan-900 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border-2 border-purple-400/50 animate-pop">
             <div class="space-y-2 text-center md:text-left">
               <div class="inline-flex items-center gap-2 bg-amber-400 text-slate-950 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
-                <span>🧪</span> THÍ NGHIỆM 3D ĐỘC QUYỀN
+                <span>🧪</span> MÔ PHỎNG 3D ĐỘC QUYỀN
               </div>
-              <h3 class="text-xl md:text-2xl font-black text-amber-300">BÀI 7: SẮP XẾP ĐỂ DỄ TÌM (PHÒNG THÍ NGHIỆM 3D)</h3>
+              <h3 class="text-xl md:text-2xl font-black text-amber-300">BÀI 7: SẮP XẾP ĐỂ DỄ TÌM (PHÒNG MÔ PHỎNG 3D)</h3>
               <p class="text-xs md:text-sm text-cyan-100 max-w-xl">
                 Cùng thử tài phân loại 10 đồ vật vào kệ tủ 3 tầng, tham gia thử thách so sánh tốc độ tìm kiếm và khám phá cây thư mục máy tính cực kỳ thú vị!
               </p>
             </div>
             <div class="flex items-center gap-3 shrink-0">
               <button onclick="window.location.hash='lab3d'" class="btn btn-amber btn-lg font-black shadow-lg flex items-center gap-2 hover:scale-105 transition-all">
-                <span>🚀</span> <span>Vào Thí Nghiệm 3D Ngay</span>
+                <span>🚀</span> <span>Vào Mô Phỏng 3D Ngay</span>
               </button>
             </div>
           </div>

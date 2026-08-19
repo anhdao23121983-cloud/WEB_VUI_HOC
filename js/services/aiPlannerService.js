@@ -34,7 +34,7 @@ class AIPlannerService {
     const isLesson8 = lessonTitle.toLowerCase().includes("thư mục") || lessonTitle.toLowerCase().includes("bài 8");
 
     const teacherEquipment = (isLesson7 || isLesson8)
-      ? "Máy tính giáo viên, Tivi/Máy chiếu, Bài giảng điện tử đa phương tiện, Học liệu số 3D tương tác tại Web Vui Học (Phòng Thí Nghiệm 3D Ảo: https://webvuihoc.edu.vn/#lab3d & Bản gốc Gemini AI: https://share.gemini.google/NLLCPUG04S6G)."
+      ? "Máy tính giáo viên, Tivi/Máy chiếu, Bài giảng điện tử đa phương tiện, Học liệu số 3D tương tác tại Web Vui Học (Phòng Mô Phỏng 3D Ảo: https://webvuihoc.edu.vn/#lab3d & Bản gốc Gemini AI: https://share.gemini.google/NLLCPUG04S6G)."
       : "Máy tính giáo viên, Tivi/Máy chiếu, Bài giảng điện tử trình chiếu đa phương tiện, Phiếu học tập, Trò chơi tương tác trên Web Vui Học.";
 
     const activities = [
@@ -43,7 +43,7 @@ class AIPlannerService {
         name: "1. HOẠT ĐỘNG KHỞI ĐỘNG (5 - 7 phút)",
         objective: `Kích thích hứng thú học tập và kết nối trải nghiệm thực tế với nội dung '${lessonTitle}'.`,
         content: isLesson7 
-          ? "GV trình chiếu hình ảnh 2 bàn học: một bàn học bừa bộn và một bàn học ngăn nắp trên Phòng Thí Nghiệm 3D. Đặt câu hỏi: 'Bàn học nào giúp em tìm sách vở nhanh hơn?'"
+          ? "GV trình chiếu hình ảnh 2 bàn học: một bàn học bừa bộn và một bàn học ngăn nắp trên Phòng Mô Phỏng 3D. Đặt câu hỏi: 'Bàn học nào giúp em tìm sách vở nhanh hơn?'"
           : isLesson8
           ? "GV chiếu mô hình Kệ Tủ 3 Tầng ngoài đời thực và Cây Thư Mục trong ổ đĩa D: để học sinh phát hiện sự tương đồng."
           : "GV tổ chức trò chơi 'Đố vui khởi động' hoặc chiếu đoạn video ngắn liên quan đến bài học.",
@@ -65,7 +65,7 @@ class AIPlannerService {
         name: "3. HOẠT ĐỘNG LUYỆN TẬP & THỰC HÀNH (10 - 12 phút)",
         objective: "Củng cố kiến thức và rèn luyện kỹ năng thực hành thông qua bài tập và trò chơi tương tác.",
         content: isLesson7
-          ? "Học sinh thực hành trực tiếp trên Phòng Thí Nghiệm 3D: Kéo thả 10 đồ vật vào đúng 3 ngăn tủ, sau đó tham gia thử thách đo tốc độ tìm kiếm cuốn Sách Tin Học 3."
+          ? "Học sinh thực hành trực tiếp trên Phòng Mô Phỏng 3D: Kéo thả 10 đồ vật vào đúng 3 ngăn tủ, sau đó tham gia thử thách đo tốc độ tìm kiếm cuốn Sách Tin Học 3."
           : isLesson8
           ? "Học sinh thực hành tạo thư mục mới 'Toan', 'TiengViet', 'TinHoc' trên Màn hình Desktop ảo và kéo thả tệp tin vào đúng thư mục con."
           : "Học sinh làm bài tập trắc nghiệm và tham gia Game thử thách trên nền tảng Web Vui Học.",
@@ -76,7 +76,7 @@ class AIPlannerService {
         name: "4. HOẠT ĐỘNG VẬN DỤNG & MỞ RỘNG (3 - 5 phút)",
         objective: "Vận dụng kiến thức đã học vào các tình huống thực tế trong gia đình và trường học.",
         content: isLesson7
-          ? "GV hướng dẫn học sinh về nhà dọn dẹp, sắp xếp lại góc học tập ngăn nắp giống như bài thí nghiệm 3D đã làm trên lớp."
+          ? "GV hướng dẫn học sinh về nhà dọn dẹp, sắp xếp lại góc học tập ngăn nắp giống như bài mô phỏng 3D đã làm trên lớp."
           : isLesson8
           ? "GV hướng dẫn học sinh tạo các thư mục lưu trữ bài tập các môn học trên máy tính cá nhân ở nhà."
           : "Liên hệ thực tế và hướng dẫn học sinh tự khám phá thêm sau giờ học.",

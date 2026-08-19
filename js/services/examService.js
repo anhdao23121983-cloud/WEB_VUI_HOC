@@ -616,12 +616,12 @@ class ExamService {
     return attemptObj;
   }
 
-  // 12.2 Tự động đồng bộ điểm Thí Nghiệm 3D lên Supabase Cloud
+  // 12.2 Tự động đồng bộ điểm Mô Phỏng 3D lên Supabase Cloud
   async syncSimulationScoreToCloud(labData) {
     const user = window.authService?.getUser() || { name: "Nguyễn Văn An", className: "3A" };
     const attemptObj = {
       examId: "sim_3d_lab",
-      examTitle: `Thí Nghiệm 3D: ${labData.labName || "Tin Học Tiểu Học"}`,
+      examTitle: `Mô Phỏng 3D: ${labData.labName || "Tin Học"}`,
       grade: 3,
       studentName: user.name || "Nguyễn Văn An",
       studentClass: user.className || "3A",
