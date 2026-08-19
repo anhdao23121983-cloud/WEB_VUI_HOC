@@ -144,7 +144,21 @@ class GameHub {
   // Khởi động Mô phỏng 3D
   init3DComputerGame(viewport) {
     viewport.innerHTML = `
-      <iframe src="games/computer3d/index.html" class="w-full h-[600px] rounded-xl border-0 shadow-2xl" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between bg-slate-900/90 p-3 rounded-2xl border border-cyan-500/40 text-white flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🌐</span>
+            <div>
+              <p class="text-xs font-bold text-cyan-300">Phòng Mô Phỏng 3D Thực Tế Ảo (Tin Học Lớp 3)</p>
+              <p class="text-[10px] text-slate-400">Khám phá cắm điện, bật CPU, mở màn hình và tắt máy an toàn</p>
+            </div>
+          </div>
+          <button onclick="window.location.hash = 'lab3d'; setTimeout(() => simulation3D.selectLesson('computer_room_3d'), 100);" class="btn bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white btn-xs font-black shadow-md flex items-center gap-1 hover:scale-105 transition-all">
+            <span>🚀</span> <span>Mở Trong Phòng Thí Nghiệm 3D Chuyên Dụng</span>
+          </button>
+        </div>
+        <iframe src="games/computer3d/index.html" class="w-full h-[600px] rounded-2xl border-2 border-cyan-500/30 shadow-2xl" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
     `;
   }
 

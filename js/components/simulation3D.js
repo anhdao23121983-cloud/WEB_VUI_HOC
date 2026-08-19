@@ -427,6 +427,7 @@ class Simulation3D {
     if (!container) return;
 
     let titleText = "BÀI 7: SẮP XẾP ĐỂ DỄ TÌM";
+    if (this.currentLesson === 'computer_room_3d') titleText = "MÔ PHỎNG 3D: PHÒNG MÁY & BẬT/TẮT MÁY TÍNH (LỚP 3)";
     if (this.currentLesson === 8) titleText = "BÀI 8: KHÁM PHÁ THƯ MỤC MÁY TÍNH";
     if (this.currentLesson === 10) titleText = "BÀI 3 & 10: BÀN PHÍM & CHUỘT MÁY TÍNH 3D";
     if (this.currentLesson === 'internet') titleText = "MẠNG INTERNET & TRÌNH DUYỆT WEB 3D";
@@ -448,7 +449,7 @@ class Simulation3D {
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">${titleText}</h2>
             <p class="text-cyan-100 text-xs md:text-sm max-w-2xl">
-              Hệ sinh thái học liệu số và mô phỏng 3D tương tác toàn diện: Sắp xếp dữ liệu, Phần cứng 3D, Mạng Internet, Robot vẽ tranh và Lắp ráp máy tính!
+              Hệ sinh thái học liệu số và mô phỏng 3D tương tác toàn diện: Phòng máy tính ảo, Sắp xếp dữ liệu, Phần cứng 3D, Mạng Internet, Robot vẽ tranh và Lắp ráp máy tính!
             </p>
           </div>
 
@@ -482,9 +483,13 @@ class Simulation3D {
           </div>
         </div>
 
-        <!-- 7 Nút Chọn Chủ Đề Bài Mô Phỏng 3D -->
+        <!-- 8 Nút Chọn Chủ Đề Bài Mô Phỏng 3D -->
         <div class="flex items-center justify-between ${this.isDarkMode ? 'bg-slate-900/90 border-cyan-500/30' : 'bg-white border-slate-200'} p-3.5 rounded-2xl border shadow-sm flex-wrap gap-2">
           <div class="flex items-center gap-1.5 flex-wrap">
+            <button onclick="simulation3D.selectLesson('computer_room_3d')" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 'computer_room_3d' ? 'bg-cyan-600 text-white shadow-md scale-102 ring-2 ring-cyan-300' : this.isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+              <span>🖥️</span> <span>Phòng Máy & Bật/Tắt 3D</span>
+            </button>
+
             <button onclick="simulation3D.selectLesson(7)" class="px-3 py-1.5 rounded-xl font-black text-xs transition-all flex items-center gap-1 ${this.currentLesson === 7 ? 'bg-indigo-600 text-white shadow-md scale-102 ring-2 ring-indigo-300' : this.isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
               <span>📘</span> <span>Bài 7: Sắp Xếp</span>
             </button>
@@ -529,7 +534,10 @@ class Simulation3D {
 
   selectLesson(lessonNum) {
     this.currentLesson = lessonNum;
-    if (lessonNum === 7) {
+    if (lessonNum === 'computer_room_3d') {
+      this.currentMode = "computer_room_3d";
+      this.speak("Chào mừng các em đến với Mô phỏng 3D Phòng Máy Tính và Thực Hành Bật Tắt Máy Tính An Toàn!");
+    } else if (lessonNum === 7) {
       this.currentMode = "organize";
       this.speak("Bài 7: Sắp xếp để dễ tìm!");
     } else if (lessonNum === 8) {
@@ -563,6 +571,7 @@ class Simulation3D {
   }
 
   renderCurrentModeView() {
+    if (this.currentMode === "computer_room_3d") return this.renderComputerRoom3DView();
     if (this.currentMode === "organize") return this.renderOrganize3DView();
     if (this.currentMode === "search_challenge") return this.renderSearchChallengeView();
     if (this.currentMode === "folder_tree") return this.renderFolderTree3DView();
@@ -575,6 +584,115 @@ class Simulation3D {
     if (this.currentMode === "leaderboard") return this.renderLeaderboardView();
     if (this.currentMode === "ar_camera") return this.renderARCameraView();
     if (this.currentMode === "gemini_embed") return this.renderGeminiEmbedView();
+  }
+
+  // =========================================================================
+  // MÔ PHỎNG 3D: PHÒNG MÁY TÍNH & BẬT/TẮT MÁY TÍNH (COMPUTER ROOM 3D)
+  // =========================================================================
+  renderComputerRoom3DView() {
+    return `
+      <div class="glass-card p-6 md:p-8 space-y-6 max-w-5xl mx-auto shadow-2xl ${this.isDarkMode ? 'bg-slate-900/90 border-cyan-500/40 text-white' : ''}">
+        <!-- Header Chủ Đề -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="badge bg-cyan-600 text-white font-black text-xs">🌐 3D VIRTUAL LAB • LỚP 3</span>
+              <span class="badge badge-amber font-black text-xs">GDPT 2018 CHỦ ĐỀ A</span>
+            </div>
+            <h3 class="text-2xl font-black ${this.isDarkMode ? 'text-cyan-300' : 'text-slate-900'} mt-1">MÔ PHỎNG 3D: PHÒNG MÁY & BẬT/TẮT MÁY TÍNH</h3>
+            <p class="text-xs ${this.isDarkMode ? 'text-slate-300' : 'text-slate-500'}">
+              Trải nghiệm mô phỏng 3D phòng máy tính thực tế ảo, cắm nguồn điện, bật CPU, bật màn hình và thực hiện quy trình tắt máy an toàn!
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="simulation3D.speak('Hãy di chuyển chuột để xoay góc nhìn 360 độ trong phòng máy, sau đó làm theo 5 bước hướng dẫn bên dưới nhé!')" class="btn bg-pink-600 hover:bg-pink-500 text-white btn-xs font-black shadow-md flex items-center gap-1">
+              <span>🎙️</span> <span>Hướng Dẫn Giọng Cô</span>
+            </button>
+            <button onclick="simulation3D.openComputer3DFullscreen()" class="btn btn-amber btn-sm font-black shadow-lg flex items-center gap-1.5 hover:scale-105 transition-all">
+              <span>📺</span> <span>Toàn Màn Hình 3D</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Khung Nhúng 3D Trực Tiếp Three.js -->
+        <div class="relative w-full rounded-3xl overflow-hidden border-4 border-cyan-500 shadow-2xl bg-slate-950">
+          <iframe id="sim-computer3d-iframe" src="games/computer3d/index.html" class="w-full h-[620px] rounded-2xl border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+
+        <!-- Bảng 5 Bước Hướng Dẫn Tương Tác Sư Phạm Chuẩn GDPT 2018 -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3 pt-2">
+          <div class="p-3.5 bg-gradient-to-br from-blue-900/50 to-slate-900 rounded-2xl border border-blue-500/30 text-white space-y-1 text-center shadow-md">
+            <span class="text-2xl block mb-1">🔌</span>
+            <h5 class="font-black text-xs text-blue-300">Bước 1: Nguồn Điện</h5>
+            <p class="text-[11px] text-slate-300">Cắm phích cắm & bật công tắc ổ điện an toàn.</p>
+          </div>
+
+          <div class="p-3.5 bg-gradient-to-br from-amber-900/50 to-slate-900 rounded-2xl border border-amber-500/30 text-white space-y-1 text-center shadow-md">
+            <span class="text-2xl block mb-1">🔲</span>
+            <h5 class="font-black text-xs text-amber-300">Bước 2: Bật Thân Máy</h5>
+            <p class="text-[11px] text-slate-300">Nhấn nút Power trên thân máy tính (CPU Case).</p>
+          </div>
+
+          <div class="p-3.5 bg-gradient-to-br from-cyan-900/50 to-slate-900 rounded-2xl border border-cyan-500/30 text-white space-y-1 text-center shadow-md">
+            <span class="text-2xl block mb-1">🖥️</span>
+            <h5 class="font-black text-xs text-cyan-300">Bước 3: Bật Màn Hình</h5>
+            <p class="text-[11px] text-slate-300">Nhấn nút Power phía dưới góc màn hình.</p>
+          </div>
+
+          <div class="p-3.5 bg-gradient-to-br from-emerald-900/50 to-slate-900 rounded-2xl border border-emerald-500/30 text-white space-y-1 text-center shadow-md">
+            <span class="text-2xl block mb-1">💻</span>
+            <h5 class="font-black text-xs text-emerald-300">Bước 4: Vào Windows</h5>
+            <p class="text-[11px] text-slate-300">Quan sát màn hình Desktop và biểu tượng.</p>
+          </div>
+
+          <div class="p-3.5 bg-gradient-to-br from-rose-900/50 to-slate-900 rounded-2xl border border-rose-500/30 text-white space-y-1 text-center shadow-md">
+            <span class="text-2xl block mb-1">🛑</span>
+            <h5 class="font-black text-xs text-rose-300">Bước 5: Tắt Máy An Toàn</h5>
+            <p class="text-[11px] text-slate-300">Bấm Start ➔ Chọn Power ➔ Nhấn Shut down.</p>
+          </div>
+        </div>
+
+        <!-- Khung Khen Thưởng & Đồng Bộ Điểm -->
+        <div class="p-4 bg-gradient-to-r from-cyan-500/10 via-emerald-500/10 to-amber-500/10 rounded-2xl border border-cyan-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <span class="text-4xl animate-bounce">🏆</span>
+            <div>
+              <h5 class="font-black text-sm text-amber-300">Danh Hiệu: Bậc Thầy Vận Hành 3D (+25 Sao Vàng)</h5>
+              <p class="text-xs text-slate-300">Hoàn thành quy trình bật tắt máy tính an toàn được đồng bộ vào học bạ số của em!</p>
+            </div>
+          </div>
+          <button onclick="simulation3D.completeComputerRoomLab()" class="btn bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white btn-sm font-black shadow-lg hover:scale-105 transition-all">
+            <span>⭐</span> <span>Xác Nhận Hoàn Thành & Nhận Sao</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  openComputer3DFullscreen() {
+    window.open("games/computer3d/index.html", "_blank", "width=1280,height=800,menubar=no,toolbar=no,location=no");
+  }
+
+  completeComputerRoomLab() {
+    this.triggerFireworks();
+    if (window.ttsService) {
+      window.ttsService.playPraise("champion");
+    }
+    const user = window.authService?.getUser() || { name: "Em Học Sinh", className: "3A" };
+    if (window.supabaseService?.recordSimulationProgress) {
+      window.supabaseService.recordSimulationProgress({
+        studentName: user.name || "Học Sinh Lớp 3",
+        studentClass: user.className || "3A",
+        simulationKey: "lesson_computer_room_3d",
+        simulationTitle: "Mô Phỏng 3D: Phòng Máy & Bật/Tắt Máy Tính",
+        score: 10,
+        starsEarned: 25,
+        timeSpentSeconds: 60,
+        details: { mode: "3d_room_power", completed: true }
+      });
+    }
+    window.app.showToast("🎉 Chúc mừng em đã hoàn thành xuất sắc bài thực hành Phòng Máy 3D & Bật/Tắt Máy Tính! +25 Sao Vàng!", "success");
   }
 
   // =========================================================================
