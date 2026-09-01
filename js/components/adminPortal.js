@@ -93,9 +93,17 @@ class AdminPortal {
               <button onclick="adminPortal.backupDatabase()" class="btn btn-outline btn-sm font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border-purple-300" title="Đóng gói và tải bản sao lưu CSDL hệ thống (.json)">
                 💾 Sao Lưu CSDL
               </button>
+              <!-- Nút 🔄 Khôi Phục CSDL -->
+              <button onclick="adminPortal.openRestoreModal()" class="btn btn-outline btn-sm font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-300" title="Khôi phục CSDL 1-chạm từ bản sao lưu JSON cũ">
+                🔄 Khôi Phục CSDL
+              </button>
               <!-- Nút 🎴 In Thẻ A4 QR Code -->
               <button onclick="adminPortal.printStudentCardsA4()" class="btn btn-outline btn-sm font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-300" title="In thẻ đăng nhập A4 có mã QR Code cho học sinh">
                 🎴 In Thẻ A4 QR
+              </button>
+              <!-- Nút 💬 Chatbot AI 24/7 -->
+              <button onclick="document.getElementById('ai-coding-tutor-modal').classList.add('active')" class="btn btn-outline btn-sm font-bold text-cyan-700 bg-cyan-50 hover:bg-cyan-100 border-cyan-300" title="Trợ lý AI Sư phạm đồng hành 24/7 giải đáp lập trình Scratch & Robot">
+                💬 Chatbot AI 24/7
               </button>
               <!-- Nút 📥 Nhập Hàng Loạt -->
               <button onclick="adminPortal.openImportModal()" class="btn btn-primary btn-sm font-bold bg-emerald-600 hover:bg-emerald-700 shadow-sm" title="Tải file Excel hoặc dán CSV để tạo 40+ học sinh cùng lúc">
@@ -807,13 +815,18 @@ class AdminPortal {
 
         <!-- Khung Khuyến Nghị AI Bồi Dưỡng HSG -->
         <div class="col-span-2 p-3 bg-purple-50 rounded-2xl border-2 border-purple-300 space-y-2 mt-2">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between flex-wrap gap-2">
             <span class="font-extrabold text-purple-900 flex items-center gap-1.5 text-xs">
               <span>🤖</span> <span>TRỢ LÝ AI TƯ VẤN LỘ TRÌNH BỒI DƯỠNG</span>
             </span>
-            <button onclick="adminPortal.speakAIGiftedAdvice('${encodeURIComponent(aiAdvice.recommendation)}')" class="btn btn-outline btn-xs font-bold text-purple-700 bg-white">
-              🔊 Đọc Tư Vấn (Cô ĐN)
-            </button>
+            <div class="flex items-center gap-1.5">
+              <button onclick="adminPortal.exportAIGiftedAdviceDoc('${username}', '${(name || username).replace(/'/g, "\\'")}')" class="btn btn-primary btn-xs font-bold bg-purple-600 hover:bg-purple-700 shadow-sm">
+                📄 Xuất Word Phiếu Tư Vấn (.doc)
+              </button>
+              <button onclick="adminPortal.speakAIGiftedAdvice('${encodeURIComponent(aiAdvice.recommendation)}')" class="btn btn-outline btn-xs font-bold text-purple-700 bg-white">
+                🔊 Đọc Tư Vấn (Cô ĐN)
+              </button>
+            </div>
           </div>
 
           <p class="font-bold text-slate-800 text-xs">${aiAdvice.summary}</p>
@@ -832,6 +845,13 @@ class AdminPortal {
     }
   }
 
+  // Xuất file Word phiếu tư vấn AI
+  async exportAIGiftedAdviceDoc(username, name) {
+    const data = await window.adminService.getStudentCompetencyRadar(username);
+    const advice = await window.adminService.generateAIGiftedAdvisor(username, data);
+    window.docExportService.exportAIGiftedAdviceDoc(username, name, advice);
+  }
+
   // Đọc thuyết minh tư vấn bồi dưỡng AI
   speakAIGiftedAdvice(encodedText) {
     const text = decodeURIComponent(encodedText);
@@ -841,12 +861,6 @@ class AdminPortal {
       });
       window.app?.showToast("🎙️ Đang thuyết minh tư vấn bồi dưỡng AI cho Thầy Cô nghe...", "info");
     }
-  }00" text-anchor="middle" fill="#ec4899" font-weight="bold" font-size="11">D. Đạo Đức (${data.topicD}%)</text>
-          <text x="45" y="125" text-anchor="end" fill="#3b82f6" font-weight="bold" font-size="11">E. Lập Trình (${data.topicE}%)</text>
-        </svg>
-      `;
-    }
-
     if (detailsGridEl) {
       detailsGridEl.innerHTML = `
         <div class="p-2 bg-amber-50 rounded-xl border border-amber-200 text-amber-900">

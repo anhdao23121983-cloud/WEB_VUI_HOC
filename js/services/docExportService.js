@@ -1166,6 +1166,96 @@ Chúc Thầy Cô và các em học sinh có những tiết học Tin học thậ
       .replace(/_+/g, '_')
       .replace(/^_+|_+$/g, '');
   }
+
+  // Xuất file Word (.doc) Phiếu tư vấn AI bồi dưỡng Học sinh Giỏi
+  exportAIGiftedAdviceDoc(username, name, adviceData) {
+    const filename = `Phieu_Tu_Van_Boi_Duong_HSG_${this.slugify(username)}.doc`;
+
+    const htmlContent = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset="utf-8">
+        <title>PHIẾU TƯ VẤN LỘ TRÌNH BỒI DƯỠNG TIN HỌC TRẺ</title>
+        <style>
+          body { font-family: 'Times New Roman', Times, serif; font-size: 13pt; line-height: 1.4; color: #000; margin: 20mm; }
+          .header-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
+          .header-table td { text-align: center; font-size: 12pt; vertical-align: top; }
+          .title { text-align: center; font-size: 15pt; font-weight: bold; text-transform: uppercase; margin: 15px 0 5px 0; color: #1e3a8a; }
+          .subtitle { text-align: center; font-size: 12pt; font-style: italic; margin-bottom: 20px; }
+          .box { border: 2px solid #1e3a8a; padding: 12px; margin: 15px 0; background-color: #f8fafc; border-radius: 8px; }
+          h3 { font-size: 13pt; font-weight: bold; color: #1e3a8a; margin-top: 15px; }
+          ul { margin-top: 5px; }
+          li { font-size: 13pt; margin-bottom: 4px; text-align: justify; }
+          .footer-table { width: 100%; margin-top: 30px; border-collapse: collapse; }
+          .footer-table td { text-align: center; font-size: 12pt; vertical-align: top; }
+        </style>
+      </head>
+      <body>
+        <table class="header-table">
+          <tr>
+            <td style="width: 50%;">
+              <b>TRƯỜNG TIỂU HỌC VUI HỌC</b><br>
+              <b>TỔ CHUYÊN MÔN TIN HỌC</b><br>
+              --------------------
+            </td>
+            <td style="width: 50%;">
+              <b>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</b><br>
+              <b>Độc lập - Tự do - Hạnh phúc</b><br>
+              --------------------
+            </td>
+          </tr>
+        </table>
+
+        <div class="title">PHIẾU TƯ VẤN LỘ TRÌNH BỒI DƯỠNG NĂNG LỰC TIN HỌC</div>
+        <div class="subtitle">(Định hướng theo Chương trình GDPT 2018 & Cuộc thi Tin học Trẻ)</div>
+
+        <p><b>Họ và tên học sinh:</b> ${name || username} (${username})</p>
+        <p><b>Trường:</b> Trường Tiểu Học Vui Học • <b>Thời gian lập:</b> ${new Date().toLocaleDateString('vi-VN')}</p>
+
+        <div class="box">
+          <p><b>1. Đánh giá tổng quan từ Trợ lý AI Sư phạm:</b></p>
+          <p>${adviceData.summary}</p>
+          <p><b>2. Đề xuất phân loại & Khuyến nghị:</b></p>
+          <p style="color: #1e3a8a; font-weight: bold;">${adviceData.recommendation}</p>
+        </div>
+
+        <h3>3. Lộ trình hành động bồi dưỡng 4 tuần cá nhân hóa:</h3>
+        <ul>
+          ${adviceData.roadmap.map(step => `<li><b>${step.split(':')[0]}:</b> ${step.split(':')[1] || ''}</li>`).join("")}
+        </ul>
+
+        <p style="margin-top: 20px;"><i>Phiếu tư vấn được tổng hợp tự động dựa trên Ma trận biểu đồ Radar 5 Chủ đề năng lực cốt lõi theo Công văn 2345/BGDĐT.</i></p>
+
+        <table class="footer-table">
+          <tr>
+            <td style="width: 50%;">
+              <b>PHỤ HUYNH HỌC SINH</b><br>
+              <i>(Ký và ghi rõ họ tên)</i>
+            </td>
+            <td style="width: 50%;">
+              <i>Ngày ${new Date().getDate()} tháng ${new Date().getMonth() + 1} năm ${new Date().getFullYear()}</i><br>
+              <b>GIÁO VIÊN BỘ MÔN TIN HỌC</b><br>
+              <br><br><br>
+              <b>Cô Giáo Anh Đào</b>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    window.app?.showToast("📄 Đã xuất file Word phiếu tư vấn AI thành công!", "success");
+  }
 }
 
 window.docExportService = new DocExportService();

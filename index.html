@@ -3108,6 +3108,67 @@
     </div>
   </div>
 
+  <!-- MODAL 36: KHÔI PHỤC CSDL 1-CHẠM TỪ BẢN SAO LƯU CŨ (1-CLICK RESTORE DB MODAL) -->
+  <div id="admin-restore-db-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-2 bg-indigo-100 text-indigo-700 rounded-2xl">🔄</span>
+          <div>
+            <h3 class="text-base font-black text-slate-900">KHÔI PHỤC CSDL 1-CHẠM TỪ BẢN SAO LƯU</h3>
+            <p class="text-xs text-slate-500 font-semibold">Chọn bản snapshot sao lưu JSON để phục hồi dữ liệu người dùng & giáo án</p>
+          </div>
+        </div>
+        <button onclick="adminPortal.closeRestoreModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+
+      <div id="admin-restore-backups-list" class="max-h-72 overflow-y-auto space-y-2 text-xs">
+        <!-- Content list of backups -->
+      </div>
+
+      <div class="flex items-center justify-end pt-2 border-t border-slate-200">
+        <button onclick="adminPortal.closeRestoreModal()" class="btn btn-outline btn-sm font-bold">
+          Hủy Bỏ & Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 37: CHATBOT AI SƯ PHẠM ĐỒNG HÀNH 24/7 GIẢI ĐÁP LẬP TRÌNH (AI CODING TUTOR CHATBOT) -->
+  <div id="ai-coding-tutor-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-2xl h-[80vh] flex flex-col justify-between space-y-3 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-2 bg-cyan-100 text-cyan-700 rounded-2xl animate-bounce">💬</span>
+          <div>
+            <h3 class="text-base font-black text-slate-900">TRỢ LÝ AI SƯ PHẠM ĐỒNG HÀNH 24/7</h3>
+            <p class="text-xs text-slate-500 font-semibold">Hỏi đáp lập trình Scratch, mô phỏng Robot 3D & thuật toán Tin học Tiểu học</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('ai-coding-tutor-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+
+      <!-- Khung chat messages -->
+      <div id="ai-tutor-chat-box" class="flex-1 overflow-y-auto p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-3 text-xs">
+        <div class="flex items-start gap-2.5">
+          <span class="text-2xl p-1 bg-cyan-100 rounded-xl">🤖</span>
+          <div class="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm max-w-[85%] space-y-1">
+            <p class="font-bold text-cyan-900">Xin chào em! Cô là Trợ lý AI Sư phạm Vui Học 🤖</p>
+            <p class="text-slate-700">Em có câu hỏi gì về lập trình Scratch, robot 3D hay các bài tập Tin học khó không? Hãy hỏi Cô ngay nhé!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ô nhập câu hỏi -->
+      <form onsubmit="event.preventDefault(); adminPortal.sendAITutorQuery();" class="flex items-center gap-2 shrink-0 pt-2 border-t border-slate-200">
+        <input type="text" id="ai-tutor-input" placeholder="💬 Nhập câu hỏi lập trình (VD: Làm sao tạo khối lệnh di chuyển Scratch?)..." class="form-control text-xs font-bold p-3 border-slate-300 flex-1">
+        <button type="submit" class="btn btn-primary btn-sm font-black px-5 shadow-md">
+          Gửi Hỏi AI 🚀
+        </button>
+      </form>
+    </div>
+  </div>
+
   <footer class="mt-auto bg-white border-t border-slate-200 py-6 px-4 text-center text-xs text-slate-500 flex flex-col items-center justify-center gap-2">
     <div class="flex items-center gap-2">
       <img src="logo.png" alt="Logo Anh Đào" class="w-7 h-7 object-contain">

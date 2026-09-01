@@ -516,6 +516,48 @@ class AdminService {
       isGifted: isGiftedCandidate
     };
   }
+
+  // 15. Lấy danh sách các bản sao lưu CSDL
+  getDatabaseBackups() {
+    const backups = JSON.parse(localStorage.getItem("app_db_backups")) || [];
+    return backups;
+  }
+
+  // 16. Khôi phục CSDL 1-chạm từ bản sao lưu cũ
+  async restoreDatabaseFromBackup(backupObj) {
+    if (!backupObj || !backupObj.users || !Array.isArray(backupObj.users)) {
+      return { success: false, error: "Tệp sao lưu không hợp lệ hoặc bị hỏng!" };
+    }
+
+    // 1. Restore LocalStorage
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    db.users = backupObj.users;
+    localStorage.setItem("app_mock_db", JSON.stringify(db));
+
+    // 2. Restore Supabase Cloud app_users
+    if (window.supabaseService?.isReady()) {
+      try {
+        const client = window.supabaseService.client;
+        const preparedUsers = backupObj.users.map(u => ({
+          username: u.username,
+          password: u.password || "123456",
+          full_name: u.name || u.full_name,
+          role: u.role || "student",
+          school_name: u.school || "Trường Tiểu Học Vui Học",
+          class_name: u.className || u.class_name,
+          grade_level: u.grade || u.grade_level || 3,
+          stars: u.stars || 0,
+          updated_at: new Date().toISOString()
+        }));
+
+        await client.from("app_users").upsert(preparedUsers, { onConflict: "username" });
+      } catch (err) {
+        console.warn("Lỗi restoreDatabaseFromBackup trên Supabase:", err);
+      }
+    }
+
+    return { success: true };
+  }
 }
 
 window.adminService = new AdminService();

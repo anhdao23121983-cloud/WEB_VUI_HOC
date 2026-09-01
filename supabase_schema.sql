@@ -500,3 +500,32 @@ CREATE POLICY "Teachers and Admins update/delete lesson plans"
 ON public.lesson_plans 
 FOR ALL 
 USING (true);
+
+-- ==============================================================================
+-- 9. TẠO CÁC XÔ LƯU TRỮ TỆP TIN (SUPABASE STORAGE BUCKETS & POLICIES)
+-- ==============================================================================
+
+-- 9.1. Tạo 3 xô lưu trữ (Buckets): Đề thi, Bài giảng điện tử và Sao lưu CSDL
+INSERT INTO storage.buckets (id, name, public) 
+VALUES 
+  ('exam-files', 'exam-files', true),
+  ('lecture-files', 'lecture-files', true),
+  ('db-backups', 'db-backups', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- 9.2. Cấp quyền upload và truy cập tệp công khai cho các Buckets
+CREATE POLICY "Allow public storage exam-files access" 
+ON storage.objects FOR ALL 
+USING (bucket_id = 'exam-files') 
+WITH CHECK (bucket_id = 'exam-files');
+
+CREATE POLICY "Allow public storage lecture-files access" 
+ON storage.objects FOR ALL 
+USING (bucket_id = 'lecture-files') 
+WITH CHECK (bucket_id = 'lecture-files');
+
+CREATE POLICY "Allow public storage db-backups access" 
+ON storage.objects FOR ALL 
+USING (bucket_id = 'db-backups') 
+WITH CHECK (bucket_id = 'db-backups');
+
