@@ -2158,8 +2158,13 @@ class ExamPortal {
               </div>
             </div>
             <p class="text-xs text-slate-700"><b>Bài làm của em:</b> <i>"${this.essayUserAnswer || '(Em chưa gõ câu trả lời tự luận)'}"</i></p>
-            <div class="p-3 bg-white rounded-xl border border-purple-200 text-xs text-purple-950 font-bold space-y-1">
-              <p class="text-purple-800">💬 <b>Lời nhận xét sư phạm của AI:</b></p>
+            <div class="p-3 bg-white rounded-xl border border-purple-200 text-xs text-purple-950 font-bold space-y-2">
+              <div class="flex items-center justify-between">
+                <p class="text-purple-800">💬 <b>Lời nhận xét sư phạm của AI:</b></p>
+                <button onclick="examPortal.speakAIFeedback()" class="btn btn-emerald btn-xs font-black shadow flex items-center gap-1 animate-pulse" title="Phát âm thanh đọc nhận xét bằng giọng Cô giáo Đà Nẵng">
+                  <span>🎙️</span> <span>Nghe Cô Giáo Đà Nẵng Đọc</span>
+                </button>
+              </div>
               <p class="leading-relaxed font-normal">${aiEssayRes.feedback}</p>
             </div>
           </div>
@@ -2240,6 +2245,23 @@ class ExamPortal {
     if (newScore >= 9.0) {
       this.playVictoryFanfare();
       this.launchConfetti();
+    }
+  }
+
+  // Thuyết minh nhận xét sư phạm AI bằng giọng Cô giáo Đà Nẵng (Miền Trung)
+  speakAIFeedback() {
+    if (!this.currentAiEssayRes || !this.currentAiEssayRes.feedback) {
+      window.app?.showToast("Chưa có lời nhận xét sư phạm để đọc!", "warning");
+      return;
+    }
+
+    const textToSpeak = `Thầy Cô nhận xét bài làm tự luận của em: ${this.currentAiEssayRes.feedback}`;
+    if (window.ttsService) {
+      window.ttsService.setVoiceAccent('central');
+      window.ttsService.speak(textToSpeak, () => {
+        window.app?.showToast("🎉 Đã hoàn tất thuyết minh nhận xét bằng giọng Cô Đà Nẵng!", "success");
+      });
+      window.app?.showToast("🎙️ Cô giáo Đà Nẵng đang thuyết minh lời nhận xét sư phạm cho em nghe...", "info");
     }
   }
 
