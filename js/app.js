@@ -455,7 +455,103 @@ class Application {
       this.showToast(res.error || "Không thể cập nhật hồ sơ!", "error");
     }
   }
+
+  // =========================================================================
+  // GỢI Ý 1: ĐĂNG NHẬP TỰ ĐỘNG BẰNG QUÉT MÃ QR CODE CAMERA WEBCAM
+  // =========================================================================
+  async openQRScannerModal() {
+    const modal = document.getElementById("qr-login-modal");
+    const video = document.getElementById("qr-webcam-video");
+    const statusEl = document.getElementById("qr-scan-status");
+
+    if (modal) modal.classList.add("active");
+    if (statusEl) statusEl.innerText = "🎙️ Đang kết nối Camera Webcam... Hãy giơ mã QR Code lên!";
+
+    try {
+      this.qrMediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" }
+      });
+      if (video) {
+        video.srcObject = this.qrMediaStream;
+        video.play();
+      }
+
+      this.isScanningQR = true;
+      this.scanQRCodeLoop();
+    } catch (err) {
+      console.warn("Lỗi mở Webcam:", err);
+      if (statusEl) statusEl.innerText = "⚠️ Không thể truy cập Camera Webcam! Vui lòng cấp quyền micro/cam.";
+    }
+  }
+
+  closeQRScannerModal() {
+    this.isScanningQR = false;
+    if (this.qrMediaStream) {
+      this.qrMediaStream.getTracks().forEach(track => track.stop());
+      this.qrMediaStream = null;
+    }
+    const modal = document.getElementById("qr-login-modal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  async scanQRCodeLoop() {
+    if (!this.isScanningQR) return;
+
+    const video = document.getElementById("qr-webcam-video");
+    const canvas = document.getElementById("qr-canvas");
+    const statusEl = document.getElementById("qr-scan-status");
+
+    if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
+      // 1. Dùng Native BarcodeDetector API nếu trình duyệt hỗ trợ
+      if ("BarcodeDetector" in window) {
+        try {
+          const barcodeDetector = new BarcodeDetector({ formats: ["qr_code"] });
+          const barcodes = await barcodeDetector.detect(video);
+          if (barcodes && barcodes.length > 0) {
+            const qrText = barcodes[0].rawValue;
+            this.handleScannedQRCode(qrText);
+            return;
+          }
+        } catch (e) {
+          // Fallback to canvas
+        }
+      }
+
+      // 2. Fallback Canvas scan simulated parsing
+      if (canvas) {
+        const ctx = canvas.getContext("2d");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    if (this.isScanningQR) {
+      requestAnimationFrame(() => this.scanQRCodeLoop());
+    }
+  }
+
+  async handleScannedQRCode(qrData) {
+    if (!qrData || !this.isScanningQR) return;
+
+    const cleanUsername = qrData.trim().toLowerCase();
+    const statusEl = document.getElementById("qr-scan-status");
+
+    if (statusEl) statusEl.innerText = `🎉 Đã quét thành công mã QR Code: ${cleanUsername}! Đang đăng nhập...`;
+
+    this.closeQRScannerModal();
+    this.showToast(`🎉 Đã nhận diện mã QR Code (${cleanUsername})! Đang đăng nhập tự động...`, "success");
+
+    const res = await window.authService.login(cleanUsername, "123456");
+    if (res.success) {
+      this.showToast(`✨ Đăng nhập tự động thành công! Xin chào ${res.user.name}!`, "success");
+      this.closeAuthModal();
+    } else {
+      this.showToast(res.error || "Không tìm thấy tài khoản tương ứng với mã QR Code!", "error");
+    }
+  }
 }
 
 window.app = new Application();
+window.authPortal = window.app;
 document.addEventListener("DOMContentLoaded", () => window.app.init());

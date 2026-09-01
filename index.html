@@ -237,6 +237,11 @@
             <span>🚀 ĐĂNG NHẬP VÀO HỆ THỐNG</span>
           </button>
 
+          <!-- Nút Quét Mã QR Code Đăng Nhập qua Camera Webcam -->
+          <button onclick="authPortal.openQRScannerModal()" class="btn btn-outline w-full btn-lg font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-300 shadow-sm flex items-center justify-center gap-2">
+            <span>📷</span> <span>QUÉT MÃ QR CODE ĐĂNG NHẬP (THẺ A4)</span>
+          </button>
+
           <!-- Đăng nhập 1 chạm mẫu -->
           <div class="pt-4 border-t border-slate-200">
             <p class="text-[11px] font-bold text-slate-500 text-center mb-2 uppercase">Hoặc Chọn Đăng Nhập Nhanh:</p>
@@ -3166,6 +3171,43 @@
           Gửi Hỏi AI 🚀
         </button>
       </form>
+    </div>
+  <!-- MODAL 38: QUÉT MÃ QR CODE ĐĂNG NHẬP TỰ ĐỘNG BẰNG WEBCAM (QR CODE LOGIN MODAL) -->
+  <div id="qr-login-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-lg space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-2 bg-indigo-100 text-indigo-700 rounded-2xl animate-pulse">📷</span>
+          <div>
+            <h3 class="text-base font-black text-slate-900">QUÉT MÃ QR CODE ĐĂNG NHẬP</h3>
+            <p class="text-xs text-slate-500 font-semibold">Giơ Thẻ Học Sinh A4 trước Camera Webcam để đăng nhập tự động</p>
+          </div>
+        </div>
+        <button onclick="authPortal.closeQRScannerModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+
+      <div class="relative w-full h-64 bg-slate-900 rounded-2xl overflow-hidden border-2 border-indigo-400 shadow-inner flex items-center justify-center">
+        <!-- Video Stream Webcam -->
+        <video id="qr-webcam-video" autoplay playsinline class="w-full h-full object-cover"></video>
+        <canvas id="qr-canvas" class="hidden"></canvas>
+
+        <!-- Khung viền ngắm QR Code -->
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div class="w-44 h-44 border-4 border-dashed border-emerald-400 rounded-2xl animate-pulse flex items-center justify-center shadow-lg">
+            <span class="text-xs font-bold text-white bg-black/60 px-3 py-1 rounded-full">Đặt mã QR vào đây</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="qr-scan-status" class="text-center font-bold text-xs text-indigo-700 p-2 bg-indigo-50 rounded-xl border border-indigo-200">
+        🎙️ Máy ảnh Webcam đã sẵn sàng! Đang quét mã QR Code...
+      </div>
+
+      <div class="flex items-center justify-end pt-2 border-t border-slate-200">
+        <button onclick="authPortal.closeQRScannerModal()" class="btn btn-outline btn-sm font-bold">
+          Đóng Camera
+        </button>
+      </div>
     </div>
   </div>
 
