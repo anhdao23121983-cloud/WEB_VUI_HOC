@@ -278,17 +278,17 @@ class ArenaPortal {
 
           <!-- Lựa chọn Chế độ thi đấu -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto relative z-10">
-            <div class="p-4 bg-slate-900/90 rounded-2xl border-2 border-cyan-500/40 hover:border-cyan-400 transition-all space-y-2 cursor-pointer text-left group" onclick="arenaPortal.startBattleWithMode('blitz', 3)">
+            <div class="p-4 bg-slate-900/90 rounded-2xl border-2 border-cyan-500/40 hover:border-cyan-400 transition-all space-y-2 cursor-pointer text-left group" onclick="arenaPortal.openConfigModal(3)">
               <div class="flex items-center justify-between">
                 <span class="text-3xl">🎒</span>
                 <span class="badge bg-cyan-600 text-white font-black text-[10px]">LỚP 3</span>
               </div>
               <h4 class="font-black text-sm text-cyan-300 group-hover:text-cyan-200">Đấu Trường Lớp 3</h4>
-              <p class="text-[11px] text-slate-400">Phần cứng, Bàn phím chuột, Bài 7 Sắp xếp dữ liệu và An toàn phòng máy.</p>
+              <p class="text-[11px] text-slate-400">Tùy chọn 10, 20, 30 câu & chọn từng bài học SGK Tin Học 3.</p>
               <button class="btn btn-primary btn-xs w-full font-black mt-2">Bắt Đầu Đấu ▶</button>
             </div>
 
-            <div class="p-4 bg-slate-900/90 rounded-2xl border-2 border-emerald-500/40 hover:border-emerald-400 transition-all space-y-2 cursor-pointer text-left group" onclick="arenaPortal.openGrade4ConfigModal()">
+            <div class="p-4 bg-slate-900/90 rounded-2xl border-2 border-emerald-500/40 hover:border-emerald-400 transition-all space-y-2 cursor-pointer text-left group" onclick="arenaPortal.openConfigModal(4)">
               <div class="flex items-center justify-between">
                 <span class="text-3xl">🚀</span>
                 <span class="badge bg-emerald-600 text-white font-black text-[10px]">LỚP 4</span>
@@ -298,13 +298,13 @@ class ArenaPortal {
               <button class="btn btn-emerald btn-xs w-full font-black mt-2">Bắt Đầu Đấu ▶</button>
             </div>
 
-            <div class="p-4 bg-slate-900/90 rounded-2xl border-2 border-amber-500/40 hover:border-amber-400 transition-all space-y-2 cursor-pointer text-left group" onclick="arenaPortal.startBattleWithMode('blitz', 5)">
+            <div class="p-4 bg-slate-900/90 rounded-2xl border-2 border-amber-500/40 hover:border-amber-400 transition-all space-y-2 cursor-pointer text-left group" onclick="arenaPortal.openConfigModal(5)">
               <div class="flex items-center justify-between">
                 <span class="text-3xl">⭐</span>
                 <span class="badge bg-amber-600 text-white font-black text-[10px]">LỚP 5</span>
               </div>
               <h4 class="font-black text-sm text-amber-300 group-hover:text-amber-200">Đấu Trường Lớp 5</h4>
-              <p class="text-[11px] text-slate-400">Mạng Internet, Bản quyền số, Bảo mật mật khẩu và Thuật toán tìm kiếm.</p>
+              <p class="text-[11px] text-slate-400">Tùy chọn 10, 20, 30 câu & chọn từng bài học SGK Tin Học 5.</p>
               <button class="btn btn-amber btn-xs w-full font-black mt-2">Bắt Đầu Đấu ▶</button>
             </div>
           </div>
@@ -803,16 +803,81 @@ class ArenaPortal {
   }
 
   // =========================================================================
-  // LOGIC TRẬN ĐẤU & CẤU HÌNH ĐẤU TRƯỜNG LỚP 4
+  // LOGIC TRẬN ĐẤU & CẤU HÌNH ĐẤU TRƯỜNG CẢ 3 KHỐI LỚP (3, 4, 5)
   // =========================================================================
-  openGrade4ConfigModal() {
+  openConfigModal(grade = 4) {
+    this.selectedConfigGrade = grade;
     this.selectedG4QuestionCount = 10;
-    const modal = document.getElementById("arena-grade4-config-modal");
+
+    const modal = document.getElementById("arena-config-modal");
+    const titleEl = document.getElementById("arena-config-title");
+    const subtitleEl = document.getElementById("arena-config-subtitle");
+    const lessonSelect = document.getElementById("arena-lesson-select");
+
+    if (titleEl) titleEl.innerText = `CẤU HÌNH ĐẤU TRƯỜNG TIN HỌC LỚP ${grade}`;
+    if (subtitleEl) subtitleEl.innerText = `Tùy chọn 10, 20, 30 câu hỏi & bài học SGK Tin Học ${grade}`;
+
+    if (lessonSelect) {
+      let optionsHTML = `<option value="all" selected>🌟 Tất Cả Các Bài Học (Toàn Bộ SGK Lớp ${grade})</option>`;
+
+      if (grade === 3) {
+        optionsHTML += `
+          <option value="bai_1">Bài 1. Thông tin và quyết định</option>
+          <option value="bai_2">Bài 2. Xử lý thông tin</option>
+          <option value="bai_3">Bài 3. Máy tính và em</option>
+          <option value="bai_4">Bài 4. Làm việc với máy tính</option>
+          <option value="bai_5">Bài 5. Sử dụng bàn phím máy tính</option>
+          <option value="bai_6">Bài 6. Sử dụng chuột máy tính</option>
+          <option value="bai_7">Bài 7. Sắp xếp đồ dùng và tệp tin</option>
+          <option value="bai_8">Bài 8. Xem tin tức và giải trí trên Internet</option>
+          <option value="bai_9">Bài 9. An toàn trên Internet</option>
+          <option value="bai_10">Bài 10. Sơ đồ tư duy</option>
+        `;
+      } else if (grade === 4) {
+        optionsHTML += `
+          <option value="bai_1">Bài 1. Phần cứng và phần mềm máy tính</option>
+          <option value="bai_2">Bài 2. Gõ bàn phím đúng cách</option>
+          <option value="bai_3">Bài 3. Thông tin trên trang web</option>
+          <option value="bai_4">Bài 4. Tìm kiếm thông tin trên Internet</option>
+          <option value="bai_5">Bài 5. Thao tác với tệp và thư mục</option>
+          <option value="bai_6">Bài 6. Sử dụng phần mềm khi được phép</option>
+          <option value="bai_7">Bài 7. Tạo bài trình chiếu</option>
+          <option value="bai_8">Bài 8. Định dạng văn bản trên trang chiếu</option>
+          <option value="bai_9">Bài 9. Hiệu ứng chuyển trang</option>
+          <option value="bai_10">Bài 10. Phần mềm soạn thảo văn bản</option>
+          <option value="bai_11">Bài 11. Chỉnh sửa văn bản</option>
+          <option value="bai_12a">Bài 12A. Thực hành đa phương tiện</option>
+          <option value="bai_12b">Bài 12B. Phần mềm luyện tập gõ bàn phím</option>
+          <option value="bai_13">Bài 13. Chơi với máy tính</option>
+          <option value="bai_14">Bài 14. Khám phá môi trường lập trình trực quan</option>
+          <option value="bai_15">Bài 15. Tạo chương trình máy tính để diễn tả ý tưởng</option>
+          <option value="bai_16">Bài 16. Chương trình của em</option>
+        `;
+      } else if (grade === 5) {
+        optionsHTML += `
+          <option value="bai_1">Bài 1. Máy tính và câu chuyện xử lý thông tin</option>
+          <option value="bai_2">Bài 2. Tìm kiếm thông tin trên Internet</option>
+          <option value="bai_3">Bài 3. Mạng xã hội và an toàn Internet</option>
+          <option value="bai_4">Bài 4. Bản quyền tác giả và đạo đức số</option>
+          <option value="bai_5">Bài 5. Sử dụng máy tính an toàn</option>
+          <option value="bai_6">Bài 6. Soạn thảo văn bản nâng cao</option>
+          <option value="bai_7">Bài 7. Bài trình chiếu đa phương tiện</option>
+          <option value="bai_8">Bài 8. Thực hành tạo sản phẩm số</option>
+          <option value="bai_9">Bài 9. Biến và hằng trong lập trình Scratch</option>
+          <option value="bai_10">Bài 10. Khối lệnh điều kiện nếu... thì</option>
+          <option value="bai_11">Bài 11. Vòng lặp có điều kiện</option>
+          <option value="bai_12">Bài 12. Thuật toán tìm kiếm tuần tự và nhị phân</option>
+        `;
+      }
+
+      lessonSelect.innerHTML = optionsHTML;
+    }
+
     if (modal) modal.classList.add("active");
   }
 
-  closeGrade4ConfigModal() {
-    const modal = document.getElementById("arena-grade4-config-modal");
+  closeConfigModal() {
+    const modal = document.getElementById("arena-config-modal");
     if (modal) modal.classList.remove("active");
   }
 
@@ -830,31 +895,30 @@ class ArenaPortal {
     });
   }
 
-  async startBattleWithGrade4Config() {
-    const lessonSelect = document.getElementById("arena-g4-lesson-select");
+  async startBattleWithConfig() {
+    const lessonSelect = document.getElementById("arena-lesson-select");
     const selectedLesson = lessonSelect ? lessonSelect.value : "all";
     const count = this.selectedG4QuestionCount || 10;
+    const grade = this.selectedConfigGrade || 4;
 
-    this.closeGrade4ConfigModal();
-    await this.startBattleWithMode("blitz", 4, count, selectedLesson);
+    this.closeConfigModal();
+    await this.startBattleWithMode("blitz", grade, count, selectedLesson);
   }
 
   async startNewBattle() {
-    if (this.selectedGrade === 4) {
-      this.openGrade4ConfigModal();
-    } else {
-      await this.startBattleWithMode("blitz", this.selectedGrade === "all" ? 3 : this.selectedGrade);
-    }
+    const grade = this.selectedGrade === "all" ? 4 : this.selectedGrade;
+    this.openConfigModal(grade);
   }
 
   async startBattleWithMode(mode = "blitz", grade = 3, questionCount = 5, lessonFilter = "all") {
+    this.battleStartTime = Date.now();
     let allQuestions = await window.arenaService.getQuestions(grade, "all", lessonFilter);
     if (allQuestions.length === 0) {
-      window.app.showToast("Chưa có đủ câu hỏi cho bài học này. Đang lấy tất cả câu hỏi Lớp 4...", "warning");
+      window.app.showToast(`Đang lấy tất cả câu hỏi Lớp ${grade}...`, "info");
       allQuestions = await window.arenaService.getQuestions(grade, "all", "all");
     }
 
-    // Trộn ngẫu nhiên câu hỏi theo đúng số lượng đã chọn (10, 20, 30 hoặc 5)
+    // Trộn ngẫu nhiên câu hỏi theo số lượng 10, 20, 30 hoặc 5
     const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
     this.battleQuestions = shuffled.slice(0, Math.min(questionCount, shuffled.length));
     this.currentQIndex = 0;
@@ -937,27 +1001,194 @@ class ArenaPortal {
     if (this.timerInterval) clearInterval(this.timerInterval);
     this.battleActive = false;
 
-    // Lưu điểm số lên Supabase Cloud & Local
+    const totalQuestions = this.battleQuestions.length;
+    const maxScore = totalQuestions * 20;
+    const isPerfect = (this.score >= maxScore);
+    const duration = Math.max(1, Math.round((Date.now() - (this.battleStartTime || Date.now())) / 1000));
+
+    // 1. Lưu điểm số & Thời gian hoàn thành lên Supabase Cloud & Local
     await window.arenaService.recordMatchResult({
       score: this.score,
       totalCorrect: Math.round(this.score / 20),
-      totalQuestions: this.battleQuestions.length,
+      totalQuestions: totalQuestions,
       starsEarned: this.starsEarned,
-      durationSeconds: 25,
-      grade: this.selectedGrade === "all" ? 3 : this.selectedGrade
+      durationSeconds: duration,
+      grade: this.selectedConfigGrade || (this.selectedGrade === "all" ? 4 : this.selectedGrade)
     });
 
-    if (window.simulation3D?.triggerFireworks) {
+    // 2. Hiệu ứng pháo hoa bắn chúc mừng khi đạt 100% điểm (Gợi ý 2)
+    if (isPerfect) {
+      this.triggerFireworks();
+      if (window.ttsService?.speak) {
+        window.ttsService.speak(`Chúc mừng em đạt điểm tối đa ${this.score} điểm! Em chính là Dũng Sĩ Đấu Trường Tin Học!`);
+      }
+    } else if (window.simulation3D?.triggerFireworks) {
       window.simulation3D.triggerFireworks();
     }
 
-    if (this.score >= 80 && window.ttsService?.playApplause) {
+    if (this.score >= 60 && window.ttsService?.playApplause) {
       window.ttsService.playApplause(3.5, true);
     }
 
-    window.app.showToast(`🎉 Xuất sắc! Em hoàn thành Đấu Trường với ${this.score}/100 Điểm!`, "success");
+    window.app.showToast(`🎉 Xuất sắc! Em hoàn thành trận đấu với ${this.score}/${maxScore} Điểm trong ${duration} giây!`, "success");
+    
+    // 3. Mở Bằng Chứng Nhận Vinh Danh (Gợi ý 4)
+    this.openCertificateModal();
+
     this.currentTab = "leaderboard";
     this.render("main-content-area");
+  }
+
+  // Hiệu ứng Canvas Pháo Hoa Rực Rỡ (Gợi ý 2)
+  triggerFireworks() {
+    const canvas = document.createElement("canvas");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style.position = "fixed";
+    canvas.style.top = "0";
+    canvas.style.left = "0";
+    canvas.style.pointerEvents = "none";
+    canvas.style.zIndex = "99999";
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext("2d");
+    const particles = [];
+    const colors = ["#f59e0b", "#ef4444", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"];
+
+    for (let i = 0; i < 180; i++) {
+      particles.push({
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        vx: (Math.random() - 0.5) * 18,
+        vy: (Math.random() - 0.5) * 18,
+        size: Math.random() * 8 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        alpha: 1
+      });
+    }
+
+    let frame = 0;
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.15;
+        p.alpha -= 0.015;
+
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      frame++;
+      if (frame < 90) {
+        requestAnimationFrame(animate);
+      } else {
+        if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      }
+    }
+    animate();
+  }
+
+  // Mở & Vẽ Giấy Chứng Nhận Dũng Sĩ Đấu Trường (Gợi ý 4)
+  openCertificateModal() {
+    const modal = document.getElementById("arena-certificate-modal");
+    if (modal) modal.classList.add("active");
+    setTimeout(() => this.renderCertificateCanvas(), 100);
+  }
+
+  renderCertificateCanvas() {
+    const canvas = document.getElementById("arena-cert-canvas");
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    const user = window.authService?.getUser() || { name: "Học Sinh Xuất Sắc", className: "3A" };
+    const name = user.name || "Học Sinh Xuất Sắc";
+    const grade = this.selectedConfigGrade || 4;
+
+    // Background Gradient
+    const bgGrad = ctx.createLinearGradient(0, 0, 800, 560);
+    bgGrad.addColorStop(0, "#0f172a");
+    bgGrad.addColorStop(0.5, "#1e1b4b");
+    bgGrad.addColorStop(1, "#0f172a");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 800, 560);
+
+    // Decorative Borders
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 8;
+    ctx.strokeRect(20, 20, 760, 520);
+
+    ctx.strokeStyle = "#818cf8";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(30, 30, 740, 500);
+
+    // Header Badge
+    ctx.fillStyle = "#fbbf24";
+    ctx.font = "900 24px Nunito, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("🏆 TRƯỜNG TIỂU HỌC VUI HỌC TIN HỌC 🏆", 400, 75);
+
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "700 13px Nunito, sans-serif";
+    ctx.fillText("CHƯƠNG TRÌNH GIÁO DỤC PHỔ THÔNG 2018 - CÔNG VĂN 2345/BGDĐT", 400, 105);
+
+    // Title
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "900 34px Outfit, sans-serif";
+    ctx.fillText("GIẤY CHỨNG NHẬN VINH DANH", 400, 160);
+
+    ctx.fillStyle = "#f43f5e";
+    ctx.font = "900 28px Outfit, sans-serif";
+    ctx.fillText("⚡ DŨNG SĨ ĐẤU TRƯỜNG TIN HỌC ⚡", 400, 205);
+
+    // Student Name
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "700 16px Nunito, sans-serif";
+    ctx.fillText("Trao tặng cho Học sinh:", 400, 255);
+
+    ctx.fillStyle = "#f59e0b";
+    ctx.font = "900 36px Outfit, sans-serif";
+    ctx.fillText(name.toUpperCase(), 400, 305);
+
+    // Performance Details
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "600 15px Nunito, sans-serif";
+    ctx.fillText(`Lớp ${user.className || "3A"} • Khối ${grade} • SGK Kết Nối Tri Thức Với Cuộc Sống`, 400, 345);
+
+    ctx.fillStyle = "#10b981";
+    ctx.font = "900 18px Nunito, sans-serif";
+    ctx.fillText(`🎯 Thành tích: Đạt ${this.score || 100} Điểm • ⭐ +${this.starsEarned || 20} Sao Vàng Bảng Vàng`, 400, 385);
+
+    // Date & Stamp Signature
+    const todayStr = `Đà Nẵng, ngày ${new Date().getDate()} tháng ${new Date().getMonth() + 1} năm ${new Date().getFullYear()}`;
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "600 13px Nunito, sans-serif";
+    ctx.fillText(todayStr, 600, 440);
+
+    ctx.fillStyle = "#fbbf24";
+    ctx.font = "900 14px Nunito, sans-serif";
+    ctx.fillText("BAN TRỌNG TÀI ĐẤU TRƯỜNG", 600, 465);
+
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "900 13px Nunito, sans-serif";
+    ctx.fillText("Cô Giáo Anh Đào", 600, 510);
+  }
+
+  downloadCertificatePNG() {
+    const canvas = document.getElementById("arena-cert-canvas");
+    if (!canvas) return;
+
+    const user = window.authService?.getUser() || { name: "HocSinh" };
+    const link = document.createElement("a");
+    link.download = `ChungNhan_DungSi_DauTruong_${(user.name || "HocSinh").replace(/\s+/g, "_")}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+
+    window.app.showToast("📥 Đã tải Giấy Chứng Nhận Dũng Sĩ Đấu Trường (.PNG) thành công!", "success");
   }
 
   exitBattle() {
