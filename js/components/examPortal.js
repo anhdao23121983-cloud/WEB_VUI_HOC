@@ -2114,6 +2114,9 @@ class ExamPortal {
       isForceSubmitted: isForce
     });
 
+    this.currentAttemptResult = result;
+    this.currentAiEssayRes = aiEssayRes;
+
     if (result.score >= 9.0 && !isForce) {
       this.playVictoryFanfare();
       this.launchConfetti();
@@ -2132,19 +2135,27 @@ class ExamPortal {
 
           <div class="inline-block p-5 bg-gradient-to-br from-amber-50 to-emerald-50 rounded-3xl border-2 border-amber-300 shadow-md space-y-1">
             <p class="text-xs font-bold text-slate-600">Kết Quả Điểm Số Đạt Được (Trắc nghiệm + AI Tự Luận):</p>
-            <p class="text-4xl font-black ${isForce ? 'text-rose-700' : 'text-emerald-700'}">${result.score} / 10 Điểm</p>
-            <p class="text-xs font-black text-indigo-800">Xếp Loại theo TT 27: ${result.classification}</p>
+            <p id="result-score-disp" class="text-4xl font-black ${isForce ? 'text-rose-700' : 'text-emerald-700'}">${result.score} / 10 Điểm</p>
+            <p id="result-class-disp" class="text-xs font-black text-indigo-800">Xếp Loại theo TT 27: ${result.classification}</p>
             <p class="text-xs text-amber-600 font-bold">Thưởng: +${result.starsEarned} ⭐ Sao Vàng Vui Học!</p>
             ${this.tabSwitchCount > 0 ? `
               <p class="text-[11px] font-bold text-rose-700 pt-1">⚠️ Số lần chuyển tab ghi nhận: ${this.tabSwitchCount} lần</p>
             ` : ''}
           </div>
 
-          <!-- BẢNG ĐÁNH GIÁ AI CHẤM TỰ LUẬN THÔNG TƯ 27 -->
-          <div class="p-4 bg-purple-50 rounded-2xl border-2 border-purple-300 text-left space-y-2">
-            <div class="flex items-center justify-between">
+          <!-- BẢNG ĐÁNH GIÁ AI CHẤM TỰ LUẬN THÔNG TƯ 27 KÈM NÚT ĐIỀU CHỈNH 1-CHẠM -->
+          <div class="p-4 bg-purple-50 rounded-2xl border-2 border-purple-300 text-left space-y-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
               <span class="badge bg-purple-600 text-white font-black text-[10px] uppercase">🤖 AI CHẤM TỰ LUẬN TỰ ĐỘNG (THÔNG TƯ 27)</span>
-              <span class="font-black text-purple-900 text-xs">Điểm Tự Luận: <b>${aiEssayRes.score} / 3.0 Điểm</b></span>
+              <div class="flex items-center gap-1">
+                <span id="result-essay-score-disp" class="font-black text-purple-900 text-xs mr-2">Điểm Tự Luận: <b>${aiEssayRes.score} / 3.0 Điểm</b></span>
+                <button onclick="examPortal.adjustEssayScore(0.5)" class="btn btn-outline btn-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-emerald-300" title="Cô giáo cộng 0.5 điểm">
+                  ➕ 0.5p
+                </button>
+                <button onclick="examPortal.adjustEssayScore(-0.5)" class="btn btn-outline btn-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border-rose-300" title="Cô giáo trừ 0.5 điểm">
+                  ➖ 0.5p
+                </button>
+              </div>
             </div>
             <p class="text-xs text-slate-700"><b>Bài làm của em:</b> <i>"${this.essayUserAnswer || '(Em chưa gõ câu trả lời tự luận)'}"</i></p>
             <div class="p-3 bg-white rounded-xl border border-purple-200 text-xs text-purple-950 font-bold space-y-1">
@@ -2200,6 +2211,65 @@ class ExamPortal {
     }
     const modal = document.getElementById("online-exam-runner-modal");
     if (modal) modal.classList.remove("active");
+  }
+
+  // Điều chỉnh điểm tự luận 1-chạm (+0.5p, -0.5p)
+  adjustEssayScore(delta) {
+    if (!this.currentAttemptResult) return;
+    let newScore = Math.max(0, Math.min(10, Number((this.currentAttemptResult.score + delta).toFixed(1))));
+    this.currentAttemptResult.score = newScore;
+    
+    // Cập nhật xếp loại Thông tư 27
+    if (newScore >= 9.0) {
+      this.currentAttemptResult.classification = "Hoàn thành tốt (T)";
+    } else if (newScore >= 7.0) {
+      this.currentAttemptResult.classification = "Hoàn thành (H)";
+    } else {
+      this.currentAttemptResult.classification = "Cần cố gắng (C)";
+    }
+
+    const scoreDisp = document.getElementById("result-score-disp");
+    const classDisp = document.getElementById("result-class-disp");
+    const essayScoreDisp = document.getElementById("result-essay-score-disp");
+
+    if (scoreDisp) scoreDisp.innerText = `${newScore} / 10 Điểm`;
+    if (classDisp) classDisp.innerText = `Xếp Loại theo TT 27: ${this.currentAttemptResult.classification}`;
+    if (essayScoreDisp) essayScoreDisp.innerText = `Điểm Tự Luận: ${newScore} / 10 Điểm (Đã duyệt)`;
+
+    window.app?.showToast(`🎉 Đã cập nhật điểm số mới: ${newScore} / 10 Điểm!`, "success");
+    if (newScore >= 9.0) {
+      this.playVictoryFanfare();
+      this.launchConfetti();
+    }
+  }
+
+  // Hiệu ứng pháo hoa ăn mừng rực rỡ (Victory Confetti)
+  launchConfetti() {
+    const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#ef4444'];
+    const container = document.body;
+
+    for (let i = 0; i < 35; i++) {
+      const conf = document.createElement('div');
+      conf.className = 'fixed z-[9999] pointer-events-none rounded-full animate-ping';
+      const size = Math.random() * 12 + 6;
+      conf.style.width = `${size}px`;
+      conf.style.height = `${size}px`;
+      conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      conf.style.left = `${Math.random() * 100}vw`;
+      conf.style.top = `${Math.random() * 40}vh`;
+      conf.style.opacity = '0.9';
+      conf.style.transition = 'all 1.5s ease-out';
+      container.appendChild(conf);
+
+      setTimeout(() => {
+        conf.style.transform = `translateY(${Math.random() * 300 + 200}px) rotate(${Math.random() * 360}deg)`;
+        conf.style.opacity = '0';
+      }, 50);
+
+      setTimeout(() => {
+        if (conf.parentNode) conf.parentNode.removeChild(conf);
+      }, 1600);
+    }
   }
 
   // =========================================================================
