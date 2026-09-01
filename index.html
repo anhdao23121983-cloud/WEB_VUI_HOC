@@ -3285,13 +3285,18 @@
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
-        <button onclick="arenaPortal.closeConfigModal()" class="btn btn-outline btn-sm font-bold">
-          Hủy Bỏ
+      <div class="flex items-center justify-between gap-3 pt-3 border-t border-slate-200 flex-wrap">
+        <button onclick="arenaPortal.exportSGKExamDocx()" class="btn btn-indigo btn-md font-black shadow-lg flex items-center gap-2">
+          <span>📄</span> <span>Xuất Đề Thi Word (.docx)</span>
         </button>
-        <button onclick="arenaPortal.startBattleWithConfig()" id="btn-start-battle-config" class="btn btn-emerald btn-lg font-black px-8 shadow-xl">
-          🚀 BẮT ĐẦU VÀO ĐẤU ▶
-        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="arenaPortal.closeConfigModal()" class="btn btn-outline btn-sm font-bold">
+            Hủy Bỏ
+          </button>
+          <button onclick="arenaPortal.startBattleWithConfig()" id="btn-start-battle-config" class="btn btn-emerald btn-lg font-black px-8 shadow-xl">
+            🚀 BẮT ĐẦU VÀO ĐẤU ▶
+          </button>
+        </div>
       </div>
     </div>
   </div>

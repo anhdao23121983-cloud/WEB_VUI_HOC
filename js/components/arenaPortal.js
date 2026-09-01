@@ -1532,6 +1532,107 @@ class ArenaPortal {
     window.app.showToast("📄 Đã xuất Báo cáo Kết quả PDF gửi Phụ huynh thành công!", "success");
   }
 
+  // Xuất Đề Thi Trắc Nghiệm SGK Word (.docx) Chuẩn Công văn 2345/BGDĐT (Gợi ý 1)
+  async exportSGKExamDocx() {
+    const grade = this.selectedConfigGrade || 4;
+    const lessonId = this.selectedConfigLesson || "all";
+    const questions = await window.arenaService.getQuestions(grade, "all", lessonId);
+
+    if (!questions || questions.length === 0) {
+      window.app.showToast("⚠️ Chưa tìm thấy câu hỏi bài học để xuất đề thi!", "warning");
+      return;
+    }
+
+    const todayStr = `Ngày ${new Date().getDate()} tháng ${new Date().getMonth() + 1} năm ${new Date().getFullYear()}`;
+
+    const docHtml = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>ĐỀ KIỂM TRA TRẮC NGHIỆM TIN HỌC KÍCH THƯỚC LỚP ${grade}</title>
+        <style>
+          body { font-family: 'Times New Roman', serif; font-size: 13pt; line-height: 1.5; padding: 20px; }
+          .header-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          .header-table td { text-align: center; vertical-align: top; }
+          .title { text-align: center; font-weight: bold; font-size: 16pt; color: #000; margin: 15px 0; text-transform: uppercase; }
+          .sub-title { text-align: center; font-style: italic; font-size: 11pt; margin-bottom: 20px; }
+          .question-box { margin-bottom: 15px; }
+          .question-title { font-weight: bold; }
+          .options-grid { margin-left: 20px; margin-top: 5px; }
+          .answer-key-table { width: 100%; border-collapse: collapse; margin-top: 30px; text-align: center; }
+          .answer-key-table td, .answer-key-table th { border: 1px solid #000; padding: 6px; }
+        </style>
+      </head>
+      <body>
+        <table class="header-table">
+          <tr>
+            <td style="width: 45%;">
+              <b>TRƯỜNG TIỂU HỌC VUI HỌC TIN HỌC</b><br>
+              <b>BỘ MÔN TIN HỌC 3-5</b><br>
+              <i>(Đề thi trắc nghiệm SGK)</i>
+            </td>
+            <td style="width: 55%;">
+              <b>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</b><br>
+              <b><u>Độc lập - Tự do - Hạnh phúc</u></b><br>
+              <i>Đà Nẵng, ${todayStr}</i>
+            </td>
+          </tr>
+        </table>
+
+        <div class="title">ĐỀ KIỂM TRA TRẮC NGHIỆM TIN HỌC KHỐI LỚP ${grade}</div>
+        <div class="sub-title">Chương trình GDPT 2018 • Chuẩn Công văn 2345/BGDĐT • Thời gian: 15 phút</div>
+
+        <p><b>Họ và tên học sinh:</b> ............................................................................ <b>Lớp:</b> ${grade}A...</p>
+        <hr style="border: 1px solid #000; margin-bottom: 20px;">
+
+        ${questions.map((q, idx) => `
+          <div class="question-box">
+            <div class="question-title">Câu ${idx + 1}: ${q.question}</div>
+            <div class="options-grid">
+              ${q.options.map(opt => `<div>${opt}</div>`).join('')}
+            </div>
+          </div>
+        `).join('')}
+
+        <br><br>
+        <div style="page-break-before: always;"></div>
+        <h3 style="text-align: center; font-weight: bold; text-transform: uppercase;">BẢNG ĐÁP ÁN VÀ LỜI GIẢI THÍCH (DÀNH CHO GIÁO VIÊN)</h3>
+
+        <table class="answer-key-table">
+          <thead>
+            <tr style="background-color: #f2f2f2;">
+              <th>Câu số</th>
+              <th>Đáp án đúng</th>
+              <th>Lời giải thích sư phạm</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${questions.map((q, idx) => `
+              <tr>
+                <td><b>Câu ${idx + 1}</b></td>
+                <td><b>${String.fromCharCode(65 + q.correctIndex)}</b></td>
+                <td style="text-align: left;">${q.explanation || 'Kiến thức cốt lõi SGK Tin học.'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff', docHtml], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `DeThi_TinHoc_Lop${grade}_${lessonId.replace(/\s+/g, '_')}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    window.app.showToast("📄 Đã xuất Đề Thi Word (.docx) chuẩn Công văn 2345 thành công!", "success");
+  }
+
   // 1. Mở Xem Lại Lời Giải Chi Tiết Sau Trận Đấu (Gợi ý 4)
   openReviewAnswersModal() {
     const modal = document.getElementById("arena-review-modal");
