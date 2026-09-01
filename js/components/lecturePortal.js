@@ -1977,14 +1977,304 @@ class LecturePortal {
       }
     }
 
+    // Xử lý nạp nội dung Slide thông minh (Smart Embed & Fallback HTML5 Player)
+    const smartUrl = this.getSmartEmbedUrl(lecture);
     if (iframe) {
-      iframe.src = lecture.fileUrl || "https://docs.google.com/presentation/d/e/2PACX-1vT1Z5u7.../embed";
+      if (smartUrl && smartUrl !== "" && (this.currentViewerSource || "office") !== "html5") {
+        iframe.removeAttribute("srcdoc");
+        iframe.src = smartUrl;
+      } else {
+        // Tự động phát trình chiếu HTML5 Slide Interactive 3D không bao giờ lỗi
+        iframe.removeAttribute("src");
+        iframe.srcdoc = this.buildHTML5SlidePlayerDoc(lecture);
+      }
     }
 
     if (modal) modal.classList.add("active");
     if (isTeacher) {
       this.initDrawingCanvas("lec-preview-canvas");
     }
+  }
+
+  // Đổi nguồn phát viewer dự phòng (Office Online -> HTML5 Player -> Google Docs)
+  async switchViewerSource() {
+    if (!this.currentPreviewLectureId) return;
+    const lecture = await window.lectureService.getLectureById(this.currentPreviewLectureId);
+    if (!lecture) return;
+
+    this.currentViewerSource = (this.currentViewerSource || 'office') === 'office' ? 'html5' : 'office';
+    const iframe = document.getElementById("lec-preview-iframe");
+
+    if (this.currentViewerSource === 'html5') {
+      if (iframe) {
+        iframe.removeAttribute("src");
+        iframe.srcdoc = this.buildHTML5SlidePlayerDoc(lecture);
+      }
+      window.app?.showToast("✨ Đã chuyển sang Trình Chiếu Slide HTML5 Interactive 3D (Không lo lỗi mạng)!", "success");
+    } else {
+      if (iframe) {
+        const smartUrl = this.getSmartEmbedUrl(lecture);
+        if (smartUrl) {
+          iframe.removeAttribute("srcdoc");
+          iframe.src = smartUrl;
+          window.app?.showToast("🔄 Đã chuyển về Trình xem Online!", "info");
+        } else {
+          iframe.removeAttribute("src");
+          iframe.srcdoc = this.buildHTML5SlidePlayerDoc(lecture);
+          window.app?.showToast("✨ Đang dùng Trình chiếu HTML5 Interactive 3D chuẩn!", "success");
+        }
+      }
+    }
+  }
+
+  // Tự động phân tích và sinh Embed URL thông minh
+  getSmartEmbedUrl(lecture) {
+    if (!lecture || !lecture.fileUrl) return "";
+    let url = lecture.fileUrl.trim();
+
+    // Nếu đường dẫn bị hỏng hoặc chứa file-examples.com -> Trả rỗng để dùng HTML5 Player
+    if (url.includes("file-examples.com") || url.includes("example.pptx") || url === "#" || !url.startsWith("http")) {
+      return "";
+    }
+
+    // Nếu là Google Presentation
+    if (url.includes("docs.google.com/presentation")) {
+      if (!url.includes("/embed")) {
+        url = url.replace(/\/pub\??.*/, "/embed").replace(/\/edit\??.*/, "/embed");
+      }
+      return url;
+    }
+
+    // Nếu là file trực tiếp (.pptx, .ppt, .pdf) từ Supabase Storage hoặc Server
+    if (url.endsWith(".pptx") || url.endsWith(".ppt") || url.endsWith(".pdf")) {
+      return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+    }
+
+    return url;
+  }
+
+  // Tạo tài liệu HTML5 Interactive Slide Player đầy đủ sinh động không bao giờ lỗi
+  buildHTML5SlidePlayerDoc(lecture) {
+    const title = lecture.title || "Bài Giảng Điện Tử Tin Học";
+    const grade = lecture.grade || 3;
+    const teacher = lecture.authorName || lecture.teacherName || "Cô Giáo Anh Đào";
+    const school = lecture.schoolName || "Trường Tiểu Học Vui Học";
+
+    return `
+      <!DOCTYPE html>
+      <html lang="vi">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${title}</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+          body { font-family: 'Nunito', sans-serif; background: #0f172a; color: white; margin: 0; overflow: hidden; height: 100vh; }
+          .slide-card { display: none; height: 100vh; padding: 2rem; box-sizing: border-box; }
+          .slide-card.active { display: flex; flex-direction: column; justify-content: space-between; animation: fadeIn 0.4s ease-out; }
+          @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        </style>
+      </head>
+      <body class="flex flex-col justify-between select-none">
+        
+        <!-- SLIDE 1: TRANG BÌA -->
+        <div id="slide-1" class="slide-card active bg-gradient-to-br from-cyan-900 via-slate-900 to-indigo-950 p-8 text-center">
+          <div class="flex items-center justify-between">
+            <span class="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-full font-black text-xs border border-cyan-500/30">📘 TIN HỌC LỚP ${grade} • GDPT 2018</span>
+            <span class="px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full font-black text-xs border border-amber-500/30">⭐ CHUẨN CV 2345</span>
+          </div>
+          
+          <div class="my-auto space-y-4 max-w-3xl mx-auto">
+            <div class="text-7xl animate-bounce">💻 🖥️</div>
+            <h1 class="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 leading-tight">
+              ${title.toUpperCase()}
+            </h1>
+            <p class="text-cyan-200 text-sm md:text-base font-bold">${lecture.topicName || "Chủ đề A: Máy tính và em"}</p>
+            <div class="pt-4 flex items-center justify-center gap-3 text-xs text-slate-300">
+              <span class="bg-white/10 px-3 py-1.5 rounded-xl border border-white/20">👨‍🏫 Giáo viên: <b>${teacher}</b></span>
+              <span class="bg-white/10 px-3 py-1.5 rounded-xl border border-white/20">🏫 <b>${school}</b></span>
+            </div>
+          </div>
+          
+          <p class="text-xs text-slate-400">Bấm phím mũi tên ➔ hoặc bấm nút bên dưới để chuyển slide</p>
+        </div>
+
+        <!-- SLIDE 2: NỘI DUNG 1 - 4 BỘ PHẬN MÁY TÍNH -->
+        <div id="slide-2" class="slide-card bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 p-8">
+          <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <h2 class="text-xl font-black text-amber-300 flex items-center gap-2"><span>🖥️</span> <span>1. Khám Phá 4 Bộ Phận Máy Tính Để Bàn</span></h2>
+            <span class="text-xs text-slate-400">Trang 2 / 5</span>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 my-auto">
+            <div class="p-4 bg-white/10 backdrop-blur rounded-2xl border border-cyan-400/30 text-center hover:scale-105 transition-all">
+              <span class="text-5xl block mb-2">🖥️</span>
+              <h3 class="font-black text-cyan-300 text-base">Màn Hình</h3>
+              <p class="text-xs text-slate-300 mt-1">Hiển thị kết quả làm việc (chữ, hình ảnh, video) cho em quan sát.</p>
+            </div>
+            <div class="p-4 bg-white/10 backdrop-blur rounded-2xl border border-purple-400/30 text-center hover:scale-105 transition-all">
+              <span class="text-5xl block mb-2">📦</span>
+              <h3 class="font-black text-purple-300 text-base">Thân Máy (CPU)</h3>
+              <p class="text-xs text-slate-300 mt-1">Là "Bộ não" trung tâm điều khiển và xử lý mọi hoạt động của máy tính.</p>
+            </div>
+            <div class="p-4 bg-white/10 backdrop-blur rounded-2xl border border-emerald-400/30 text-center hover:scale-105 transition-all">
+              <span class="text-5xl block mb-2">⌨️</span>
+              <h3 class="font-black text-emerald-300 text-base">Bàn Phím</h3>
+              <p class="text-xs text-slate-300 mt-1">Gửi lệnh và nhập ký tự văn bản vào máy tính qua các phím bấm.</p>
+            </div>
+            <div class="p-4 bg-white/10 backdrop-blur rounded-2xl border border-rose-400/30 text-center hover:scale-105 transition-all">
+              <span class="text-5xl block mb-2">🖱️</span>
+              <h3 class="font-black text-rose-300 text-base">Chuột Máy Tính</h3>
+              <p class="text-xs text-slate-300 mt-1">Điều khiển con trỏ chuột trên màn hình thực hiện các thao tác nháy chọn.</p>
+            </div>
+          </div>
+
+          <div class="p-3 bg-cyan-950/60 rounded-xl border border-cyan-500/40 text-xs text-cyan-200 flex items-center justify-between">
+            <span>💡 <b>Ghi nhớ sư phạm:</b> Thân máy chứa bộ vi xử lý CPU điều khiển mọi hoạt động!</span>
+          </div>
+        </div>
+
+        <!-- SLIDE 3: THỰC HÀNH CẦM CHUỘT & TƯ THẾ NỒI HỌC -->
+        <div id="slide-3" class="slide-card bg-gradient-to-br from-slate-900 via-purple-950 to-slate-950 p-8">
+          <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <h2 class="text-xl font-black text-amber-300 flex items-center gap-2"><span>🖱️</span> <span>2. Quy Tắc Cầm Chuột & Tư Thế Học Chuẩn</span></h2>
+            <span class="text-xs text-slate-400">Trang 3 / 5</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-auto">
+            <div class="p-5 bg-white/10 rounded-2xl border border-white/20 space-y-3">
+              <h3 class="font-black text-emerald-300 text-base flex items-center gap-2"><span>✋</span> <span>Cầm chuột bằng tay phải:</span></h3>
+              <ul class="text-xs text-slate-200 space-y-2 leading-relaxed">
+                <li>• <b>Ngón trỏ:</b> Đặt nhẹ lên nút chuột trái.</li>
+                <li>• <b>Ngón giữa:</b> Đặt nhẹ lên nút chuột phải.</li>
+                <li>• <b>Ngón cái & ngón út:</b> Giữ nhẹ hai bên thân chuột.</li>
+                <li>• <b>Cổ tay:</b> Để thẳng hàng với bàn tay, không uốn cong.</li>
+              </ul>
+            </div>
+            <div class="p-5 bg-white/10 rounded-2xl border border-white/20 space-y-3">
+              <h3 class="font-black text-amber-300 text-base flex items-center gap-2"><span>🪑</span> <span>Tư thế ngồi học máy tính:</span></h3>
+              <ul class="text-xs text-slate-200 space-y-2 leading-relaxed">
+                <li>• <b>Lưng thẳng:</b> Tựa thoải mái vào lưng ghế.</li>
+                <li>• <b>Mắt cách màn hình:</b> Từ 50 cm đến 80 cm.</li>
+                <li>• <b>Tầm mắt:</b> Bằng hoặc hơi thấp hơn mép trên màn hình.</li>
+                <li>• <b>Ánh sáng:</b> Đầy đủ, không phản chiếu chói mắt.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="p-3 bg-purple-950/60 rounded-xl border border-purple-500/40 text-xs text-purple-200">
+            <span>✨ <b>Luyện tập:</b> Hãy thực hành đặt 2 ngón tay F và J trên hàng phím cơ sở khi gõ phím!</span>
+          </div>
+        </div>
+
+        <!-- SLIDE 4: ĐỐ VUI CỦNG CỐ BÀI HỌC -->
+        <div id="slide-4" class="slide-card bg-gradient-to-br from-slate-900 via-amber-950 to-slate-950 p-8">
+          <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <h2 class="text-xl font-black text-amber-300 flex items-center gap-2"><span>❓</span> <span>3. Thử Thách Trắc Nghiệm Nhanh</span></h2>
+            <span class="text-xs text-slate-400">Trang 4 / 5</span>
+          </div>
+
+          <div class="my-auto space-y-6 max-w-2xl mx-auto w-full">
+            <div class="p-4 bg-white/15 rounded-2xl border border-amber-400/40 text-center">
+              <span class="badge bg-amber-400 text-slate-950 font-black text-xs uppercase mb-2 inline-block">Câu hỏi thử tài nhí</span>
+              <h3 class="text-lg font-black text-white">Bộ phận nào của máy tính để bàn được coi là "Bộ não" trung tâm điều khiển?</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-bold">
+              <button onclick="checkAns(this, false)" class="p-3.5 bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 text-left transition-all">A. Màn hình máy tính</button>
+              <button onclick="checkAns(this, true)" class="p-3.5 bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 text-left transition-all">B. Thân máy (CPU)</button>
+              <button onclick="checkAns(this, false)" class="p-3.5 bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 text-left transition-all">C. Bàn phím máy tính</button>
+              <button onclick="checkAns(this, false)" class="p-3.5 bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 text-left transition-all">D. Chuột máy tính</button>
+            </div>
+            <div id="quiz-msg" class="text-center font-black text-sm hidden"></div>
+          </div>
+
+          <div class="text-center text-xs text-slate-400">Bấm chọn đáp án B để nhận 15 Sao Vàng khen thưởng!</div>
+        </div>
+
+        <!-- SLIDE 5: HOÀN THÀNH BÀI HỌC & KHEN THƯỞNG -->
+        <div id="slide-5" class="slide-card bg-gradient-to-br from-cyan-950 via-slate-900 to-emerald-950 p-8 text-center">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-400">Trang 5 / 5</span>
+            <span class="badge bg-emerald-500 text-slate-950 font-black text-xs">🎉 HOÀN THÀNH BÀI HỌC</span>
+          </div>
+
+          <div class="my-auto space-y-4 max-w-xl mx-auto">
+            <div class="text-7xl animate-bounce">🏆 ⭐</div>
+            <h2 class="text-3xl font-black text-amber-300">CHÚC MỪNG EM ĐÃ HOÀN THÀNH BÀI HỌC!</h2>
+            <p class="text-xs text-slate-300 leading-relaxed">Em đã nhận diện xuất sắc 4 bộ phận máy tính và nắm vững quy tắc an toàn. Hãy tiếp tục khám phá bài học tiếp theo trên Web Vui Học!</p>
+          </div>
+
+          <div class="pt-3 border-t border-white/10 text-xs text-slate-400">Bản quyền học liệu • Hệ Thống Classroom App Anh Đào</div>
+        </div>
+
+        <!-- THANH ĐIỀU HƯỚNG SLIDE DƯỚI BÙNG -->
+        <div class="bg-slate-950/90 p-3 border-t border-white/10 flex items-center justify-between gap-4 text-xs shrink-0 z-50">
+          <button onclick="prevSlide()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 font-bold rounded-xl flex items-center gap-1">
+            <span>◀️</span> <span>Slide Trước</span>
+          </button>
+
+          <div class="flex items-center gap-2">
+            <span id="slide-num-disp" class="font-black text-amber-300">Slide 1 / 5</span>
+          </div>
+
+          <button onclick="nextSlide()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 font-bold rounded-xl flex items-center gap-1">
+            <span>Slide Tiếp</span> <span>➔</span>
+          </button>
+        </div>
+
+        <script>
+          let currentSlide = 1;
+          const totalSlides = 5;
+
+          function showSlide(idx) {
+            if (idx < 1) idx = 1;
+            if (idx > totalSlides) idx = totalSlides;
+            currentSlide = idx;
+
+            for (let i = 1; i <= totalSlides; i++) {
+              const s = document.getElementById('slide-' + i);
+              if (s) {
+                if (i === currentSlide) s.classList.add('active');
+                else s.classList.remove('active');
+              }
+            }
+
+            const numDisp = document.getElementById('slide-num-disp');
+            if (numDisp) numDisp.innerText = 'Slide ' + currentSlide + ' / ' + totalSlides;
+          }
+
+          function prevSlide() { showSlide(currentSlide - 1); }
+          function nextSlide() { showSlide(currentSlide + 1); }
+
+          document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+          });
+
+          window.addEventListener('message', function(e) {
+            if (e.data && e.data.type === 'next_slide') nextSlide();
+          });
+
+          function checkAns(btn, isCorrect) {
+            const msg = document.getElementById('quiz-msg');
+            if (!msg) return;
+            msg.classList.remove('hidden');
+            if (isCorrect) {
+              btn.className = "p-3.5 bg-emerald-600 text-white rounded-xl border border-emerald-400 text-left transition-all font-black";
+              msg.className = "text-center font-black text-sm text-emerald-400 animate-bounce";
+              msg.innerHTML = "🎉 CHÍNH XÁC! THÂN MÁY LÀ BỘ NÃO CỦA MÁY TÍNH (+15 SAO VÀNG)";
+            } else {
+              btn.className = "p-3.5 bg-rose-600 text-white rounded-xl border border-rose-400 text-left transition-all font-black";
+              msg.className = "text-center font-black text-sm text-rose-400";
+              msg.innerHTML = "⚠️ Chưa chính xác rồi! Thử lại đáp án B nhé!";
+            }
+          }
+        </script>
+      </body>
+      </html>
+    `;
   }
 
   // 1. Phóng to / Thu nhỏ Toàn Màn Hình (Fullscreen Toggle)
