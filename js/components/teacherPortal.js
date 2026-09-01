@@ -13,7 +13,13 @@ class TeacherPortal {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const user = window.authService?.getUser() || { name: "Cô Giáo Anh Đào", school: "Trường Tiểu Học", role: "teacher" };
+    const user = window.authService?.getUser();
+    if (!user || (user.role !== "teacher" && user.role !== "admin")) {
+      if (window.app?.showToast) window.app.showToast("🚫 Quyền truy cập bị từ chối! Mục này dành riêng cho Giáo viên và Quản trị viên.", "error");
+      window.location.hash = "student";
+      return;
+    }
+
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     const plans = await window.supabaseService.getLessonPlans();
     const leaderboard = db.leaderboard || [];
@@ -126,18 +132,29 @@ class TeacherPortal {
       `;
     }
 
+    const currentUser = window.authService?.getUser();
+
     return `
       <div class="grid grid-cols-1 gap-4">
-        ${plans.map(plan => `
+        ${plans.map(plan => {
+          const isAuthorOrAdmin = currentUser && (
+            currentUser.role === "admin" ||
+            plan.authorId === currentUser.id ||
+            plan.authorUsername === currentUser.username ||
+            (!plan.authorUsername && currentUser.role === "teacher")
+          );
+
+          return `
           <div class="p-5 bg-white rounded-xl border border-slate-200 hover:border-cyan-500 transition-all shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="space-y-1">
               <div class="flex items-center gap-2">
                 <span class="badge badge-cyan font-bold">Lớp ${plan.grade}</span>
                 <span class="badge badge-slate font-bold">Môn ${plan.subject || "Tin học"}</span>
                 <span class="text-xs text-slate-400">Thời lượng: ${plan.duration || "2 tiết"}</span>
+                ${isAuthorOrAdmin ? '<span class="badge badge-emerald font-bold text-[10px]">✏️ Bài của tôi</span>' : '<span class="badge badge-slate font-bold text-[10px]">🔒 Chỉ đọc</span>'}
               </div>
               <h4 class="text-lg font-bold text-slate-900">${plan.title}</h4>
-              <p class="text-xs text-slate-600">Giáo viên: <b>${plan.teacherName || "Cô Anh Đào"}</b> | Đã lưu: ${plan.createdAt ? new Date(plan.createdAt).toLocaleDateString("vi-VN") : "Hôm nay"}</p>
+              <p class="text-xs text-slate-600">Tác giả: <b>${plan.teacherName || "Cô Anh Đào"}</b> (${plan.authorUsername || "anhdao"}) | Đã lưu: ${plan.createdAt ? new Date(plan.createdAt).toLocaleDateString("vi-VN") : "Hôm nay"}</p>
             </div>
             
             <div class="flex items-center gap-2 flex-wrap">
@@ -146,10 +163,11 @@ class TeacherPortal {
               </button>
               <button onclick="teacherPortal.previewPlan('${plan.id}')" class="btn btn-outline btn-sm">👁️ Xem Chi Tiết</button>
               <button onclick="teacherPortal.exportPlanWord('${plan.id}')" class="btn btn-primary btn-sm font-bold">📄 Xuất Word (.doc)</button>
-              <button onclick="teacherPortal.deletePlan('${plan.id}')" class="btn btn-outline btn-sm text-rose-600 hover:bg-rose-50 border-rose-200">🗑️ Xóa</button>
+              ${isAuthorOrAdmin ? `<button onclick="teacherPortal.deletePlan('${plan.id}')" class="btn btn-outline btn-sm text-rose-600 hover:bg-rose-50 border-rose-200">🗑️ Xóa</button>` : ''}
             </div>
           </div>
-        `).join("")}
+        `;
+        }).join("")}
       </div>
     `;
   }
@@ -347,6 +365,18 @@ class TeacherPortal {
 
   // Xóa giáo án
   async deletePlan(planId) {
+    const user = window.authService?.getUser();
+    const plans = await window.supabaseService.getLessonPlans();
+    const plan = plans.find(p => p.id === planId);
+
+    if (plan && user) {
+      const isAuthorOrAdmin = user.role === "admin" || plan.authorId === user.id || plan.authorUsername === user.username || !plan.authorUsername;
+      if (!isAuthorOrAdmin) {
+        window.app?.showToast("🚫 Thầy/Cô chỉ có thể xóa Kế hoạch bài dạy do chính mình tạo ra!", "error");
+        return;
+      }
+    }
+
     if (!confirm("Thầy Cô có chắc chắn muốn xóa kế hoạch bài dạy này không?")) return;
     await window.supabaseService.deleteLessonPlan(planId);
     window.app.showToast("🗑️ Đã xóa giáo án thành công!", "info");

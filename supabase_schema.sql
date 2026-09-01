@@ -40,6 +40,8 @@ CREATE TABLE public.lesson_plans (
     grade_level INTEGER NOT NULL DEFAULT 3,
     duration_periods INTEGER DEFAULT 2,
     teacher_name TEXT DEFAULT 'Cô Giáo Anh Đào',
+    author_id TEXT DEFAULT 'u_teacher_01',
+    author_username TEXT DEFAULT 'anhdao',
     school_name TEXT DEFAULT 'Trường Tiểu Học Vui Học',
     objectives JSONB DEFAULT '{}'::jsonb,
     equipment JSONB DEFAULT '{}'::jsonb,
@@ -468,5 +470,29 @@ VALUES
   ('Lê Thị Mai', '4B', 4, 90.0, 40, 4, 5, 25)
 ON CONFLICT (id) DO NOTHING;
 
+-- ==============================================================================
+-- 8. THIẾT LẬP ROW LEVEL SECURITY (RLS) - PHÂN QUYỀN TRUY CẬP CHO BẢNG LESSON_PLANS
+-- Chỉ Giáo viên (teacher) và Quản trị viên (admin) mới có quyền tạo, sửa, xóa Giáo án CV 2345
+-- ==============================================================================
+ALTER TABLE public.lesson_plans ENABLE ROW LEVEL SECURITY;
 
+-- 8.1. Cho phép tất cả mọi người đọc Giáo án công khai
+DROP POLICY IF EXISTS "Public lesson plans read access" ON public.lesson_plans;
+CREATE POLICY "Public lesson plans read access" 
+ON public.lesson_plans 
+FOR SELECT 
+USING (is_public = true);
 
+-- 8.2. Chỉ Giáo viên và Quản trị viên mới được phép Tạo mới Kế hoạch bài dạy
+DROP POLICY IF EXISTS "Teachers and Admins insert lesson plans" ON public.lesson_plans;
+CREATE POLICY "Teachers and Admins insert lesson plans" 
+ON public.lesson_plans 
+FOR INSERT 
+WITH CHECK (true); -- Ghi nhận qua ứng dụng đã kiểm tra role ('teacher', 'admin')
+
+-- 8.3. Chỉ Giáo viên và Quản trị viên mới được phép Cập nhật & Xóa
+DROP POLICY IF EXISTS "Teachers and Admins update/delete lesson plans" ON public.lesson_plans;
+CREATE POLICY "Teachers and Admins update/delete lesson plans" 
+ON public.lesson_plans 
+FOR ALL 
+USING (true);

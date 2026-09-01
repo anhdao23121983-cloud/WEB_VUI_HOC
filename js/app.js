@@ -51,8 +51,13 @@ class Application {
       document.getElementById("auth-view")?.classList.remove("hidden");
     } else if (route === "teacher") {
       if (!user) {
-        this.showToast("Vui lòng đăng nhập tài khoản Giáo viên!", "warning");
+        this.showToast("Vui lòng đăng nhập tài khoản Giáo viên hoặc Quản trị viên!", "warning");
         window.location.hash = "auth";
+        return;
+      }
+      if (user.role !== "teacher" && user.role !== "admin") {
+        this.showToast("🚫 Quyền truy cập bị từ chối! Mục Giáo Viên (CV 2345) chỉ dành cho Giáo viên và Quản trị viên.", "error");
+        window.location.hash = "student";
         return;
       }
       document.getElementById("portal-view")?.classList.remove("hidden");
@@ -251,23 +256,36 @@ class Application {
     const navUserName = document.getElementById("nav-user-name");
     const navUserRole = document.getElementById("nav-user-role");
     const navUserAvatar = document.getElementById("nav-user-avatar");
+    const navBtnTeacher = document.getElementById("nav-btn-teacher");
+    const heroBtnTeacher = document.getElementById("hero-btn-teacher");
 
     if (user) {
       if (navUserBox) navUserBox.classList.remove("hidden");
       if (navGuestBox) navGuestBox.classList.add("hidden");
       if (navUserName) navUserName.innerText = user.name;
-      if (navUserRole) navUserRole.innerText = user.role === "teacher" ? "Giáo viên" : `Học sinh (${user.className || "3A"})`;
+      if (navUserRole) navUserRole.innerText = user.role === "teacher" ? "Giáo viên" : (user.role === "admin" ? "Quản trị viên" : `Học sinh (${user.className || "3A"})`);
       
+      // Ẩn nút Giáo Viên (CV 2345) đối với tài khoản Học sinh
+      if (user.role === "student") {
+        if (navBtnTeacher) navBtnTeacher.classList.add("hidden");
+        if (heroBtnTeacher) heroBtnTeacher.classList.add("hidden");
+      } else {
+        if (navBtnTeacher) navBtnTeacher.classList.remove("hidden");
+        if (heroBtnTeacher) heroBtnTeacher.classList.remove("hidden");
+      }
+
       if (navUserAvatar) {
         if (user.avatar && (user.avatar.startsWith("data:image/") || user.avatar.startsWith("http"))) {
           navUserAvatar.innerHTML = `<img src="${user.avatar}" alt="Avatar" class="w-6 h-6 object-cover rounded-full border border-cyan-400">`;
         } else {
-          navUserAvatar.innerText = user.avatar || "👩‍🏫";
+          navUserAvatar.innerText = user.avatar || (user.role === "admin" ? "👑" : "👩‍🏫");
         }
       }
     } else {
       if (navUserBox) navUserBox.classList.add("hidden");
       if (navGuestBox) navGuestBox.classList.remove("hidden");
+      if (navBtnTeacher) navBtnTeacher.classList.remove("hidden");
+      if (heroBtnTeacher) heroBtnTeacher.classList.remove("hidden");
     }
   }
 

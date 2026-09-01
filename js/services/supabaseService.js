@@ -70,6 +70,8 @@ class SupabaseService {
             subject: "Tin học",
             duration: item.duration_periods ? `${item.duration_periods} tiết` : "2 tiết",
             teacherName: item.teacher_name || "Cô Giáo Anh Đào",
+            authorId: item.author_id || "u_teacher_01",
+            authorUsername: item.author_username || "anhdao",
             schoolName: item.school_name || "Trường Tiểu Học",
             createdAt: item.created_at,
             objectives: item.objectives || {},
@@ -90,6 +92,13 @@ class SupabaseService {
 
   // 2. LƯU HOẶC CẬP NHẬT KẾ HOẠCH BÀI DẠY
   async saveLessonPlan(planData) {
+    const user = window.authService?.getUser();
+    const currentAuthorId = user?.id || "u_teacher_01";
+    const currentAuthorUsername = user?.username || "anhdao";
+
+    planData.authorId = planData.authorId || currentAuthorId;
+    planData.authorUsername = planData.authorUsername || currentAuthorUsername;
+
     // 1. Lưu dự phòng vào LocalStorage
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     if (!db.lessonPlans) db.lessonPlans = [];
@@ -111,8 +120,10 @@ class SupabaseService {
           title: planData.title,
           grade_level: parseInt(planData.grade) || 3,
           duration_periods: parseInt(planData.duration) || 2,
-          teacher_name: planData.teacherName || "Cô Giáo Anh Đào",
-          school_name: planData.schoolName || "Trường Tiểu Học",
+          teacher_name: planData.teacherName || user?.name || "Cô Giáo Anh Đào",
+          author_id: planData.authorId,
+          author_username: planData.authorUsername,
+          school_name: planData.schoolName || user?.school || "Trường Tiểu Học",
           objectives: planData.objectives,
           equipment: planData.equipment,
           teaching_steps: planData.activities,
