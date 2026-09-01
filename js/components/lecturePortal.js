@@ -1987,7 +1987,102 @@ class LecturePortal {
     }
   }
 
+  // 1. Phóng to / Thu nhỏ Toàn Màn Hình (Fullscreen Toggle)
+  toggleFullscreenPreview() {
+    const modalContent = document.querySelector("#lecture-preview-modal .modal-content");
+    const btn = document.getElementById("btn-fullscreen-preview");
+
+    if (!document.fullscreenElement) {
+      const target = modalContent || document.documentElement;
+      if (target.requestFullscreen) {
+        target.requestFullscreen().catch(err => console.warn(err));
+      } else if (target.webkitRequestFullscreen) {
+        target.webkitRequestFullscreen();
+      }
+      if (btn) btn.innerHTML = `<span>🛈</span> <span>Thu Nhỏ</span>`;
+      window.app?.showToast("🖥️ Đã bật chế độ Toàn Màn Hình!", "info");
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(err => console.warn(err));
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+      if (btn) btn.innerHTML = `<span>🖥️</span> <span>Toàn Màn Hình</span>`;
+    }
+  }
+
+  // 2. Tự Động Lật Slide Sau Mỗi 10 Giây (Auto Play Slide)
+  toggleAutoPlaySlide(seconds = 10) {
+    const btn = document.getElementById("btn-auto-play-slide");
+    this.isAutoPlayRunning = !this.isAutoPlayRunning;
+
+    if (this.isAutoPlayRunning) {
+      this.autoPlayCounter = seconds;
+      if (btn) {
+        btn.className = "btn bg-amber-500 hover:bg-amber-600 text-slate-950 btn-xs font-black shadow-md flex items-center gap-1 animate-pulse";
+        btn.innerHTML = `<span>⏸️</span> <span>Dừng Chạy (${this.autoPlayCounter}s)</span>`;
+      }
+
+      window.app?.showToast("▶️ Đã bật chế độ Tự động lật slide sau mỗi 10 giây!", "success");
+
+      this.autoPlayTimer = setInterval(() => {
+        this.autoPlayCounter--;
+        if (this.autoPlayCounter <= 0) {
+          this.autoPlayCounter = seconds;
+          const iframe = document.getElementById("lec-preview-iframe");
+          if (iframe && iframe.contentWindow) {
+            try {
+              iframe.contentWindow.postMessage({ type: "next_slide" }, "*");
+            } catch (e) {}
+          }
+        }
+        if (btn) {
+          btn.innerHTML = `<span>⏸️</span> <span>Dừng Chạy (${this.autoPlayCounter}s)</span>`;
+        }
+      }, 1000);
+    } else {
+      if (this.autoPlayTimer) clearInterval(this.autoPlayTimer);
+      this.autoPlayTimer = null;
+      if (btn) {
+        btn.className = "btn bg-cyan-600 hover:bg-cyan-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all";
+        btn.innerHTML = `<span>▶️</span> <span>Tự Động Chạy (10s)</span>`;
+      }
+      window.app?.showToast("⏸️ Đã dừng chế độ tự động lật slide.", "info");
+    }
+  }
+
+  // 3. Tải Tập Tin Bài Giảng / Tài Liệu Đính Kèm (.pptx, .pdf)
+  async downloadCurrentLectureFile() {
+    if (!this.currentPreviewLectureId) {
+      window.app?.showToast("Không tìm thấy thông tin tập tin bài giảng!", "warning");
+      return;
+    }
+
+    const lecture = await window.lectureService.getLectureById(this.currentPreviewLectureId);
+    if (!lecture || !lecture.fileUrl) {
+      window.app?.showToast("Tập tin bài giảng chưa có đường dẫn tải về!", "warning");
+      return;
+    }
+
+    window.lectureService.incrementDownloadCount(this.currentPreviewLectureId);
+    window.app?.showToast("📥 Đang tải tập tin bài giảng về máy...", "success");
+
+    const link = document.createElement("a");
+    link.href = lecture.fileUrl;
+    link.target = "_blank";
+    link.download = lecture.fileName || `${lecture.title}.pptx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   closePreviewModal() {
+    if (this.isAutoPlayRunning) {
+      this.toggleAutoPlaySlide();
+    }
+    if (document.fullscreenElement) {
+      this.toggleFullscreenPreview();
+    }
     const modal = document.getElementById("lecture-preview-modal");
     if (modal) modal.classList.remove("active");
     this.disableDrawingMode("lec-preview-canvas");

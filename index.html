@@ -907,7 +907,20 @@
           <button onclick="lecturePortal.toggleDrawingMode('lec-preview-canvas')" class="btn btn-amber btn-xs font-black shadow-sm flex items-center gap-1">
             <span>🎨</span> <span>Bút Vẽ & Laser</span>
           </button>
-          <button onclick="lecturePortal.closePreviewModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+        </div>
+
+        <!-- Thanh Công Cụ Tiện Ích Dùng Chung (Dành Cho Cả Học Sinh & Giáo Viên) -->
+        <div id="lec-preview-common-tools" class="flex items-center gap-1.5 flex-wrap">
+          <button id="btn-auto-play-slide" onclick="lecturePortal.toggleAutoPlaySlide()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Bật/Tắt tự động lật slide sau mỗi 10 giây">
+            <span>▶️</span> <span>Tự Động Chạy (10s)</span>
+          </button>
+          <button id="btn-download-lecture-file" onclick="lecturePortal.downloadCurrentLectureFile()" class="btn bg-emerald-600 hover:bg-emerald-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Tải file bài giảng PowerPoint (.pptx) hoặc tài liệu PDF về máy">
+            <span>📥</span> <span>Tải Bài Giảng (.pptx)</span>
+          </button>
+          <button id="btn-fullscreen-preview" onclick="lecturePortal.toggleFullscreenPreview()" class="btn bg-purple-600 hover:bg-purple-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Phóng to toàn màn hình thiết bị">
+            <span>🖥️</span> <span>Toàn Màn Hình</span>
+          </button>
+          <button onclick="lecturePortal.closePreviewModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700 ml-1">✕</button>
         </div>
 
         <!-- Thanh Âm Thanh Khen Thưởng Nhanh Của Cô Giáo (Teacher Voice Soundboard Bar) -->
