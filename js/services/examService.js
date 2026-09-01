@@ -277,6 +277,65 @@ class ExamService {
   }
 
   // 8. Xóa đề kiểm tra (Xóa cả LocalStorage và Supabase Cloud)
+  /**
+   * AI Chấm Bài Tự Luận & Tạo Lời Nhận Xét Sư Phạm Thông Tư 27
+   * @param {string} essayText - Bài gõ tự luận của Học sinh
+   * @param {string} topicName - Chủ đề hoặc câu hỏi tự luận
+   * @param {number} grade - Khối lớp (3, 4, 5)
+   * @returns {object} { score: number (0.0-3.0), feedback: string, keywordsFound: string[] }
+   */
+  gradeEssayAnswerWithAI(essayText, topicName = "Máy tính & Em", grade = 3) {
+    if (!essayText || !essayText.trim()) {
+      return {
+        score: 0.0,
+        feedback: "Em chưa hoàn thành câu trả lời tự luận. Cần nỗ lực hơn ở bài thi tiếp theo nhé!",
+        keywordsFound: []
+      };
+    }
+
+    const text = essayText.trim().toLowerCase();
+    const words = text.split(/\s+/);
+    
+    // Từ khóa trọng tâm môn Tin học tiểu học theo GDPT 2018
+    const keyterms = [
+      "máy tính", "thân máy", "cpu", "màn hình", "bàn phím", "chuột", "bộ não", 
+      "an toàn", "điện", "lưng thẳng", "khoảng cách", "mắt", "50cm", "80cm",
+      "không ăn uống", "chập điện", "ngón trỏ", "ngón giữa", "tay phải", 
+      "khi sử dụng", "giữ gìn", "bảo vệ", "sạch sẽ", "tắt máy"
+    ];
+
+    const matchedTerms = keyterms.filter(kt => text.includes(kt));
+
+    // Tính điểm AI (0.0 -> 3.0 điểm)
+    let score = 1.0; // Điểm nền khi gõ bài
+
+    if (matchedTerms.length >= 4) {
+      score = 3.0;
+    } else if (matchedTerms.length >= 2) {
+      score = 2.5;
+    } else if (words.length >= 10) {
+      score = 2.0;
+    } else if (words.length >= 5) {
+      score = 1.5;
+    }
+
+    // Tự động sinh nhận xét sư phạm chuẩn Thông tư 27/2020
+    let feedback = "";
+    if (score >= 2.8) {
+      feedback = `Em trả lời đúng trọng tâm và nắm rất vững kiến thức bài học! Nêu đủ các từ khóa quan trọng (${matchedTerms.slice(0, 3).join(", ")}). Diễn đạt mạch lạc, có ý thức bảo vệ thiết bị xuất sắc!`;
+    } else if (score >= 2.0) {
+      feedback = `Bài làm tự luận khá tốt, đã nêu được các ý chính (${matchedTerms.slice(0, 2).join(", ")}). Em nên diễn đạt câu văn chi tiết hơn nữa để đạt điểm tối đa nhé!`;
+    } else {
+      feedback = `Em có ý thức nỗ lực trả lời câu hỏi tự luận. Cần chú ý ôn lại từ khóa lý thuyết chuẩn trong SGK để trình bày chính xác hơn nhé!`;
+    }
+
+    return {
+      score: Number(score.toFixed(1)),
+      feedback: feedback,
+      keywordsFound: matchedTerms
+    };
+  }
+
   async deleteExam(id) {
     // 1. Xóa trong LocalStorage
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;

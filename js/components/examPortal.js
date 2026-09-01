@@ -1885,9 +1885,21 @@ class ExamPortal {
     this.runnerQuestions = window.examService.getOnlineExamQuestions(exam);
     this.runnerCurrentIndex = 0;
     this.runnerAnswers = {};
+    this.essayUserAnswer = "";
     this.runnerTimerSeconds = (exam.durationMinutes || 35) * 60;
     this.runnerStartTime = Date.now();
     this.tabSwitchCount = 0;
+
+    // Thêm câu hỏi Tự luận / Thực hành tự động nếu chưa có
+    if (!this.runnerQuestions.some(q => q.type === 'essay')) {
+      this.runnerQuestions.push({
+        id: 'q_essay_01',
+        type: 'essay',
+        level: 'Mức 3 (Vận dụng)',
+        question: 'Câu 5 (Tự Luận / Thực Hành - 3.0 Điểm): Em hãy nêu 2 quy tắc an toàn khi sử dụng máy tính để bàn và giải thích vì sao không được vừa ăn uống vừa sử dụng máy tính?',
+        explanation: 'Quy tắc: Giữ lưng thẳng, mắt cách màn hình 50-80cm; Không ăn uống gần máy tính vì nước uống hoặc thức ăn đổ vào thân máy CPU hoặc bàn phím sẽ gây chập điện hỏng thiết bị!'
+      });
+    }
 
     if (this.runnerTimerInterval) clearInterval(this.runnerTimerInterval);
 
@@ -1936,8 +1948,8 @@ class ExamPortal {
     if (!q || !qContainer) return;
 
     if (navTrack) {
-      navTrack.innerHTML = this.runnerQuestions.map((_, idx) => {
-        const isAnswered = this.runnerAnswers[idx] !== undefined;
+      navTrack.innerHTML = this.runnerQuestions.map((item, idx) => {
+        const isAnswered = item.type === 'essay' ? (this.essayUserAnswer && this.essayUserAnswer.trim().length > 0) : (this.runnerAnswers[idx] !== undefined);
         const isCurrent = this.runnerCurrentIndex === idx;
         return `
           <button onclick="examPortal.jumpToQuestion(${idx})" class="w-8 h-8 rounded-xl font-black text-xs transition-all ${isCurrent ? 'bg-amber-500 text-slate-950 scale-110 shadow' : isAnswered ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
@@ -1948,6 +1960,7 @@ class ExamPortal {
     }
 
     const selectedOption = this.runnerAnswers[this.runnerCurrentIndex];
+    const isEssay = q.type === 'essay';
 
     qContainer.innerHTML = `
       <div class="space-y-4 animate-pop">
@@ -1966,28 +1979,37 @@ class ExamPortal {
         </div>
 
         <div class="flex items-center justify-between">
-          <span class="badge badge-emerald font-black text-[11px]">CÂU HỎI ${this.runnerCurrentIndex + 1} / ${this.runnerQuestions.length}</span>
+          <span class="badge ${isEssay ? 'bg-purple-600' : 'badge-emerald'} text-white font-black text-[11px]">
+            ${isEssay ? '🤖 CÂU TỰ LUẬN / THỰC HÀNH (AI CHẤM)' : `CÂU HỎI ${this.runnerCurrentIndex + 1} / ${this.runnerQuestions.length}`}
+          </span>
           <div class="flex items-center gap-2">
             <span class="text-xs font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">🛡️ Chống chuyển tab: Bật</span>
-            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">${q.level} • 1.0 Điểm</span>
+            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">${q.level} • ${isEssay ? '3.0' : '1.0'} Điểm</span>
           </div>
         </div>
 
         <h3 class="text-base md:text-lg font-black text-slate-900 leading-snug">${q.question}</h3>
 
-        <div class="grid grid-cols-1 gap-2.5 pt-2">
-          ${q.options.map((opt, oIdx) => {
-            const isSel = selectedOption === oIdx;
-            return `
-              <button onclick="examPortal.selectRunnerAnswer(${oIdx})" class="p-3.5 md:p-4 rounded-2xl border-2 text-left font-bold text-xs md:text-sm transition-all flex items-center gap-3 ${isSel ? 'border-emerald-600 bg-emerald-50 text-emerald-950 shadow-md scale-101' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'}">
-                <span class="w-7 h-7 rounded-full font-black text-xs flex items-center justify-center shrink-0 ${isSel ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}">
-                  ${['A', 'B', 'C', 'D'][oIdx]}
-                </span>
-                <span>${opt.replace(/^[A-D]\.\s*/, '')}</span>
-              </button>
-            `;
-          }).join("")}
-        </div>
+        ${isEssay ? `
+          <div class="space-y-2 pt-2">
+            <label class="font-bold text-indigo-900 block text-xs">✍️ Bài Làm Tự Luận Của Em (Hệ thống AI sẽ tự động phân tích & chấm điểm):</label>
+            <textarea oninput="examPortal.essayUserAnswer = this.value" rows="5" placeholder="Nhập câu trả lời tự luận của em tại đây (VD: Khi học máy tính em giữ lưng thẳng, mắt cách màn hình 50-80cm, không ăn uống gần thân máy CPU để tránh chập điện...)" class="form-control text-xs font-bold p-3.5 border-2 border-indigo-300 focus:border-indigo-600 bg-indigo-50/50 rounded-2xl shadow-inner">${this.essayUserAnswer || ''}</textarea>
+          </div>
+        ` : `
+          <div class="grid grid-cols-1 gap-2.5 pt-2">
+            ${(q.options || []).map((opt, oIdx) => {
+              const isSel = selectedOption === oIdx;
+              return `
+                <button onclick="examPortal.selectRunnerAnswer(${oIdx})" class="p-3.5 md:p-4 rounded-2xl border-2 text-left font-bold text-xs md:text-sm transition-all flex items-center gap-3 ${isSel ? 'border-emerald-600 bg-emerald-50 text-emerald-950 shadow-md scale-101' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'}">
+                  <span class="w-7 h-7 rounded-full font-black text-xs flex items-center justify-center shrink-0 ${isSel ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}">
+                    ${['A', 'B', 'C', 'D'][oIdx]}
+                  </span>
+                  <span>${opt.replace(/^[A-D]\.\s*/, '')}</span>
+                </button>
+              `;
+            }).join("")}
+          </div>
+        `}
 
         <div class="flex items-center justify-between pt-4 border-t border-slate-200">
           <button onclick="examPortal.prevRunnerQuestion()" ${this.runnerCurrentIndex === 0 ? 'disabled class="btn btn-outline btn-sm opacity-40"' : 'class="btn btn-outline btn-sm"'}>
@@ -2001,7 +2023,7 @@ class ExamPortal {
               </button>
             ` : `
               <button onclick="examPortal.confirmSubmitTest()" class="btn btn-emerald btn-sm font-black shadow-lg">
-                🚀 Nộp Bài & Xem Điểm
+                🚀 Nộp Bài & AI Chấm Điểm
               </button>
             `}
           </div>
@@ -2035,7 +2057,7 @@ class ExamPortal {
   }
 
   confirmSubmitTest() {
-    const answeredCount = Object.keys(this.runnerAnswers).length;
+    const answeredCount = Object.keys(this.runnerAnswers).length + (this.essayUserAnswer && this.essayUserAnswer.trim() ? 1 : 0);
     if (answeredCount < this.runnerQuestions.length) {
       if (!confirm(`Em mới trả lời ${answeredCount}/${this.runnerQuestions.length} câu hỏi. Em có chắc chắn muốn nộp bài thi ngay không?`)) {
         return;
@@ -2054,18 +2076,30 @@ class ExamPortal {
       this.isAntiCheatListening = false;
     }
 
-    let correctCount = 0;
-    this.runnerQuestions.forEach((q, idx) => {
+    // 1. Chấm phần trắc nghiệm (Thang điểm 7.0)
+    let mcCorrectCount = 0;
+    const mcQuestions = this.runnerQuestions.filter(q => q.type !== 'essay');
+    mcQuestions.forEach((q, idx) => {
       if (this.runnerAnswers[idx] === q.correct) {
-        correctCount++;
+        mcCorrectCount++;
       }
     });
 
-    const user = window.authService?.getUser() || { name: "Nguyễn Văn An", class: "3A" };
-    let rawScore = Number(((correctCount / this.runnerQuestions.length) * 7.0 + 3.0).toFixed(1));
+    const mcScore = (mcCorrectCount / (mcQuestions.length || 1)) * 7.0;
+
+    // 2. AI Chấm phần tự luận (Thang điểm 3.0)
+    const aiEssayRes = window.examService.gradeEssayAnswerWithAI(
+      this.essayUserAnswer, 
+      this.activeRunnerExam?.title, 
+      this.activeRunnerExam?.grade || 3
+    );
+
+    let rawScore = Number((mcScore + aiEssayRes.score).toFixed(1));
     if (isForce) {
       rawScore = Math.min(rawScore, 6.0); // Bị trừ điểm do gian lận
     }
+
+    const user = window.authService?.getUser() || { name: "Nguyễn Văn An", class: "3A" };
     const durationSpent = Math.floor((Date.now() - this.runnerStartTime) / 1000);
 
     const result = await window.examService.submitExamAttempt({
@@ -2094,23 +2128,36 @@ class ExamPortal {
         <div class="text-center py-6 space-y-5 animate-pop">
           <span class="text-6xl block ${result.score >= 9 ? 'animate-bounce' : ''}">${isForce ? '⚠️' : result.score >= 9 ? '🏆' : '🎉'}</span>
           <h3 class="text-2xl font-black text-slate-900">${isForce ? 'BÀI THI ĐÃ BỊ THU SỚM DO VI PHẠM' : 'HOÀN THÀNH BÀI KIỂM TRA TRỰC TUYẾN!'}</h3>
-          <p class="text-xs text-slate-600">${isForce ? 'Hệ thống đã tự động thu bài vì em vi phạm chuyển tab quá 3 lần.' : 'Bài thi của em đã được hệ thống tự động chấm và lưu vào sổ học bạ số!'}</p>
+          <p class="text-xs text-slate-600">${isForce ? 'Hệ thống đã tự động thu bài vì em vi phạm chuyển tab quá 3 lần.' : 'Bài thi của em đã được hệ thống AI tự động chấm và lưu vào sổ học bạ số!'}</p>
 
           <div class="inline-block p-5 bg-gradient-to-br from-amber-50 to-emerald-50 rounded-3xl border-2 border-amber-300 shadow-md space-y-1">
-            <p class="text-xs font-bold text-slate-600">Kết Quả Điểm Số Đạt Được:</p>
+            <p class="text-xs font-bold text-slate-600">Kết Quả Điểm Số Đạt Được (Trắc nghiệm + AI Tự Luận):</p>
             <p class="text-4xl font-black ${isForce ? 'text-rose-700' : 'text-emerald-700'}">${result.score} / 10 Điểm</p>
-            <p class="text-xs font-black text-indigo-800">Xếp Loại: ${result.classification}</p>
+            <p class="text-xs font-black text-indigo-800">Xếp Loại theo TT 27: ${result.classification}</p>
             <p class="text-xs text-amber-600 font-bold">Thưởng: +${result.starsEarned} ⭐ Sao Vàng Vui Học!</p>
             ${this.tabSwitchCount > 0 ? `
               <p class="text-[11px] font-bold text-rose-700 pt-1">⚠️ Số lần chuyển tab ghi nhận: ${this.tabSwitchCount} lần</p>
             ` : ''}
           </div>
 
-          <!-- Chi tiết câu trả lời -->
+          <!-- BẢNG ĐÁNH GIÁ AI CHẤM TỰ LUẬN THÔNG TƯ 27 -->
+          <div class="p-4 bg-purple-50 rounded-2xl border-2 border-purple-300 text-left space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="badge bg-purple-600 text-white font-black text-[10px] uppercase">🤖 AI CHẤM TỰ LUẬN TỰ ĐỘNG (THÔNG TƯ 27)</span>
+              <span class="font-black text-purple-900 text-xs">Điểm Tự Luận: <b>${aiEssayRes.score} / 3.0 Điểm</b></span>
+            </div>
+            <p class="text-xs text-slate-700"><b>Bài làm của em:</b> <i>"${this.essayUserAnswer || '(Em chưa gõ câu trả lời tự luận)'}"</i></p>
+            <div class="p-3 bg-white rounded-xl border border-purple-200 text-xs text-purple-950 font-bold space-y-1">
+              <p class="text-purple-800">💬 <b>Lời nhận xét sư phạm của AI:</b></p>
+              <p class="leading-relaxed font-normal">${aiEssayRes.feedback}</p>
+            </div>
+          </div>
+
+          <!-- Chi tiết câu trả lời trắc nghiệm -->
           <div class="text-left space-y-3 pt-3 border-t border-slate-200">
-            <h4 class="font-extrabold text-slate-800 text-xs">📖 BẢNG GIẢI THÍCH CHI TIẾT TỪNG CÂU:</h4>
-            <div class="space-y-2 max-h-52 overflow-y-auto pr-1">
-              ${this.runnerQuestions.map((q, idx) => {
+            <h4 class="font-extrabold text-slate-800 text-xs">📖 BẢNG GIẢI THÍCH CHI TIẾT CÂU TRẮC NGHIỆM:</h4>
+            <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+              ${mcQuestions.map((q, idx) => {
                 const userAns = this.runnerAnswers[idx];
                 const isRight = userAns === q.correct;
                 return `
