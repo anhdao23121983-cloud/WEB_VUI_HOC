@@ -1992,8 +1992,13 @@ class ExamPortal {
 
         ${isEssay ? `
           <div class="space-y-2 pt-2">
-            <label class="font-bold text-indigo-900 block text-xs">✍️ Bài Làm Tự Luận Của Em (Hệ thống AI sẽ tự động phân tích & chấm điểm):</label>
-            <textarea oninput="examPortal.essayUserAnswer = this.value" rows="5" placeholder="Nhập câu trả lời tự luận của em tại đây (VD: Khi học máy tính em giữ lưng thẳng, mắt cách màn hình 50-80cm, không ăn uống gần thân máy CPU để tránh chập điện...)" class="form-control text-xs font-bold p-3.5 border-2 border-indigo-300 focus:border-indigo-600 bg-indigo-50/50 rounded-2xl shadow-inner">${this.essayUserAnswer || ''}</textarea>
+            <div class="flex items-center justify-between">
+              <label class="font-bold text-indigo-900 block text-xs">✍️ Bài Làm Tự Luận Của Em (Gõ chữ hoặc dùng Micro AI nói):</label>
+              <button id="btn-essay-stt" onclick="examPortal.toggleEssaySTT()" class="btn btn-emerald btn-xs font-black shadow flex items-center gap-1.5 animate-pulse" title="Bấm vào đây và cất tiếng nói, AI sẽ tự động chuyển giọng nói thành văn bản">
+                <span id="stt-icon">🎙️</span> <span id="stt-label">Bấm Nói (Micro AI)</span>
+              </button>
+            </div>
+            <textarea id="essay-answer-textarea" oninput="examPortal.essayUserAnswer = this.value" rows="5" placeholder="Nhập câu trả lời tự luận của em tại đây hoặc bấm nút Micro AI ở trên để cất lời nói..." class="form-control text-xs font-bold p-3.5 border-2 border-indigo-300 focus:border-indigo-600 bg-indigo-50/50 rounded-2xl shadow-inner">${this.essayUserAnswer || ''}</textarea>
           </div>
         ` : `
           <div class="grid grid-cols-1 gap-2.5 pt-2">
@@ -2159,11 +2164,18 @@ class ExamPortal {
             </div>
             <p class="text-xs text-slate-700"><b>Bài làm của em:</b> <i>"${this.essayUserAnswer || '(Em chưa gõ câu trả lời tự luận)'}"</i></p>
             <div class="p-3 bg-white rounded-xl border border-purple-200 text-xs text-purple-950 font-bold space-y-2">
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between flex-wrap gap-2">
                 <p class="text-purple-800">💬 <b>Lời nhận xét sư phạm của AI:</b></p>
-                <button onclick="examPortal.speakAIFeedback()" class="btn btn-emerald btn-xs font-black shadow flex items-center gap-1 animate-pulse" title="Phát âm thanh đọc nhận xét bằng giọng Cô giáo Đà Nẵng">
-                  <span>🎙️</span> <span>Nghe Cô Giáo Đà Nẵng Đọc</span>
-                </button>
+                <div class="flex items-center gap-1.5">
+                  <select onchange="window.ttsService?.setVoiceAccent(this.value); examPortal.speakAIFeedback()" class="form-select btn-xs font-bold text-xs bg-white text-purple-950 border-purple-300 rounded-lg p-1 shadow-sm" title="Chọn giọng đọc Cô giáo 3 Miền">
+                    <option value="central" ${window.ttsService?.voiceAccent === 'central' ? 'selected' : ''}>🎙️ Cô Đà Nẵng</option>
+                    <option value="north" ${window.ttsService?.voiceAccent === 'north' ? 'selected' : ''}>🎙️ Cô Hà Nội</option>
+                    <option value="south" ${window.ttsService?.voiceAccent === 'south' ? 'selected' : ''}>🎙️ Cô Sài Gòn</option>
+                  </select>
+                  <button onclick="examPortal.speakAIFeedback()" class="btn btn-emerald btn-xs font-black shadow flex items-center gap-1 animate-pulse" title="Phát âm thanh đọc nhận xét bằng giọng Cô giáo">
+                    <span>🔊</span> <span>Đọc Nhận Xét</span>
+                  </button>
+                </div>
               </div>
               <p class="leading-relaxed font-normal">${aiEssayRes.feedback}</p>
             </div>
@@ -2257,11 +2269,92 @@ class ExamPortal {
 
     const textToSpeak = `Thầy Cô nhận xét bài làm tự luận của em: ${this.currentAiEssayRes.feedback}`;
     if (window.ttsService) {
-      window.ttsService.setVoiceAccent('central');
       window.ttsService.speak(textToSpeak, () => {
-        window.app?.showToast("🎉 Đã hoàn tất thuyết minh nhận xét bằng giọng Cô Đà Nẵng!", "success");
+        window.app?.showToast("🎉 Đã hoàn tất thuyết minh nhận xét sư phạm!", "success");
       });
-      window.app?.showToast("🎙️ Cô giáo Đà Nẵng đang thuyết minh lời nhận xét sư phạm cho em nghe...", "info");
+      window.app?.showToast("🎙️ Đang thuyết minh lời nhận xét sư phạm cho em nghe...", "info");
+    }
+  }
+
+  // Micro AI Thu âm chuyển Giọng nói Tiếng Việt thành Văn bản (Speech-to-Text)
+  toggleEssaySTT() {
+    const sttBtn = document.getElementById("btn-essay-stt");
+    const sttIcon = document.getElementById("stt-icon");
+    const sttLabel = document.getElementById("stt-label");
+
+    if (this.isSTTRecording) {
+      if (this.speechRecognizer) this.speechRecognizer.stop();
+      this.isSTTRecording = false;
+      if (sttBtn) {
+        sttBtn.classList.remove("bg-rose-600", "text-white");
+        sttBtn.classList.add("btn-emerald");
+      }
+      if (sttIcon) sttIcon.innerText = "🎙️";
+      if (sttLabel) sttLabel.innerText = "Bấm Nói (Micro AI)";
+      window.app?.showToast("🛑 Đã hoàn tất thu âm giọng nói!", "info");
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      window.app?.showToast("Trình duyệt hiện tại chưa hỗ trợ Micro AI (Web Speech API). Em hãy gõ trực tiếp nhé!", "warning");
+      return;
+    }
+
+    try {
+      this.speechRecognizer = new SpeechRecognition();
+      this.speechRecognizer.lang = 'vi-VN';
+      this.speechRecognizer.continuous = true;
+      this.speechRecognizer.interimResults = true;
+
+      this.speechRecognizer.onstart = () => {
+        this.isSTTRecording = true;
+        if (sttBtn) {
+          sttBtn.classList.remove("btn-emerald");
+          sttBtn.classList.add("bg-rose-600", "text-white");
+        }
+        if (sttIcon) sttIcon.innerText = "🔴";
+        if (sttLabel) sttLabel.innerText = "Đang Lắng Nghe...";
+        window.app?.showToast("🎙️ Micro AI đang mở! Em cất lời nói tự nhiên nhé...", "success");
+      };
+
+      this.speechRecognizer.onresult = (event) => {
+        let transcript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        if (transcript) {
+          this.essayUserAnswer = (this.essayUserAnswer || "") + " " + transcript;
+          const area = document.getElementById("essay-answer-textarea");
+          if (area) area.value = this.essayUserAnswer.trim();
+        }
+      };
+
+      this.speechRecognizer.onerror = (event) => {
+        console.warn("STT Error:", event.error);
+        this.isSTTRecording = false;
+        if (sttBtn) {
+          sttBtn.classList.remove("bg-rose-600", "text-white");
+          sttBtn.classList.add("btn-emerald");
+        }
+        if (sttIcon) sttIcon.innerText = "🎙️";
+        if (sttLabel) sttLabel.innerText = "Bấm Nói (Micro AI)";
+      };
+
+      this.speechRecognizer.onend = () => {
+        this.isSTTRecording = false;
+        if (sttBtn) {
+          sttBtn.classList.remove("bg-rose-600", "text-white");
+          sttBtn.classList.add("btn-emerald");
+        }
+        if (sttIcon) sttIcon.innerText = "🎙️";
+        if (sttLabel) sttLabel.innerText = "Bấm Nói (Micro AI)";
+      };
+
+      this.speechRecognizer.start();
+    } catch (err) {
+      console.warn("Speech Recognition Error:", err);
+      window.app?.showToast("Vui lòng cấp quyền truy cập Micro cho trình duyệt để sử dụng tính năng này!", "warning");
     }
   }
 
