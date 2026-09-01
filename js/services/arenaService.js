@@ -300,70 +300,154 @@ class ArenaService {
         options: ["A. Bút vẽ (Pen)", "B. Âm nhạc", "C. Cảm biến Video", "D. Text to Speech"],
         correctIndex: 0, explanation: "Nhóm lệnh mở rộng Bút vẽ (Pen) cung cấp các lệnh Xóa tất cả, Đặt bút (Pen down), Nhấc bút, Chọn màu nét vẽ.", difficulty: "hard", timeLimit: 20, stars: 30
       },
-      // === KHỐI LỚP 5 ===
+      // === KHỐI LỚP 3 - SGK CHUẨN KẾT NỐI TRI THỨC VỚI CUỘC SỐNG ===
       {
-        id: "arena_q_08",
-        grade: 5,
-        topic: "Mạng Internet & An toàn số",
-        question: "Mật khẩu nào sau đây được coi là mật khẩu AN TOÀN và BẢO MẬT NHẤT?",
-        options: [
-          "A. 123456",
-          "B. tinhoc2026",
-          "C. AnhDao@TinHoc#2026",
-          "D. ten_cua_em"
-        ],
-        correctIndex: 2,
-        explanation: "Mật khẩu an toàn cần có ít nhất 8 ký tự, kết hợp chữ hoa, chữ thường, chữ số và ký tự đặc biệt (@, #, $...).",
-        difficulty: "medium",
-        timeLimit: 15,
-        stars: 25
+        id: "g3_q_01", grade: 3, lessonId: "bai_1", topic: "Bài 1. Thông tin và quyết định",
+        question: "Khi em nhìn thấy tín hiệu đèn giao thông chuyển sang màu ĐỎ, em đưa ra quyết định gì?",
+        options: ["A. Đi tiếp thật nhanh", "B. Dừng lại trước vạch dừng", "C. Quay đầu xe lại", "D. Nhắm mắt lại"],
+        correctIndex: 1, explanation: "Đèn đỏ báo hiệu phải dừng lại. Mắt thu nhận thông tin đèn đỏ và bộ não đưa ra quyết định dừng lại.", difficulty: "easy", timeLimit: 15, stars: 20
       },
       {
-        id: "arena_q_09",
-        grade: 5,
-        topic: "Bản quyền & Đạo đức số",
-        question: "Khi lấy hình ảnh trên Internet để làm bài thuyết trình, em nên làm gì để tôn trọng bản quyền?",
-        options: [
-          "A. Tự nhận là hình do mình tự vẽ",
-          "B. Ghi rõ nguồn trích dẫn của tác giả hoặc website",
-          "C. Đổi màu ảnh để không ai nhận ra",
-          "D. Không cần quan tâm vì trên mạng là dùng tự do"
-        ],
-        correctIndex: 1,
-        explanation: "Tôn trọng bản quyền tác giả bằng cách ghi rõ nguồn trích dẫn là quy tắc đạo đức số quan trọng khi học Tin học.",
-        difficulty: "medium",
-        timeLimit: 15,
-        stars: 25
+        id: "g3_q_02", grade: 3, lessonId: "bai_2", topic: "Bài 2. Khám phá máy tính",
+        question: "Máy tính để bàn gồm có mấy bộ phận cơ bản?",
+        options: ["A. 2 bộ phận", "B. 3 bộ phận", "C. 4 bộ phận (Thân máy, Màn hình, Bàn phím, Chuột)", "D. 5 bộ phận"],
+        correctIndex: 2, explanation: "Máy tính để bàn gồm 4 bộ phận chính: Thân máy, Màn hình, Bàn phím và Chuột.", difficulty: "easy", timeLimit: 15, stars: 20
       },
       {
-        id: "arena_q_10",
-        grade: 5,
-        topic: "Thuật toán tìm kiếm",
-        question: "Khi tìm kiếm thông tin trên Google, sử dụng dấu ngoặc kép \"...\" có tác dụng gì?",
-        options: [
-          "A. Làm chữ to hơn",
-          "B. Tìm kiếm chính xác cụm từ nằm trong dấu ngoặc kép",
-          "C. Dịch tự động sang tiếng Anh",
-          "D. Xóa lịch sử tìm kiếm"
-        ],
-        correctIndex: 1,
-        explanation: "Đặt từ khóa trong dấu ngoặc kép giúp công cụ tìm kiếm lọc chính xác cụm từ theo đúng thứ tự các từ.",
-        difficulty: "hard",
-        timeLimit: 20,
-        stars: 30
+        id: "g3_q_03", grade: 3, lessonId: "bai_3", topic: "Bài 3. Em tập sử dụng chuột máy tính",
+        question: "Thao tác nhấn nhanh nút chuột trái hai lần liên tiếp rồi thả tay ra được gọi là gì?",
+        options: ["A. Nháy chuột", "B. Nháy đúp chuột (Double click)", "C. Kéo thả chuột", "D. Nháy chuột phải"],
+        correctIndex: 1, explanation: "Nháy đúp chuột là thao tác nháy nhanh nút trái chuột 2 lần liên tiếp.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g3_q_04", grade: 3, lessonId: "bai_4", topic: "Bài 4. Bàn phím máy tính và cách gõ các hàng phím",
+        question: "Khi đặt 8 ngón tay xuất phát trên hàng phím cơ sở, hai ngón tay trỏ đặt lên 2 phím nào có gờ?",
+        options: ["A. Phím A và L", "B. Phím F và J", "C. Phím G và H", "D. Phím Space"],
+        correctIndex: 1, explanation: "Hai phím F và J có gờ nổi giúp đặt 2 ngón tay trỏ đúng vị trí định vị khi gõ.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g3_q_05", grade: 3, lessonId: "bai_5", topic: "Bài 5. Em tập vẽ hình đơn giản với Paint",
+        question: "Trong phần mềm Paint, công cụ Tẩy (Eraser) dùng để làm gì?",
+        options: ["A. Xóa các chi tiết vẽ sai trên trang vẽ", "B. Đổ màu cho hình", "C. Vẽ đường thẳng", "D. Phóng to hình ảnh"],
+        correctIndex: 0, explanation: "Công cụ Tẩy (Eraser) giúp xóa bỏ các nét vẽ hoặc khu vực chưa vừa ý.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g3_q_06", grade: 3, lessonId: "bai_6", topic: "Bài 6. Thực hiện công việc theo các bước",
+        question: "Muốn nhờ máy tính thực hiện một công việc, ta cần chia nhỏ công việc đó thành các bước thế nào?",
+        options: ["A. Các bước ngẫu nhiên không cần thứ tự", "B. Trình tự các bước rõ ràng, nối tiếp nhau từ đầu đến cuối", "C. Chỉ cần 1 bước duy nhất", "D. Đảo ngược từ bước cuối lên"],
+        correctIndex: 1, explanation: "Công việc cần được chia thành trình tự các bước thực hiện rõ ràng theo đúng thứ tự logic.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g3_q_07", grade: 3, lessonId: "bai_7", topic: "Bài 7. Sắp xếp đồ dùng và tệp tin ngăn nắp",
+        question: "Lợi ích lớn nhất của việc sắp xếp sách vở và tệp tin trên máy tính ngăn nắp là gì?",
+        options: ["A. Giúp tìm kiếm đồ vật và tệp tin nhanh chóng, không tốn thời gian", "B. Làm bàn học nặng hơn", "C. Tự động xóa tệp cũ", "D. Đổi màu màn hình"],
+        correctIndex: 0, explanation: "Sắp xếp ngăn nắp giúp quản lý khoa học, tìm kiếm nhanh chóng và bảo quản dữ liệu tốt hơn.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g3_q_08", grade: 3, lessonId: "bai_8", topic: "Bài 8. Làm quen với thư mục và lưu trữ tệp",
+        question: "Biểu tượng của Thư mục (Folder) trên màn hình máy tính thường có hình dạng và màu sắc gì?",
+        options: ["A. Hình chiếc kẹp giấy màu xanh", "B. Hình kẹp hồ sơ màu vàng 📁", "C. Hình ngôi sao màu đỏ", "D. Hình chú mèo Scratch"],
+        correctIndex: 1, explanation: "Thư mục trên Windows có biểu tượng chiếc kẹp hồ sơ màu vàng đặc trưng.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g3_q_09", grade: 3, lessonId: "bai_9", topic: "Bài 9. An toàn phòng thực hành Tin học",
+        question: "Khoảng cách an toàn tiêu chuẩn từ mắt đến màn hình máy tính là bao nhiêu?",
+        options: ["A. 10 - 20 cm", "B. 50 - 70 cm", "C. 100 - 150 cm", "D. Nhắm mắt lại khi ngồi"],
+        correctIndex: 1, explanation: "Khoảng cách 50-70cm giúp bảo vệ thị lực và giữ tư thế ngồi thẳng lưng chống mỏi cổ.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g3_q_10", grade: 3, lessonId: "bai_10", topic: "Bài 10. Bảo vệ thông tin cá nhân trên Internet",
+        question: "Thông tin nào sau đây em KHÔNG NÊN chia sẻ công khai với người lạ trên mạng Internet?",
+        options: ["A. Mật khẩu tài khoản, địa chỉ nhà riêng và số điện thoại của bố mẹ", "B. Tên môn học em thích", "C. Bài hát em vừa nghe", "D. Màu sắc em yêu thích"],
+        correctIndex: 0, explanation: "Tuyệt đối không chia sẻ thông tin riêng tư (Mật khẩu, địa chỉ, số điện thoại) để tránh nguy cơ bị kẻ xấu lợi dụng.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+
+      // === KHỐI LỚP 5 - SGK CHUẨN KẾT NỐI TRI THỨC VỚI CUỘC SỐNG ===
+      {
+        id: "g5_q_01", grade: 5, lessonId: "bai_1", topic: "Bài 1. Máy tính và mạng máy tính",
+        question: "Mạng máy tính (Computer Network) là gì?",
+        options: ["A. Là tập hợp các máy tính được kết nối với nhau để chia sẻ dữ liệu và thiết bị", "B. Là một chiếc máy tính đơn lẻ", "C. Là dây cắm bàn phím", "D. Là màn hình vô tivi"],
+        correctIndex: 0, explanation: "Mạng máy tính kết nối 2 hoặc nhiều máy tính với nhau nhằm truyền tải thông tin và chia sẻ tài nguyên.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g5_q_02", grade: 5, lessonId: "bai_2", topic: "Bài 2. Tìm kiếm thông tin chính xác trên Internet",
+        question: "Để tìm kiếm chính xác cụm từ 'Học liệu Vui học Tin học' trên Google, em gõ cú pháp từ khóa nào?",
+        options: ["A. Học liệu Vui học Tin học", "B. \"Học liệu Vui học Tin học\"", "C. Học liệu + Vui học", "D. Học liệu - Tin học"],
+        correctIndex: 1, explanation: "Đặt cụm từ trong dấu ngoặc kép \"...\" bắt buộc công cụ tìm kiếm trả về đúng nguyên văn cụm từ đó.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g5_q_03", grade: 5, lessonId: "bai_3", topic: "Bài 3. An toàn số và bảo mật thông tin cá nhân",
+        question: "Mật khẩu nào sau đây đáp ứng độ AN TOÀN VÀ BẢO MẬT CAO NHẤT?",
+        options: ["A. 12345678", "B. tenhocsinh2026", "C. AnhDao@TinHoc#2026", "D. 000000"],
+        correctIndex: 2, explanation: "Mật khẩu mạnh dài trên 8 ký tự, gồm cả chữ HOA, chữ thường, chữ số và ký tự đặc biệt (@, #, $...).", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g5_q_04", grade: 5, lessonId: "bai_4", topic: "Bài 4. Đạo đức số và bản quyền tài nguyên",
+        question: "Hành động nào sau đây thể hiện sự tôn trọng bản quyền khi sử dụng tài liệu trên mạng?",
+        options: ["A. Tự nhận là sản phẩm do mình sáng tác", "B. Ghi rõ tên tác giả và trang web nguồn trích dẫn", "C. Xóa tên tác giả khỏi bức ảnh", "D. Đem bán lại lấy tiền"],
+        correctIndex: 1, explanation: "Tôn trọng bản quyền tác giả bằng cách ghi nhận tác giả và dẫn nguồn trích dẫn hợp pháp.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g5_q_05", grade: 5, lessonId: "bai_5", topic: "Bài 5. Tổ chức lưu trữ dữ liệu trên Cloud",
+        question: "Dịch vụ lưu trữ đám mây (Cloud Storage) như Google Drive có ưu điểm lớn nhất là gì?",
+        options: ["A. Lưu dữ liệu an toàn trên mạng, truy cập được từ mọi thiết bị có kết nối Internet", "B. Chỉ lưu trên 1 máy tính cố định", "C. Làm máy tính nặng hơn", "D. Không thể chia sẻ cho bạn bè"],
+        correctIndex: 0, explanation: "Lưu trữ đám mây giúp lưu trữ an toàn, đồng bộ linh hoạt và truy cập mọi lúc mọi nơi.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g5_q_06", grade: 5, lessonId: "bai_6", topic: "Bài 6. Thuật toán và sơ đồ khối",
+        question: "Trong sơ đồ khối biểu diễn thuật toán, hình HÌNH THOI ♢ được dùng để thể hiện thao tác nào?",
+        options: ["A. Thao tác Bắt đầu / Kết thúc", "B. Thao tác Kiểm tra điều kiện (Đúng/Sai)", "C. Thao tác tính toán", "D. Thao tác nhập xuất dữ liệu"],
+        correctIndex: 1, explanation: "Hình thoi trong sơ đồ khối biểu thị bước rẽ nhánh kiểm tra điều kiện ĐÚNG hoặc SAI.", difficulty: "hard", timeLimit: 20, stars: 30
+      },
+      {
+        id: "g5_q_07", grade: 5, lessonId: "bai_7", topic: "Bài 7. Lập trình Scratch: Biến số",
+        question: "Trong Scratch, để tạo một Biến số lưu Điểm số (Score) của trò chơi, em nháy chọn nhóm lệnh nào?",
+        options: ["A. Các biến số (Variables)", "B. Chuyển động", "C. Âm thanh", "D. Hiển thị"],
+        correctIndex: 0, explanation: "Nhóm lệnh Các biến số (Variables) màu cam dùng để tạo biến, thay đổi giá trị và hiển thị biến số.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g5_q_08", grade: 5, lessonId: "bai_8", topic: "Bài 8. Câu lệnh rẽ nhánh Nếu...thì",
+        question: "Khối lệnh 'nếu <chạm nhân vật> thì' thực hiện lệnh bên trong khi nào?",
+        options: ["A. Khi điều kiện <chạm nhân vật> là ĐÚNG (True)", "B. Khi điều kiện là SAI", "C. Không bao giờ chạy", "D. Chạy liên tục không ngừng"],
+        correctIndex: 0, explanation: "Khối lệnh 'nếu... thì' chỉ thực thi các câu lệnh bên trong khi biểu thức điều kiện được thỏa mãn.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g5_q_09", grade: 5, lessonId: "bai_9", topic: "Bài 9. Cấu trúc lặp trong lập trình",
+        question: "Để lập trình cho chú mèo chạy vòng quanh sân khấu đúng 4 lần rồi dừng lại, em dùng khối lệnh lặp nào?",
+        options: ["A. lặp lại 4 lần", "B. liên tục", "C. lặp lại cho đến khi", "D. đợi 4 giây"],
+        correctIndex: 0, explanation: "Khối lệnh 'lặp lại N lần' được dùng khi ta biết chính xác số lần lặp lại hành động.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g5_q_10", grade: 5, lessonId: "bai_10", topic: "Bài 10. Tạo trò chơi hoàn chỉnh trong Scratch",
+        question: "Trong dự án trò chơi 'Né chướng ngại vật', khi nhân vật chạm vào chướng ngại vật thì chương trình xử lý thế nào?",
+        options: ["A. Dừng tất cả (stop all) và phát âm thanh thua cuộc", "B. Tăng điểm số lên 100", "C. Nhân vật to lên", "D. Đổi phông nền chúc mừng"],
+        correctIndex: 0, explanation: "Khi va chạm chướng ngại vật, trò chơi kết thúc bằng lệnh 'stop all' và thông báo kết quả.", difficulty: "hard", timeLimit: 20, stars: 30
+      },
+      {
+        id: "g5_q_11", grade: 5, lessonId: "bai_11", topic: "Bài 11. Thiết kế bài trình chiếu chuyên nghiệp",
+        question: "Yếu tố nào giúp bài thuyết trình PowerPoint thu hút và truyền cảm hứng hơn cho người xem?",
+        options: ["A. Nhồi nhét quá nhiều chữ trên 1 trang", "B. Bố cục hài hòa, hình ảnh chất lượng, hiệu ứng nhẹ nhàng và màu sắc tương phản rõ ràng", "C. Dùng 10 font chữ khác nhau", "D. Đèn chớp liên tục không ngừng"],
+        correctIndex: 1, explanation: "Trang chiếu đẹp cần ngắn gọn, rõ ràng, hình ảnh minh họa phù hợp và hiệu ứng chuyên nghiệp.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g5_q_12", grade: 5, lessonId: "bai_12", topic: "Bài 12. Dự án học tập Tin học 5",
+        question: "Dự án học tập Tin học giúp học sinh rèn luyện được những năng lực cốt lõi nào?",
+        options: ["A. Năng lực sử dụng công nghệ số, tư duy giải quyết vấn đề và kỹ năng hợp tác nhóm", "B. Chỉ rèn luyện gõ chữ", "C. Chỉ rèn luyện vẽ hình", "D. Không mang lại lợi ích gì"],
+        correctIndex: 0, explanation: "Dự án học tập phát triển toàn diện Năng lực Tin học (NLa, NLb, NLc, NLd, NLe) theo Công văn 2345/BGDĐT.", difficulty: "medium", timeLimit: 15, stars: 25
       }
     ];
 
     this.initDatabase();
   }
 
-  // Khởi tạo dữ liệu Local ban đầu nếu chưa có
+  // Khởi tạo dữ liệu Local ban đầu nếu chưa có hoặc hợp nhất câu hỏi mới
   initDatabase() {
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || {};
-    if (!db.arena_questions || db.arena_questions.length === 0) {
+    if (!db.arena_questions || db.arena_questions.length < this.initialQuestions.length) {
       db.arena_questions = this.initialQuestions;
       localStorage.setItem("app_mock_db", JSON.stringify(db));
     }
+  }
   }
 
   // 1. LẤY DANH SÁCH CÂU HỎI ĐẤU TRƯỜNG (SUPABASE + LOCAL FALLBACK)
