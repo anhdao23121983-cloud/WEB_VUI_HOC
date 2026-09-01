@@ -171,19 +171,28 @@ class AuthService {
       }
     }
 
-    // 2. Kiểm tra trên LocalStorage Database
+    // 2. Kiểm tra trên LocalStorage Database (Fallback nếu chưa kết nối Internet/Supabase)
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     
-    // Tìm theo username hoặc email hoặc mã học sinh
+    // Tìm theo username và kiểm tra mật khẩu
     let found = (db.users || []).find(u => 
       ((u.username && u.username.toLowerCase() === cleanUsername) || 
-       (u.email && u.email.toLowerCase() === cleanUsername) ||
-       (u.studentCode && u.studentCode.toLowerCase() === cleanUsername))
+       (u.email && u.email.toLowerCase() === cleanUsername)) &&
+      (u.password ? u.password === cleanPassword : cleanPassword === "123456")
     );
 
-    // Xử lý tài khoản mặc định
-    if (!found) {
-      if (cleanUsername === "anhdao" || cleanUsername === "teacher") {
+    // Xử lý tài khoản mặc định hệ thống nếu khớp mật khẩu "123456"
+    if (!found && cleanPassword === "123456") {
+      if (cleanUsername === "admin") {
+        found = {
+          id: "u_admin_01",
+          username: "admin",
+          name: "Quản Trị Viên Tối Cao",
+          role: "admin",
+          school: "Hệ Thống Anh Đào Classroom",
+          avatar: "👑"
+        };
+      } else if (cleanUsername === "anhdao" || cleanUsername === "teacher") {
         found = {
           id: "u_teacher_01",
           username: "anhdao",
@@ -194,7 +203,7 @@ class AuthService {
         };
       } else if (cleanUsername.startsWith("hs") || cleanUsername === "hocsinh") {
         found = {
-          id: "u_student_01",
+          id: "u_student_" + cleanUsername,
           username: cleanUsername,
           name: "Học Sinh " + cleanUsername.toUpperCase(),
           role: "student",
