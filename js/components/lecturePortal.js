@@ -2027,6 +2027,34 @@ class LecturePortal {
     }
   }
 
+  // Đọc thuyết minh bằng Giọng đọc AI Cô Giáo Đà Nẵng (Miền Trung - Ấm Áp & Truyền Cảm)
+  async speakSlideNarration(slideIdx = 1) {
+    if (!window.ttsService) return;
+    window.ttsService.setVoiceAccent('central');
+
+    let textToSpeak = "";
+    if (this.currentPreviewLectureId) {
+      const lecture = await window.lectureService.getLectureById(this.currentPreviewLectureId);
+      if (lecture) {
+        const title = lecture.title || "Bài giảng Tin học";
+        const narratives = [
+          `Cô chào tất cả các em học sinh thân yêu! Cô giáo Anh Đào rất vui được gặp lại các em. Hôm nay Cô trò mình cùng bắt đầu khám phá bài học: ${title}. Nào, các em hãy cùng quan sát và lắng nghe Cô hướng dẫn nhé!`,
+          `Mời các em cùng quan sát lên màn hình! Bài học gồm có bốn bộ phận chính của máy tính để bàn: Một là Màn hình hiển thị hình ảnh. Hai là Thân máy chứa bộ vi xử lý CPU được xem là bộ não trung tâm. Ba là Bàn phím dùng để nhập ký tự. Và Bốn là Chuột máy tính để điều khiển con trỏ.`,
+          `Các em chú ý quy tắc cầm chuột bằng tay phải: Ngón trỏ đặt lên nút chuột trái, ngón giữa đặt lên nút chuột phải. Khi ngồi học máy tính, các em nhớ giữ lưng thật thẳng, giữ khoảng cách từ mắt đến màn hình từ 50 đến 80 cen-ti-mét nhé!`,
+          `Bây giờ Cô mời các em cùng tham gia thử thách trắc nghiệm nhanh! Bộ phận nào được xem là bộ não trung tâm điều khiển của máy tính để bàn? Hãy suy nghĩ kỹ và chọn đáp án B nhé!`,
+          `Cô chúc mừng tất cả các em đã xuất sắc hoàn thành xong bài học hôm nay! Các em nhớ ôn lại bài, thực hành trên máy tính và nhận 15 Sao Vàng khen thưởng của Cô nhé!`
+        ];
+        textToSpeak = narratives[(slideIdx - 1) % narratives.length];
+      }
+    }
+
+    if (!textToSpeak) {
+      textToSpeak = "Cô chào các em học sinh thân yêu! Cô trò mình cùng bắt đầu khám phá bài học Tin học hôm nay nhé!";
+    }
+
+    window.ttsService.speak(textToSpeak);
+  }
+
   // Tự động phân tích và sinh Embed URL thông minh
   getSmartEmbedUrl(lecture) {
     if (!lecture || !lecture.fileUrl) return "";
@@ -2228,6 +2256,12 @@ class LecturePortal {
           let currentSlide = 1;
           const totalSlides = 5;
 
+          function speakCurrentSlideVoice() {
+            if (window.parent && window.parent.lecturePortal) {
+              window.parent.lecturePortal.speakSlideNarration(currentSlide);
+            }
+          }
+
           function showSlide(idx) {
             if (idx < 1) idx = 1;
             if (idx > totalSlides) idx = totalSlides;
@@ -2243,6 +2277,8 @@ class LecturePortal {
 
             const numDisp = document.getElementById('slide-num-disp');
             if (numDisp) numDisp.innerText = 'Slide ' + currentSlide + ' / ' + totalSlides;
+
+            speakCurrentSlideVoice();
           }
 
           function prevSlide() { showSlide(currentSlide - 1); }

@@ -21,10 +21,32 @@ class TTSService {
     this.activeKaraokeElements = [];
     this.karaokeTimer = null;
 
+    this.voiceAccent = 'central'; // Mặc định: Giọng Cô giáo Đà Nẵng (Miền Trung)
     this.initVoices();
     if (this.speechSynth && this.speechSynth.onvoiceschanged !== undefined) {
       this.speechSynth.onvoiceschanged = () => this.initVoices();
     }
+  }
+
+  setVoiceAccent(accent = 'central') {
+    this.voiceAccent = accent;
+    const accentNames = {
+      central: "🎙️ Giọng Cô Giáo Đà Nẵng (Miền Trung - Ấm Áp & Truyền Cảm)",
+      north: "🎙️ Giọng Cô Giáo Hà Nội (Miền Bắc - Tròn Vành Rõ Chữ)",
+      south: "🎙️ Giọng Cô Giáo Sài Gòn (Miền Nam - Dịu Dàng Ngọt Ngào)"
+    };
+    window.app?.showToast?.(`✨ Đã chọn ${accentNames[accent] || accentNames.central}`, "success");
+    return this.voiceAccent;
+  }
+
+  getVoiceParams() {
+    if (this.voiceAccent === 'central') {
+      // Cao độ và nhịp điệu thong thả, ngọt ngào truyền cảm của Cô giáo Đà Nẵng
+      return { pitch: 1.08, rate: 0.90 };
+    } else if (this.voiceAccent === 'south') {
+      return { pitch: 1.15, rate: 0.94 };
+    }
+    return { pitch: 1.2, rate: 0.92 };
   }
 
   initVoices() {
@@ -158,9 +180,9 @@ class TTSService {
 
     const cleanText = this.cleanTextForSpeech(text);
     const onStart = options.onStart || (() => {});
-    const onEnd = options.onEnd || (() => {});
-    const rate = options.rate || 0.92;
-    const pitch = options.pitch || 1.2;
+    const params = this.getVoiceParams();
+    const rate = options.rate || params.rate;
+    const pitch = options.pitch || params.pitch;
 
     // Chuẩn bị Karaoke nếu có containers
     if (options.karaokeContainers && this.isKaraokeEnabled) {
