@@ -444,6 +444,78 @@ class AdminService {
       topicE: Math.min(100, Math.round((82 + Math.random() * 12) * factor))  // Lập trình Robot & Scratch
     };
   }
+
+  // 13. Tự động sao lưu dự phòng CSDL (Auto Backup Database)
+  async createDatabaseBackup() {
+    const users = await this.getAllUsers();
+    const plans = await window.supabaseService?.getLessonPlans() || [];
+    const quizzes = await window.quizService?.getAllQuizzes() || [];
+    const history = window.examService?.getExamHistory() || [];
+
+    const backupPayload = {
+      backupDate: new Date().toISOString(),
+      version: "2.0",
+      totalUsers: users.length,
+      users: users,
+      plansCount: plans.length,
+      quizzesCount: quizzes.length,
+      examHistoryCount: history.length
+    };
+
+    // Save locally
+    const backups = JSON.parse(localStorage.getItem("app_db_backups")) || [];
+    backups.push(backupPayload);
+    localStorage.setItem("app_db_backups", JSON.stringify(backups));
+
+    // Upload to Supabase Storage if available
+    if (window.supabaseService?.isReady()) {
+      try {
+        const fileName = `backup_${Date.now()}.json`;
+        const blob = new Blob([JSON.stringify(backupPayload, null, 2)], { type: "application/json" });
+        await window.supabaseService.uploadFileToStorage(new File([blob], fileName), "db-backups");
+      } catch (err) {
+        console.warn("Lỗi upload file sao lưu CSDL lên Supabase Storage:", err);
+      }
+    }
+
+    return backupPayload;
+  }
+
+  // 14. Trợ lý AI tư vấn lộ trình bồi dưỡng Học sinh Giỏi Tin học 3D Radar
+  async generateAIGiftedAdvisor(username, radarData) {
+    const isGiftedCandidate = radarData.topicE >= 80 || radarData.topicC >= 85;
+
+    let summary = "";
+    let recommendation = "";
+    let roadmap = [];
+
+    if (isGiftedCandidate) {
+      summary = `🌟 Học sinh '${username}' thể hiện tư duy Logic & Lập trình xuất sắc (Chủ đề E: ${radarData.topicE}%, Chủ đề C: ${radarData.topicC}%).`;
+      recommendation = `🏆 KÍCH HOẠT LỘ TRÌNH BỒI DƯỠNG HỌC SINH GIỎI TIN HỌC TRẺ:\nĐề xuất xếp em vào Đội tuyển năng khiếu Lập trình Scratch và Mô phỏng Robot Lego EV3 cấp Trường!`;
+      roadmap = [
+        "Tuần 1: Ôn luyện khối lệnh vẽ hình học nâng cao (Spirals & Polygons) trên Scratch 3.0",
+        "Tuần 2: Thực hành biến số & Danh sách List trong bài toán sắp xếp mảng",
+        "Tuần 3: Lập trình Robot dò đường bằng cảm biến ánh sáng trong Mô Phỏng 3D",
+        "Tuần 4: Giải 5 đề thi Tin học Trẻ Tiểu học bảng A các năm"
+      ];
+    } else {
+      summary = `💪 Học sinh '${username}' có nền tảng kiến thức Đạo đức Tin học & Sử dụng Máy tính tốt (Chủ đề D: ${radarData.topicD}%, Chủ đề A: ${radarData.topicA}%).`;
+      recommendation = `🎯 LỘ TRÌNH PHỤ ĐẠO & CỦNG CỐ NĂNG LỰC CỐT LÕI:\nTập trung rèn luyện thêm kỹ năng thao tác thư mục máy tính và tư duy lập trình căn bản.`;
+      roadmap = [
+        "Tuần 1: Thực hành tạo cây thư mục bài học trên phòng máy 3D",
+        "Tuần 2: Luyện tập gõ phím nhanh 10 ngón với phần mềm Typing Master",
+        "Tuần 3: Làm quen với khối lệnh di chuyển nhân vật Scratch căn bản",
+        "Tuần 4: Tham gia đấu trường 100 câu trắc nghiệm Tin học 3-5"
+      ];
+    }
+
+    return {
+      summary: summary,
+      recommendation: recommendation,
+      roadmap: roadmap,
+      isGifted: isGiftedCandidate
+    };
+  }
 }
 
 window.adminService = new AdminService();

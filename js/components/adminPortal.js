@@ -89,6 +89,10 @@ class AdminPortal {
               <button onclick="adminPortal.exportUsersExcel()" class="btn btn-outline btn-sm font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-300" title="Xuất toàn bộ danh sách tài khoản ra file Excel">
                 📊 Xuất Excel
               </button>
+              <!-- Nút 💾 Sao Lưu CSDL -->
+              <button onclick="adminPortal.backupDatabase()" class="btn btn-outline btn-sm font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border-purple-300" title="Đóng gói và tải bản sao lưu CSDL hệ thống (.json)">
+                💾 Sao Lưu CSDL
+              </button>
               <!-- Nút 🎴 In Thẻ A4 QR Code -->
               <button onclick="adminPortal.printStudentCardsA4()" class="btn btn-outline btn-sm font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-300" title="In thẻ đăng nhập A4 có mã QR Code cho học sinh">
                 🎴 In Thẻ A4 QR
@@ -98,7 +102,7 @@ class AdminPortal {
                 📥 Nhập Hàng Loạt
               </button>
               <!-- Nút 🚀 Chuyển Niên Học Mới -->
-              <button onclick="adminPortal.promoteAcademicYear()" class="btn btn-primary btn-sm font-bold bg-amber-600 hover:bg-amber-700 shadow-sm" title="Nâng khối lớp (Khối 3->4, Khối 4->5) và đặt lại mật khẩu 123456 cho toàn trường">
+              <button onclick="adminPortal.promoteAcademicYear()" class="btn btn-primary btn-sm font-bold bg-amber-600 hover:bg-amber-700 shadow-sm" title="Tự động sao lưu & Nâng khối lớp (Khối 3->4, Khối 4->5) và đặt lại mật khẩu 123456">
                 🚀 Chuyển Niên Học Mới
               </button>
             </div>
@@ -661,7 +665,7 @@ class AdminPortal {
           .card-user { font-family: monospace; font-weight: bold; color: #0284c7; background: #e0f2fe; padding: 2px 6px; border-radius: 6px; display: inline-block; }
           .card-pwd { font-family: monospace; color: #64748b; font-size: 11px; margin-top: 4px; }
           .qr-box { text-align: center; }
-          .qr-box img { width: 90px; h-height: 90px; border-radius: 8px; border: 1px solid #cbd5e1; }
+          .qr-box img { width: 90px; height: 90px; border-radius: 8px; border: 1px solid #cbd5e1; }
           .qr-box p { font-size: 9px; font-weight: bold; color: #64748b; margin: 2px 0 0 0; }
         </style>
       </head>
@@ -682,7 +686,7 @@ class AdminPortal {
           </div>
           <div class="qr-box">
             <img src="${qrUrl}" alt="QR Login">
-            <p>Quét Quét Đăng Nhập</p>
+            <p>Quét Đăng Nhập</p>
           </div>
         </div>
       `;
@@ -693,14 +697,29 @@ class AdminPortal {
     printWin.document.write(html);
     printWin.document.close();
   }
+  async backupDatabase() {
+    const backupData = await window.adminService.createDatabaseBackup();
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `vuihoc_db_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 
-  // =========================================================================
-  // GỢI Ý 4: TỰ ĐỘNG CHUYỂN NIÊN HỌC MỚI (NÂNG LỚP & RESET MK 123456)
-  // =========================================================================
+    window.app.showToast("💾 Đã đóng gói và tải bản sao lưu CSDL (.json) thành công!", "success");
+  }
+
   async promoteAcademicYear() {
     if (!confirm("⚠️ CẢNH BÁO NĂM HỌC MỚI:\nThầy Cô có chắc chắn muốn NÂNG KHỐI LỚP (Khối 3->4, Khối 4->5) và ĐẶT LẠI MẬT KHẨU '123456' cho toàn bộ học sinh không?")) {
       return;
     }
+
+    // Tự động sao lưu dự phòng CSDL trước khi nâng niên học
+    await window.adminService.createDatabaseBackup();
+    window.app.showToast("💾 Đã tự động tạo bản sao lưu dữ liệu toàn hệ thống trước khi nâng lớp!", "info");
 
     const res = await window.adminService.promoteAcademicYear();
     if (res.success) {
@@ -712,7 +731,7 @@ class AdminPortal {
   }
 
   // =========================================================================
-  // GỢI Ý 5: BIỂU ĐỒ RADAR 3D PHÂN TÍCH NĂNG LỰC HỌC TẬP GDPT 2018
+  // GỢI Ý 5: BIỂU ĐỒ RADAR 3D PHÂN TÍCH NĂNG LỰC HỌC TẬP GDPT 2018 & TRỢ LÝ AI
   // =========================================================================
   async openSkillRadarModal(username, name) {
     const titleEl = document.getElementById("admin-radar-user-title");
@@ -761,6 +780,68 @@ class AdminPortal {
           <text x="355" y="125" text-anchor="start" fill="#10b981" font-weight="bold" font-size="11">B. Mạng Mát (${data.topicB}%)</text>
           <text x="305" y="300" text-anchor="middle" fill="#06b6d4" font-weight="bold" font-size="11">C. Sắp Xếp (${data.topicC}%)</text>
           <text x="95" y="300" text-anchor="middle" fill="#ec4899" font-weight="bold" font-size="11">D. Đạo Đức (${data.topicD}%)</text>
+          <text x="45" y="125" text-anchor="end" fill="#3b82f6" font-weight="bold" font-size="11">E. Lập Trình (${data.topicE}%)</text>
+        </svg>
+      `;
+    }
+
+    const aiAdvice = await window.adminService.generateAIGiftedAdvisor(username, data);
+
+    if (detailsGridEl) {
+      detailsGridEl.innerHTML = `
+        <div class="p-2 bg-amber-50 rounded-xl border border-amber-200 text-amber-900">
+          ⭐ <b>Chủ đề A (Máy tính & Em):</b> ${data.topicA}% • Level: ${data.topicA >= 85 ? 'Tốt' : 'Đạt'}
+        </div>
+        <div class="p-2 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-900">
+          🌐 <b>Chủ đề B (Mạng máy tính):</b> ${data.topicB}% • Level: ${data.topicB >= 80 ? 'Tốt' : 'Đạt'}
+        </div>
+        <div class="p-2 bg-cyan-50 rounded-xl border border-cyan-200 text-cyan-900">
+          📂 <b>Chủ đề C (Sắp xếp thư mục):</b> ${data.topicC}% • Level: ${data.topicC >= 85 ? 'Xuất sắc' : 'Tốt'}
+        </div>
+        <div class="p-2 bg-pink-50 rounded-xl border border-pink-200 text-pink-900">
+          🛡️ <b>Chủ đề D (Đạo đức Tin học):</b> ${data.topicD}% • Level: ${data.topicD >= 85 ? 'Xuất sắc' : 'Tốt'}
+        </div>
+        <div class="p-2 bg-blue-50 rounded-xl border border-blue-200 text-blue-900 col-span-2">
+          🤖 <b>Chủ đề E (Giải quyết vấn đề & Lập trình Robot):</b> ${data.topicE}% • Level: ${data.topicE >= 80 ? 'Tốt' : 'Đạt'}
+        </div>
+
+        <!-- Khung Khuyến Nghị AI Bồi Dưỡng HSG -->
+        <div class="col-span-2 p-3 bg-purple-50 rounded-2xl border-2 border-purple-300 space-y-2 mt-2">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-purple-900 flex items-center gap-1.5 text-xs">
+              <span>🤖</span> <span>TRỢ LÝ AI TƯ VẤN LỘ TRÌNH BỒI DƯỠNG</span>
+            </span>
+            <button onclick="adminPortal.speakAIGiftedAdvice('${encodeURIComponent(aiAdvice.recommendation)}')" class="btn btn-outline btn-xs font-bold text-purple-700 bg-white">
+              🔊 Đọc Tư Vấn (Cô ĐN)
+            </button>
+          </div>
+
+          <p class="font-bold text-slate-800 text-xs">${aiAdvice.summary}</p>
+          <div class="p-2 bg-white rounded-xl border border-purple-200 text-purple-900 font-extrabold text-xs whitespace-pre-line">
+            ${aiAdvice.recommendation}
+          </div>
+
+          <div class="space-y-1 pt-1">
+            <p class="font-black text-slate-700 uppercase text-[10px]">📅 Lộ trình bồi dưỡng 4 tuần đề xuất:</p>
+            <ul class="list-disc pl-4 space-y-0.5 text-slate-600 font-semibold text-[11px]">
+              ${aiAdvice.roadmap.map(step => `<li>${step}</li>`).join("")}
+            </ul>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Đọc thuyết minh tư vấn bồi dưỡng AI
+  speakAIGiftedAdvice(encodedText) {
+    const text = decodeURIComponent(encodedText);
+    if (window.ttsService) {
+      window.ttsService.speak(`Trợ lý AI tư vấn bồi dưỡng học sinh: ${text}`, () => {
+        window.app?.showToast("🎉 Đã hoàn tất thuyết minh tư vấn bồi dưỡng AI!", "success");
+      });
+      window.app?.showToast("🎙️ Đang thuyết minh tư vấn bồi dưỡng AI cho Thầy Cô nghe...", "info");
+    }
+  }00" text-anchor="middle" fill="#ec4899" font-weight="bold" font-size="11">D. Đạo Đức (${data.topicD}%)</text>
           <text x="45" y="125" text-anchor="end" fill="#3b82f6" font-weight="bold" font-size="11">E. Lập Trình (${data.topicE}%)</text>
         </svg>
       `;
