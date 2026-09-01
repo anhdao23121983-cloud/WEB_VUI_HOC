@@ -3522,6 +3522,38 @@
         </button>
       </div>
     </div>
+  <!-- MODAL 47: VÒNG QUAY MAY MẮN LUCKY SPIN WHEEL (ARENA LUCKY WHEEL MODAL) -->
+  <div id="arena-lucky-wheel-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-lg space-y-5 animate-pop bg-slate-950 text-white rounded-3xl shadow-2xl border-4 border-amber-400 text-center">
+      <div class="flex items-center justify-between pb-3 border-b border-amber-500/40">
+        <div class="flex items-center gap-2.5">
+          <span class="text-4xl p-2 bg-amber-500/20 text-amber-300 rounded-2xl animate-bounce">🎡</span>
+          <div class="text-left">
+            <h3 class="text-lg font-black text-amber-300">VÒNG QUAY MAY MẮN</h3>
+            <p class="text-xs text-slate-400 font-semibold">Phần thưởng chiến thắng Trùm AI Virus</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('arena-lucky-wheel-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-200">✕</button>
+      </div>
+
+      <div class="flex flex-col items-center justify-center space-y-4">
+        <div class="relative">
+          <div class="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-amber-400 absolute -top-3 left-1/2 -translate-x-1/2 z-20 filter drop-shadow"></div>
+          <canvas id="arena-wheel-canvas" width="300" height="300" class="rounded-full shadow-2xl border-4 border-amber-400 bg-slate-900"></canvas>
+        </div>
+
+        <button onclick="arenaPortal.spinLuckyWheel()" id="btn-spin-wheel" class="btn btn-amber btn-lg font-black px-8 shadow-2xl">
+          🎯 BẮT ĐẦU QUAY VÒNG MAY MẮN ▶
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+        <span class="text-xs font-bold text-amber-300">⭐ Cơ hội trúng +20, +50, +100 Sao Vàng!</span>
+        <button onclick="document.getElementById('arena-lucky-wheel-modal').classList.remove('active')" class="btn btn-outline btn-sm text-slate-300">
+          Đóng
+        </button>
+      </div>
+    </div>
   </div>
 
   <footer class="mt-auto bg-white border-t border-slate-200 py-6 px-4 text-center text-xs text-slate-500 flex flex-col items-center justify-center gap-2">

@@ -1837,10 +1837,19 @@ class ArenaPortal {
           <div class="bg-gradient-to-r from-rose-600 via-red-500 to-amber-500 h-full rounded-full transition-all duration-500" style="width: ${hpPercent}%"></div>
         </div>
 
-        <div class="pt-2">
+        <div class="pt-2 space-y-2">
           <button onclick="arenaPortal.attackBossVirus()" class="btn bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white btn-lg font-black w-full shadow-2xl animate-pulse flex items-center justify-center gap-2">
             <span>⚡</span> <span>TUNG CHIÊU DIỆT VIRUS (-100 HP) ▶</span>
           </button>
+
+          <div class="grid grid-cols-2 gap-3 pt-1">
+            <button onclick="arenaPortal.useShieldSkill()" class="btn bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white btn-md font-black shadow-lg flex items-center justify-center gap-1.5">
+              <span>🛡️</span> <span>Lá Chắn Bảo Vệ</span>
+            </button>
+            <button onclick="arenaPortal.useDoubleDamageSkill()" class="btn bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white btn-md font-black shadow-lg flex items-center justify-center gap-1.5">
+              <span>⚡</span> <span>x2 Sát Thương (-200 HP)</span>
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -1855,14 +1864,114 @@ class ArenaPortal {
     if (this.bossHP <= 0) {
       this.playVictorySound();
       this.triggerFireworks(true);
-      window.app?.showToast?.("🎉 XUẤT SẮC! CẢ LỚP ĐÃ TIÊU DIỆT TRÙM AI VIRUS GIẢI CỨU HỆ THỐNG! ⭐ +100 SAO!", "success");
+      window.app?.showToast?.("🎉 XUẤT SẮC! CẢ LỚP ĐÃ TIÊU DIỆT TRÙM AI VIRUS GIẢI CỨU HỆ THỐNG!", "success");
       setTimeout(() => {
         document.getElementById("arena-boss-modal")?.classList.remove("active");
-        this.openTreasureModal();
+        this.openLuckyWheelModal();
       }, 1000);
     } else {
       window.app?.showToast?.(`⚔️ Đòn tấn công chính xác! Trùm Virus mất -100 HP! Còn ${this.bossHP} HP!`, "info");
     }
+  }
+
+  useShieldSkill() {
+    this.playVictorySound();
+    window.app?.showToast?.("🛡️ KÍCH HOẠT LÁ CHẮN BẢO VỆ: Miễn trừ sát thương phản công!", "success");
+  }
+
+  useDoubleDamageSkill() {
+    this.triggerScreenShake();
+    this.playWrongSound();
+    this.bossHP = Math.max(0, this.bossHP - 200);
+    this.renderBossStage();
+    window.app?.showToast?.("⚡ CRITICAL HIT! x2 SÁT THƯƠNG GIỘI VÀO TRÙM VIRUS (-200 HP)!", "warning");
+
+    if (this.bossHP <= 0) {
+      this.playVictorySound();
+      this.triggerFireworks(true);
+      window.app?.showToast?.("🎉 XUẤT SẮC! CẢ LỚP ĐÃ TIÊU DIỆT TRÙM AI VIRUS GIẢI CỨU HỆ THỐNG!", "success");
+      setTimeout(() => {
+        document.getElementById("arena-boss-modal")?.classList.remove("active");
+        this.openLuckyWheelModal();
+      }, 1000);
+    }
+  }
+
+  // VÒNG QUAY MAY MẮN LUCKY SPIN WHEEL (Gợi ý 2)
+  openLuckyWheelModal() {
+    const modal = document.getElementById("arena-lucky-wheel-modal");
+    if (!modal) return;
+
+    this.wheelRotation = 0;
+    this.drawLuckyWheelCanvas(0);
+    modal.classList.add("active");
+  }
+
+  drawLuckyWheelCanvas(angle = 0) {
+    const canvas = document.getElementById("arena-wheel-canvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 300, 300);
+
+    const slices = [
+      { text: "+20 ⭐", color: "#3b82f6" },
+      { text: "+50 ⭐", color: "#10b981" },
+      { text: "+100 ⭐", color: "#f59e0b" },
+      { text: "+30 ⭐", color: "#8b5cf6" },
+      { text: "+80 ⭐", color: "#ec4899" },
+      { text: "+200 ⭐", color: "#ef4444" }
+    ];
+
+    const sliceAngle = (Math.PI * 2) / slices.length;
+
+    ctx.save();
+    ctx.translate(150, 150);
+    ctx.rotate(angle);
+
+    slices.forEach((s, idx) => {
+      ctx.beginPath();
+      ctx.fillStyle = s.color;
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, 140, idx * sliceAngle, (idx + 1) * sliceAngle);
+      ctx.fill();
+
+      ctx.save();
+      ctx.rotate(idx * sliceAngle + sliceAngle / 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 16px Nunito, sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(s.text, 120, 5);
+      ctx.restore();
+    });
+
+    ctx.restore();
+  }
+
+  spinLuckyWheel() {
+    const btn = document.getElementById("btn-spin-wheel");
+    if (btn) btn.disabled = true;
+
+    this.playVictorySound();
+    let currentAngle = 0;
+    const targetAngle = Math.PI * 2 * 6 + Math.random() * Math.PI * 2;
+    let speed = 0.4;
+
+    const animate = () => {
+      currentAngle += speed;
+      speed *= 0.98;
+      this.drawLuckyWheelCanvas(currentAngle);
+
+      if (speed > 0.005) {
+        requestAnimationFrame(animate);
+      } else {
+        const rewardStars = 100;
+        this.starsEarned += rewardStars;
+        this.triggerFireworks(true);
+        window.app?.showToast?.(`🎉 QUAY TRÚNG PHẦN THƯỞNG MAY MẮN: ⭐ +${rewardStars} SAO VÀNG!`, "success");
+        if (btn) btn.disabled = false;
+      }
+    };
+    animate();
   }
 
   triggerScreenShake() {
