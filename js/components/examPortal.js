@@ -2702,6 +2702,12 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
   // XÓA ĐỀ KIỂM TRA (DELETE EXAM WITH CONFIRMATION & SUPABASE SYNC)
   // =========================================================================
   openDeleteConfirmModal(id, title) {
+    const user = window.authService?.getUser();
+    if (!user || (user.role !== 'teacher' && user.role !== 'admin')) {
+      window.app?.showToast("Chỉ có Giáo viên và Quản trị viên mới được phép xóa đề kiểm tra!", "warning");
+      return;
+    }
+
     this.pendingDeleteId = id;
     this.pendingDeleteTitle = title;
 
@@ -2720,6 +2726,13 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
   }
 
   async executeDeleteExam() {
+    const user = window.authService?.getUser();
+    if (!user || (user.role !== 'teacher' && user.role !== 'admin')) {
+      window.app?.showToast("Chỉ có Giáo viên và Quản trị viên mới được phép xóa đề kiểm tra!", "warning");
+      this.closeDeleteModal();
+      return;
+    }
+
     if (!this.pendingDeleteId) return;
 
     const id = this.pendingDeleteId;

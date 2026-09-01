@@ -64,6 +64,12 @@ class ExamUploadModal {
 
   // Mở modal chỉnh sửa & thay đổi file đề kiểm tra
   async openEditModal(examId) {
+    const user = window.authService?.getUser();
+    if (!user || (user.role !== 'teacher' && user.role !== 'admin')) {
+      window.app.showToast("Chức năng chỉnh sửa đề kiểm tra chỉ dành cho Giáo viên & Quản trị viên!", "warning");
+      return;
+    }
+
     const exam = await window.examService.getExamById(examId);
     if (!exam) return;
 
@@ -207,6 +213,17 @@ class ExamUploadModal {
       btnSubmit.classList.add("pointer-events-none");
     }
 
+    let uploadedPublicUrl = linkUrl.trim();
+
+    // Thử tải file lên Supabase Storage Bucket 'exam-files' nếu có tập tin được chọn
+    if (this.selectedFile && window.supabaseService?.isReady()) {
+      if (btnSubmit) btnSubmit.innerHTML = "⏳ Đang tải file đề thi lên Supabase Storage Cloud...";
+      const uploadRes = await window.supabaseService.uploadFileToStorage(this.selectedFile, "exam-files");
+      if (uploadRes.success && uploadRes.url) {
+        uploadedPublicUrl = uploadRes.url;
+      }
+    }
+
     // CHẾ ĐỘ CHỈNH SỬA (EDIT MODE)
     if (this.isEditMode && this.editingExamId) {
       const updatePayload = {
@@ -223,9 +240,9 @@ class ExamUploadModal {
         updatePayload.fileName = this.selectedFile.name;
         updatePayload.fileSizeText = (this.selectedFile.size / (1024 * 1024)).toFixed(1) + " MB";
         updatePayload.fileType = this.selectedFile.name.split('.').pop().toLowerCase();
-        updatePayload.fileUrl = this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
-      } else if (linkUrl.trim() && linkUrl !== this.existingExam?.fileUrl) {
-        updatePayload.fileUrl = linkUrl.trim();
+        updatePayload.fileUrl = uploadedPublicUrl || this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
+      } else if (uploadedPublicUrl && uploadedPublicUrl !== this.existingExam?.fileUrl) {
+        updatePayload.fileUrl = uploadedPublicUrl;
       }
 
       const res = await window.examService.updateExam(this.editingExamId, updatePayload);
@@ -246,7 +263,7 @@ class ExamUploadModal {
     }
 
     // CHẾ ĐỘ TẠO MỚI (CREATE MODE)
-    let fileUrl = linkUrl.trim();
+    let fileUrl = uploadedPublicUrl;
     let fileName = "De_Kiem_Tra_TinHoc.docx";
     let fileSizeText = "2.1 MB";
     let fileType = "docx";
@@ -255,7 +272,7 @@ class ExamUploadModal {
       fileName = this.selectedFile.name;
       fileSizeText = (this.selectedFile.size / (1024 * 1024)).toFixed(1) + " MB";
       fileType = fileName.split('.').pop().toLowerCase();
-      fileUrl = this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
+      fileUrl = fileUrl || this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
     }
 
     const res = await window.examService.uploadExam({
