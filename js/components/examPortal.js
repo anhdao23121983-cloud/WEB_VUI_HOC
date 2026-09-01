@@ -2100,11 +2100,13 @@ class ExamPortal {
     );
 
     let rawScore = Number((mcScore + aiEssayRes.score).toFixed(1));
-    if (isForce) {
-      rawScore = Math.min(rawScore, 6.0); // Bị trừ điểm do gian lận
+    if (isForce && user && user.username) {
+      rawScore = Math.min(rawScore, 5.0); // Khóa và trừ điểm do gian lận
+      // Khóa tài khoản do vi phạm quy chế thi
+      window.adminService?.toggleUserStatus(user.username);
+      window.app?.showToast(`🚨 Tài khoản '${user.name}' đã bị tự động tạm khóa do vi phạm chuyển tab quá 3 lần!`, "error");
     }
 
-    const user = window.authService?.getUser() || { name: "Nguyễn Văn An", class: "3A" };
     const durationSpent = Math.floor((Date.now() - this.runnerStartTime) / 1000);
 
     const result = await window.examService.submitExamAttempt({

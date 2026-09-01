@@ -244,6 +244,117 @@ class AdminService {
 
     return { success: true };
   }
+
+  // 9. Nhập hàng loạt tài khoản học sinh từ mảng/dữ liệu CSV Excel
+  async batchImportUsers(usersArray) {
+    if (!usersArray || !Array.isArray(usersArray) || usersArray.length === 0) {
+      return { success: false, error: "Danh sách nhập vào trống!" };
+    }
+
+    let successCount = 0;
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (!db.users) db.users = [];
+
+    const preparedSupabaseUsers = [];
+
+    for (const u of usersArray) {
+      const cleanUsername = (u.username || "").trim().toLowerCase();
+      const cleanName = (u.name || u.full_name || cleanUsername).trim();
+      const role = u.role || "student";
+      const grade = parseInt(u.grade || u.grade_level) || 3;
+      const className = u.className || u.class_name || `${grade}A`;
+      const password = (u.password || "123456").trim();
+
+      if (!cleanUsername) continue;
+
+      const newUserObj = {
+        username: cleanUsername,
+        password: password,
+        full_name: cleanName,
+        role: role,
+        school_name: "Trường Tiểu Học Vui Học",
+        class_name: className,
+        grade_level: grade,
+        stars: role === "teacher" ? 999 : 50,
+        avatar: role === "teacher" ? "👨‍🏫" : (grade === 4 ? "👧" : grade === 5 ? "🧑‍💻" : "👦")
+      };
+
+      preparedSupabaseUsers.push(newUserObj);
+
+      // Lưu dự phòng LocalStorage
+      const existsIdx = db.users.findIndex(x => (x.username || "").toLowerCase() === cleanUsername);
+      const mappedUser = {
+        id: "u_" + Date.now() + Math.random().toString(36).substring(2, 6),
+        username: cleanUsername,
+        name: cleanName,
+        role: role,
+        school: "Trường Tiểu Học Vui Học",
+        className: className,
+        grade: grade,
+        stars: newUserObj.stars,
+        avatar: newUserObj.avatar,
+        password: password
+      };
+
+      if (existsIdx >= 0) {
+        db.users[existsIdx] = mappedUser;
+      } else {
+        db.users.push(mappedUser);
+      }
+      successCount++;
+    }
+
+    localStorage.setItem("app_mock_db", JSON.stringify(db));
+
+    // Đồng bộ lên Supabase Cloud
+    if (window.supabaseService?.isReady() && preparedSupabaseUsers.length > 0) {
+      try {
+        const client = window.supabaseService.client;
+        await client.from("app_users").upsert(preparedSupabaseUsers, { onConflict: "username" });
+      } catch (err) {
+        console.warn("Lỗi batchImportUsers trên Supabase:", err);
+      }
+    }
+
+    return { success: true, count: successCount };
+  }
+
+  // 10. Trích xuất Lịch sử nhật ký hoạt động (Audit Logs) của thành viên
+  async getUserAuditLogs(username) {
+    const history = window.examService?.getExamHistory() || [];
+    const userAttempts = history.filter(h => 
+      (h.studentName && h.studentName.toLowerCase().includes(username.toLowerCase())) ||
+      (h.createdByUsername && h.createdByUsername.toLowerCase() === username.toLowerCase())
+    );
+
+    const logs = [
+      {
+        timestamp: new Date().toISOString(),
+        action: "Đăng nhập hệ thống",
+        detail: `Tài khoản '${username}' vừa đăng nhập ứng dụng Vui Học.`,
+        type: "login"
+      }
+    ];
+
+    userAttempts.forEach(att => {
+      logs.push({
+        timestamp: att.submittedAt || new Date().toISOString(),
+        action: `Hoàn thành bài kiểm tra: ${att.examTitle || 'Đề thi định kỳ'}`,
+        detail: `Đạt ${att.score}/10 Điểm • Xếp loại: ${att.classification || 'Khá'} • Thưởng +${att.starsEarned || 20} ⭐`,
+        type: "exam"
+      });
+      if (att.tabSwitchCount > 0) {
+        logs.push({
+          timestamp: att.submittedAt || new Date().toISOString(),
+          action: "🚨 Cảnh báo vi phạm chuyển tab",
+          detail: `Ghi nhận vi phạm ${att.tabSwitchCount} lần chuyển màn hình trong ca thi.`,
+          type: "warning"
+        });
+      }
+    });
+
+    return logs;
+  }
 }
 
 window.adminService = new AdminService();

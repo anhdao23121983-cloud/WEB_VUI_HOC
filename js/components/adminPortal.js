@@ -73,7 +73,7 @@ class AdminPortal {
               </button>
             </div>
 
-            <!-- Tìm kiếm & Lọc Vai Trò -->
+            <!-- Tìm kiếm & Lọc Vai Trò & Xuất Excel & Nhập Hàng Loạt -->
             <div class="flex items-center gap-2 flex-wrap" id="admin-role-filter-box">
               <div class="relative">
                 <input type="text" oninput="adminPortal.handleSearch(this.value)" placeholder="🔍 Tìm tên hoặc username..." class="form-control text-xs font-bold py-1 px-3 w-48 border-slate-300">
@@ -84,6 +84,15 @@ class AdminPortal {
                 <option value="teacher">Giáo Viên</option>
                 <option value="student">Học Sinh</option>
               </select>
+
+              <!-- Nút 📊 Xuất Excel Danh Sách -->
+              <button onclick="adminPortal.exportUsersExcel()" class="btn btn-outline btn-sm font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-300" title="Xuất toàn bộ danh sách tài khoản ra file Excel">
+                📊 Xuất Excel
+              </button>
+              <!-- Nút 📥 Nhập Hàng Loạt -->
+              <button onclick="adminPortal.openImportModal()" class="btn btn-primary btn-sm font-bold bg-emerald-600 hover:bg-emerald-700 shadow-sm" title="Tải file Excel hoặc dán CSV để tạo 40+ học sinh cùng lúc">
+                📥 Nhập Hàng Loạt
+              </button>
             </div>
           </div>
 
@@ -207,6 +216,10 @@ class AdminPortal {
                   <!-- Nút ✏️ Sửa Thông Tin -->
                   <button onclick="adminPortal.openEditUserModal('${u.username}')" class="btn btn-primary btn-sm text-[11px] py-1 px-2.5 bg-purple-600 hover:bg-purple-700 font-bold shadow-sm" title="Chỉnh sửa Họ tên, Mật khẩu và Lớp học">
                     ✏️ Sửa
+                  </button>
+                  <!-- Nút 📜 Nhật Ký Hoạt Động -->
+                  <button onclick="adminPortal.openAuditLogModal('${u.username}', '${(u.name || u.username).replace(/'/g, "\\'")}')" class="btn btn-outline btn-sm text-[11px] py-1 px-2 text-indigo-700 bg-indigo-50 border-indigo-200 font-bold" title="Xem nhật ký lịch sử làm bài thi & đăng nhập">
+                    📜 Nhật Ký
                   </button>
                   <!-- Nút 🔑 Đặt Lại MK -->
                   <button onclick="adminPortal.resetPassword('${u.username}')" class="btn btn-outline btn-sm text-[11px] py-1 px-1.5" title="Đặt lại mật khẩu mặc định 123456">
@@ -429,6 +442,179 @@ class AdminPortal {
 
     window.adminService.savePermissions(perms);
     window.app.showToast("🛡️ Đã lưu cấu hình phân quyền hệ thống thành công!", "success");
+  }
+
+  // =========================================================================
+  // GỢI Ý 2: XUẤT DANH SÁCH TẤT CẢ THÀNH VIÊN RA FILE EXCEL (.XLS)
+  // =========================================================================
+  async exportUsersExcel() {
+    const users = await window.adminService.getAllUsers();
+    if (!users || users.length === 0) {
+      window.app.showToast("Không có dữ liệu thành viên để xuất!", "warning");
+      return;
+    }
+
+    let tableHTML = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head><meta charset="utf-8"/><style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #cccccc; padding: 8px; text-align: left; } th { background-color: #f1f5f9; font-weight: bold; }</style></head>
+      <body>
+        <h2>DANH SÁCH THÀNH VIÊN HỆ THỐNG VUI HỌC TIN HỌC 3-5</h2>
+        <p><i>Trường Tiểu Học Vui Học • Xuất ngày: ${new Date().toLocaleDateString('vi-VN')}</i></p>
+        <table>
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Họ và Tên</th>
+              <th>Username</th>
+              <th>Mật Khẩu Mặc Định</th>
+              <th>Vai Trò</th>
+              <th>Khối Lớp</th>
+              <th>Lớp Học</th>
+              <th>Số Sao (⭐)</th>
+              <th>Trạng Thái</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    users.forEach((u, idx) => {
+      tableHTML += `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${u.name || ''}</td>
+          <td>${u.username || ''}</td>
+          <td>123456</td>
+          <td>${u.role === 'admin' ? 'Quản Trị Viên' : u.role === 'teacher' ? 'Giáo Viên' : 'Học Sinh'}</td>
+          <td>Khối ${u.grade || 3}</td>
+          <td>${u.className || '3A'}</td>
+          <td>${u.stars || 0}</td>
+          <td>${u.isActive !== false ? 'Hoạt động' : 'Đã khóa'}</td>
+        </tr>
+      `;
+    });
+
+    tableHTML += `</tbody></table></body></html>`;
+
+    const blob = new Blob(["\ufeff" + tableHTML], { type: "application/vnd.ms-excel;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Danh_Sach_Thanh_Vien_VuiHoc_${new Date().toISOString().slice(0, 10)}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    window.app.showToast("📊 Đã xuất file Excel danh sách thành viên thành công!", "success");
+  }
+
+  // =========================================================================
+  // GỢI Ý 3: NHẬP HÀNG LOẠT HỌC SINH TỪ FILE EXCEL / CSV
+  // =========================================================================
+  openImportModal() {
+    const modal = document.getElementById("admin-import-users-modal");
+    if (modal) modal.classList.add("active");
+  }
+
+  closeImportModal() {
+    const modal = document.getElementById("admin-import-users-modal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  fillSampleImportData() {
+    const textarea = document.getElementById("admin-import-csv-text");
+    if (textarea) {
+      textarea.value = `Nguyễn Văn An, hs3a01, 123456, 3, 3A\nTrần Thị Bình, hs3a02, 123456, 3, 3A\nLê Hoàng Cường, hs4b01, 123456, 4, 4B\nPhạm Đức Dũng, hs4b02, 123456, 4, 4B\nĐỗ Mai Anh, hs5a01, 123456, 5, 5A`;
+    }
+  }
+
+  async submitBatchImport() {
+    const text = document.getElementById("admin-import-csv-text")?.value || "";
+    if (!text.trim()) {
+      window.app.showToast("Vui lòng dán nội dung CSV hoặc danh sách học sinh từ Excel!", "warning");
+      return;
+    }
+
+    const lines = text.trim().split("\n");
+    const usersToImport = [];
+
+    lines.forEach(line => {
+      const parts = line.split(",").map(s => s.trim());
+      if (parts.length >= 2) {
+        usersToImport.push({
+          name: parts[0],
+          username: parts[1],
+          password: parts[2] || "123456",
+          grade: parseInt(parts[3]) || 3,
+          className: parts[4] || "3A",
+          role: "student"
+        });
+      }
+    });
+
+    if (usersToImport.length === 0) {
+      window.app.showToast("Không tìm thấy dòng dữ liệu hợp lệ!", "warning");
+      return;
+    }
+
+    const btn = document.getElementById("btn-submit-batch-import");
+    if (btn) {
+      btn.innerHTML = "⏳ Đang tạo tài khoản & đồng bộ Supabase...";
+      btn.classList.add("pointer-events-none");
+    }
+
+    const res = await window.adminService.batchImportUsers(usersToImport);
+
+    if (btn) {
+      btn.innerHTML = "🚀 Tạo Hàng Loạt & Đồng Bộ Supabase";
+      btn.classList.remove("pointer-events-none");
+    }
+
+    if (res.success) {
+      window.app.showToast(`🎉 Đã nhập hàng loạt ${res.count} tài khoản Học sinh lên Supabase thành công!`, "success");
+      this.closeImportModal();
+      this.render("teacher-tab-admin");
+    } else {
+      window.app.showToast(res.error || "Lỗi nhập hàng loạt!", "error");
+    }
+  }
+
+  // =========================================================================
+  // GỢI Ý 5: XEM NHẬT KÝ LỊCH SỬ HOẠT ĐỘNG (AUDIT LOGS)
+  // =========================================================================
+  async openAuditLogModal(username, name) {
+    const titleEl = document.getElementById("admin-audit-user-title");
+    const bodyEl = document.getElementById("admin-audit-log-body");
+    const modal = document.getElementById("admin-audit-log-modal");
+
+    if (titleEl) titleEl.innerText = `📜 NHẬT KÝ LỊCH SỬ HOẠT ĐỘNG: ${name || username} (${username})`;
+
+    if (bodyEl) {
+      bodyEl.innerHTML = `<p class="text-center py-6 font-bold text-slate-500">⏳ Đang tải nhật ký từ Supabase...</p>`;
+    }
+
+    if (modal) modal.classList.add("active");
+
+    const logs = await window.adminService.getUserAuditLogs(username);
+
+    if (bodyEl) {
+      if (!logs || logs.length === 0) {
+        bodyEl.innerHTML = `<p class="text-center py-6 font-bold text-slate-400">Chưa ghi nhận hoạt động nào của tài khoản này.</p>`;
+        return;
+      }
+
+      bodyEl.innerHTML = logs.map(log => `
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-start justify-between gap-3">
+          <div class="space-y-1">
+            <span class="badge ${log.type === 'warning' ? 'badge-rose bg-rose-100 text-rose-700' : log.type === 'exam' ? 'badge-amber bg-amber-100 text-amber-800' : 'badge-cyan bg-cyan-100 text-cyan-800'} font-black text-[10px]">
+              ${log.action}
+            </span>
+            <p class="font-semibold text-slate-700 text-xs">${log.detail}</p>
+          </div>
+          <span class="text-[10px] font-mono text-slate-400 whitespace-nowrap">${new Date(log.timestamp).toLocaleTimeString('vi-VN')} ${new Date(log.timestamp).toLocaleDateString('vi-VN')}</span>
+        </div>
+      `).join("");
+    }
   }
 }
 
