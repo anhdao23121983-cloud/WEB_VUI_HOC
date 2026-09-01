@@ -1409,6 +1409,107 @@ class ArenaPortal {
     window.app.showToast("📥 Đã tải Giấy Chứng Nhận Dũng Sĩ Đấu Trường (.PNG) thành công!", "success");
   }
 
+  // Xuất Báo Cáo Kết Quả Đấu Trường PDF Cho Phụ Huynh (Gợi ý 5)
+  exportArenaPDFReport() {
+    const user = window.authService?.getUser() || { name: "Học Sinh Xuất Sắc", className: "3A" };
+    const name = user.name || "Học Sinh Xuất Sắc";
+    const grade = this.selectedConfigGrade || 4;
+    const score = this.score || 100;
+    const totalQ = this.battleQuestions?.length || 10;
+    const duration = Math.max(1, Math.round((Date.now() - (this.battleStartTime || Date.now())) / 1000));
+    const todayStr = `Ngày ${new Date().getDate()} tháng ${new Date().getMonth() + 1} năm ${new Date().getFullYear()}`;
+
+    const printWin = window.open('', '_blank');
+    if (!printWin) {
+      window.app.showToast("⚠️ Vui lòng cho phép mở cửa sổ bật lên (popup) để in Báo Cáo PDF!", "warning");
+      return;
+    }
+
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html lang="vi">
+      <head>
+        <meta charset="UTF-8">
+        <title>BÁO CÁO KẾT QUẢ ĐẤU TRƯỜNG TIN HỌC - ${name}</title>
+        <style>
+          body { font-family: 'Times New Roman', serif; padding: 40px; color: #1e293b; line-height: 1.6; }
+          .header { text-align: center; border-bottom: 2px solid #0284c7; padding-bottom: 15px; margin-bottom: 25px; }
+          .header h2 { margin: 0; font-size: 20px; color: #0f172a; text-transform: uppercase; }
+          .header h1 { margin: 10px 0 5px 0; font-size: 26px; color: #0284c7; }
+          .info-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+          .info-table td { padding: 10px; border: 1px solid #cbd5e1; font-size: 15px; }
+          .info-table td.label { font-weight: bold; background-color: #f8fafc; width: 35%; }
+          .result-box { background: #f0f9ff; border: 2px dashed #0284c7; padding: 20px; text-align: center; border-radius: 12px; margin: 25px 0; }
+          .result-box .score { font-size: 36px; font-weight: bold; color: #059669; }
+          .footer { margin-top: 40px; display: flex; justify-content: space-between; text-align: center; }
+          .footer .sign-box { width: 45%; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h2>TRƯỜNG TIỂU HỌC VUI HỌC TIN HỌC 3-5</h2>
+          <p style="margin: 3px; font-size: 13px; font-style: italic;">Chương trình GDPT 2018 - Chuẩn Công văn 2345/BGDĐT</p>
+          <h1>BÁO CÁO KẾT QUẢ ĐẤU TRƯỜNG TIN HỌC</h1>
+          <p><i>Kính gửi Quý Phụ Huynh Học Sinh</i></p>
+        </div>
+
+        <table class="info-table">
+          <tr>
+            <td class="label">Họ và tên Học sinh:</td>
+            <td><b>${name}</b></td>
+          </tr>
+          <tr>
+            <td class="label">Lớp & Khối học:</td>
+            <td>Lớp ${user.className || "3A"} • Khối ${grade} (SGK Kết Nối Tri Thức)</td>
+          </tr>
+          <tr>
+            <td class="label">Số câu hỏi hoàn thành:</td>
+            <td><b>${totalQ} câu hỏi</b></td>
+          </tr>
+          <tr>
+            <td class="label">Thời gian thi đấu:</td>
+            <td><b>${duration} giây</b></td>
+          </tr>
+          <tr>
+            <td class="label">Sao Vàng tích lũy:</td>
+            <td><b>⭐ +${this.starsEarned || 20} Sao Vàng Bảng Vàng</b></td>
+          </tr>
+        </table>
+
+        <div class="result-box">
+          <p style="margin: 0; font-size: 14px; font-weight: bold; color: #475569;">TỔNG ĐIỂM ĐẠT ĐƯỢC</p>
+          <div class="score">${score} ĐIỂM</div>
+          <p style="margin: 5px 0 0 0; font-size: 14px; font-weight: bold; color: #0284c7;">
+            ${score >= 90 ? '🌟 Nhận xét: Đạt loại XUẤT SẮC - Tư duy Tin học vô cùng nhạy bén!' : score >= 70 ? '🎉 Nhận xét: Đạt loại GIỎI - Phản xạ gõ bàn phím và làm bài rất tốt!' : '👍 Nhận xét: Đạt loại KHÁ - Cần tiếp tục rèn luyện thêm ở các bài học tiếp theo.'}
+          </p>
+        </div>
+
+        <div class="footer">
+          <div class="sign-box">
+            <p><b>XÁC NHẬN PHỤ HUYNH</b></p>
+            <br><br><br>
+            <p>(Ký & ghi rõ họ tên)</p>
+          </div>
+          <div class="sign-box">
+            <p><i>Đà Nẵng, ${todayStr}</i></p>
+            <p><b>GIÁO VIÊN BỘ MÔN TIN HỌC</b></p>
+            <br><br><br>
+            <p><b>Cô Giáo Anh Đào</b></p>
+          </div>
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    printWin.document.close();
+    window.app.showToast("📄 Đã xuất Báo cáo Kết quả PDF gửi Phụ huynh thành công!", "success");
+  }
+
   exitBattle() {
     if (this.timerInterval) clearInterval(this.timerInterval);
     this.battleActive = false;
