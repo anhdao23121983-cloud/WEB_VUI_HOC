@@ -101,6 +101,9 @@ class ArenaPortal {
           </div>
 
           <div class="flex items-center gap-3 flex-wrap justify-center shrink-0">
+            <button onclick="arenaPortal.openBossBattleModal()" class="btn bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-700 hover:to-red-800 text-white btn-lg font-black shadow-xl flex items-center gap-2 hover:scale-105 transition-all animate-pulse">
+              <span>👾</span> <span>Đấu Trùm AI Virus</span>
+            </button>
             <button onclick="arenaPortal.toggleArenaBGM()" id="btn-arena-bgm" class="btn bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white btn-lg font-black shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
               <span>🎵</span> <span id="lbl-arena-bgm">${this.isBGMPlaying ? 'Nhạc BGM: BẬT' : 'Nhạc BGM: TẮT'}</span>
             </button>
@@ -1779,6 +1782,96 @@ class ArenaPortal {
     this.triggerFireworks(true);
     window.app?.showToast?.("🎁 ĐÃ NHẬN KHO BÁU: ⭐ +100 Sao Vàng & Huy Hiệu Rồng Vàng 2026!", "success");
     document.getElementById("arena-treasure-modal")?.classList.remove("active");
+  }
+
+  importStudentCSVFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target.result;
+      const lines = content.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+
+      const input = document.getElementById("arena-tournament-students-input");
+      if (input) {
+        input.value = lines.join(", ");
+        this.generateClassBracket();
+        window.app?.showToast?.(`📁 Đã nhập thành công ${lines.length} học sinh từ tệp CSV!`, "success");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // 2. Chế Độ Đấu Trùm AI Virus Máy Tính (Gợi ý 5)
+  openBossBattleModal() {
+    const modal = document.getElementById("arena-boss-modal");
+    if (!modal) return;
+
+    this.bossMaxHP = 1000;
+    this.bossHP = 1000;
+    this.renderBossStage();
+    modal.classList.add("active");
+  }
+
+  renderBossStage() {
+    const container = document.getElementById("arena-boss-stage");
+    if (!container) return;
+
+    const hpPercent = Math.max(0, Math.round((this.bossHP / this.bossMaxHP) * 100));
+
+    container.innerHTML = `
+      <div id="boss-card-box" class="p-6 bg-slate-900 rounded-3xl border-2 border-rose-500/50 space-y-4 shadow-2xl transition-all">
+        <div class="relative inline-block">
+          <span class="text-7xl block animate-bounce filter drop-shadow-[0_0_20px_rgba(244,63,94,0.8)]">👾</span>
+          <span class="badge bg-rose-600 text-white font-black text-xs px-2.5 py-0.5 rounded-full absolute -top-2 -right-2">TRÙM AI VIRUS</span>
+        </div>
+
+        <div class="space-y-1">
+          <h4 class="font-black text-xl text-rose-300 uppercase">VIRUS ĐỘC HẠI HỆ THỐNG</h4>
+          <p class="text-xs text-slate-400 font-semibold">HP: <span class="font-mono text-amber-300 font-black">${this.bossHP}</span> / ${this.bossMaxHP} HP</p>
+        </div>
+
+        <!-- Thanh Máu Boss HP Bar -->
+        <div class="w-full bg-slate-950 h-6 rounded-full overflow-hidden p-1 border border-rose-500/40 shadow-inner">
+          <div class="bg-gradient-to-r from-rose-600 via-red-500 to-amber-500 h-full rounded-full transition-all duration-500" style="width: ${hpPercent}%"></div>
+        </div>
+
+        <div class="pt-2">
+          <button onclick="arenaPortal.attackBossVirus()" class="btn bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white btn-lg font-black w-full shadow-2xl animate-pulse flex items-center justify-center gap-2">
+            <span>⚡</span> <span>TUNG CHIÊU DIỆT VIRUS (-100 HP) ▶</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  attackBossVirus() {
+    this.triggerScreenShake();
+    this.playWrongSound();
+    this.bossHP = Math.max(0, this.bossHP - 100);
+    this.renderBossStage();
+
+    if (this.bossHP <= 0) {
+      this.playVictorySound();
+      this.triggerFireworks(true);
+      window.app?.showToast?.("🎉 XUẤT SẮC! CẢ LỚP ĐÃ TIÊU DIỆT TRÙM AI VIRUS GIẢI CỨU HỆ THỐNG! ⭐ +100 SAO!", "success");
+      setTimeout(() => {
+        document.getElementById("arena-boss-modal")?.classList.remove("active");
+        this.openTreasureModal();
+      }, 1000);
+    } else {
+      window.app?.showToast?.(`⚔️ Đòn tấn công chính xác! Trùm Virus mất -100 HP! Còn ${this.bossHP} HP!`, "info");
+    }
+  }
+
+  triggerScreenShake() {
+    const card = document.getElementById("boss-card-box");
+    if (!card) return;
+    card.classList.add("translate-x-2", "rotate-1");
+    setTimeout(() => card.classList.remove("translate-x-2", "rotate-1"), 100);
+    setTimeout(() => card.classList.add("-translate-x-2", "-rotate-1"), 200);
+    setTimeout(() => card.classList.remove("-translate-x-2", "-rotate-1"), 300);
   }
 
   // 2. Chế Độ Vòng Đấu Đoán Chữ Tin Học Siêu Tốc (Gợi ý 5)
