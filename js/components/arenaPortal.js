@@ -101,6 +101,9 @@ class ArenaPortal {
           </div>
 
           <div class="flex items-center gap-3 flex-wrap justify-center shrink-0">
+            <button onclick="arenaPortal.openRoomModal()" class="btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white btn-lg font-black shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
+              <span>⚔️</span> <span>Đấu 1vs1 Mã Phòng</span>
+            </button>
             <button onclick="arenaPortal.openQuestionModal()" class="btn btn-amber btn-lg font-black shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
               <span>➕</span> <span>Thêm Câu Hỏi Mới</span>
             </button>
@@ -947,23 +950,86 @@ class ArenaPortal {
     if (modal) modal.classList.remove("active");
   }
 
-  selectQuestionCount(count) {
-    this.selectedG4QuestionCount = count;
-    [10, 20, 30].forEach(c => {
-      const btn = document.getElementById(`btn-count-${c}`);
+  selectTimerSpeed(seconds) {
+    this.selectedCustomTimer = seconds;
+    [10, 15, 20, 30].forEach(s => {
+      const btn = document.getElementById(`btn-timer-${s}`);
       if (btn) {
-        if (c === count) {
-          btn.className = "p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm";
+        if (s === seconds) {
+          btn.className = "p-2.5 rounded-xl border-2 font-black text-xs text-center transition-all bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm";
         } else {
-          btn.className = "p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100";
+          btn.className = "p-2.5 rounded-xl border-2 font-black text-xs text-center transition-all bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100";
         }
       }
     });
   }
 
+  // =========================================================================
+  // LOGIC THÁCH ĐẤU 1VS1 THEO MÃ PHÒNG 6 CHỮ SỐ (SUPABASE REALTIME)
+  // =========================================================================
+  openRoomModal() {
+    const modal = document.getElementById("arena-room-modal");
+    if (modal) modal.classList.add("active");
+  }
+
+  createPrivateRoom() {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    this.currentRoomCode = code;
+
+    const box = document.getElementById("arena-created-room-box");
+    const codeEl = document.getElementById("arena-created-room-code");
+    if (box) box.classList.remove("hidden");
+    if (codeEl) codeEl.innerText = code;
+
+    window.app.showToast(`👑 Đã tạo Mã Phòng 1vs1: ${code}! Đang chờ đối thủ...`, "success");
+
+    if (window.supabaseClient) {
+      this.roomChannel = window.supabaseClient.channel(`arena_room_${code}`);
+      this.roomChannel
+        .on('broadcast', { event: 'player_joined' }, payload => {
+          window.app.showToast(`⚔️ Đã kết nối Đối thủ 1vs1: ${payload.name}! Bắt đầu trận đấu!`, "success");
+          document.getElementById('arena-room-modal')?.classList.remove('active');
+          this.startBattleWithMode("blitz", 4, 10, "all");
+        })
+        .subscribe();
+    }
+  }
+
+  joinPrivateRoom() {
+    const input = document.getElementById("arena-room-code-input");
+    const code = input ? input.value.trim() : "";
+
+    if (!code || code.length !== 6) {
+      window.app.showToast("⚠️ Vui lòng nhập mã phòng 6 chữ số hợp lệ!", "warning");
+      return;
+    }
+
+    const user = window.authService?.getUser() || { name: "Học Sinh" };
+
+    if (window.supabaseClient) {
+      const channel = window.supabaseClient.channel(`arena_room_${code}`);
+      channel.subscribe(status => {
+        if (status === 'SUBSCRIBED') {
+          channel.send({
+            type: 'broadcast',
+            event: 'player_joined',
+            payload: { name: user.name }
+          });
+          window.app.showToast(`🚀 Đã tham gia phòng 1vs1 [${code}]! Bắt đầu thi đấu!`, "success");
+          document.getElementById('arena-room-modal')?.classList.remove('active');
+          this.startBattleWithMode("blitz", 4, 10, "all");
+        }
+      });
+    } else {
+      document.getElementById('arena-room-modal')?.classList.remove('active');
+      this.startBattleWithMode("blitz", 4, 10, "all");
+    }
+  }
+
   initMatchCompetitors(grade = 4) {
     const user = window.authService?.getUser() || { name: "Học Sinh", className: "3A" };
     this.streakCombo = 0;
+    this.hasAnnouncedTop1 = false;
     this.competitors = [
       { id: "user", name: user.name || "Học Sinh", avatar: user.avatar || "🎒", isUser: true, score: 0 },
       { id: "bot_1", name: "🤖 Robot AI Vui Học", avatar: "🤖", isUser: false, score: 0, accuracy: 0.85 },
@@ -1061,14 +1127,15 @@ class ArenaPortal {
   startQuestionTimer() {
     if (this.timerInterval) clearInterval(this.timerInterval);
     const q = this.battleQuestions[this.currentQIndex];
-    this.timer = q ? q.timeLimit : 15;
+    this.timer = this.selectedCustomTimer || (q ? q.timeLimit : 15);
+    this.questionMaxTimer = this.timer;
 
     this.timerInterval = setInterval(() => {
       this.timer--;
       const timerDisp = document.getElementById("arena-timer-display");
       const timerBar = document.getElementById("arena-timer-bar");
       if (timerDisp) timerDisp.innerText = `${this.timer}s`;
-      if (timerBar && q) timerBar.style.width = `${(this.timer / q.timeLimit) * 100}%`;
+      if (timerBar) timerBar.style.width = `${(this.timer / this.questionMaxTimer) * 100}%`;
 
       if (this.timer <= 0) {
         clearInterval(this.timerInterval);
@@ -1123,6 +1190,15 @@ class ArenaPortal {
         }
       }
     });
+
+    // Lời bình luận MC AI khi dẫn đầu TOP 1 (Gợi ý 1)
+    const sortedCompetitors = [...(this.competitors || [])].sort((a, b) => b.score - a.score);
+    if (sortedCompetitors[0] && sortedCompetitors[0].isUser && !this.hasAnnouncedTop1) {
+      this.hasAnnouncedTop1 = true;
+      if (window.ttsService?.speak) {
+        window.ttsService.speak(`Xuất sắc! Chúc mừng em ${sortedCompetitors[0].name} đã bứt phá vươn lên dẫn đầu TOP 1 Đấu Trường Tin Học!`);
+      }
+    }
 
     this.render("main-content-area");
   }
