@@ -1510,6 +1510,115 @@ class ArenaPortal {
     window.app.showToast("📄 Đã xuất Báo cáo Kết quả PDF gửi Phụ huynh thành công!", "success");
   }
 
+  // 1. Mở Xem Lại Lời Giải Chi Tiết Sau Trận Đấu (Gợi ý 4)
+  openReviewAnswersModal() {
+    const modal = document.getElementById("arena-review-modal");
+    const container = document.getElementById("arena-review-content");
+    if (!modal || !container) return;
+
+    if (!this.battleQuestions || this.battleQuestions.length === 0) {
+      window.app.showToast("⚠️ Chưa có dữ liệu trận đấu vừa qua để xem lại!", "warning");
+      return;
+    }
+
+    container.innerHTML = this.battleQuestions.map((q, idx) => {
+      const userAnsIdx = this.userAnswers ? this.userAnswers[idx] : null;
+      const isCorrect = userAnsIdx === q.correctIndex;
+
+      return `
+        <div class="p-4 rounded-2xl border ${isCorrect ? 'bg-emerald-950/30 border-emerald-500/40' : 'bg-rose-950/30 border-rose-500/40'} space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-black text-xs uppercase px-2.5 py-1 rounded-lg ${isCorrect ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'}">
+              CÂU ${idx + 1}: ${isCorrect ? '✅ ĐÚNG' : '❌ SAI'}
+            </span>
+            <span class="text-xs text-slate-400 font-bold">Chủ đề: ${q.topic}</span>
+          </div>
+
+          <p class="font-bold text-sm text-white">${q.question}</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+            ${q.options.map((opt, optIdx) => `
+              <div class="p-2.5 rounded-xl border ${optIdx === q.correctIndex ? 'bg-emerald-600/30 border-emerald-400 text-emerald-200 font-black' : optIdx === userAnsIdx ? 'bg-rose-600/30 border-rose-400 text-rose-200 font-bold' : 'bg-slate-900/50 border-slate-800 text-slate-400'} flex items-center justify-between">
+                <span>${opt}</span>
+                <span>${optIdx === q.correctIndex ? '✅ Đáp án đúng' : optIdx === userAnsIdx ? '❌ Bạn chọn' : ''}</span>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs text-slate-300">
+            <p class="font-bold text-amber-300 mb-0.5">💡 Lời giải thích sư phạm:</p>
+            <p>${q.explanation || 'Hãy ghi nhớ kiến thức cốt lõi này trong SGK Tin học nhé!'}</p>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    modal.classList.add("active");
+  }
+
+  // 2. Chế Độ Vòng Đấu Đoán Chữ Tin Học Siêu Tốc (Gợi ý 5)
+  startWordPuzzleArena() {
+    const modal = document.getElementById("arena-word-puzzle-modal");
+    const container = document.getElementById("arena-puzzle-area");
+    if (!modal || !container) return;
+
+    const puzzles = [
+      { word: "PHẦN CỨNG", hint: "Thiết bị vật lý cầm nắm được của máy tính (Bài 1 SGK 4)" },
+      { word: "SCRATCH", hint: "Môi trường lập trình trực quan kéo thả chú mèo (Bài 14 SGK 4)" },
+      { word: "INTERNET", hint: "Mạng máy tính toàn cầu xem thông tin trang web (Bài 4 SGK 4)" },
+      { word: "TRÌNH CHIẾU", hint: "Phần mềm tạo trang chiếu thuyết trình PowerPoint (Bài 7 SGK 4)" },
+      { word: "THƯ MỤC", hint: "Nơi lưu trữ và sắp xếp các tệp tin trong máy tính (Bài 5 SGK 4)" }
+    ];
+
+    const puzzle = puzzles[Math.floor(Math.random() * puzzles.length)];
+    this.currentPuzzleWord = puzzle.word;
+
+    const masked = puzzle.word.split('').map(ch => (ch === ' ' ? '   ' : (Math.random() > 0.4 ? '_' : ch))).join(' ');
+
+    container.innerHTML = `
+      <div class="space-y-4">
+        <span class="badge bg-amber-500 text-slate-950 font-black text-xs px-3 py-1 uppercase">GỢI Ý THUẬT NGỮ</span>
+        <p class="text-sm font-bold text-cyan-200 px-4">${puzzle.hint}</p>
+
+        <div class="py-4 bg-slate-900 rounded-2xl border border-amber-500/40">
+          <h2 class="text-3xl md:text-4xl font-black font-mono tracking-widest text-amber-300 animate-pulse">
+            ${masked}
+          </h2>
+        </div>
+
+        <div class="space-y-2 max-w-sm mx-auto">
+          <input type="text" id="arena-puzzle-input" placeholder="Nhập đáp án của em..." class="form-control text-center font-bold text-base bg-slate-900 border-amber-400 text-white rounded-xl uppercase">
+          <button onclick="arenaPortal.submitWordPuzzle()" class="btn btn-amber btn-md w-full font-black shadow-lg">
+            ⚡ Kiểm Tra Đáp Án ⚡
+          </button>
+        </div>
+      </div>
+    `;
+
+    modal.classList.add("active");
+  }
+
+  submitWordPuzzle() {
+    const input = document.getElementById("arena-puzzle-input");
+    const val = input ? input.value.trim().toUpperCase() : "";
+
+    if (!val) {
+      window.app.showToast("⚠️ Vui lòng nhập từ khóa trả lời!", "warning");
+      return;
+    }
+
+    if (val === this.currentPuzzleWord) {
+      this.playVictorySound();
+      this.triggerFireworks();
+      this.starsEarned += 50;
+      window.app.showToast(`🎉 XUẤT SẮC! Đáp án chính xác: ${this.currentPuzzleWord}! ⭐ +50 Sao Vàng!`, "success");
+      document.getElementById("arena-word-puzzle-modal")?.classList.remove("active");
+    } else {
+      this.playWrongSound();
+      window.app.showToast(`❌ Chưa chính xác! Đáp án đúng là: ${this.currentPuzzleWord}`, "error");
+    }
+  }
+
   exitBattle() {
     if (this.timerInterval) clearInterval(this.timerInterval);
     this.battleActive = false;
