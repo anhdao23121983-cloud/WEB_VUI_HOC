@@ -49,6 +49,19 @@ class Application {
       document.getElementById("landing-view")?.classList.remove("hidden");
     } else if (route === "auth") {
       document.getElementById("auth-view")?.classList.remove("hidden");
+    } else if (route === "admin" || route === "members" || route === "users") {
+      if (!user) {
+        this.showToast("Vui lòng đăng nhập tài khoản Quản trị viên Admin!", "warning");
+        window.location.hash = "auth";
+        return;
+      }
+      if (user.role !== "admin" && user.role !== "teacher") {
+        this.showToast("🚫 Quyền truy cập bị từ chối! Mục Quản Lý GV & HS chỉ dành cho Quản trị viên và Giáo viên.", "error");
+        window.location.hash = "student";
+        return;
+      }
+      document.getElementById("portal-view")?.classList.remove("hidden");
+      window.adminPortal.render("main-content-area");
     } else if (route === "teacher") {
       if (!user) {
         this.showToast("Vui lòng đăng nhập tài khoản Giáo viên hoặc Quản trị viên!", "warning");
