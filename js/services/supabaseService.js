@@ -406,6 +406,47 @@ class SupabaseService {
     }
     return logs;
   }
+
+  // 8. TẢI TẬP TIN TRỰC TIẾP LÊN SUPABASE STORAGE BUCKET
+  async uploadFileToStorage(file, bucketName = "lecture-files") {
+    if (!this.isReady()) {
+      return { success: false, url: null, error: "Chưa kết nối Supabase Cloud Database" };
+    }
+
+    try {
+      const fileExt = file.name.split(".").pop();
+      const cleanFileName = file.name.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
+      const fileName = `${Date.now()}_${cleanFileName}.${fileExt}`;
+      const filePath = `lectures/${fileName}`;
+
+      const { data, error } = await this.client.storage
+        .from(bucketName)
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: true
+        });
+
+      if (error) {
+        console.warn("Lỗi upload file lên Supabase Storage:", error.message);
+        return { success: false, url: null, error: error.message };
+      }
+
+      // Lấy Public URL của tập tin đã upload
+      const { data: publicUrlData } = this.client.storage
+        .from(bucketName)
+        .getPublicUrl(filePath);
+
+      console.log("✅ Đã upload file thành công lên Supabase Storage:", publicUrlData.publicUrl);
+      return {
+        success: true,
+        url: publicUrlData.publicUrl,
+        filePath: filePath
+      };
+    } catch (err) {
+      console.warn("Ngoại lệ khi upload Supabase Storage:", err);
+      return { success: false, url: null, error: err.message };
+    }
+  }
 }
 
 window.supabaseService = new SupabaseService();

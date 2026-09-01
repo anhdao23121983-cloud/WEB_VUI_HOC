@@ -184,6 +184,15 @@ class LectureUploadModal {
       btnSubmit.classList.add("pointer-events-none");
     }
 
+    // Thử tải file lên Supabase Storage Bucket nếu có tập tin được chọn và đã kết nối
+    if (this.selectedFile && window.supabaseService?.isReady()) {
+      if (btnSubmit) btnSubmit.innerHTML = "⏳ Đang tải file lên Supabase Storage Cloud...";
+      const uploadRes = await window.supabaseService.uploadFileToStorage(this.selectedFile, "lecture-files");
+      if (uploadRes.success && uploadRes.url) {
+        linkUrl = uploadRes.url;
+      }
+    }
+
     // CHẾ ĐỘ CHỈNH SỬA (EDIT MODE)
     if (this.isEditMode && this.editingLectureId) {
       const updatePayload = {
@@ -199,7 +208,7 @@ class LectureUploadModal {
         updatePayload.fileName = this.selectedFile.name;
         updatePayload.fileSizeText = (this.selectedFile.size / (1024 * 1024)).toFixed(1) + " MB";
         updatePayload.fileType = this.selectedFile.name.split('.').pop().toLowerCase();
-        updatePayload.fileUrl = this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
+        updatePayload.fileUrl = linkUrl || this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
         updatePayload.slideCount = Math.floor(Math.random() * 10) + 16;
       } else if (linkUrl.trim() && linkUrl !== this.existingLecture?.fileUrl) {
         updatePayload.fileUrl = linkUrl.trim();
@@ -232,7 +241,7 @@ class LectureUploadModal {
       fileName = this.selectedFile.name;
       fileSizeText = (this.selectedFile.size / (1024 * 1024)).toFixed(1) + " MB";
       fileType = fileName.split('.').pop().toLowerCase();
-      fileUrl = this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
+      fileUrl = fileUrl || this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
     }
 
     const res = await window.lectureService.uploadLecture({
