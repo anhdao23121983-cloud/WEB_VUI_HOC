@@ -101,6 +101,9 @@ class ArenaPortal {
           </div>
 
           <div class="flex items-center gap-3 flex-wrap justify-center shrink-0">
+            <button onclick="arenaPortal.openTournamentModal()" class="btn bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white btn-lg font-black shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
+              <span>🏆</span> <span>Giải Đấu Cấp Lớp</span>
+            </button>
             <button onclick="arenaPortal.openRoomModal()" class="btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white btn-lg font-black shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
               <span>⚔️</span> <span>Đấu 1vs1 Mã Phòng</span>
             </button>
@@ -1257,8 +1260,8 @@ class ArenaPortal {
     this.render("main-content-area");
   }
 
-  // Hiệu ứng Canvas Pháo Hoa Rực Rỡ (Gợi ý 2)
-  triggerFireworks() {
+  // Hiệu ứng Canvas Pháo Hoa Rực Rỡ Vortex (Gợi ý 4)
+  triggerFireworks(isVortex = true) {
     const canvas = document.createElement("canvas");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -1271,17 +1274,23 @@ class ArenaPortal {
 
     const ctx = canvas.getContext("2d");
     const particles = [];
-    const colors = ["#f59e0b", "#ef4444", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"];
+    const colors = ["#f59e0b", "#ef4444", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899", "#f43f5e", "#38bdf8"];
 
-    for (let i = 0; i < 180; i++) {
+    const count = isVortex ? 240 : 180;
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2;
+      const speed = Math.random() * 12 + 4;
       particles.push({
         x: canvas.width / 2,
         y: canvas.height / 2,
-        vx: (Math.random() - 0.5) * 18,
-        vy: (Math.random() - 0.5) * 18,
-        size: Math.random() * 8 + 4,
+        angle: angle,
+        speed: speed,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size: Math.random() * 7 + 4,
         color: colors[Math.floor(Math.random() * colors.length)],
-        alpha: 1
+        alpha: 1,
+        vortex: isVortex
       });
     }
 
@@ -1289,10 +1298,17 @@ class ArenaPortal {
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       particles.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.15;
-        p.alpha -= 0.015;
+        if (p.vortex) {
+          p.angle += 0.08;
+          p.speed *= 0.98;
+          p.x += Math.cos(p.angle) * p.speed + (p.vx * 0.3);
+          p.y += Math.sin(p.angle) * p.speed + (p.vy * 0.3);
+        } else {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.15;
+        }
+        p.alpha -= 0.012;
 
         ctx.globalAlpha = Math.max(0, p.alpha);
         ctx.fillStyle = p.color;
@@ -1302,7 +1318,7 @@ class ArenaPortal {
       });
 
       frame++;
-      if (frame < 90) {
+      if (frame < 110) {
         requestAnimationFrame(animate);
       } else {
         if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
@@ -1556,11 +1572,79 @@ class ArenaPortal {
     modal.classList.add("active");
   }
 
+  // 1. Mở Modal Giải Đấu Vòng Bảng Knockout Cấp Lớp (Gợi ý 3)
+  openTournamentModal() {
+    const modal = document.getElementById("arena-tournament-modal");
+    if (modal) {
+      modal.classList.add("active");
+      this.generateClassBracket();
+    }
+  }
+
+  generateClassBracket() {
+    const container = document.getElementById("arena-tournament-bracket-area");
+    if (!container) return;
+
+    const sampleStudents = [
+      "Nguyễn Văn An (4A)", "Trần Bảo Ngọc (4A)", "Lê Hoàng Nam (4B)", "Phạm Minh Anh (4B)",
+      "Vũ Đức Khoa (4C)", "Đỗ Khánh Linh (4C)", "Bùi Quang Huy (4D)", "Hoàng Thảo My (4D)"
+    ];
+
+    const shuffled = [...sampleStudents].sort(() => 0.5 - Math.random());
+
+    container.innerHTML = `
+      <div class="space-y-6">
+        <div class="text-center space-y-1">
+          <span class="badge bg-amber-500 text-slate-950 font-black text-xs px-3 py-1 uppercase">SƠ ĐỒ CÂY THI ĐẤU KNOCKOUT SƠ LOẠI</span>
+          <h4 class="font-black text-base text-amber-300">VÒNG TỨ KẾT ➔ BÁN KẾT ➔ CHUNG KẾT CẤP LỚP</h4>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+          <!-- VÒNG TỨ KẾT -->
+          <div class="space-y-3">
+            <h5 class="text-xs font-black text-cyan-300 text-center uppercase">🔥 VÒNG TỨ KẾT (4 TRẬN)</h5>
+            ${[0, 2, 4, 6].map(i => `
+              <div class="p-3 bg-slate-900 rounded-xl border border-cyan-500/40 text-xs space-y-1">
+                <div class="flex justify-between font-bold text-white"><span>🥊 ${shuffled[i]}</span><span class="text-amber-300">VS</span></div>
+                <div class="flex justify-between font-bold text-slate-300"><span>🥊 ${shuffled[i+1]}</span><span class="badge bg-emerald-600 text-white text-[9px]">TRẮNG TRẬN</span></div>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- VÒNG BÁN KẾT -->
+          <div class="space-y-3">
+            <h5 class="text-xs font-black text-purple-300 text-center uppercase">⚡ VÒNG BÁN KẾT (2 TRẬN)</h5>
+            <div class="p-4 bg-slate-900 rounded-xl border border-purple-500/40 text-xs space-y-2">
+              <p class="font-black text-purple-200">BÁN KẾT 1:</p>
+              <p class="font-bold text-white">🥇 Thắng Tứ Kết 1 VS 🥇 Thắng Tứ Kết 2</p>
+            </div>
+            <div class="p-4 bg-slate-900 rounded-xl border border-purple-500/40 text-xs space-y-2">
+              <p class="font-black text-purple-200">BÁN KẾT 2:</p>
+              <p class="font-bold text-white">🥇 Thắng Tứ Kết 3 VS 🥇 Thắng Tứ Kết 4</p>
+            </div>
+          </div>
+
+          <!-- TRẬN CHUNG KẾT -->
+          <div class="p-5 bg-gradient-to-br from-amber-950 via-slate-900 to-amber-950 rounded-2xl border-2 border-amber-400 text-center space-y-3 shadow-2xl">
+            <span class="text-4xl block animate-bounce">🏆</span>
+            <h5 class="font-black text-sm text-amber-300 uppercase">TRẬN CHUNG KẾT CÚP VÀNG</h5>
+            <p class="text-xs font-extrabold text-white">Tranh Tái Ngai Vàng Dũng Sĩ Đấu Trường</p>
+            <button onclick="arenaPortal.startBattleWithMode('blitz', 4, 10, 'all')" class="btn btn-amber btn-md font-black w-full shadow-xl">
+              🚀 KÍCH HOẠT THI ĐẤU CHUNG KẾT ▶
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   // 2. Chế Độ Vòng Đấu Đoán Chữ Tin Học Siêu Tốc (Gợi ý 5)
   startWordPuzzleArena() {
     const modal = document.getElementById("arena-word-puzzle-modal");
     const container = document.getElementById("arena-puzzle-area");
     if (!modal || !container) return;
+
+    if (this.puzzleTimerInterval) clearInterval(this.puzzleTimerInterval);
 
     const puzzles = [
       { word: "PHẦN CỨNG", hint: "Thiết bị vật lý cầm nắm được của máy tính (Bài 1 SGK 4)" },
@@ -1572,12 +1656,16 @@ class ArenaPortal {
 
     const puzzle = puzzles[Math.floor(Math.random() * puzzles.length)];
     this.currentPuzzleWord = puzzle.word;
+    this.puzzleTimer = 30;
 
     const masked = puzzle.word.split('').map(ch => (ch === ' ' ? '   ' : (Math.random() > 0.4 ? '_' : ch))).join(' ');
 
     container.innerHTML = `
       <div class="space-y-4">
-        <span class="badge bg-amber-500 text-slate-950 font-black text-xs px-3 py-1 uppercase">GỢI Ý THUẬT NGỮ</span>
+        <div class="flex items-center justify-between">
+          <span class="badge bg-amber-500 text-slate-950 font-black text-xs px-3 py-1 uppercase">GỢI Ý THUẬT NGỮ</span>
+          <span id="arena-puzzle-timer" class="font-mono font-black text-rose-400 text-sm animate-pulse">⏱️ ${this.puzzleTimer}s</span>
+        </div>
         <p class="text-sm font-bold text-cyan-200 px-4">${puzzle.hint}</p>
 
         <div class="py-4 bg-slate-900 rounded-2xl border border-amber-500/40">
@@ -1596,6 +1684,24 @@ class ArenaPortal {
     `;
 
     modal.classList.add("active");
+
+    // Đồng hồ 30s tích tắc
+    this.puzzleTimerInterval = setInterval(() => {
+      this.puzzleTimer--;
+      const timerDisp = document.getElementById("arena-puzzle-timer");
+      if (timerDisp) timerDisp.innerText = `⏱️ ${this.puzzleTimer}s`;
+
+      if (this.puzzleTimer <= 5 && this.puzzleTimer > 0) {
+        this.playBeep(660, 0.08);
+      }
+
+      if (this.puzzleTimer <= 0) {
+        clearInterval(this.puzzleTimerInterval);
+        this.playWrongSound();
+        window.app.showToast(`⏰ Hết giờ! Đáp án đúng là: ${this.currentPuzzleWord}`, "error");
+        modal.classList.remove("active");
+      }
+    }, 1000);
   }
 
   submitWordPuzzle() {
