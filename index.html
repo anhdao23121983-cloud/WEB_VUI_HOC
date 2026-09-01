@@ -3442,16 +3442,52 @@
         <button onclick="document.getElementById('arena-tournament-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-200">✕</button>
       </div>
 
+      <!-- Ô Nhập Danh Sách Học Sinh Cho Cô Giáo -->
+      <div class="p-4 bg-slate-900 rounded-2xl border border-amber-500/40 space-y-2">
+        <label class="font-extrabold text-xs text-amber-300 flex items-center gap-1.5 uppercase">
+          <span>✏️</span> <span>Danh Sách Học Sinh Lớp Thẩm Định Thi Đấu (Phân cách bằng dấu phẩy):</span>
+        </label>
+        <textarea id="arena-tournament-students-input" rows="2" placeholder="Nguyễn Văn An, Trần Bảo Ngọc, Lê Hoàng Nam, Phạm Minh Anh, Vũ Đức Khoa, Đỗ Khánh Linh, Bùi Quang Huy, Hoàng Thảo My" class="form-control text-xs font-bold bg-slate-950 border-slate-700 text-amber-200 rounded-xl p-2.5"></textarea>
+      </div>
+
       <div id="arena-tournament-bracket-area" class="space-y-4">
         <!-- Dynamic Knockout Bracket Tree -->
       </div>
 
-      <div class="flex items-center justify-between pt-3 border-t border-slate-800">
-        <button onclick="arenaPortal.generateClassBracket()" class="btn btn-amber btn-md font-black shadow-lg flex items-center gap-2">
-          <span>🎲</span> <span>Bốc Thăm Sơ Đồ Cây Mới</span>
-        </button>
+      <div class="flex items-center justify-between pt-3 border-t border-slate-800 flex-wrap gap-3">
+        <div class="flex items-center gap-2">
+          <button onclick="arenaPortal.generateClassBracket()" class="btn btn-amber btn-md font-black shadow-lg flex items-center gap-2">
+            <span>🎲</span> <span>Bốc Thăm Sơ Đồ Cây Mới</span>
+          </button>
+          <button onclick="arenaPortal.downloadTournamentBracketPNG()" class="btn btn-cyan btn-md font-black shadow-lg flex items-center gap-2">
+            <span>📥</span> <span>Tải Ảnh Sơ Đồ Cây (.PNG)</span>
+          </button>
+        </div>
         <button onclick="document.getElementById('arena-tournament-modal').classList.remove('active')" class="btn btn-outline btn-md text-slate-300">
           Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 45: RƯƠNG KHO BÁU BÍ MẬT CHO NHÀ VÔ ĐỊCH (ARENA TREASURE MODAL) -->
+  <div id="arena-treasure-modal" class="modal-backdrop">
+    <div class="modal-content p-8 max-w-lg space-y-6 animate-pop bg-gradient-to-b from-slate-950 via-amber-950 to-slate-950 text-white rounded-3xl shadow-2xl border-4 border-amber-400 text-center">
+      <div class="space-y-3">
+        <span class="text-7xl block animate-bounce filter drop-shadow-2xl">🎁 🏆 🐉</span>
+        <span class="badge bg-amber-400 text-slate-950 font-black text-xs uppercase px-4 py-1">PHẦN THƯỞNG VÔ ĐỊCH BÍ MẬT</span>
+        <h3 class="text-3xl font-black text-amber-300">RƯƠNG KHO BÁU RỒNG VÀNG</h3>
+        <p class="text-xs text-slate-300 font-bold">Chúc mừng Quán quân giật Cúp Vàng Đấu Trường Tin Học!</p>
+      </div>
+
+      <div class="p-5 bg-slate-900/90 rounded-2xl border-2 border-amber-400 space-y-3 shadow-inner">
+        <p class="text-sm font-black text-emerald-400 animate-pulse">⭐ +100 SAO VÀNG BẢNG VÀNG CẢ NĂM ⭐</p>
+        <p class="text-xs text-amber-200 font-bold">🎖️ Đã Mở Khóa: Huy Hiệu "Rồng Vàng Đấu Trường eSports 2026"</p>
+      </div>
+
+      <div class="flex items-center justify-center gap-3">
+        <button onclick="arenaPortal.claimTreasureReward()" class="btn btn-amber btn-lg font-black px-8 shadow-2xl">
+          🎁 NHẬN KHO BÁU +100 SAO ▶
         </button>
       </div>
     </div>

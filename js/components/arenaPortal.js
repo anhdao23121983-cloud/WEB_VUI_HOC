@@ -101,6 +101,9 @@ class ArenaPortal {
           </div>
 
           <div class="flex items-center gap-3 flex-wrap justify-center shrink-0">
+            <button onclick="arenaPortal.toggleArenaBGM()" id="btn-arena-bgm" class="btn bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white btn-lg font-black shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
+              <span>🎵</span> <span id="lbl-arena-bgm">${this.isBGMPlaying ? 'Nhạc BGM: BẬT' : 'Nhạc BGM: TẮT'}</span>
+            </button>
             <button onclick="arenaPortal.openTournamentModal()" class="btn bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white btn-lg font-black shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
               <span>🏆</span> <span>Giải Đấu Cấp Lớp</span>
             </button>
@@ -1572,6 +1575,56 @@ class ArenaPortal {
     modal.classList.add("active");
   }
 
+  toggleArenaBGM() {
+    this.isBGMPlaying = !this.isBGMPlaying;
+    const btnLbl = document.getElementById("lbl-arena-bgm");
+    if (btnLbl) btnLbl.innerText = this.isBGMPlaying ? "Nhạc BGM: BẬT" : "Nhạc BGM: TẮT";
+
+    if (this.isBGMPlaying) {
+      this.playSynthBGM();
+      window.app?.showToast?.("🎵 Đã BẬT Nhạc Nền Đấu Trường eSports!", "info");
+    } else {
+      this.stopSynthBGM();
+      window.app?.showToast?.("🔇 Đã TẮT Nhạc Nền Đấu Trường!", "info");
+    }
+  }
+
+  playSynthBGM() {
+    this.stopSynthBGM();
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      this.bgmCtx = new AudioCtx();
+      let step = 0;
+      const freqs = [220, 261.63, 329.63, 392.00, 440, 392.00, 329.63, 261.63];
+
+      this.bgmTimer = setInterval(() => {
+        if (!this.bgmCtx) return;
+        const osc = this.bgmCtx.createOscillator();
+        const gain = this.bgmCtx.createGain();
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(freqs[step % freqs.length], this.bgmCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, this.bgmCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.bgmCtx.currentTime + 0.18);
+        osc.connect(gain);
+        gain.connect(this.bgmCtx.destination);
+        osc.start();
+        osc.stop(this.bgmCtx.currentTime + 0.18);
+        step++;
+      }, 200);
+    } catch (e) {
+      console.warn("BGM synth error", e);
+    }
+  }
+
+  stopSynthBGM() {
+    if (this.bgmTimer) clearInterval(this.bgmTimer);
+    if (this.bgmCtx) {
+      try { this.bgmCtx.close(); } catch (e) {}
+      this.bgmCtx = null;
+    }
+  }
+
   // 1. Mở Modal Giải Đấu Vòng Bảng Knockout Cấp Lớp (Gợi ý 3)
   openTournamentModal() {
     const modal = document.getElementById("arena-tournament-modal");
@@ -1585,12 +1638,22 @@ class ArenaPortal {
     const container = document.getElementById("arena-tournament-bracket-area");
     if (!container) return;
 
-    const sampleStudents = [
-      "Nguyễn Văn An (4A)", "Trần Bảo Ngọc (4A)", "Lê Hoàng Nam (4B)", "Phạm Minh Anh (4B)",
-      "Vũ Đức Khoa (4C)", "Đỗ Khánh Linh (4C)", "Bùi Quang Huy (4D)", "Hoàng Thảo My (4D)"
-    ];
+    const input = document.getElementById("arena-tournament-students-input");
+    let studentList = [];
 
-    const shuffled = [...sampleStudents].sort(() => 0.5 - Math.random());
+    if (input && input.value.trim()) {
+      studentList = input.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    }
+
+    if (studentList.length < 8) {
+      studentList = [
+        "Nguyễn Văn An (4A)", "Trần Bảo Ngọc (4A)", "Lê Hoàng Nam (4B)", "Phạm Minh Anh (4B)",
+        "Vũ Đức Khoa (4C)", "Đỗ Khánh Linh (4C)", "Bùi Quang Huy (4D)", "Hoàng Thảo My (4D)"
+      ];
+    }
+
+    const shuffled = [...studentList].sort(() => 0.5 - Math.random());
+    this.currentBracketStudents = shuffled;
 
     container.innerHTML = `
       <div class="space-y-6">
@@ -1605,8 +1668,8 @@ class ArenaPortal {
             <h5 class="text-xs font-black text-cyan-300 text-center uppercase">🔥 VÒNG TỨ KẾT (4 TRẬN)</h5>
             ${[0, 2, 4, 6].map(i => `
               <div class="p-3 bg-slate-900 rounded-xl border border-cyan-500/40 text-xs space-y-1">
-                <div class="flex justify-between font-bold text-white"><span>🥊 ${shuffled[i]}</span><span class="text-amber-300">VS</span></div>
-                <div class="flex justify-between font-bold text-slate-300"><span>🥊 ${shuffled[i+1]}</span><span class="badge bg-emerald-600 text-white text-[9px]">TRẮNG TRẬN</span></div>
+                <div class="flex justify-between font-bold text-white"><span>🥊 ${shuffled[i] || 'Học sinh A'}</span><span class="text-amber-300">VS</span></div>
+                <div class="flex justify-between font-bold text-slate-300"><span>🥊 ${shuffled[i+1] || 'Học sinh B'}</span><span class="badge bg-emerald-600 text-white text-[9px]">TRẮNG TRẬN</span></div>
               </div>
             `).join('')}
           </div>
@@ -1636,6 +1699,86 @@ class ArenaPortal {
         </div>
       </div>
     `;
+  }
+
+  downloadTournamentBracketPNG() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1000;
+    canvas.height = 700;
+    const ctx = canvas.getContext("2d");
+
+    const bgGrad = ctx.createLinearGradient(0, 0, 1000, 700);
+    bgGrad.addColorStop(0, "#0f172a");
+    bgGrad.addColorStop(1, "#1e1b4b");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 1000, 700);
+
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 6;
+    ctx.strokeRect(20, 20, 960, 660);
+
+    ctx.fillStyle = "#fbbf24";
+    ctx.font = "900 28px Nunito, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("🏆 SƠ ĐỒ CÂY THI ĐẤU KNOCKOUT GIẢI ĐẤU CẤP LỚP 🏆", 500, 70);
+
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "700 16px Nunito, sans-serif";
+    ctx.fillText("TRƯỜNG TIỂU HỌC VUI HỌC TIN HỌC • CHƯƠNG TRÌNH GDPT 2018", 500, 105);
+
+    const students = this.currentBracketStudents || [
+      "Nguyễn Văn An (4A)", "Trần Bảo Ngọc (4A)", "Lê Hoàng Nam (4B)", "Phạm Minh Anh (4B)",
+      "Vũ Đức Khoa (4C)", "Đỗ Khánh Linh (4C)", "Bùi Quang Huy (4D)", "Hoàng Thảo My (4D)"
+    ];
+
+    ctx.textAlign = "left";
+    ctx.font = "700 14px Nunito, sans-serif";
+    for (let i = 0; i < 4; i++) {
+      const y = 160 + i * 120;
+      ctx.fillStyle = "#1e293b";
+      ctx.strokeStyle = "#38bdf8";
+      ctx.lineWidth = 2;
+      ctx.fillRect(50, y, 260, 80);
+      ctx.strokeRect(50, y, 260, 80);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(`🥊 ${students[i * 2] || 'Học sinh 1'}`, 65, y + 30);
+      ctx.fillStyle = "#cbd5e1";
+      ctx.fillText(`🥊 ${students[i * 2 + 1] || 'Học sinh 2'}`, 65, y + 60);
+    }
+
+    ctx.fillStyle = "#78350f";
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 4;
+    ctx.fillRect(680, 260, 260, 140);
+    ctx.strokeRect(680, 260, 260, 140);
+
+    ctx.fillStyle = "#fbbf24";
+    ctx.font = "900 18px Nunito, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("🏆 TRẬN CHUNG KẾT CÚP VÀNG", 810, 310);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "700 14px Nunito, sans-serif";
+    ctx.fillText("Nhà Vô Địch Cấp Lớp 2026", 810, 350);
+
+    const link = document.createElement("a");
+    link.download = "SoDoCay_GiaiDau_CapLop.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+
+    window.app?.showToast?.("📥 Đã tải Ảnh Sơ Đồ Cây Thi Đấu (.PNG) thành công!", "success");
+  }
+
+  openTreasureModal() {
+    const modal = document.getElementById("arena-treasure-modal");
+    if (modal) modal.classList.add("active");
+  }
+
+  claimTreasureReward() {
+    this.starsEarned += 100;
+    this.triggerFireworks(true);
+    window.app?.showToast?.("🎁 ĐÃ NHẬN KHO BÁU: ⭐ +100 Sao Vàng & Huy Hiệu Rồng Vàng 2026!", "success");
+    document.getElementById("arena-treasure-modal")?.classList.remove("active");
   }
 
   // 2. Chế Độ Vòng Đấu Đoán Chữ Tin Học Siêu Tốc (Gợi ý 5)
