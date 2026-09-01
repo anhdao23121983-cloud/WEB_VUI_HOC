@@ -197,7 +197,9 @@ class AdminService {
         if (updateData.role) payload.role = updateData.role;
         if (updateData.className) payload.class_name = updateData.className;
         if (updateData.grade) payload.grade_level = parseInt(updateData.grade);
-        if (updateData.password && updateData.password.trim()) payload.password = updateData.password.trim();
+        if (updateData.password && updateData.password.trim()) {
+          payload.password = await window.authService.hashPassword(updateData.password.trim());
+        }
 
         await client.from("app_users").update(payload).eq("username", username);
       } catch (err) {
@@ -267,9 +269,11 @@ class AdminService {
 
       if (!cleanUsername) continue;
 
+      const hashedPassword = await window.authService.hashPassword(password);
+
       const newUserObj = {
         username: cleanUsername,
-        password: password,
+        password: hashedPassword,
         full_name: cleanName,
         role: role,
         school_name: "Trường Tiểu Học Vui Học",

@@ -31,8 +31,21 @@ class AuthService {
     return this.currentUser && this.currentUser.role === CONFIG.ROLES.STUDENT;
   }
 
+  // Hàm mã hóa mật khẩu SHA-256 chuẩn Web Crypto API
+  async hashPassword(password) {
+    if (!password) return "";
+    try {
+      const msgUint8 = new TextEncoder().encode(password);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+    } catch (e) {
+      return password; // Fallback nếu trình duyệt cũ không hỗ trợ WebCrypto
+    }
+  }
+
   // =========================================================================
-  // 1. ĐĂNG KÝ TÀI KHOẢN MỚI (ĐỒNG BỘ SUPABASE DATABASE)
+  // 1. ĐĂNG KÝ TÀI KHOẢN MỚI (MÃ HÓA SHA-256 & ĐỒNG BỘ SUPABASE DATABASE)
   // =========================================================================
   async register({ username, password, fullName, role = "student", schoolName = "Trường Tiểu Học", className = "3A", gradeLevel = 3 }) {
     const cleanUsername = username.trim().toLowerCase();
@@ -47,11 +60,12 @@ class AuthService {
       return { success: false, error: "Mật khẩu phải có ít nhất 6 ký tự!" };
     }
 
+    const hashedPassword = await this.hashPassword(cleanPassword);
     const avatar = role === "teacher" ? "👨‍🏫" : (gradeLevel === 4 ? "👧" : (gradeLevel === 5 ? "🧑‍💻" : "👦"));
 
     const newUser = {
       username: cleanUsername,
-      password: cleanPassword,
+      password: hashedPassword,
       full_name: cleanFullName,
       role: role,
       school_name: schoolName || "Trường Tiểu Học",
@@ -96,12 +110,6 @@ class AuthService {
     // 2. Lưu dự phòng vào LocalStorage
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     if (!db.users) db.users = [];
-    
-    // Kiểm tra local
-    const existsLocally = db.users.find(u => (u.username || "").toLowerCase() === cleanUsername);
-    if (existsLocally && !newUser.id) {
-      return { success: false, error: "Tên đăng nhập đã tồn tại trong hệ thống!" };
-    }
 
     const mappedUser = {
       id: newUser.id || ("u_" + Date.now()),
@@ -112,7 +120,8 @@ class AuthService {
       className: className,
       grade: parseInt(gradeLevel) || 3,
       stars: newUser.stars,
-      avatar: avatar
+      avatar: avatar,
+      password: hashedPassword
     };
 
     db.users.push(mappedUser);
@@ -127,7 +136,7 @@ class AuthService {
   }
 
   // =========================================================================
-  // 2. ĐĂNG NHẬP BẰNG USERNAME & MẬT KHẨU (ĐỒNG BỘ SUPABASE DATABASE)
+  // 2. ĐĂNG NHẬP BẰNG USERNAME & MẬT KHẨU (XÁC THỰC SHA-256 & ĐỒNG BỘ SUPABASE)
   // =========================================================================
   async login(username, password) {
     const cleanUsername = username.trim().toLowerCase();
@@ -137,6 +146,8 @@ class AuthService {
       return { success: false, error: "Vui lòng nhập Tên đăng nhập và Mật khẩu!" };
     }
 
+    const hashedPassword = await this.hashPassword(cleanPassword);
+
     // 1. Kiểm tra trên Supabase Cloud Database trước
     if (window.supabaseService?.isLive && window.supabaseService?.client) {
       try {
@@ -145,26 +156,33 @@ class AuthService {
           .from("app_users")
           .select("*")
           .eq("username", cleanUsername)
-          .eq("password", cleanPassword)
           .maybeSingle();
 
         if (user && !error) {
-          const loggedUser = {
-            id: user.id,
-            username: user.username,
-            name: user.full_name,
-            role: user.role,
-            school: user.school_name,
-            className: user.class_name,
-            grade: user.grade_level,
-            stars: user.stars || 0,
-            avatar: user.avatar || "🎒"
-          };
+          const isPasswordCorrect = (user.password === hashedPassword) || (user.password === cleanPassword);
+          if (isPasswordCorrect) {
+            // Tự động nâng cấp mật khẩu thô cũ lên mã hóa SHA-256 nếu cần
+            if (user.password === cleanPassword) {
+              await client.from("app_users").update({ password: hashedPassword }).eq("id", user.id);
+            }
 
-          this.currentUser = loggedUser;
-          localStorage.setItem("app_current_user", JSON.stringify(loggedUser));
-          this.notifyListeners();
-          return { success: true, user: loggedUser };
+            const loggedUser = {
+              id: user.id,
+              username: user.username,
+              name: user.full_name,
+              role: user.role,
+              school: user.school_name,
+              className: user.class_name,
+              grade: user.grade_level,
+              stars: user.stars || 0,
+              avatar: user.avatar || "🎒"
+            };
+
+            this.currentUser = loggedUser;
+            localStorage.setItem("app_current_user", JSON.stringify(loggedUser));
+            this.notifyListeners();
+            return { success: true, user: loggedUser };
+          }
         }
       } catch (err) {
         console.warn("Lỗi kiểm tra đăng nhập trên Supabase, chuyển sang kiểm tra Local:", err);
@@ -178,7 +196,7 @@ class AuthService {
     let found = (db.users || []).find(u => 
       ((u.username && u.username.toLowerCase() === cleanUsername) || 
        (u.email && u.email.toLowerCase() === cleanUsername)) &&
-      (u.password ? u.password === cleanPassword : cleanPassword === "123456")
+      (u.password ? (u.password === hashedPassword || u.password === cleanPassword) : cleanPassword === "123456")
     );
 
     // Xử lý tài khoản mặc định hệ thống nếu khớp mật khẩu "123456"
@@ -236,7 +254,7 @@ class AuthService {
   }
 
   // =========================================================================
-  // 4. CẬP NHẬT HỒ SƠ & ĐỔI AVATAR / MẬT KHẨU (ĐỒNG BỘ SUPABASE)
+  // 4. CẬP NHẬT HỒ SƠ & ĐỔI AVATAR / MẬT KHẨU (MÃ HÓA SHA-256)
   // =========================================================================
   async updateUserProfile({ name, avatar, password }) {
     if (!this.currentUser) return { success: false, error: "Chưa đăng nhập!" };
@@ -251,7 +269,7 @@ class AuthService {
       updates.avatar = avatar;
     }
     if (password && password.trim()) {
-      updates.password = password.trim();
+      updates.password = await this.hashPassword(password.trim());
     }
 
     // 1. Cập nhật Supabase
