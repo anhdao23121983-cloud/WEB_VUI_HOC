@@ -1943,17 +1943,48 @@ class LecturePortal {
     this.currentPreviewLectureId = lectureId;
     window.lectureService.incrementViewCount(lectureId);
 
+    const user = window.authService?.getUser();
+    const isTeacher = user && (user.role === 'teacher' || user.role === 'admin');
+
     const modal = document.getElementById("lecture-preview-modal");
     const iframe = document.getElementById("lec-preview-iframe");
     const titleEl = document.getElementById("lec-preview-title");
+    const subtitleEl = document.getElementById("lec-preview-subtitle");
+    const teacherTools = document.getElementById("lec-preview-teacher-tools");
+    const teacherSoundboard = document.getElementById("lec-preview-teacher-soundboard");
 
     if (titleEl) titleEl.innerText = `${lecture.title} (Lớp ${lecture.grade})`;
+    if (subtitleEl) {
+      subtitleEl.innerText = isTeacher 
+        ? "Chế Độ Trình Chiếu Bài Giảng Điện Tử Cho Giáo Viên (Có Bút Vẽ, Đố Vui 10s & Âm Thanh Cổ Vũ)" 
+        : "Chế Độ Xem Bài Giảng Điện Tử Cho Học Sinh";
+    }
+
+    // Ẩn/Hiện thanh công cụ tương tác của Giáo viên theo phân quyền vai trò
+    if (teacherTools) {
+      if (isTeacher) {
+        teacherTools.classList.remove("hidden");
+      } else {
+        teacherTools.classList.add("hidden");
+      }
+    }
+
+    if (teacherSoundboard) {
+      if (isTeacher) {
+        teacherSoundboard.classList.remove("hidden");
+      } else {
+        teacherSoundboard.classList.add("hidden");
+      }
+    }
+
     if (iframe) {
       iframe.src = lecture.fileUrl || "https://docs.google.com/presentation/d/e/2PACX-1vT1Z5u7.../embed";
     }
 
     if (modal) modal.classList.add("active");
-    this.initDrawingCanvas("lec-preview-canvas");
+    if (isTeacher) {
+      this.initDrawingCanvas("lec-preview-canvas");
+    }
   }
 
   closePreviewModal() {

@@ -856,12 +856,12 @@
           <span class="text-2xl p-1.5 bg-amber-100 rounded-xl">📊</span>
           <div>
             <h3 id="lec-preview-title" class="text-base font-black text-slate-900">Trình Chiếu Bài Giảng Điện Tử</h3>
-            <p class="text-[11px] text-cyan-700 font-bold">Chế Độ Xem, Bút Vẽ Laser & Đố Vui 10s Tương Tác</p>
+            <p id="lec-preview-subtitle" class="text-[11px] text-cyan-700 font-bold">Chế Độ Xem, Bút Vẽ Laser & Đố Vui 10s Tương Tác</p>
           </div>
         </div>
 
-        <!-- Toolbar Bút Vẽ, Đố Vui, Ô Chữ, Ghép Thẻ, Nối Cột, Bắn Bóng, Scratch 3D, Vòng Quay & Tặng Sao -->
-        <div class="flex items-center gap-2 flex-wrap">
+        <!-- Toolbar Bút Vẽ, Đố Vui, Ô Chữ, Ghép Thẻ, Nối Cột, Bắn Bóng, Scratch 3D, Vòng Quay & Tặng Sao (Dành Cho Giáo Viên) -->
+        <div id="lec-preview-teacher-tools" class="flex items-center gap-2 flex-wrap">
           <button onclick="lecturePortal.toggleInSlideStarAward()" class="btn bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 btn-xs font-black shadow-md flex items-center gap-1 hover:scale-105 transition-all" title="Tặng Sao Vàng khen thưởng trực tiếp cho học sinh (Đồng bộ Supabase Database)">
             <span>⭐</span> <span>Tặng Sao</span>
           </button>
@@ -911,7 +911,7 @@
         </div>
 
         <!-- Thanh Âm Thanh Khen Thưởng Nhanh Của Cô Giáo (Teacher Voice Soundboard Bar) -->
-        <div class="p-2 bg-gradient-to-r from-pink-950/90 via-purple-950/90 to-slate-900 rounded-2xl border border-pink-500/30 flex items-center justify-between gap-2 shrink-0 text-xs flex-wrap">
+        <div id="lec-preview-teacher-soundboard" class="p-2 bg-gradient-to-r from-pink-950/90 via-purple-950/90 to-slate-900 rounded-2xl border border-pink-500/30 flex items-center justify-between gap-2 shrink-0 text-xs flex-wrap">
           <div class="flex items-center gap-1.5 text-pink-300 font-black">
             <span class="text-base animate-pulse">🎙️</span>
             <span>CỔ VŨ CÔ GIÁO:</span>
