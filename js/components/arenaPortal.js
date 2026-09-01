@@ -288,13 +288,13 @@ class ArenaPortal {
               <button class="btn btn-primary btn-xs w-full font-black mt-2">Bắt Đầu Đấu ▶</button>
             </div>
 
-            <div class="p-4 bg-slate-900/90 rounded-2xl border-2 border-emerald-500/40 hover:border-emerald-400 transition-all space-y-2 cursor-pointer text-left group" onclick="arenaPortal.startBattleWithMode('blitz', 4)">
+            <div class="p-4 bg-slate-900/90 rounded-2xl border-2 border-emerald-500/40 hover:border-emerald-400 transition-all space-y-2 cursor-pointer text-left group" onclick="arenaPortal.openGrade4ConfigModal()">
               <div class="flex items-center justify-between">
                 <span class="text-3xl">🚀</span>
                 <span class="badge bg-emerald-600 text-white font-black text-[10px]">LỚP 4</span>
               </div>
               <h4 class="font-black text-sm text-emerald-300 group-hover:text-emerald-200">Đấu Trường Lớp 4</h4>
-              <p class="text-[11px] text-slate-400">Thư mục và tệp, Thiết bị vào/ra, Lập trình Scratch và Soạn thảo văn bản.</p>
+              <p class="text-[11px] text-slate-400">Tùy chọn 10, 20, 30 câu & chọn từng bài học SGK Tin Học 4.</p>
               <button class="btn btn-emerald btn-xs w-full font-black mt-2">Bắt Đầu Đấu ▶</button>
             </div>
 
@@ -803,22 +803,60 @@ class ArenaPortal {
   }
 
   // =========================================================================
-  // LOGIC TRẬN ĐẤU (LIVE BATTLE LOGIC)
+  // LOGIC TRẬN ĐẤU & CẤU HÌNH ĐẤU TRƯỜNG LỚP 4
   // =========================================================================
-  async startNewBattle() {
-    await this.startBattleWithMode("blitz", this.selectedGrade === "all" ? 3 : this.selectedGrade);
+  openGrade4ConfigModal() {
+    this.selectedG4QuestionCount = 10;
+    const modal = document.getElementById("arena-grade4-config-modal");
+    if (modal) modal.classList.add("active");
   }
 
-  async startBattleWithMode(mode = "blitz", grade = 3) {
-    const allQuestions = await window.arenaService.getQuestions(grade, "all");
+  closeGrade4ConfigModal() {
+    const modal = document.getElementById("arena-grade4-config-modal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  selectQuestionCount(count) {
+    this.selectedG4QuestionCount = count;
+    [10, 20, 30].forEach(c => {
+      const btn = document.getElementById(`btn-count-${c}`);
+      if (btn) {
+        if (c === count) {
+          btn.className = "p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm";
+        } else {
+          btn.className = "p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100";
+        }
+      }
+    });
+  }
+
+  async startBattleWithGrade4Config() {
+    const lessonSelect = document.getElementById("arena-g4-lesson-select");
+    const selectedLesson = lessonSelect ? lessonSelect.value : "all";
+    const count = this.selectedG4QuestionCount || 10;
+
+    this.closeGrade4ConfigModal();
+    await this.startBattleWithMode("blitz", 4, count, selectedLesson);
+  }
+
+  async startNewBattle() {
+    if (this.selectedGrade === 4) {
+      this.openGrade4ConfigModal();
+    } else {
+      await this.startBattleWithMode("blitz", this.selectedGrade === "all" ? 3 : this.selectedGrade);
+    }
+  }
+
+  async startBattleWithMode(mode = "blitz", grade = 3, questionCount = 5, lessonFilter = "all") {
+    let allQuestions = await window.arenaService.getQuestions(grade, "all", lessonFilter);
     if (allQuestions.length === 0) {
-      window.app.showToast("Chưa có câu hỏi cho khối lớp này. Đang nạp câu hỏi mẫu...", "warning");
-      window.arenaService.resetDefaultQuestions();
+      window.app.showToast("Chưa có đủ câu hỏi cho bài học này. Đang lấy tất cả câu hỏi Lớp 4...", "warning");
+      allQuestions = await window.arenaService.getQuestions(grade, "all", "all");
     }
 
-    // Trộn ngẫu nhiên 5 câu hỏi
+    // Trộn ngẫu nhiên câu hỏi theo đúng số lượng đã chọn (10, 20, 30 hoặc 5)
     const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
-    this.battleQuestions = shuffled.slice(0, 5);
+    this.battleQuestions = shuffled.slice(0, Math.min(questionCount, shuffled.length));
     this.currentQIndex = 0;
     this.userAnswers = [];
     this.score = 0;
@@ -830,7 +868,7 @@ class ArenaPortal {
     this.startQuestionTimer();
     this.render("main-content-area");
     if (window.ttsService) {
-      window.ttsService.speak(`Chào mừng em đến với Đấu Trường Tin Học Lớp ${grade}! Bắt đầu câu hỏi số 1!`);
+      window.ttsService.speak(`Chào mừng em đến với Đấu Trường Tin Học Lớp ${grade}! Trận đấu gồm ${this.battleQuestions.length} câu hỏi. Bắt đầu câu số 1!`);
     }
   }
 

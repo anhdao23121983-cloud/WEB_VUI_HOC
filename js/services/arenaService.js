@@ -107,6 +107,199 @@ class ArenaService {
         timeLimit: 20,
         stars: 30
       },
+      // === KHỐI LỚP 4 - THEO CHUẨN 16 BÀI HỌC SGK KẾT NỐI TRI THỨC VỚI CUỘC SỐNG ===
+      {
+        id: "g4_q_01", grade: 4, lessonId: "bai_1", topic: "Bài 1. Phần cứng và phần mềm máy tính",
+        question: "Theo bài 1 SGK Tin học 4, thiết bị nào sau đây được gọi là phần cứng của máy tính?",
+        options: ["A. Phần mềm Scratch", "B. Bàn phím, chuột, thân máy, màn hình", "C. Phần mềm PowerPoint", "D. Trò chơi trực tuyến"],
+        correctIndex: 1, explanation: "Phần cứng là những thiết bị vật lý của máy tính mà ta có thể nhìn thấy và sờ chạm được.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_02", grade: 4, lessonId: "bai_1", topic: "Bài 1. Phần cứng và phần mềm máy tính",
+        question: "Khẳng định nào sau đây là ĐÚNG về mối quan hệ giữa phần cứng và phần mềm?",
+        options: ["A. Phần cứng có thể tự chạy mà không cần phần mềm", "B. Phần mềm được lưu trữ trong phần cứng và điều khiển phần cứng hoạt động", "C. Máy tính không cần phần cứng vẫn gõ được văn bản", "D. Phần mềm là thiết bị bằng kim loại"],
+        correctIndex: 1, explanation: "Phần mềm được lưu trữ trong phần cứng và cung cấp câu lệnh để điều khiển phần cứng hoạt động.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g4_q_03", grade: 4, lessonId: "bai_2", topic: "Bài 2. Gõ bàn phím đúng cách",
+        question: "Khi gõ các phím ở hàng phím số (1, 2, 3... 0), các ngón tay xuất phát từ hàng phím nào vươn lên?",
+        options: ["A. Hàng phím trên", "B. Hàng phím cơ sở (ASDF - JKL;)", "C. Hàng phím dưới", "D. Hàng phím cách"],
+        correctIndex: 1, explanation: "Khi gõ phím số, các ngón tay từ hàng phím cơ sở vươn lên gõ phím số rồi thu về vị trí xuất phát.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_04", grade: 4, lessonId: "bai_2", topic: "Bài 2. Gõ bàn phím đúng cách",
+        question: "Lợi ích lớn nhất của việc gõ bàn phím 10 ngón đúng cách là gì?",
+        options: ["A. Gõ nhanh hơn, chính xác hơn và bảo vệ sức khỏe mắt, cổ", "B. Làm bàn phím đẹp hơn", "C. Không cần cắm nguồn máy tính", "D. Tự động lưu tệp văn bản"],
+        correctIndex: 0, explanation: "Gõ đúng cách giúp tiết kiệm thời gian, tăng tốc độ và bảo vệ cột sống, mắt, cổ.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_05", grade: 4, lessonId: "bai_3", topic: "Bài 3. Thông tin trên trang web",
+        question: "Các dạng thông tin chính thường xuất hiện trên một trang web bao gồm những gì?",
+        options: ["A. Chỉ có văn bản", "B. Văn bản, hình ảnh, âm thanh, video và siêu liên kết (Hyperlink)", "C. Chỉ có phần cứng", "D. Chỉ có trò chơi"],
+        correctIndex: 1, explanation: "Trang web kết hợp đa phương tiện: văn bản, hình ảnh, âm thanh, video và các đường siêu liên kết.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_06", grade: 4, lessonId: "bai_3", topic: "Bài 3. Thông tin trên trang web",
+        question: "Khi con trỏ chuột di chuyển vào vị trí có chứa 'Siêu liên kết', hình dạng con trỏ chuột thường đổi thành gì?",
+        options: ["A. Hình mũi tên to", "B. Hình bàn tay chỉ ngón trỏ 👆", "C. Hình chiếc đồng hồ sand-glass", "D. Hình dán ngôi sao"],
+        correctIndex: 1, explanation: "Khi rà chuột qua siêu liên kết, con trỏ chuột biến thành hình bàn tay trỏ ngón chỉ dẫn nhấp chuột.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g4_q_07", grade: 4, lessonId: "bai_4", topic: "Bài 4. Tìm kiếm thông tin trên Internet",
+        question: "Để tìm kiếm thông tin về 'Hồ Gươm', từ hoặc cụm từ nhập vào ô tìm kiếm được gọi là gì?",
+        options: ["A. Địa chỉ email", "B. Từ khóa (Keyword)", "C. Tên thư mục", "D. Tên ổ đĩa"],
+        correctIndex: 1, explanation: "Từ khóa (Keyword) là từ hoặc cụm từ thể hiện nội dung thông tin chúng ta muốn tìm kiếm.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_08", grade: 4, lessonId: "bai_4", topic: "Bài 4. Tìm kiếm thông tin trên Internet",
+        question: "Sắp xếp thứ tự các bước tìm kiếm thông tin trên máy tìm kiếm Google:",
+        options: ["A. Gõ từ khóa -> Nhấn Enter -> Chọn siêu liên kết phù hợp", "B. Chọn siêu liên kết -> Gõ từ khóa -> Tắt máy", "C. Nhấn Enter -> Mở Paint -> Gõ từ khóa", "D. Tắt mạng -> Gõ từ khóa -> Nhấn Enter"],
+        correctIndex: 0, explanation: "Các bước chuẩn: Mở máy tìm kiếm -> Gõ từ khóa -> Nhấn Enter -> Nhấp vào siêu liên kết kết quả.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g4_q_09", grade: 4, lessonId: "bai_5", topic: "Bài 5. Thao tác với tệp và thư mục",
+        question: "Muốn sao chép (Copy) một tệp tin sang thư mục mới mà vẫn giữ tệp cũ, em dùng kết hợp lệnh nào?",
+        options: ["A. Delete và Paste", "B. Copy và Paste", "C. Move to và Delete", "D. Rename và Cut"],
+        correctIndex: 1, explanation: "Lệnh Copy tạo bản sao tệp ở thư mục mới trong khi tệp ở thư mục gốc vẫn tồn tại.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g4_q_10", grade: 4, lessonId: "bai_5", topic: "Bài 5. Thao tác với tệp và thư mục",
+        question: "Hành động nào sau đây có thể gây hại cho hệ điều hành máy tính khi thao tác tệp?",
+        options: ["A. Đổi tên tệp văn bản bài tập của em", "B. Tự ý xóa hoặc di chuyển các tệp hệ thống trong ổ đĩa C:\\", "C. Tạo thư mục mới mang tên em", "D. Xem ảnh trong thư mục cá nhân"],
+        correctIndex: 1, explanation: "Tuyệt đối không xóa hoặc di chuyển các tệp hệ thống trong ổ C vì sẽ gây lỗi chương trình máy tính.", difficulty: "hard", timeLimit: 15, stars: 30
+      },
+      {
+        id: "g4_q_11", grade: 4, lessonId: "bai_6", topic: "Bài 6. Sử dụng phần mềm khi được phép",
+        question: "Phần mềm được tác giả cho phép người dùng tải về và sử dụng không phải trả tiền gọi là gì?",
+        options: ["A. Phần mềm thương mại", "B. Phần mềm miễn phí (Free software)", "C. Phần mềm độc hại", "D. Phần mềm bị lỗi"],
+        correctIndex: 1, explanation: "Phần mềm miễn phí được phép tải và dùng hợp pháp mà không cần trả chi phí mua bản quyền.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_12", grade: 4, lessonId: "bai_6", topic: "Bài 6. Sử dụng phần mềm khi được phép",
+        question: "Tại sao chúng ta KHÔNG NÊN sử dụng phần mềm bẻ khóa (Crack) trái phép?",
+        options: ["A. Vì vi phạm pháp luật và nguy cơ bị lây nhiễm virus, mất an toàn dữ liệu", "B. Vì làm máy tính đẹp hơn", "C. Vì tăng tốc độ mạng", "D. Vì giúp giáo viên vui hơn"],
+        correctIndex: 0, explanation: "Dùng phần mềm bẻ khóa vi phạm bản quyền và tiềm ẩn nguy cơ cao bị mã độc, virus tấn công.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g4_q_13", grade: 4, lessonId: "bai_7", topic: "Bài 7. Tạo bài trình chiếu",
+        question: "Phần mềm nào sau đây thường được dùng phổ biến để tạo các bài trình chiếu (Presentation)?",
+        options: ["A. MS Word", "B. MS PowerPoint", "C. MS Excel", "D. Scratch"],
+        correctIndex: 1, explanation: "PowerPoint là phần mềm trình chiếu chuyên dụng giúp tạo các trang chiếu sinh động.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_14", grade: 4, lessonId: "bai_7", topic: "Bài 7. Tạo bài trình chiếu",
+        question: "Để lưu bài trình chiếu vào thư mục cá nhân, em chọn lệnh nào trong bảng chọn File?",
+        options: ["A. Exit", "B. Save (hoặc Save As)", "C. New", "D. Open"],
+        correctIndex: 1, explanation: "Lệnh Save/Save As dùng để lưu tệp trình chiếu (.pptx) vào ổ đĩa hoặc thư mục mong muốn.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_15", grade: 4, lessonId: "bai_8", topic: "Bài 8. Định dạng văn bản trên trang chiếu",
+        question: "Nút lệnh nào trên dải lệnh Home dùng để bật định dạng chữ ĐẬM cho văn bản?",
+        options: ["A. Nút B (Bold)", "B. Nút I (Italic)", "C. Nút U (Underline)", "D. Nút Bullets"],
+        correctIndex: 0, explanation: "Nút B (Bold) làm chữ in đậm, Nút I làm chữ nghiêng, Nút U gạch chân.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_16", grade: 4, lessonId: "bai_8", topic: "Bài 8. Định dạng văn bản trên trang chiếu",
+        question: "Để tạo danh sách gạch đầu dòng tự động cho các dòng địa danh trên trang chiếu, em dùng công cụ nào?",
+        options: ["A. Nút Font Color", "B. Nút Bullets (gạch đầu dòng)", "C. Nút Save", "D. Nút Shapes"],
+        correctIndex: 1, explanation: "Công cụ Bullets trong nhóm Paragraph giúp tạo các ký hiệu gạch đầu dòng rõ ràng, trực quan.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g4_q_17", grade: 4, lessonId: "bai_9", topic: "Bài 9. Hiệu ứng chuyển trang",
+        question: "Để tạo hiệu ứng xuất hiện sinh động khi chuyển từ trang chiếu này sang trang chiếu khác, em chọn dải lệnh nào?",
+        options: ["A. Home", "B. Transitions", "C. Review", "D. View"],
+        correctIndex: 1, explanation: "Dải lệnh Transitions chứa các mẫu hiệu ứng chuyển giữa các trang chiếu (Push, Fade, Wipe, Flip...).", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g4_q_18", grade: 4, lessonId: "bai_9", topic: "Bài 9. Hiệu ứng chuyển trang",
+        question: "Phím tắt nào trên bàn phím dùng để bắt đầu trình chiếu toàn màn hình bài thuyết trình?",
+        options: ["A. Phím Esc", "B. Phím F5", "C. Phím Enter", "D. Phím Space"],
+        correctIndex: 1, explanation: "Nhấn phím F5 để bắt đầu trình chiếu bài PowerPoint từ trang đầu tiên toàn màn hình.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g4_q_19", grade: 4, lessonId: "bai_10", topic: "Bài 10. Phần mềm soạn thảo văn bản",
+        question: "Vạch đứng nhấp nháy trên màn hình soạn thảo Word chỉ vị trí xuất hiện của ký tự tiếp theo gọi là gì?",
+        options: ["A. Con trỏ soạn thảo", "B. Chuột máy tính", "C. Thanh cuộn", "D. Dải lệnh"],
+        correctIndex: 0, explanation: "Con trỏ soạn thảo là vạch đứng nhấp nháy xác định vị trí ký tự sẽ được gõ vào.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_20", grade: 4, lessonId: "bai_10", topic: "Bài 10. Phần mềm soạn thảo văn bản",
+        question: "Để gõ chữ tiếng Việt có dấu theo kiểu Telex, phần mềm hỗ trợ nào cần được khởi động sẵn?",
+        options: ["A. UniKey (hoặc EVKey)", "B. Windows Media Player", "C. Paint", "D. Calculator"],
+        correctIndex: 0, explanation: "UniKey hoặc EVKey là các phần mềm gõ tiếng Việt phổ biến hỗ trợ kiểu gõ Telex và VNI.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_21", grade: 4, lessonId: "bai_11", topic: "Bài 11. Chỉnh sửa văn bản",
+        question: "Phím Backspace và phím Delete dùng để xóa ký tự ở vị trí nào so với con trỏ soạn thảo?",
+        options: ["A. Backspace xóa bên trái, Delete xóa bên phải", "B. Backspace xóa bên phải, Delete xóa bên trái", "C. Cả hai cùng xóa bên trái", "D. Cả hai cùng xóa toàn bộ bài"],
+        correctIndex: 0, explanation: "Phím Backspace xóa ký tự phía bên trái con trỏ, phím Delete xóa ký tự phía bên phải con trỏ.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g4_q_22", grade: 4, lessonId: "bai_11", topic: "Bài 11. Chỉnh sửa văn bản",
+        question: "Muốn đưa một bức ảnh minh họa vào tệp văn bản Word, em chọn lệnh nào trên dải lệnh Insert?",
+        options: ["A. Table", "B. Picture", "C. Symbol", "D. Header"],
+        correctIndex: 1, explanation: "Lệnh Picture trên dải lệnh Insert cho phép chèn ảnh từ máy tính vào tệp văn bản.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_23", grade: 4, lessonId: "bai_12a", topic: "Bài 12A. Thực hành đa phương tiện",
+        question: "Sản phẩm đa phương tiện là sản phẩm kết hợp những yếu tố nào?",
+        options: ["A. Chỉ có âm thanh", "B. Văn bản, hình ảnh, âm thanh, tệp phim/video", "C. Chỉ có bảng biểu", "D. Chỉ có phím bấm"],
+        correctIndex: 1, explanation: "Đa phương tiện (Multimedia) kết hợp đồng thời văn bản, hình ảnh, âm thanh và video sinh động.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_24", grade: 4, lessonId: "bai_12a", topic: "Bài 12A. Thực hành đa phương tiện",
+        question: "Phần mềm nào có sẵn trên Windows dùng để xem video truyền thống về ngày Tết hay sự tích dân gian?",
+        options: ["A. Windows Media Player (hoặc Movies & TV)", "B. Notepad", "C. WordPad", "D. Command Prompt"],
+        correctIndex: 0, explanation: "Windows Media Player là phần mềm nghe nhạc, xem video mặc định trên hệ điều hành Windows.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_25", grade: 4, lessonId: "bai_12b", topic: "Bài 12B. Phần mềm luyện tập gõ bàn phím",
+        question: "Trong phần mềm Kiran's Typing Tutor, mục bài học 'Capitals' giúp em luyện tập gõ ký tự gì?",
+        options: ["A. Gõ các chữ số 1-9", "B. Gõ các chữ in hoa (Capital letters)", "C. Gõ dấu câu", "D. Gõ từ tiếng Anh"],
+        correctIndex: 1, explanation: "Mục Capitals luyện kỹ năng nhấn kết hợp phím Shift để gõ các chữ cái in hoa chuẩn xác.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g4_q_26", grade: 4, lessonId: "bai_13", topic: "Bài 13. Chơi với máy tính",
+        question: "Chương trình máy tính được tạo ra bằng cách nào?",
+        options: ["A. Viết các lệnh được sắp xếp theo một thứ tự xác định bằng ngôn ngữ lập trình", "B. Chụp ảnh bàn phím", "C. Dùng kéo cắt màn hình", "D. Cắm dây nguồn máy tính"],
+        correctIndex: 0, explanation: "Chương trình máy tính gồm dãy các câu lệnh được viết bằng ngôn ngữ lập trình sắp xếp theo thứ tự rõ ràng.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g4_q_27", grade: 4, lessonId: "bai_14", topic: "Bài 14. Khám phá môi trường lập trình trực quan",
+        question: "Trong phần mềm lập trình trực quan Scratch, khối lệnh 'đi chuyển 10 bước' thuộc nhóm lệnh màu xanh lam nào?",
+        options: ["A. Chuyển động (Motion)", "B. Sự kiện (Events)", "C. Điều khiển (Control)", "D. Âm thanh (Sound)"],
+        correctIndex: 0, explanation: "Nhóm lệnh Chuyển động (Motion) màu xanh lam chứa các khối lệnh điều khiển nhân vật di chuyển, xoay góc.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_28", grade: 4, lessonId: "bai_14", topic: "Bài 14. Khám phá môi trường lập trình trực quan",
+        question: "Để chương trình Scratch bắt đầu chạy khi học sinh bấm vào Cờ Xanh 🟢, ta cần dùng khối lệnh nào thuộc nhóm 'Sự kiện'?",
+        options: ["A. Khi bấm vào cờ xanh 🟢", "B. Khi bấm vào phím trắng", "C. Đợi 1 giây", "D. Phát âm thanh"],
+        correctIndex: 0, explanation: "Khối lệnh 'Khi bấm vào cờ xanh' đóng vai trò là ngòi nổ bắt đầu chạy toàn bộ khối lệnh phía dưới.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_29", grade: 4, lessonId: "bai_15", topic: "Bài 15. Tạo chương trình máy tính để diễn tả ý tưởng",
+        question: "Muốn thay đổi Phông nền sân khấu (Backdrop) trong Scratch thành khu vườn hoặc bể cá, em làm thế nào?",
+        options: ["A. Nháy chuột vào nút 'Chọn một Phông nền' ở góc dưới bên phải", "B. Nhấn phím Delete", "C. Đổi màu bàn phím", "D. Tắt ứng dụng Scratch"],
+        correctIndex: 0, explanation: "Nút chọn phông nền giúp mở thư viện phông nền phong phú (Forest, Garden, Undersea...) cho sân khấu.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g4_q_30", grade: 4, lessonId: "bai_15", topic: "Bài 15. Tạo chương trình máy tính để diễn tả ý tưởng",
+        question: "Khối lệnh 'bật lại nếu chạm cạnh' có tác dụng gì khi nhân vật di chuyển trên sân khấu?",
+        options: ["A. Giúp nhân vật không bị chạy biến mất ra ngoài mép sân khấu", "B. Làm nhân vật biến hình", "C. Đổi màu phông nền", "D. Phát tiếng nhạc"],
+        correctIndex: 0, explanation: "Khối lệnh này tự động đảo hướng khi nhân vật chạm bờ mép sân khấu, giữ nhân vật luôn trong tầm nhìn.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g4_q_31", grade: 4, lessonId: "bai_16", topic: "Bài 16. Chương trình của em",
+        question: "Để nhân vật Chú chó đuổi theo Chú bướm trong bài 16, khối lệnh nào giúp Chú chó hướng về phía Chú bướm?",
+        options: ["A. lướt 1 giây tới vị trí ngẫu nhiên", "B. đi tới [Butterfly 2]", "C. đặt kiểu xoay trái-phải", "D. phát âm thanh dog1"],
+        correctIndex: 1, explanation: "Khối lệnh 'đi tới [Tên Nhân Vật]' giúp lập trình nhân vật này theo đuổi hoặc di chuyển tới vị trí nhân vật khác.", difficulty: "hard", timeLimit: 20, stars: 30
+      },
+      {
+        id: "g4_q_32", grade: 4, lessonId: "bai_16", topic: "Bài 16. Chương trình của em",
+        question: "Trong bài thực hành vẽ hình bọ cánh cứng, để bọ cánh cứng vừa di chuyển vừa vẽ đường nét trên sân khấu, nhóm lệnh mở rộng nào cần được bật?",
+        options: ["A. Bút vẽ (Pen)", "B. Âm nhạc", "C. Cảm biến Video", "D. Text to Speech"],
+        correctIndex: 0, explanation: "Nhóm lệnh mở rộng Bút vẽ (Pen) cung cấp các lệnh Xóa tất cả, Đặt bút (Pen down), Nhấc bút, Chọn màu nét vẽ.", difficulty: "hard", timeLimit: 20, stars: 30
+      },
       // === KHỐI LỚP 5 ===
       {
         id: "arena_q_08",
@@ -174,7 +367,7 @@ class ArenaService {
   }
 
   // 1. LẤY DANH SÁCH CÂU HỎI ĐẤU TRƯỜNG (SUPABASE + LOCAL FALLBACK)
-  async getQuestions(gradeFilter = "all", topicFilter = "all") {
+  async getQuestions(gradeFilter = "all", topicFilter = "all", lessonFilter = "all") {
     // 1. Thử lấy từ Supabase Cloud
     if (window.supabaseService?.isReady()) {
       try {
@@ -192,9 +385,10 @@ class ArenaService {
 
         const { data, error } = await query;
         if (!error && data && data.length > 0) {
-          const mapped = data.map(item => ({
+          let mapped = data.map(item => ({
             id: item.id,
             grade: item.grade_level,
+            lessonId: item.lesson_id || "",
             topic: item.topic,
             question: item.question,
             options: item.options || [],
@@ -205,6 +399,10 @@ class ArenaService {
             stars: item.stars_reward || 20,
             createdBy: item.created_by || "Cô Giáo Anh Đào"
           }));
+
+          if (lessonFilter !== "all") {
+            mapped = mapped.filter(q => q.lessonId === lessonFilter || (q.topic && q.topic.toLowerCase().includes(lessonFilter.replace("_", " "))));
+          }
 
           // Đồng bộ lưu vào LocalStorage để cache offline
           const db = JSON.parse(localStorage.getItem("app_mock_db")) || {};
@@ -227,6 +425,9 @@ class ArenaService {
     }
     if (topicFilter !== "all") {
       list = list.filter(q => q.topic === topicFilter);
+    }
+    if (lessonFilter !== "all") {
+      list = list.filter(q => q.lessonId === lessonFilter || (q.topic && q.topic.toLowerCase().includes(lessonFilter.replace("bai_", "bài "))));
     }
     return list;
   }

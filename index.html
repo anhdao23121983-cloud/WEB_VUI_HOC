@@ -3213,6 +3213,77 @@
         </button>
       </div>
     </div>
+  <!-- MODAL 39: CẤU HÌNH ĐẤU TRƯỜNG TIN HỌC LỚP 4 (GRADE 4 ARENA CONFIG MODAL) -->
+  <div id="arena-grade4-config-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-xl space-y-5 animate-pop bg-white rounded-3xl shadow-2xl border-2 border-emerald-400">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2.5">
+          <span class="text-3xl p-2 bg-emerald-100 text-emerald-700 rounded-2xl animate-pulse">🚀</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900">CẤU HÌNH ĐẤU TRƯỜNG LỚP 4</h3>
+            <p class="text-xs text-slate-500 font-semibold">Tùy chọn số lượng câu hỏi & bài học SGK Tin Học 4</p>
+          </div>
+        </div>
+        <button onclick="arenaPortal.closeGrade4ConfigModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+
+      <!-- 1. Chọn Số Lượng Câu Hỏi -->
+      <div class="space-y-2">
+        <label class="font-extrabold text-xs text-slate-800 flex items-center gap-1.5 uppercase tracking-wider">
+          <span>⚡</span> <span>1. Chọn Số Lượng Câu Hỏi Trận Đấu:</span>
+        </label>
+        <div class="grid grid-cols-3 gap-3">
+          <button type="button" onclick="arenaPortal.selectQuestionCount(10)" id="btn-count-10" class="p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm">
+            🎯 10 CÂU HỎI
+            <span class="block text-[10px] font-normal text-emerald-700 mt-0.5">Đấu Nhanh</span>
+          </button>
+          <button type="button" onclick="arenaPortal.selectQuestionCount(20)" id="btn-count-20" class="p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100">
+            🔥 20 CÂU HỎI
+            <span class="block text-[10px] font-normal text-slate-500 mt-0.5">Tiêu Chuẩn</span>
+          </button>
+          <button type="button" onclick="arenaPortal.selectQuestionCount(30)" id="btn-count-30" class="p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100">
+            🏆 30 CÂU HỎI
+            <span class="block text-[10px] font-normal text-slate-500 mt-0.5">Vinh Quang</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Chọn Bài Học Theo Nội Dung SGK Tin Học 4 -->
+      <div class="space-y-2">
+        <label class="font-extrabold text-xs text-slate-800 flex items-center gap-1.5 uppercase tracking-wider">
+          <span>📖</span> <span>2. Chọn Bài Học Theo SGK Tin Học 4 (Kết Nối Tri Thức):</span>
+        </label>
+        <select id="arena-g4-lesson-select" class="form-control font-bold text-xs p-3 border-emerald-300 bg-emerald-50/50 text-slate-800 rounded-xl">
+          <option value="all" selected>🌟 Tất Cả Các Bài Học (Toàn Bộ SGK Lớp 4)</option>
+          <option value="bai_1">Bài 1. Phần cứng và phần mềm máy tính</option>
+          <option value="bai_2">Bài 2. Gõ bàn phím đúng cách</option>
+          <option value="bai_3">Bài 3. Thông tin trên trang web</option>
+          <option value="bai_4">Bài 4. Tìm kiếm thông tin trên Internet</option>
+          <option value="bai_5">Bài 5. Thao tác với tệp và thư mục</option>
+          <option value="bai_6">Bài 6. Sử dụng phần mềm khi được phép</option>
+          <option value="bai_7">Bài 7. Tạo bài trình chiếu</option>
+          <option value="bai_8">Bài 8. Định dạng văn bản trên trang chiếu</option>
+          <option value="bai_9">Bài 9. Hiệu ứng chuyển trang</option>
+          <option value="bai_10">Bài 10. Phần mềm soạn thảo văn bản</option>
+          <option value="bai_11">Bài 11. Chỉnh sửa văn bản</option>
+          <option value="bai_12a">Bài 12A. Thực hành đa phương tiện</option>
+          <option value="bai_12b">Bài 12B. Phần mềm luyện tập gõ bàn phím</option>
+          <option value="bai_13">Bài 13. Chơi với máy tính</option>
+          <option value="bai_14">Bài 14. Khám phá môi trường lập trình trực quan</option>
+          <option value="bai_15">Bài 15. Tạo chương trình máy tính để diễn tả ý tưởng</option>
+          <option value="bai_16">Bài 16. Chương trình của em</option>
+        </select>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+        <button onclick="arenaPortal.closeGrade4ConfigModal()" class="btn btn-outline btn-sm font-bold">
+          Hủy Bỏ
+        </button>
+        <button onclick="arenaPortal.startBattleWithGrade4Config()" class="btn btn-emerald btn-lg font-black px-8 shadow-xl">
+          🚀 BẮT ĐẦU VÀO ĐẤU LỚP 4 ▶
+        </button>
+      </div>
+    </div>
   </div>
 
   <footer class="mt-auto bg-white border-t border-slate-200 py-6 px-4 text-center text-xs text-slate-500 flex flex-col items-center justify-center gap-2">
