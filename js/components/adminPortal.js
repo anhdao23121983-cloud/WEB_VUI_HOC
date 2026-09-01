@@ -228,9 +228,19 @@ class AdminPortal {
                 <td class="p-3 font-semibold text-slate-600">Khối ${u.grade || 3} ${u.className ? `• Lớp ${u.className}` : ''}</td>
                 <td class="p-3 font-black text-amber-500">${u.stars || 0} ⭐</td>
                 <td class="p-3">
-                  <span class="badge ${u.isActive !== false ? 'badge-emerald' : 'badge-slate'} font-bold text-[10px]">
-                    ${u.isActive !== false ? '● Hoạt Động' : '🔒 Đã Khóa'}
-                  </span>
+                  ${u.isActive === false ? `
+                    <span class="badge badge-slate font-bold text-[10px]">🔒 Đã Khóa</span>
+                  ` : (() => {
+                    const lastActiveTime = u.updated_at ? new Date(u.updated_at).getTime() : 0;
+                    const isOnline = (Date.now() - lastActiveTime) < 3 * 60 * 1000;
+                    return isOnline ? `
+                      <span class="badge bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold text-[10px] flex items-center gap-1 w-max">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-ping"></span> 🟢 ONLINE
+                      </span>
+                    ` : `
+                      <span class="badge bg-slate-100 text-slate-600 border-slate-300 font-semibold text-[10px]">⚪ OFFLINE</span>
+                    `;
+                  })()}
                 </td>
                 <td class="p-3 text-right space-x-1 whitespace-nowrap">
                   <!-- Nút ✏️ Sửa Thông Tin -->
@@ -535,6 +545,22 @@ class AdminPortal {
   // =========================================================================
   // GỢI Ý 3: NHẬP HÀNG LOẠT HỌC SINH TỪ FILE EXCEL / CSV
   // =========================================================================
+  downloadSampleExcelTemplate() {
+    const csvContent = "STT,Họ và Tên,Mã Học Sinh,Mật Khẩu,Khối,Lớp\n1,Nguyễn Văn An,hs3a01,123456,3,3A\n2,Trần Thị Bình,hs3a02,123456,3,3A\n3,Lê Hoàng Cường,hs4b01,123456,4,4B\n4,Phạm Đức Dũng,hs4b02,123456,4,4B\n5,Đỗ Mai Anh,hs5a01,123456,5,5A";
+
+    const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Mau_Danh_Sach_Hoc_Sinh_Vui_Hoc.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    window.app.showToast("📥 Đã tải file Excel/CSV mẫu thành công! Thầy Cô hãy mở bằng MS Excel.", "success");
+  }
+
   openImportModal() {
     const modal = document.getElementById("admin-import-users-modal");
     if (modal) modal.classList.add("active");

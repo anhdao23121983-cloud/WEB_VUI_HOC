@@ -7,6 +7,29 @@ class AuthService {
   constructor() {
     this.currentUser = JSON.parse(localStorage.getItem("app_current_user")) || null;
     this.listeners = [];
+    this.startHeartbeat();
+  }
+
+  startHeartbeat() {
+    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+    this.sendHeartbeat();
+    this.heartbeatTimer = setInterval(() => this.sendHeartbeat(), 30000);
+  }
+
+  async sendHeartbeat() {
+    if (!this.currentUser || !this.currentUser.username) return;
+    this.currentUser.lastActive = new Date().toISOString();
+    
+    if (window.supabaseService?.isReady()) {
+      try {
+        const client = window.supabaseService.client;
+        await client.from("app_users").update({
+          updated_at: new Date().toISOString()
+        }).eq("username", this.currentUser.username);
+      } catch (err) {
+        // silent fail
+      }
+    }
   }
 
   // Đăng ký nhận thông báo thay đổi phiên đăng nhập
@@ -17,6 +40,7 @@ class AuthService {
 
   notifyListeners() {
     this.listeners.forEach(cb => cb(this.currentUser));
+    this.startHeartbeat();
   }
 
   getUser() {
