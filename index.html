@@ -3377,6 +3377,7 @@
         </button>
       </div>
     </div>
+  </div>
   <!-- MODAL 42: XEM LẠI ĐÁP ÁN & LỜI GIẢI CHI TIẾT SAU TRẬN ĐẤU (ARENA REVIEW MODAL) -->
   <div id="arena-review-modal" class="modal-backdrop">
     <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop bg-slate-950 text-white rounded-3xl shadow-2xl border-2 border-indigo-400 max-h-[85vh] overflow-y-auto">
@@ -3545,6 +3546,14 @@
         <button onclick="arenaPortal.spinLuckyWheel()" id="btn-spin-wheel" class="btn btn-amber btn-lg font-black px-8 shadow-2xl">
           🎯 BẮT ĐẦU QUAY VÒNG MAY MẮN ▶
         </button>
+      </div>
+
+      <!-- BẢNG NHẬT KÝ LƯỢT QUAY MAY MẮN (SPIN HISTORY LOG) -->
+      <div class="p-3 bg-slate-900 rounded-2xl border border-amber-500/30 text-left space-y-1.5">
+        <p class="text-[11px] font-black text-amber-300 uppercase">📜 Lịch Sử 5 Lượt Quay Gần Nhất:</p>
+        <div id="arena-spin-history-list" class="space-y-1 text-xs text-slate-300">
+          <p class="text-slate-500 italic text-[11px]">Chưa có lịch sử lượt quay nào...</p>
+        </div>
       </div>
 
       <div class="flex items-center justify-between pt-2 border-t border-slate-800">

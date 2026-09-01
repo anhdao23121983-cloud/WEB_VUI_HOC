@@ -1947,13 +1947,31 @@ class ArenaPortal {
     ctx.restore();
   }
 
+  playWheelTickSound() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(800 + Math.random() * 200, ctx.currentTime);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.04);
+    } catch (e) {}
+  }
+
   spinLuckyWheel() {
     const btn = document.getElementById("btn-spin-wheel");
     if (btn) btn.disabled = true;
 
     this.playVictorySound();
     let currentAngle = 0;
-    const targetAngle = Math.PI * 2 * 6 + Math.random() * Math.PI * 2;
+    let lastTickAngle = 0;
     let speed = 0.4;
 
     const animate = () => {
@@ -1961,17 +1979,42 @@ class ArenaPortal {
       speed *= 0.98;
       this.drawLuckyWheelCanvas(currentAngle);
 
+      if (Math.abs(currentAngle - lastTickAngle) > 0.3) {
+        this.playWheelTickSound();
+        lastTickAngle = currentAngle;
+      }
+
       if (speed > 0.005) {
         requestAnimationFrame(animate);
       } else {
-        const rewardStars = 100;
+        const rewardOptions = [20, 50, 100, 30, 80, 200];
+        const rewardStars = rewardOptions[Math.floor(Math.random() * rewardOptions.length)];
         this.starsEarned += rewardStars;
         this.triggerFireworks(true);
         window.app?.showToast?.(`🎉 QUAY TRÚNG PHẦN THƯỞNG MAY MẮN: ⭐ +${rewardStars} SAO VÀNG!`, "success");
         if (btn) btn.disabled = false;
+
+        this.recordSpinHistory(rewardStars);
       }
     };
     animate();
+  }
+
+  recordSpinHistory(stars) {
+    if (!this.spinHistoryLog) this.spinHistoryLog = [];
+    const timeStr = new Date().toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    this.spinHistoryLog.unshift({ stars, time: timeStr });
+    if (this.spinHistoryLog.length > 5) this.spinHistoryLog.pop();
+
+    const listEl = document.getElementById("arena-spin-history-list");
+    if (listEl) {
+      listEl.innerHTML = this.spinHistoryLog.map(item => `
+        <div class="flex items-center justify-between p-1.5 bg-slate-950/80 rounded-lg border border-amber-500/20 font-bold">
+          <span class="text-amber-300">🎁 Nhận +${item.stars} ⭐ Sao Vàng Bảng Vàng</span>
+          <span class="text-slate-500 text-[10px]">${item.time}</span>
+        </div>
+      `).join('');
+    }
   }
 
   triggerScreenShake() {
