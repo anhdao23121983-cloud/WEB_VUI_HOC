@@ -257,9 +257,19 @@ class ArenaPortal {
   }
 
   // =========================================================================
-  // TAB 1: 🎮 LIVE ARENA VIEW (SÀN ĐẤU TRỰC TIẾP)
+  // TAB 1: 🎮 LIVE ARENA VIEW (SÀN ĐẤU TRỰC TIẾP REALTIME)
   // =========================================================================
   renderLiveArenaView() {
+    // Stage 1: Matchmaking Lobby
+    if (this.matchStage === "matchmaking") {
+      return this.renderMatchmakingLobbyView();
+    }
+
+    // Stage 2: Countdown 3-2-1
+    if (this.matchStage === "countdown") {
+      return this.renderCountdownView();
+    }
+
     if (!this.battleActive) {
       return `
         <div class="p-8 md:p-12 bg-slate-950 text-white rounded-3xl border-2 border-rose-500/50 shadow-2xl space-y-6 text-center animate-pop relative overflow-hidden">
@@ -272,7 +282,7 @@ class ArenaPortal {
               SẴN SÀNG THI ĐẤU ĐẤU TRƯỜNG TIN HỌC!
             </h3>
             <p class="text-slate-300 text-xs md:text-sm max-w-xl mx-auto leading-relaxed">
-              Trải nghiệm 5 câu hỏi đấu trí siêu tốc 15s. Mỗi câu trả lời đúng sẽ mang về điểm số kỷ lục và Sao Vàng tích lũy trên Bảng Vàng toàn trường!
+              Tranh tài trực tiếp với 4 Đấu thủ Realtime! Chọn số câu hỏi và bài học SGK để bắt đầu sàn đấu trí tuệ công nghệ đỉnh cao.
             </p>
           </div>
 
@@ -312,9 +322,12 @@ class ArenaPortal {
       `;
     }
 
-    // GIAO DIỆN TRẬN ĐẤU ĐANG DIỄN RA
+    // Stage 3: GIAO DIỆN TRẬN ĐẤU ĐANG DIỄN RA
     const q = this.battleQuestions[this.currentQIndex];
     if (!q) return `<div class="text-center p-8">Đang tải câu hỏi...</div>`;
+
+    const sortedCompetitors = [...(this.competitors || [])].sort((a, b) => b.score - a.score);
+    const userRank = sortedCompetitors.findIndex(c => c.isUser) + 1;
 
     return `
       <div class="p-6 md:p-8 bg-slate-950 text-white rounded-3xl border-2 border-rose-500 shadow-2xl space-y-5 animate-pop relative">
@@ -324,12 +337,18 @@ class ArenaPortal {
             <span class="badge bg-rose-600 text-white font-black text-xs uppercase px-3 py-1">
               CÂU HỎI ${this.currentQIndex + 1} / ${this.battleQuestions.length}
             </span>
-            <span class="badge bg-slate-800 text-amber-300 font-bold text-xs">
-              Chủ đề: ${q.topic}
+            <span class="badge bg-amber-500 text-slate-950 font-black text-xs">
+              ${userRank === 1 ? '🥇 BẠN DẪN ĐẦU TOP 1' : userRank === 2 ? '🥈 THỨ HẠNG TOP 2' : userRank === 3 ? '🥉 THỨ HẠNG TOP 3' : '🎖️ THỨ HẠNG TOP 4'}
             </span>
           </div>
 
           <div class="flex items-center gap-3">
+            ${this.streakCombo > 1 ? `
+              <span class="badge bg-gradient-to-r from-amber-500 to-rose-600 text-white font-black text-xs animate-bounce px-3 py-1">
+                🔥 COMBO x${this.streakCombo}!
+              </span>
+            ` : ''}
+
             <!-- Điểm số & Sao -->
             <div class="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
               <span class="text-xs text-slate-400">Điểm:</span>
@@ -346,6 +365,19 @@ class ArenaPortal {
 
             <button onclick="arenaPortal.exitBattle()" class="btn btn-outline btn-xs text-slate-400 hover:text-white">✕ Thoát</button>
           </div>
+        </div>
+
+        <!-- BẢNG ĐIỂM ĐỐI THỦ REALTIME -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 bg-slate-900 p-3 rounded-2xl border border-slate-800">
+          ${sortedCompetitors.map((c, idx) => `
+            <div class="p-2 rounded-xl flex items-center gap-2 ${c.isUser ? 'bg-indigo-900/80 border-2 border-indigo-400' : 'bg-slate-800/80 border border-slate-700'}">
+              <span class="text-xl">${c.avatar}</span>
+              <div class="overflow-hidden leading-tight flex-1">
+                <p class="font-black text-xs text-white truncate">${c.name} ${c.isUser ? '(BẠN)' : ''}</p>
+                <p class="text-[10px] text-amber-300 font-bold">${c.score} Điểm • ${idx === 0 ? '🥇 1st' : idx === 1 ? '🥈 2nd' : idx === 2 ? '🥉 3rd' : '🎖️ 4th'}</p>
+              </div>
+            </div>
+          `).join('')}
         </div>
 
         <!-- Thanh Tiến Trình Thời Gian -->
@@ -398,6 +430,40 @@ class ArenaPortal {
             </button>
           </div>
         ` : ''}
+      </div>
+    `;
+  }
+
+  renderMatchmakingLobbyView() {
+    return `
+      <div class="p-8 md:p-12 bg-slate-950 text-white rounded-3xl border-2 border-cyan-500/50 shadow-2xl space-y-8 text-center animate-pop relative overflow-hidden">
+        <div class="space-y-3">
+          <span class="text-5xl block animate-spin">🔍</span>
+          <h3 class="text-2xl font-black text-cyan-300">ĐANG ĐỒNG BỘ GHÉP TRẬN ĐẤU TRƯỜNG REALTIME...</h3>
+          <p class="text-slate-400 text-xs font-semibold">Hệ thống đang kết nối 4 đấu thủ từ các lớp 3A, 4B, 5C...</p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+          ${(this.competitors || []).map(c => `
+            <div class="p-4 bg-slate-900 rounded-2xl border-2 ${c.isUser ? 'border-cyan-400 bg-cyan-950/40' : 'border-slate-800'} space-y-2 animate-pulse">
+              <span class="text-4xl block">${c.avatar}</span>
+              <p class="font-black text-xs text-white truncate">${c.name}</p>
+              <span class="badge bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">🟢 ĐÃ SẴN SÀNG</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  renderCountdownView() {
+    return `
+      <div class="p-12 bg-slate-950 text-white rounded-3xl border-2 border-amber-500 shadow-2xl text-center animate-pop space-y-6 flex flex-col items-center justify-center min-h-[350px]">
+        <span class="badge bg-rose-600 text-white font-black text-xs uppercase px-4 py-1.5 animate-pulse">⚡ TRẬN ĐẤU SẮP BẮT ĐẦU</span>
+        <h2 class="text-8xl font-black text-amber-400 animate-bounce font-mono filter drop-shadow-2xl">
+          ${this.countdownNum || 3}
+        </h2>
+        <p class="text-slate-300 font-bold text-sm">Sẵn sàng phản xạ gõ bàn phím và trả lời câu hỏi!</p>
       </div>
     `;
   }
@@ -895,6 +961,37 @@ class ArenaPortal {
     });
   }
 
+  initMatchCompetitors(grade = 4) {
+    const user = window.authService?.getUser() || { name: "Học Sinh", className: "3A" };
+    this.streakCombo = 0;
+    this.competitors = [
+      { id: "user", name: user.name || "Học Sinh", avatar: user.avatar || "🎒", isUser: true, score: 0 },
+      { id: "bot_1", name: "🤖 Robot AI Vui Học", avatar: "🤖", isUser: false, score: 0, accuracy: 0.85 },
+      { id: "bot_2", name: "👧 Bảo Ngọc (Lớp 4B)", avatar: "👧", isUser: false, score: 0, accuracy: 0.75 },
+      { id: "bot_3", name: "👦 Hoàng Nam (Lớp 4C)", avatar: "👦", isUser: false, score: 0, accuracy: 0.70 }
+    ];
+  }
+
+  playBeep(freq = 440, duration = 0.1) {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch (e) {
+      console.warn("Beep sound error", e);
+    }
+  }
+
   async startBattleWithConfig() {
     const lessonSelect = document.getElementById("arena-lesson-select");
     const selectedLesson = lessonSelect ? lessonSelect.value : "all";
@@ -911,6 +1008,7 @@ class ArenaPortal {
   }
 
   async startBattleWithMode(mode = "blitz", grade = 3, questionCount = 5, lessonFilter = "all") {
+    this.selectedConfigGrade = grade;
     this.battleStartTime = Date.now();
     let allQuestions = await window.arenaService.getQuestions(grade, "all", lessonFilter);
     if (allQuestions.length === 0) {
@@ -918,7 +1016,6 @@ class ArenaPortal {
       allQuestions = await window.arenaService.getQuestions(grade, "all", "all");
     }
 
-    // Trộn ngẫu nhiên câu hỏi theo số lượng 10, 20, 30 hoặc 5
     const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
     this.battleQuestions = shuffled.slice(0, Math.min(questionCount, shuffled.length));
     this.currentQIndex = 0;
@@ -929,11 +1026,36 @@ class ArenaPortal {
     this.isAnswerRevealed = false;
     this.battleActive = true;
 
-    this.startQuestionTimer();
+    // 1. Bước 1: Matchmaking Lobby kết nối 4 đối thủ Realtime
+    this.initMatchCompetitors(grade);
+    this.matchStage = "matchmaking";
     this.render("main-content-area");
-    if (window.ttsService) {
-      window.ttsService.speak(`Chào mừng em đến với Đấu Trường Tin Học Lớp ${grade}! Trận đấu gồm ${this.battleQuestions.length} câu hỏi. Bắt đầu câu số 1!`);
-    }
+
+    setTimeout(() => {
+      // 2. Bước 2: Countdown 3-2-1
+      this.matchStage = "countdown";
+      this.countdownNum = 3;
+      this.playBeep(440, 0.15);
+      this.render("main-content-area");
+
+      const cdInterval = setInterval(() => {
+        this.countdownNum--;
+        if (this.countdownNum > 0) {
+          this.playBeep(550, 0.15);
+          this.render("main-content-area");
+        } else {
+          clearInterval(cdInterval);
+          this.playBeep(880, 0.3);
+          // 3. Bước 3: Vào Trận Đấu Thực Sự
+          this.matchStage = "playing";
+          this.startQuestionTimer();
+          this.render("main-content-area");
+          if (window.ttsService) {
+            window.ttsService.speak(`Trận đấu bắt đầu! Câu số 1!`);
+          }
+        }
+      }, 900);
+    }, 1500);
   }
 
   startQuestionTimer() {
@@ -959,6 +1081,7 @@ class ArenaPortal {
     if (this.isAnswerRevealed) return;
     this.isAnswerRevealed = true;
     this.selectedOptionIndex = -1;
+    this.streakCombo = 0;
     this.playWrongSound();
     window.app.showToast("⏰ Hết thời gian suy nghĩ!", "error");
     this.render("main-content-area");
@@ -974,13 +1097,32 @@ class ArenaPortal {
 
     if (optionIndex === q.correctIndex) {
       this.playVictorySound();
-      this.score += 20;
+      this.streakCombo++;
+      const speedBonus = Math.max(10, Math.round(this.timer * 5));
+      const comboBonus = (this.streakCombo - 1) * 20;
+      const questionScore = 100 + speedBonus + comboBonus;
+
+      this.score += questionScore;
       this.starsEarned += q.stars;
-      window.app.showToast(`✅ Chính xác! +20 Điểm & +${q.stars} ⭐!`, "success");
+
+      const userComp = (this.competitors || []).find(c => c.isUser);
+      if (userComp) userComp.score = this.score;
+
+      window.app.showToast(`✅ Chính xác! +${questionScore} Điểm (Tốc độ +${speedBonus}) & +${q.stars} ⭐!`, "success");
     } else {
       this.playWrongSound();
+      this.streakCombo = 0;
       window.app.showToast("❌ Chưa đúng rồi!", "error");
     }
+
+    // Giả lập điểm số các đối thủ AI nhảy Realtime
+    (this.competitors || []).forEach(c => {
+      if (!c.isUser) {
+        if (Math.random() < (c.accuracy || 0.75)) {
+          c.score += 80 + Math.floor(Math.random() * 45);
+        }
+      }
+    });
 
     this.render("main-content-area");
   }
