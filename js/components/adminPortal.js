@@ -89,9 +89,17 @@ class AdminPortal {
               <button onclick="adminPortal.exportUsersExcel()" class="btn btn-outline btn-sm font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-300" title="Xuất toàn bộ danh sách tài khoản ra file Excel">
                 📊 Xuất Excel
               </button>
+              <!-- Nút 🎴 In Thẻ A4 QR Code -->
+              <button onclick="adminPortal.printStudentCardsA4()" class="btn btn-outline btn-sm font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-300" title="In thẻ đăng nhập A4 có mã QR Code cho học sinh">
+                🎴 In Thẻ A4 QR
+              </button>
               <!-- Nút 📥 Nhập Hàng Loạt -->
               <button onclick="adminPortal.openImportModal()" class="btn btn-primary btn-sm font-bold bg-emerald-600 hover:bg-emerald-700 shadow-sm" title="Tải file Excel hoặc dán CSV để tạo 40+ học sinh cùng lúc">
                 📥 Nhập Hàng Loạt
+              </button>
+              <!-- Nút 🚀 Chuyển Niên Học Mới -->
+              <button onclick="adminPortal.promoteAcademicYear()" class="btn btn-primary btn-sm font-bold bg-amber-600 hover:bg-amber-700 shadow-sm" title="Nâng khối lớp (Khối 3->4, Khối 4->5) và đặt lại mật khẩu 123456 cho toàn trường">
+                🚀 Chuyển Niên Học Mới
               </button>
             </div>
           </div>
@@ -216,6 +224,10 @@ class AdminPortal {
                   <!-- Nút ✏️ Sửa Thông Tin -->
                   <button onclick="adminPortal.openEditUserModal('${u.username}')" class="btn btn-primary btn-sm text-[11px] py-1 px-2.5 bg-purple-600 hover:bg-purple-700 font-bold shadow-sm" title="Chỉnh sửa Họ tên, Mật khẩu và Lớp học">
                     ✏️ Sửa
+                  </button>
+                  <!-- Nút 📊 Biểu Đồ Radar Năng Lực 3D -->
+                  <button onclick="adminPortal.openSkillRadarModal('${u.username}', '${(u.name || u.username).replace(/'/g, "\\'")}')" class="btn btn-outline btn-sm text-[11px] py-1 px-2 text-purple-700 bg-purple-50 border-purple-200 font-bold" title="Xem biểu đồ Radar 5 Chủ đề Tin học GDPT 2018">
+                    📊 Radar
                   </button>
                   <!-- Nút 📜 Nhật Ký Hoạt Động -->
                   <button onclick="adminPortal.openAuditLogModal('${u.username}', '${(u.name || u.username).replace(/'/g, "\\'")}')" class="btn btn-outline btn-sm text-[11px] py-1 px-2 text-indigo-700 bg-indigo-50 border-indigo-200 font-bold" title="Xem nhật ký lịch sử làm bài thi & đăng nhập">
@@ -614,6 +626,164 @@ class AdminPortal {
           <span class="text-[10px] font-mono text-slate-400 whitespace-nowrap">${new Date(log.timestamp).toLocaleTimeString('vi-VN')} ${new Date(log.timestamp).toLocaleDateString('vi-VN')}</span>
         </div>
       `).join("");
+    }
+  }
+
+  // =========================================================================
+  // GỢI Ý 1: IN THẺ TÀI KHOẢN HỌC SINH KÈM MÃ QR CODE KÍCH THƯỚC A4
+  // =========================================================================
+  async printStudentCardsA4() {
+    const users = await window.adminService.getAllUsers();
+    const students = users.filter(u => u.role === "student");
+
+    if (!students || students.length === 0) {
+      window.app.showToast("Không tìm thấy học sinh nào để in thẻ!", "warning");
+      return;
+    }
+
+    const printWin = window.open("", "_blank");
+    if (!printWin) return;
+
+    let html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>In Thẻ Học Sinh Kèm QR Code Đăng Nhập Vui Học</title>
+        <meta charset="utf-8">
+        <style>
+          @page { size: A4 portrait; margin: 10mm; }
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #f8fafc; }
+          .page-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; page-break-after: always; }
+          .student-card { border: 2px dashed #94a3b8; border-radius: 16px; padding: 14px; background: white; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box; }
+          .card-info { font-size: 12px; color: #1e293b; }
+          .card-title { font-size: 11px; font-weight: 800; color: #4338ca; text-transform: uppercase; margin: 0 0 4px 0; }
+          .card-name { font-size: 15px; font-weight: 900; color: #0f172a; margin: 0 0 6px 0; }
+          .card-user { font-family: monospace; font-weight: bold; color: #0284c7; background: #e0f2fe; padding: 2px 6px; border-radius: 6px; display: inline-block; }
+          .card-pwd { font-family: monospace; color: #64748b; font-size: 11px; margin-top: 4px; }
+          .qr-box { text-align: center; }
+          .qr-box img { width: 90px; h-height: 90px; border-radius: 8px; border: 1px solid #cbd5e1; }
+          .qr-box p { font-size: 9px; font-weight: bold; color: #64748b; margin: 2px 0 0 0; }
+        </style>
+      </head>
+      <body onload="window.print()">
+        <div class="page-grid">
+    `;
+
+    students.forEach(st => {
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(st.username)}`;
+      html += `
+        <div class="student-card">
+          <div class="card-info">
+            <p class="card-title">🎓 VUI HỌC TIN HỌC 3-5 • THẺ THÀNH VIÊN</p>
+            <p class="card-name">${st.avatar || '👦'} ${st.name}</p>
+            <p>Khối ${st.grade || 3} • Lớp <b>${st.className || '3A'}</b></p>
+            <p>Tên ĐN: <span class="card-user">${st.username}</span></p>
+            <p class="card-pwd">Mật khẩu: <b>123456</b></p>
+          </div>
+          <div class="qr-box">
+            <img src="${qrUrl}" alt="QR Login">
+            <p>Quét Quét Đăng Nhập</p>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `</div></body></html>`;
+
+    printWin.document.write(html);
+    printWin.document.close();
+  }
+
+  // =========================================================================
+  // GỢI Ý 4: TỰ ĐỘNG CHUYỂN NIÊN HỌC MỚI (NÂNG LỚP & RESET MK 123456)
+  // =========================================================================
+  async promoteAcademicYear() {
+    if (!confirm("⚠️ CẢNH BÁO NĂM HỌC MỚI:\nThầy Cô có chắc chắn muốn NÂNG KHỐI LỚP (Khối 3->4, Khối 4->5) và ĐẶT LẠI MẬT KHẨU '123456' cho toàn bộ học sinh không?")) {
+      return;
+    }
+
+    const res = await window.adminService.promoteAcademicYear();
+    if (res.success) {
+      window.app.showToast(`🎉 Đã nâng khối lớp và reset mật khẩu mượt mượt cho ${res.count} học sinh thành công!`, "success");
+      this.render("teacher-tab-admin");
+    } else {
+      window.app.showToast("Không thể nâng niên học mới, vui lòng thử lại!", "error");
+    }
+  }
+
+  // =========================================================================
+  // GỢI Ý 5: BIỂU ĐỒ RADAR 3D PHÂN TÍCH NĂNG LỰC HỌC TẬP GDPT 2018
+  // =========================================================================
+  async openSkillRadarModal(username, name) {
+    const titleEl = document.getElementById("admin-radar-user-title");
+    const containerEl = document.getElementById("admin-radar-chart-container");
+    const detailsGridEl = document.getElementById("admin-radar-details-grid");
+    const modal = document.getElementById("admin-skill-radar-modal");
+
+    if (titleEl) titleEl.innerText = `📊 MA TRẬN NĂNG LỰC GDPT 2018: ${name || username} (${username})`;
+    if (modal) modal.classList.add("active");
+
+    const data = await window.adminService.getStudentCompetencyRadar(username);
+
+    if (containerEl) {
+      // Đồ họa SVG Radar 5 trục
+      containerEl.innerHTML = `
+        <svg viewBox="0 0 400 340" class="w-full max-w-sm h-64 select-none drop-shadow-lg">
+          <!-- Background Polygon Grids -->
+          <polygon points="200,30 350,130 300,280 100,280 50,130" fill="none" stroke="#334155" stroke-width="1.5" stroke-dasharray="4"/>
+          <polygon points="200,80 300,145 265,245 135,245 100,145" fill="none" stroke="#475569" stroke-width="1"/>
+          
+          <!-- Axes lines -->
+          <line x1="200" y1="175" x2="200" y2="30" stroke="#475569" stroke-width="1"/>
+          <line x1="200" y1="175" x2="350" y2="130" stroke="#475569" stroke-width="1"/>
+          <line x1="200" y1="175" x2="300" y2="280" stroke="#475569" stroke-width="1"/>
+          <line x1="200" y1="175" x2="100" y2="280" stroke="#475569" stroke-width="1"/>
+          <line x1="200" y1="175" x2="50" y2="130" stroke="#475569" stroke-width="1"/>
+
+          <!-- Dynamic Radar Skill Polygon -->
+          <polygon points="
+            200,${175 - (data.topicA * 1.45)} 
+            ${200 + (data.topicB * 1.5 * 0.95)},${175 - (data.topicB * 0.45)} 
+            ${200 + (data.topicC * 1.0 * 0.95)},${175 + (data.topicC * 1.05)} 
+            ${200 - (data.topicD * 1.0 * 0.95)},${175 + (data.topicD * 1.05)} 
+            ${200 - (data.topicE * 1.5 * 0.95)},${175 - (data.topicE * 0.45)}" 
+            fill="rgba(168, 85, 247, 0.4)" stroke="#a855f7" stroke-width="3"/>
+
+          <!-- Glowing Nodes -->
+          <circle cx="200" cy="${175 - (data.topicA * 1.45)}" r="5" fill="#f59e0b"/>
+          <circle cx="${200 + (data.topicB * 1.5 * 0.95)}" cy="${175 - (data.topicB * 0.45)}" r="5" fill="#10b981"/>
+          <circle cx="${200 + (data.topicC * 1.0 * 0.95)}" cy="${175 + (data.topicC * 1.05)}" r="5" fill="#06b6d4"/>
+          <circle cx="${200 - (data.topicD * 1.0 * 0.95)}" cy="${175 + (data.topicD * 1.05)}" r="5" fill="#ec4899"/>
+          <circle cx="${200 - (data.topicE * 1.5 * 0.95)}" cy="${175 - (data.topicE * 0.45)}" r="5" fill="#3b82f6"/>
+
+          <!-- Labels -->
+          <text x="200" y="18" text-anchor="middle" fill="#f59e0b" font-weight="bold" font-size="11">A. Máy Tính & Em (${data.topicA}%)</text>
+          <text x="355" y="125" text-anchor="start" fill="#10b981" font-weight="bold" font-size="11">B. Mạng Mát (${data.topicB}%)</text>
+          <text x="305" y="300" text-anchor="middle" fill="#06b6d4" font-weight="bold" font-size="11">C. Sắp Xếp (${data.topicC}%)</text>
+          <text x="95" y="300" text-anchor="middle" fill="#ec4899" font-weight="bold" font-size="11">D. Đạo Đức (${data.topicD}%)</text>
+          <text x="45" y="125" text-anchor="end" fill="#3b82f6" font-weight="bold" font-size="11">E. Lập Trình (${data.topicE}%)</text>
+        </svg>
+      `;
+    }
+
+    if (detailsGridEl) {
+      detailsGridEl.innerHTML = `
+        <div class="p-2 bg-amber-50 rounded-xl border border-amber-200 text-amber-900">
+          ⭐ <b>Chủ đề A (Máy tính & Em):</b> ${data.topicA}% • Level: ${data.topicA >= 85 ? 'Tốt' : 'Đạt'}
+        </div>
+        <div class="p-2 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-900">
+          🌐 <b>Chủ đề B (Mạng máy tính):</b> ${data.topicB}% • Level: ${data.topicB >= 80 ? 'Tốt' : 'Đạt'}
+        </div>
+        <div class="p-2 bg-cyan-50 rounded-xl border border-cyan-200 text-cyan-900">
+          📂 <b>Chủ đề C (Sắp xếp thư mục):</b> ${data.topicC}% • Level: ${data.topicC >= 85 ? 'Xuất sắc' : 'Tốt'}
+        </div>
+        <div class="p-2 bg-pink-50 rounded-xl border border-pink-200 text-pink-900">
+          🛡️ <b>Chủ đề D (Đạo đức Tin học):</b> ${data.topicD}% • Level: ${data.topicD >= 85 ? 'Xuất sắc' : 'Tốt'}
+        </div>
+        <div class="p-2 bg-blue-50 rounded-xl border border-blue-200 text-blue-900 col-span-2">
+          🤖 <b>Chủ đề E (Giải quyết vấn đề & Lập trình Robot):</b> ${data.topicE}% • Level: ${data.topicE >= 80 ? 'Tốt' : 'Đạt'}
+        </div>
+      `;
     }
   }
 }

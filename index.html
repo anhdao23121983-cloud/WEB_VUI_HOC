@@ -3075,6 +3075,39 @@
     </div>
   </div>
 
+  <!-- MODAL 35: BIỂU ĐỒ RADAR 3D PHÂN TÍCH NĂNG LỰC HỌC TẬP GDPT 2018 (SKILL RADAR MODAL) -->
+  <div id="admin-skill-radar-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-2 bg-purple-100 text-purple-700 rounded-2xl">📊</span>
+          <div>
+            <h3 id="admin-radar-user-title" class="text-base font-black text-slate-900">MA TRẬN NĂNG LỰC TIN HỌC GDPT 2018</h3>
+            <p class="text-xs text-slate-500 font-semibold">Phân tích 5 Chủ đề năng lực cốt lõi theo Công văn 2345/BGDĐT</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('admin-skill-radar-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <!-- Khung Đồ Họa Radar SVG Interactive -->
+        <div id="admin-radar-chart-container" class="w-full flex items-center justify-center p-4 bg-slate-900 rounded-2xl border-2 border-purple-300 relative shadow-inner">
+          <!-- Dynamic SVG Radar Chart -->
+        </div>
+
+        <div id="admin-radar-details-grid" class="grid grid-cols-2 gap-2 text-[11px] font-bold">
+          <!-- Dynamic details breakdown -->
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end pt-2 border-t border-slate-200">
+        <button onclick="document.getElementById('admin-skill-radar-modal').classList.remove('active')" class="btn btn-primary btn-sm font-black px-6">
+          Đóng Màn Hình
+        </button>
+      </div>
+    </div>
+  </div>
+
   <footer class="mt-auto bg-white border-t border-slate-200 py-6 px-4 text-center text-xs text-slate-500 flex flex-col items-center justify-center gap-2">
     <div class="flex items-center gap-2">
       <img src="logo.png" alt="Logo Anh Đào" class="w-7 h-7 object-contain">
