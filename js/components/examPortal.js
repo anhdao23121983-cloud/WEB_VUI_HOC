@@ -2177,7 +2177,7 @@ class ExamPortal {
                   </button>
                 </div>
               </div>
-              <p class="leading-relaxed font-normal">${aiEssayRes.feedback}</p>
+              <p id="ai-feedback-text" class="leading-relaxed font-normal">${aiEssayRes.feedback}</p>
             </div>
           </div>
 
@@ -2260,19 +2260,25 @@ class ExamPortal {
     }
   }
 
-  // Thuyết minh nhận xét sư phạm AI bằng giọng Cô giáo Đà Nẵng (Miền Trung)
+  // Thuyết minh nhận xét sư phạm AI bằng giọng Cô giáo 3 Miền (kèm hiệu ứng bôi chữ Karaoke)
   speakAIFeedback() {
     if (!this.currentAiEssayRes || !this.currentAiEssayRes.feedback) {
       window.app?.showToast("Chưa có lời nhận xét sư phạm để đọc!", "warning");
       return;
     }
 
+    const feedbackEl = document.getElementById("ai-feedback-text");
+    if (feedbackEl && window.ttsService) {
+      window.ttsService.prepareKaraokeElements(feedbackEl);
+    }
+
     const textToSpeak = `Thầy Cô nhận xét bài làm tự luận của em: ${this.currentAiEssayRes.feedback}`;
     if (window.ttsService) {
       window.ttsService.speak(textToSpeak, () => {
         window.app?.showToast("🎉 Đã hoàn tất thuyết minh nhận xét sư phạm!", "success");
+        if (window.ttsService) window.ttsService.clearKaraokeHighlight();
       });
-      window.app?.showToast("🎙️ Đang thuyết minh lời nhận xét sư phạm cho em nghe...", "info");
+      window.app?.showToast("🎙️ Đang thuyết minh nhận xét sư phạm (bôi chữ Karaoke)...", "info");
     }
   }
 
