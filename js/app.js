@@ -278,13 +278,17 @@ class Application {
       if (navUserName) navUserName.innerText = user.name;
       if (navUserRole) navUserRole.innerText = user.role === "teacher" ? "Giáo viên" : (user.role === "admin" ? "Quản trị viên" : `Học sinh (${user.className || "3A"})`);
       
-      // Ẩn nút Giáo Viên (CV 2345) đối với tài khoản Học sinh
+      const navBtnAdminUsers = document.getElementById("nav-btn-admin-users");
+
+      // Ẩn nút Giáo Viên (CV 2345) & Quản Lý GV-HS đối với tài khoản Học sinh
       if (user.role === "student") {
         if (navBtnTeacher) navBtnTeacher.classList.add("hidden");
         if (heroBtnTeacher) heroBtnTeacher.classList.add("hidden");
+        if (navBtnAdminUsers) navBtnAdminUsers.classList.add("hidden");
       } else {
         if (navBtnTeacher) navBtnTeacher.classList.remove("hidden");
         if (heroBtnTeacher) heroBtnTeacher.classList.remove("hidden");
+        if (navBtnAdminUsers) navBtnAdminUsers.classList.remove("hidden");
       }
 
       if (navUserAvatar) {
@@ -544,8 +548,29 @@ class Application {
     }
   }
 
+  // Âm thanh Beep "Tít! 🎉" khi quét thành công QR Code
+  playQRSuccessBeep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.2);
+    } catch (e) {
+      // silent fallback
+    }
+  }
+
   async handleScannedQRCode(qrData) {
     if (!qrData || !this.isScanningQR) return;
+
+    this.playQRSuccessBeep();
 
     const cleanUsername = qrData.trim().toLowerCase();
     const statusEl = document.getElementById("qr-scan-status");
