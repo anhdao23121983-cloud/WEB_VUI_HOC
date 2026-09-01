@@ -168,6 +168,82 @@ class AdminService {
     localStorage.setItem("app_permission_matrix", JSON.stringify(matrix));
     return { success: true };
   }
+
+  // 7. Admin chỉnh sửa thông tin thành viên (Họ tên, Mật khẩu, Vai trò, Khối Lớp, Lớp)
+  async adminUpdateUser(username, updateData) {
+    // 1. Cập nhật LocalStorage
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (!db.users) db.users = [];
+    const idx = db.users.findIndex(u => (u.username || "").toLowerCase() === username.toLowerCase());
+
+    if (idx >= 0) {
+      if (updateData.name) db.users[idx].name = updateData.name;
+      if (updateData.role) db.users[idx].role = updateData.role;
+      if (updateData.className) db.users[idx].className = updateData.className;
+      if (updateData.grade) db.users[idx].grade = parseInt(updateData.grade);
+      if (updateData.password) db.users[idx].password = updateData.password;
+      localStorage.setItem("app_mock_db", JSON.stringify(db));
+    }
+
+    // 2. Cập nhật Supabase Cloud
+    if (window.supabaseService?.isReady()) {
+      try {
+        const client = window.supabaseService.client;
+        const payload = {
+          updated_at: new Date().toISOString()
+        };
+
+        if (updateData.name) payload.full_name = updateData.name;
+        if (updateData.role) payload.role = updateData.role;
+        if (updateData.className) payload.class_name = updateData.className;
+        if (updateData.grade) payload.grade_level = parseInt(updateData.grade);
+        if (updateData.password && updateData.password.trim()) payload.password = updateData.password.trim();
+
+        await client.from("app_users").update(payload).eq("username", username);
+      } catch (err) {
+        console.warn("Lỗi adminUpdateUser trên Supabase:", err);
+      }
+    }
+
+    // Nếu sửa chính tài khoản đang đăng nhập
+    const curUser = window.authService?.getUser();
+    if (curUser && curUser.username === username) {
+      if (updateData.name) curUser.name = updateData.name;
+      if (updateData.role) curUser.role = updateData.role;
+      if (updateData.className) curUser.className = updateData.className;
+      if (updateData.grade) curUser.grade = parseInt(updateData.grade);
+      localStorage.setItem("app_current_user", JSON.stringify(curUser));
+      window.authService.notifyListeners();
+    }
+
+    return { success: true };
+  }
+
+  // 8. Admin xóa tài khoản thành viên (Giáo viên hoặc Học sinh)
+  async adminDeleteUser(username) {
+    if (username === "admin") {
+      return { success: false, error: "Không thể xóa tài khoản Quản trị viên gốc hệ thống (admin)!" };
+    }
+
+    // 1. Xóa trong LocalStorage
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (db.users) {
+      db.users = db.users.filter(u => (u.username || "").toLowerCase() !== username.toLowerCase());
+      localStorage.setItem("app_mock_db", JSON.stringify(db));
+    }
+
+    // 2. Xóa trên Supabase Cloud
+    if (window.supabaseService?.isReady()) {
+      try {
+        const client = window.supabaseService.client;
+        await client.from("app_users").delete().eq("username", username);
+      } catch (err) {
+        console.warn("Lỗi adminDeleteUser trên Supabase:", err);
+      }
+    }
+
+    return { success: true };
+  }
 }
 
 window.adminService = new AdminService();

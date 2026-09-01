@@ -2937,6 +2937,75 @@
   <!-- ==========================================================================
        4. FOOTER
        ========================================================================== -->
+  <!-- MODAL 32: CHỈNH SỬA THÀNH VIÊN DÀNH CHO ADMIN (ADMIN USER EDIT MODAL) -->
+  <div id="admin-edit-user-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-lg space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-2 bg-purple-100 text-purple-700 rounded-2xl">✏️</span>
+          <div>
+            <h3 class="text-base font-black text-slate-900">CHỈNH SỬA THÀNH VIÊN (ADMIN)</h3>
+            <p class="text-xs text-slate-500 font-semibold">Cập nhật Tên, Mật khẩu, Vai trò và Lớp học</p>
+          </div>
+        </div>
+        <button onclick="adminPortal.closeEditModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+
+      <form onsubmit="event.preventDefault(); adminPortal.submitUserEdit();" class="space-y-4 text-xs">
+        <input type="hidden" id="admin-edit-username-hidden">
+
+        <div>
+          <label class="font-extrabold text-slate-700 block mb-1">Tên Đăng Nhập (Username):</label>
+          <input type="text" id="admin-edit-username-disp" disabled class="form-control text-xs font-mono font-bold bg-slate-100 text-slate-500 cursor-not-allowed">
+        </div>
+
+        <div>
+          <label class="font-extrabold text-slate-700 block mb-1">Họ và Tên Hiển Thị:</label>
+          <input type="text" id="admin-edit-fullname-input" required placeholder="Nhập họ và tên..." class="form-control text-xs font-bold p-3 border-slate-300">
+        </div>
+
+        <div>
+          <label class="font-extrabold text-slate-700 block mb-1">Mật Khẩu Mới (Để trống nếu giữ nguyên):</label>
+          <input type="password" id="admin-edit-password-input" placeholder="Nhập mật khẩu mới (VD: 123456)..." class="form-control text-xs font-mono font-bold p-3 border-slate-300">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-extrabold text-slate-700 block mb-1">Vai Trò Tài Khoản:</label>
+            <select id="admin-edit-role-select" class="form-control text-xs font-bold p-2.5">
+              <option value="student">🎒 Học Sinh</option>
+              <option value="teacher">👨‍🏫 Giáo Viên</option>
+              <option value="admin">👑 Quản Trị Viên (Admin)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="font-extrabold text-slate-700 block mb-1">Khối Lớp:</label>
+            <select id="admin-edit-grade-select" class="form-control text-xs font-bold p-2.5">
+              <option value="3">Khối Lớp 3</option>
+              <option value="4">Khối Lớp 4</option>
+              <option value="5">Khối Lớp 5</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="font-extrabold text-slate-700 block mb-1">Tên Lớp Học (Ví dụ: 3A, 4B, 5C):</label>
+          <input type="text" id="admin-edit-classname-input" placeholder="VD: 3A" class="form-control text-xs font-bold p-2.5 border-slate-300">
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+          <button type="button" onclick="adminPortal.closeEditModal()" class="btn btn-outline btn-sm font-bold">
+            Hủy Bỏ
+          </button>
+          <button type="submit" id="btn-submit-admin-edit-user" class="btn btn-primary btn-sm font-black px-6 shadow-md">
+            💾 Lưu Thay Đổi & Đồng Bộ Supabase
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <footer class="mt-auto bg-white border-t border-slate-200 py-6 px-4 text-center text-xs text-slate-500 flex flex-col items-center justify-center gap-2">
     <div class="flex items-center gap-2">
       <img src="logo.png" alt="Logo Anh Đào" class="w-7 h-7 object-contain">
