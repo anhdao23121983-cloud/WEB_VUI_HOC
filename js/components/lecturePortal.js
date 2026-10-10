@@ -253,6 +253,7 @@ class LecturePortal {
     // Đếm số lượng theo danh mục
     const myLecturesCount = user ? allLectures.filter(l => (l.createdByUsername === user.username) || (l.authorName === user.name) || user.role === 'admin').length : 0;
     const favoritesCount = allLectures.filter(l => favoriteIds.includes(l.id)).length;
+    const trashedCount = window.lectureService.getTrashedLectures().length;
 
     if (this.currentTab === "my_lectures" && user) {
       this.lectures = allLectures.filter(l => (l.createdByUsername === user.username) || (l.authorName === user.name) || user.role === 'admin');
@@ -379,7 +380,7 @@ class LecturePortal {
           </div>
         </div>
 
-        <!-- Thanh 3 Tab Chuyển Đổi: Tất Cả | Bài Giảng Của Tôi | Bài Giảng Yêu Thích -->
+        <!-- Thanh 4 Tab Chuyển Đổi: Tất Cả | Bài Giảng Của Tôi | Bài Giảng Yêu Thích | Thùng Rác (30 Ngày) -->
         <div class="flex items-center gap-2.5 border-b border-slate-200 pb-2 flex-wrap">
           <button onclick="lecturePortal.switchTab('all')" class="px-4 py-2 rounded-2xl font-black text-xs transition-all flex items-center gap-2 ${this.currentTab === 'all' ? 'bg-cyan-700 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}">
             <span>📂 Tất Cả Bài Giảng</span>
@@ -394,6 +395,11 @@ class LecturePortal {
           <button onclick="lecturePortal.switchTab('my_lectures')" class="px-4 py-2 rounded-2xl font-black text-xs transition-all flex items-center gap-2 ${this.currentTab === 'my_lectures' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}">
             <span>👩‍🏫 Bài Giảng Của Tôi</span>
             <span class="badge ${this.currentTab === 'my_lectures' ? 'bg-white/25 text-white' : 'badge-amber'} text-[10px]">${myLecturesCount}</span>
+          </button>
+
+          <button onclick="lecturePortal.openTrashModal()" class="px-4 py-2 rounded-2xl font-black text-xs transition-all flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-100 border border-slate-200" title="Xem danh sách bài giảng vừa xóa và khôi phục trong vòng 30 ngày">
+            <span>🗑️ Thùng Rác (30 Ngày)</span>
+            <span class="badge ${trashedCount > 0 ? 'bg-rose-600 text-white' : 'badge-slate'} text-[10px]">${trashedCount}</span>
           </button>
         </div>
 
@@ -3244,11 +3250,108 @@ class LecturePortal {
     this.closeDeleteConfirmModal();
 
     if (res.success) {
-      window.app.showToast(`🗑️ Đã xóa bài giảng "${lectureTitle}" thành công!`, "success");
+      window.app.showToast(`🗑️ Đã chuyển bài giảng "${lectureTitle}" vào Thùng Rác (Lưu 30 ngày)!`, "success");
       this.render("main-content-area");
     } else {
       window.app.showToast("Không thể xóa bài giảng, vui lòng thử lại!", "error");
     }
+  }
+
+  // =========================================================================
+  // QUẢN LÝ THÙNG RÁC BÀI GIẢNG (RECYCLE BIN - MODAL 42)
+  // =========================================================================
+  openTrashModal() {
+    const modal = document.getElementById("lecture-trash-modal");
+    if (!modal) return;
+
+    this.renderTrashItems();
+    modal.classList.add("active");
+  }
+
+  closeTrashModal() {
+    const modal = document.getElementById("lecture-trash-modal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  renderTrashItems() {
+    const container = document.getElementById("lecture-trash-list-container");
+    if (!container) return;
+
+    const trashed = window.lectureService.getTrashedLectures();
+    if (trashed.length === 0) {
+      container.innerHTML = `
+        <div class="text-center py-12 space-y-3 text-slate-400">
+          <span class="text-5xl block animate-bounce">🧹</span>
+          <p class="font-black text-slate-700 text-sm">Thùng rác hiện đang trống!</p>
+          <p class="text-xs text-slate-500">Các bài giảng bị xóa sẽ được lưu giữ tạm thời 30 ngày ở đây trước khi xóa hẳn.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const now = Date.now();
+    container.innerHTML = trashed.map(l => {
+      const deletedAtMs = new Date(l.deletedAt || now).getTime();
+      const daysPassed = Math.floor((now - deletedAtMs) / (24 * 60 * 60 * 1000));
+      const daysLeft = Math.max(0, 30 - daysPassed);
+
+      return `
+        <div class="p-4 bg-slate-50 hover:bg-slate-100/80 rounded-2xl border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 transition-all">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="badge bg-cyan-600 text-white font-black text-[10px]">Môn Tin Lớp ${l.grade}</span>
+              <span class="badge bg-slate-200 text-slate-700 font-bold text-[10px]">${l.bookSeries || 'KNTT'}</span>
+              <span class="badge bg-rose-100 text-rose-700 font-bold text-[10px]">⏳ Còn ${daysLeft} ngày khôi phục</span>
+            </div>
+            <h4 class="font-black text-sm text-slate-900 leading-snug">${l.title}</h4>
+            <p class="text-[11px] text-slate-500">Tác giả: <b>${l.authorName || 'Cô Giáo Anh Đào'}</b> • File: ${l.fileName || 'BaiGiang.pptx'}</p>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="lecturePortal.restoreLectureFromTrash('${l.id}')" class="btn bg-emerald-600 hover:bg-emerald-500 text-white btn-xs font-black flex items-center gap-1 shadow-sm" title="Khôi phục bài giảng trở lại đúng thư mục lớp gốc">
+              <span>🔄</span> <span>Khôi Phục</span>
+            </button>
+            <button onclick="lecturePortal.permanentlyDeleteFromTrash('${l.id}', '${l.title.replace(/'/g, "\\'")}')" class="btn bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300 btn-xs font-bold flex items-center gap-1" title="Xóa vĩnh viễn không thể hoàn tác">
+              <span>❌</span> <span>Xóa Hẳn</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async restoreLectureFromTrash(id) {
+    const res = await window.lectureService.restoreLectureFromTrash(id);
+    if (res && res.success) {
+      window.app.showToast("🎉 Đã khôi phục bài giảng trở lại thư mục khối lớp thành công!", "success");
+      this.renderTrashItems();
+      this.render("main-content-area");
+    }
+  }
+
+  permanentlyDeleteFromTrash(id, title) {
+    if (!confirm(`Cô có chắc chắn muốn xóa VĨNH VIỄN bài giảng "${title}" không? Hành động này không thể hoàn tác.`)) {
+      return;
+    }
+
+    window.lectureService.permanentlyDeleteFromTrash(id);
+    window.app.showToast("🗑️ Đã xóa vĩnh viễn bài giảng khỏi hệ thống!", "info");
+    this.renderTrashItems();
+    this.render("main-content-area");
+  }
+
+  emptyTrash() {
+    const trashed = window.lectureService.getTrashedLectures();
+    if (trashed.length === 0) return;
+
+    if (!confirm("Cô có chắc chắn muốn DỌN SẠCH toàn bộ Thùng rác không? Tất cả bài giảng bị dọn sẽ xóa vĩnh viễn.")) {
+      return;
+    }
+
+    window.lectureService.emptyTrash();
+    window.app.showToast("🧹 Đã dọn sạch thùng rác!", "success");
+    this.renderTrashItems();
+    this.render("main-content-area");
   }
 }
 

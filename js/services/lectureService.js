@@ -309,13 +309,41 @@ class LectureService {
     return { success: true, lecture: updatedObj };
   }
 
-  // 9. Xóa bài giảng điện tử (Xóa cả LocalStorage và Supabase Cloud)
+  // 9a. Lấy danh sách bài giảng trong Thùng Rác (Tự động loại bỏ các bài quá 30 ngày)
+  getTrashedLectures() {
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    const trashed = db.trashedLectures || [];
+    const now = Date.now();
+
+    // Lọc bỏ bài giảng đã quá 30 ngày (30 * 24 * 60 * 60 * 1000 = 2,592,000,000 ms)
+    const valid = trashed.filter(item => {
+      const deletedAt = new Date(item.deletedAt || now).getTime();
+      const ageMs = now - deletedAt;
+      return ageMs < (30 * 24 * 60 * 60 * 1000);
+    });
+
+    if (valid.length !== trashed.length) {
+      db.trashedLectures = valid;
+      localStorage.setItem("app_mock_db", JSON.stringify(db));
+    }
+
+    return valid;
+  }
+
+  // 9b. Chuyển bài giảng vào Thùng Rác (Lưu tạm thời 30 ngày trước khi xóa hẳn)
   async deleteLecture(id) {
     this.clearCache();
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (!db.trashedLectures) db.trashedLectures = [];
+
     if (db.lectures) {
-      db.lectures = db.lectures.filter(l => l.id !== id);
-      localStorage.setItem("app_mock_db", JSON.stringify(db));
+      const idx = db.lectures.findIndex(l => l.id === id);
+      if (idx >= 0) {
+        const item = { ...db.lectures[idx], deletedAt: new Date().toISOString() };
+        db.trashedLectures.unshift(item);
+        db.lectures.splice(idx, 1);
+        localStorage.setItem("app_mock_db", JSON.stringify(db));
+      }
     }
 
     if (window.supabaseService?.isReady()) {
@@ -330,19 +358,23 @@ class LectureService {
     return { success: true };
   }
 
-  // 9b. Xóa tất cả bài giảng theo khối lớp (Lớp 3, Lớp 4, Lớp 5) trên LocalStorage & Supabase
+  // 9c. Xóa tất cả bài giảng theo khối lớp (Chuyển toàn bộ vào Thùng Rác 30 ngày)
   async deleteLecturesByGrade(grade) {
     const g = parseInt(grade, 10);
     this.clearCache();
 
-    // 1. Xóa khỏi LocalStorage
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (!db.trashedLectures) db.trashedLectures = [];
+
     if (db.lectures) {
+      const toDelete = db.lectures.filter(l => parseInt(l.grade, 10) === g);
+      toDelete.forEach(l => {
+        db.trashedLectures.unshift({ ...l, deletedAt: new Date().toISOString() });
+      });
       db.lectures = db.lectures.filter(l => parseInt(l.grade, 10) !== g);
       localStorage.setItem("app_mock_db", JSON.stringify(db));
     }
 
-    // 2. Xóa khỏi Supabase Database Cloud
     if (window.supabaseService?.isReady()) {
       try {
         const client = window.supabaseService.client;
@@ -352,6 +384,61 @@ class LectureService {
       }
     }
 
+    return { success: true };
+  }
+
+  // 9d. Khôi phục bài giảng từ Thùng Rác trở lại thư mục khối lớp gốc
+  async restoreLectureFromTrash(id) {
+    this.clearCache();
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (!db.trashedLectures) db.trashedLectures = [];
+    if (!db.lectures) db.lectures = [];
+
+    const idx = db.trashedLectures.findIndex(l => l.id === id);
+    if (idx >= 0) {
+      const item = { ...db.trashedLectures[idx] };
+      delete item.deletedAt;
+      db.lectures.unshift(item);
+      db.trashedLectures.splice(idx, 1);
+      localStorage.setItem("app_mock_db", JSON.stringify(db));
+
+      // Khôi phục đồng bộ lên Supabase nếu có sẵn
+      if (window.supabaseService?.isReady()) {
+        try {
+          const client = window.supabaseService.client;
+          await client.from("lecture_slides").insert([{
+            title: item.title,
+            grade_level: item.grade,
+            topic_name: item.topicName,
+            book_series: item.bookSeries,
+            author_name: item.authorName,
+            file_name: item.fileName,
+            file_url: item.fileUrl,
+            slide_count: item.slideCount
+          }]);
+        } catch (e) {}
+      }
+
+      return { success: true, lecture: item };
+    }
+    return { success: false };
+  }
+
+  // 9e. Xóa vĩnh viễn 1 bài giảng khỏi Thùng Rác
+  permanentlyDeleteFromTrash(id) {
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (db.trashedLectures) {
+      db.trashedLectures = db.trashedLectures.filter(l => l.id !== id);
+      localStorage.setItem("app_mock_db", JSON.stringify(db));
+    }
+    return { success: true };
+  }
+
+  // 9f. Dọn sạch toàn bộ Thùng Rác
+  emptyTrash() {
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    db.trashedLectures = [];
+    localStorage.setItem("app_mock_db", JSON.stringify(db));
     return { success: true };
   }
 

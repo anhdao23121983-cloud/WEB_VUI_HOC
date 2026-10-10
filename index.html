@@ -1572,6 +1572,37 @@
     </div>
   </div>
 
+  <!-- MODAL 42: THÙNG RÁC BÀI GIẢNG ĐIỆN TỬ (LECTURE RECYCLE BIN MODAL) -->
+  <div id="lecture-trash-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-2 bg-rose-100 text-rose-700 rounded-xl">🗑️</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900">THÙNG RÁC BÀI GIẢNG ĐIỆN TỬ</h3>
+            <p class="text-xs text-slate-500 font-semibold">Bài giảng đã xóa được lưu trữ tạm thời 30 ngày trước khi hệ thống tự động xóa vĩnh viễn.</p>
+          </div>
+        </div>
+        <button onclick="lecturePortal.closeTrashModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-600">✕</button>
+      </div>
+
+      <!-- Danh sách bài giảng trong thùng rác -->
+      <div id="lecture-trash-list-container" class="max-h-[60vh] overflow-y-auto space-y-3 py-2"></div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-slate-200 text-xs flex-wrap gap-2">
+        <span class="text-slate-500 italic">💡 Bài giảng khi được khôi phục sẽ tự động quay trở về đúng thư mục khối lớp ban đầu.</span>
+        <div class="flex items-center gap-2">
+          <button onclick="lecturePortal.emptyTrash()" class="btn btn-outline text-rose-600 border-rose-300 hover:bg-rose-50 btn-sm font-bold flex items-center gap-1">
+            <span>🧹</span> <span>Dọn Sạch Thùng Rác</span>
+          </button>
+          <button onclick="lecturePortal.closeTrashModal()" class="btn btn-primary btn-sm font-black">
+            Đóng Cửa Sổ
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL 9: TRÌNH CHIẾU VIDEO HOẠT HỌA & THUYẾT MINH GIỌNG ĐỌC AI (SLIDE-TO-VIDEO PLAYER) -->
   <div id="slide-video-player-modal" class="modal-backdrop">
     <div class="modal-content p-4 md:p-6 max-w-4xl h-[85vh] flex flex-col justify-between space-y-4 animate-pop bg-slate-950 border-2 border-amber-400">
