@@ -1892,7 +1892,8 @@ class ExamPortal {
     this.runnerCurrentIndex = 0;
     this.runnerAnswers = {};
     this.essayUserAnswer = "";
-    this.runnerTimerSeconds = (exam.durationMinutes || 35) * 60;
+    this.runnerTotalSeconds = (exam.durationMinutes || 35) * 60;
+    this.runnerTimerSeconds = this.runnerTotalSeconds;
     this.runnerStartTime = Date.now();
     this.tabSwitchCount = 0;
 
@@ -1933,14 +1934,54 @@ class ExamPortal {
 
   startRunnerCountdown() {
     const timerDisp = document.getElementById("exam-runner-timer-disp");
+    const timerBox = document.getElementById("exam-runner-timer-box");
+    const timerBar = document.getElementById("exam-runner-timer-bar");
+
     this.runnerTimerInterval = setInterval(() => {
       this.runnerTimerSeconds--;
-      const mins = Math.floor(this.runnerTimerSeconds / 60);
-      const secs = this.runnerTimerSeconds % 60;
-      if (timerDisp) timerDisp.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
 
+      const mins = Math.floor(Math.max(0, this.runnerTimerSeconds) / 60);
+      const secs = Math.max(0, this.runnerTimerSeconds) % 60;
+      const formattedTime = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+      if (timerDisp) timerDisp.innerText = formattedTime;
+
+      // Cập nhật thanh tiến độ % thời gian
+      if (timerBar && this.runnerTotalSeconds > 0) {
+        const pct = Math.max(0, Math.min(100, (this.runnerTimerSeconds / this.runnerTotalSeconds) * 100));
+        timerBar.style.width = `${pct}%`;
+
+        if (pct <= 20) {
+          timerBar.className = "bg-rose-600 h-full transition-all duration-1000";
+        } else if (pct <= 50) {
+          timerBar.className = "bg-amber-500 h-full transition-all duration-1000";
+        } else {
+          timerBar.className = "bg-emerald-500 h-full transition-all duration-1000";
+        }
+      }
+
+      // Đổi màu box cảnh báo động theo mức thời gian còn lại
+      if (timerBox) {
+        if (this.runnerTimerSeconds <= 60) {
+          timerBox.className = "flex items-center gap-1.5 bg-gradient-to-r from-rose-600 to-red-600 text-white px-3 py-1 rounded-xl shadow-lg border border-rose-300 font-bold transition-all animate-pulse";
+        } else if (this.runnerTimerSeconds <= 300) {
+          timerBox.className = "flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 px-3 py-1 rounded-xl shadow-md border border-amber-300 font-bold transition-all";
+        } else {
+          timerBox.className = "flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-3 py-1 rounded-xl shadow-md border border-emerald-400 font-bold transition-all";
+        }
+      }
+
+      // Thông báo Toast cảnh báo khi còn 5 phút và 1 phút
+      if (this.runnerTimerSeconds === 300) {
+        window.app?.showToast("⏰ Thời gian làm bài thi còn lại 5 phút! Em hãy rà soát lại các câu hỏi nhé.", "warning");
+      } else if (this.runnerTimerSeconds === 60) {
+        window.app?.showToast("🚨 Còn 1 phút cuối cùng! Hệ thống chuẩn bị tự động nộp bài.", "error");
+      }
+
+      // Hết giờ làm bài -> Tự động nộp bài và thu bài
       if (this.runnerTimerSeconds <= 0) {
         clearInterval(this.runnerTimerInterval);
+        window.app?.showToast("⏳ Đã hết giờ làm bài! Hệ thống tự động nộp bài và chấm điểm...", "warning");
         this.submitOnlineTest();
       }
     }, 1000);

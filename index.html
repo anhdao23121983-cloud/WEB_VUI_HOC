@@ -2027,9 +2027,18 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <span id="exam-runner-timer-disp" class="badge badge-amber font-mono font-black text-sm animate-pulse">35:00</span>
-          <button onclick="examPortal.closeRunnerModal()" class="text-slate-400 text-2xl font-bold">✕</button>
+        <div class="flex items-center gap-3">
+          <div class="flex flex-col items-end min-w-[130px]">
+            <div id="exam-runner-timer-box" class="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 px-3 py-1 rounded-xl shadow-md border border-amber-300 font-bold transition-all">
+              <span class="text-xs animate-spin" style="animation-duration: 3s;">⏳</span>
+              <span id="exam-runner-timer-disp" class="font-mono font-black text-sm tracking-wider">35:00</span>
+            </div>
+            <!-- Thanh tiến độ thời gian (Time Progress Bar) -->
+            <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-1 shadow-inner">
+              <div id="exam-runner-timer-bar" class="bg-amber-500 h-full transition-all duration-1000" style="width: 100%"></div>
+            </div>
+          </div>
+          <button onclick="examPortal.closeRunnerModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-extrabold text-sm flex items-center justify-center transition-all" title="Đóng">✕</button>
         </div>
       </div>
 
