@@ -140,8 +140,17 @@ class LectureUploadModal {
     if (!file) return;
 
     this.selectedFile = file;
-    // Tạo Object URL tức thì không tốn bộ nhớ RAM hay CPU
+    // 1. Tạo Object URL tức thì cho preview nhanh
     this.selectedFileDataUrl = URL.createObjectURL(file);
+
+    // 2. Chuyển thành Data URL (Base64) bền vững để lưu vĩnh viễn không bị mất khi thoát trình duyệt
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        this.selectedFileDataUrl = e.target.result;
+      }
+    };
+    reader.readAsDataURL(file);
 
     const filePreview = document.getElementById("lec-file-preview-info");
     const fileNameDisp = document.getElementById("lec-file-name-disp");

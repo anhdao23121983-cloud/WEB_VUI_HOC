@@ -52,22 +52,32 @@ class LectureService {
             description: item.description || "",
             createdAt: item.created_at
           }));
-          this.cachedLectures = list;
-          this.lastFetchTime = now;
         }
       } catch (err) {
         console.warn("Lỗi tải bài giảng từ Supabase, chuyển về bộ nhớ cục bộ:", err);
       }
     }
 
-    // 2. Dự phòng LocalStorage nếu Supabase trống hoặc offline
+    // 2. LUÔN HỢP NHẤT BÀI GIẢNG TỪ LOCALSTORAGE: Đảm bảo bài giảng người dùng tải lên KHÔNG BAO GIỜ BỊ MẤT sau khi thoát website!
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    const localLectures = (db.lectures || []).map(item => ({
+      ...item,
+      semester: item.semester || (item.topicName && (item.topicName.includes("Chủ đề D") || item.topicName.includes("Chủ đề E") || item.topicName.includes("Chủ đề F")) ? "sem2" : "sem1")
+    }));
+
     if (list.length === 0) {
-      const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
-      list = (db.lectures || []).map(item => ({
-        ...item,
-        semester: item.semester || (item.topicName && (item.topicName.includes("Chủ đề D") || item.topicName.includes("Chủ đề E") || item.topicName.includes("Chủ đề F")) ? "sem2" : "sem1")
-      }));
+      list = localLectures;
+    } else {
+      const supabaseIds = new Set(list.map(l => l.id));
+      for (const localItem of localLectures) {
+        if (!supabaseIds.has(localItem.id)) {
+          list.unshift(localItem); // Đưa bài giảng tải lên lưu tại chỗ lên đầu danh sách
+        }
+      }
     }
+
+    this.cachedLectures = list;
+    this.lastFetchTime = now;
 
     // Lọc theo Khối lớp (3, 4, 5) siêu tốc từ RAM
     if (gradeFilter !== "all") {
@@ -162,6 +172,7 @@ class LectureService {
 
   // 7. Tải lên và lưu bài giảng mới (Đồng bộ FE -> BE -> Supabase Cloud)
   async uploadLecture(lectureData) {
+    this.clearCache();
     const user = window.authService?.getUser() || { username: "anhdao", name: "Cô Giáo Anh Đào", school: "Trường Tiểu Học Vui Học" };
     const lectureId = lectureData.id || ("lec_" + Date.now());
 
@@ -252,6 +263,7 @@ class LectureService {
 
   // 8. Cập nhật / Chỉnh sửa bài giảng (Đồng bộ Supabase)
   async updateLecture(id, updateData) {
+    this.clearCache();
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     let updatedObj = null;
 
