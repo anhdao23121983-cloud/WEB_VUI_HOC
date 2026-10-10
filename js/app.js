@@ -92,9 +92,17 @@ class Application {
       else if (route === "lectures-4") window.lecturePortal.selectFolder(4);
       else if (route === "lectures-5") window.lecturePortal.selectFolder(5);
       else window.lecturePortal.render("main-content-area");
-    } else if (route === "exams") {
+    } else if (route.startsWith("exams")) {
       document.getElementById("portal-view")?.classList.remove("hidden");
-      window.examPortal.render("main-content-area");
+      if (route === "exams-3") window.examPortal.enterFolder(3);
+      else if (route === "exams-4") window.examPortal.enterFolder(4);
+      else if (route === "exams-5") window.examPortal.enterFolder(5);
+      else if (route === "exams-custom") {
+        window.examPortal.enterFolder("all");
+        setTimeout(() => window.examPortal.openCustomQuizCreatorModal(3), 150);
+      } else {
+        window.examPortal.enterFolder("all");
+      }
     } else if (route === "lab3d" || route === "experiment3d") {
       document.getElementById("portal-view")?.classList.remove("hidden");
       window.simulation3D.render("main-content-area");

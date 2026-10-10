@@ -1018,6 +1018,12 @@ class ExamPortal {
 
     this.selectedFolder = grade;
     this.currentGrade = grade;
+
+    // Đảm bảo hiển thị vùng portal-view và ẩn landing-view
+    const views = ["landing-view", "auth-view"];
+    views.forEach(v => document.getElementById(v)?.classList.add("hidden"));
+    document.getElementById("portal-view")?.classList.remove("hidden");
+
     this.render("main-content-area");
   }
 
