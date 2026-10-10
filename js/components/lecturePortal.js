@@ -597,12 +597,14 @@ class LecturePortal {
                       <span>📦</span> <span>Trọn Gói</span>
                     </button>
 
-                    <button onclick="lectureUploadModal.openEditModal('${l.id}')" class="p-2 text-cyan-700 hover:bg-cyan-100 rounded-xl font-bold border border-cyan-200 transition-all hover:scale-105" title="Chỉnh sửa thông tin & đổi file PowerPoint">
-                      ✏️
-                    </button>
-                    <button onclick="lecturePortal.openDeleteConfirmModal('${l.id}', '${l.title.replace(/'/g, "\\'")}')" class="p-2 text-rose-600 hover:bg-rose-100 rounded-xl font-bold border border-rose-200 transition-all hover:scale-105" title="Xóa bỏ bài giảng này khỏi hệ thống & Supabase">
-                      🗑️
-                    </button>
+                    ${isTeacher ? `
+                      <button onclick="lectureUploadModal.openEditModal('${l.id}')" class="p-2 text-cyan-700 hover:bg-cyan-100 rounded-xl font-bold border border-cyan-200 transition-all hover:scale-105" title="Chỉnh sửa thông tin & đổi file PowerPoint">
+                        ✏️
+                      </button>
+                      <button onclick="lecturePortal.openDeleteConfirmModal('${l.id}', '${l.title.replace(/'/g, "\\'")}')" class="p-2 text-rose-600 hover:bg-rose-100 rounded-xl font-bold border border-rose-200 transition-all hover:scale-105" title="Xóa bỏ bài giảng này khỏi hệ thống & Supabase">
+                        🗑️
+                      </button>
+                    ` : ''}
                   </div>
                 </div>
               </div>
@@ -623,6 +625,14 @@ class LecturePortal {
   // XÓA BÀI GIẢNG ĐIỆN TỬ (DELETE LECTURE SLIDE)
   // =========================================================================
   openDeleteConfirmModal(id, title) {
+    const user = window.authService?.getUser();
+    const isTeacher = user && (user.role === 'teacher' || user.role === 'admin');
+
+    if (!isTeacher) {
+      window.app.showToast("⚠️ Rào cản bảo mật: Chỉ Giáo viên hoặc Admin mới có quyền xóa bài giảng!", "warning");
+      return;
+    }
+
     this.pendingDeleteId = id;
     this.pendingDeleteTitle = title;
 
@@ -642,6 +652,15 @@ class LecturePortal {
 
   async executeDeleteLecture() {
     if (!this.pendingDeleteId) return;
+
+    const user = window.authService?.getUser();
+    const isTeacher = user && (user.role === 'teacher' || user.role === 'admin');
+
+    if (!isTeacher) {
+      window.app.showToast("⚠️ Bạn không có quyền xóa bài giảng này! Chỉ Giáo viên mới có quyền.", "danger");
+      this.closeDeleteModal();
+      return;
+    }
 
     const deleteId = this.pendingDeleteId;
     window.app.showToast("🗑️ Đang xóa bài giảng khỏi hệ thống và Supabase...", "info");
