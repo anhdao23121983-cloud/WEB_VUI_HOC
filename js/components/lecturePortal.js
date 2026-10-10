@@ -468,11 +468,7 @@ class LecturePortal {
               <span class="badge badge-cyan font-black text-xs">${this.lectures.length} Bài</span>
             </h3>
             <div class="flex items-center gap-2">
-              ${isTeacher && this.selectedFolder !== 'all' && this.lectures.length > 0 ? `
-                <button onclick="lecturePortal.executeDeleteAllGradeLectures(${this.selectedFolder})" class="btn btn-outline btn-sm font-black text-rose-600 bg-rose-50 border-rose-200 hover:bg-rose-100 flex items-center gap-1" title="Xóa toàn bộ các bài giảng điện tử trong khối lớp này">
-                  <span>🗑️</span> <span>Xóa Hết Bài Lớp ${this.selectedFolder}</span>
-                </button>
-              ` : ''}
+
               <button onclick="lectureUploadModal.openModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-emerald btn-sm font-black shadow-md flex items-center gap-1.5 px-3 py-1.5">
                 <span>📤</span> <span>Tải Lên Bài Giảng Điện Tử</span>
               </button>
