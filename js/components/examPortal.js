@@ -1669,11 +1669,13 @@ class ExamPortal {
 
     return `
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        ${this.exams.map(e => {
-          const tInfo = typeNames[e.examType] || typeNames["final_term_1"];
-          const sInfo = seriesLabels[e.bookSeries] || seriesLabels["KNTT"];
+        ${(this.exams || []).map(e => {
+          if (!e) return '';
+          const tInfo = (e.examType && typeNames[e.examType]) ? typeNames[e.examType] : typeNames["final_term_1"];
+          const sInfo = (e.bookSeries && seriesLabels[e.bookSeries]) ? seriesLabels[e.bookSeries] : seriesLabels["KNTT"];
           const canManage = user && (user.role === 'admin' || user.username === e.createdByUsername || user.name === e.authorName || isTeacher);
-          const isFav = window.examService.isFavorite(e.id);
+          const isFav = (window.examService && window.examService.isFavorite) ? window.examService.isFavorite(e.id) : false;
+          const safeTitle = (e.title || "Đề kiểm tra Tin học").replace(/'/g, "\\'");
 
           return `
             <div draggable="true" 
@@ -1687,7 +1689,7 @@ class ExamPortal {
                       ${tInfo.name}
                     </span>
                     <span class="badge ${sInfo.bg} text-white font-black text-[10px] uppercase backdrop-blur-sm">
-                      Lớp ${e.grade} • ${sInfo.name}
+                      Lớp ${e.grade || 3} • ${sInfo.name}
                     </span>
                   </div>
 
@@ -1709,7 +1711,7 @@ class ExamPortal {
                       <span>Thang điểm ${e.totalScore || 10} • TT 27</span>
                       <span class="text-[10px] bg-white/20 px-1.5 py-0.2 rounded" title="Kéo thẻ này vào thư mục khác để chuyển khối lớp">⠿ Kéo</span>
                     </p>
-                    <h4 class="font-black text-base text-white leading-snug line-clamp-2">${e.title}</h4>
+                    <h4 class="font-black text-base text-white leading-snug line-clamp-2">${e.title || 'Đề kiểm tra Tin học'}</h4>
                   </div>
                 </div>
               </div>
@@ -1766,7 +1768,7 @@ class ExamPortal {
                       <button onclick="examUploadModal.openEditModal('${e.id}')" class="p-2 text-cyan-700 hover:bg-cyan-100 rounded-xl font-bold border border-cyan-200 transition-all hover:scale-105" title="Chỉnh sửa thông tin & đổi file đề thi">
                         ✏️
                       </button>
-                      <button onclick="examPortal.openDeleteConfirmModal('${e.id}', '${e.title.replace(/'/g, "\\'")}')" class="p-2 text-rose-600 hover:bg-rose-100 rounded-xl font-bold border border-rose-200 transition-all hover:scale-105" title="Xóa bỏ đề thi này khỏi hệ thống & Supabase">
+                      <button onclick="examPortal.openDeleteConfirmModal('${e.id}', '${safeTitle}')" class="p-2 text-rose-600 hover:bg-rose-100 rounded-xl font-bold border border-rose-200 transition-all hover:scale-105" title="Xóa bỏ đề thi này khỏi hệ thống & Supabase">
                         🗑️
                       </button>
                     ` : ''}

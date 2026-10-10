@@ -461,7 +461,11 @@ class ExamService {
         try {
           const client = window.supabaseService.client;
           let query = client.from("exam_assessments").select("*").order("created_at", { ascending: false });
-          const { data, error } = await query;
+          
+          // Thêm Timeout 1.5s bảo đảm tốc độ siêu tốc từ local nếu Supabase phản hồi chậm
+          const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ data: null, error: { message: "Supabase fetch timeout 1.5s" } }), 1500));
+          const { data, error } = await Promise.race([query, timeoutPromise]);
+
           if (!error && data && data.length > 0) {
             list = data.map(item => ({
               id: item.id,
