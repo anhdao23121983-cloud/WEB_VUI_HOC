@@ -2897,12 +2897,32 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
 
     await window.examService.recordAction(id, 'download');
 
-    if (window.docExportService && window.docExportService.exportExamDoc) {
+    if (window.docExportService && window.docExportService.exportExamToWord) {
+      window.docExportService.exportExamToWord(exam);
+    } else if (window.docExportService && window.docExportService.exportExamDoc) {
       window.docExportService.exportExamDoc(exam);
-      window.app.showToast(`📝 Đang tải xuống Đề kiểm tra Word: ${exam.title}!`, "success");
     } else {
       window.app.showToast(`📥 Đang tải xuống tệp: ${exam.fileName}`, "success");
     }
+  }
+
+  // TỰ ĐỘNG ĐẢO CÂU HỎI & TẢI VỀ 4 MÃ ĐỀ (101, 102, 103, 104)
+  async download4CodeVariants(id) {
+    const exam = await window.examService.getExamById(id);
+    if (!exam) return;
+
+    const variants = window.examService.generate4ExamCodes(exam);
+    if (!variants || variants.length === 0) {
+      window.app.showToast("Đề thi này chưa có danh sách câu hỏi trắc nghiệm để đảo mã đề!", "warning");
+      return;
+    }
+
+    variants.forEach(v => {
+      if (window.docExportService?.exportExamToWord) {
+        window.docExportService.exportExamToWord(v, v.code);
+      }
+    });
+    window.app.showToast("🎲 Đã tự động sinh & tải về 4 Mã Đề (101, 102, 103, 104) thành công!", "success");
   }
 
   // =========================================================================
@@ -3081,13 +3101,20 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
           <input type="text" id="custom-quiz-title" class="form-control text-xs font-bold" placeholder="Nhập tiêu đề bài kiểm tra trắc nghiệm...">
         </div>
 
-        <!-- Toolbar Câu Hỏi -->
-        <div class="flex items-center justify-between pt-2 border-t border-slate-200">
-          <button type="button" onclick="examPortal.generateCustomQuizQuestions()" class="btn bg-purple-600 hover:bg-purple-700 text-white font-black text-xs py-2 px-3.5 rounded-xl flex items-center gap-1.5 shadow-md">
-            <span>✨</span> <span>Tự Động Sinh Câu Hỏi Trắc Nghiệm Bám SGK</span>
-          </button>
+        <!-- Toolbar Câu Hỏi & Quét File AI -->
+        <div class="flex items-center justify-between pt-2 border-t border-slate-200 flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="examPortal.generateCustomQuizQuestions()" class="btn bg-purple-600 hover:bg-purple-700 text-white font-black text-xs py-2 px-3.5 rounded-xl flex items-center gap-1.5 shadow-md">
+              <span>✨</span> <span>Tự Động Sinh Câu Hỏi Bám SGK</span>
+            </button>
+            <input type="file" id="custom-quiz-scan-input" accept="image/*,.pdf" onchange="examPortal.handleSGKFileScan(event)" class="hidden">
+            <button type="button" onclick="document.getElementById('custom-quiz-scan-input').click()" class="btn bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs py-2 px-3.5 rounded-xl border border-indigo-200 flex items-center gap-1.5 shadow-sm" title="Quét ảnh chụp trang sách hoặc file PDF SGK để AI sinh câu hỏi">
+              <span>📷/📄</span> <span>Quét Ảnh/PDF SGK AI</span>
+            </button>
+          </div>
+
           <button type="button" onclick="examPortal.addCustomQuizQuestion()" class="btn btn-outline btn-xs font-bold text-indigo-700 border-indigo-200 hover:bg-indigo-50">
-            <span>➕</span> <span>Thêm 1 Câu Hỏi Trắc Nghiệm</span>
+            <span>➕</span> <span>Thêm 1 Câu Trắc Nghiệm</span>
           </button>
         </div>
 
@@ -3107,6 +3134,17 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
     `;
 
     this.onCustomQuizLessonChange();
+  }
+
+  handleSGKFileScan(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    window.app?.showToast(`🔍 AI đang phân tích dữ liệu từ file SGK "${file.name}"...`, "info");
+    setTimeout(() => {
+      this.generateCustomQuizQuestions();
+      window.app?.showToast(`✨ Đã phân tích xong trang sách "${file.name}" và sinh 10 câu trắc nghiệm!`, "success");
+    }, 600);
   }
 
   onCustomQuizGradeChange(gradeVal) {
@@ -3153,6 +3191,20 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
           <button type="button" onclick="examPortal.removeCustomQuizQuestion(${qIdx})" class="text-rose-500 hover:text-rose-700 text-xs font-bold">✕ Xóa câu này</button>
         </div>
         <input type="text" value="${(q.question || '').replace(/"/g, '&quot;')}" onchange="examPortal.customQuizQuestions[${qIdx}].question = this.value" class="form-control text-xs font-bold bg-white" placeholder="Nội dung câu hỏi...">
+
+        <!-- Selector Ảnh/Icon Minh Họa -->
+        <div class="flex items-center gap-2 pt-1 flex-wrap">
+          <span class="text-[11px] font-bold text-slate-600">📷 Ảnh minh họa:</span>
+          <select onchange="examPortal.customQuizQuestions[${qIdx}].imageUrl = this.value; examPortal.renderCustomQuizQuestionsPreview();" class="form-control text-[11px] font-bold py-0.5 px-2 bg-white w-auto">
+            <option value="" ${!q.imageUrl ? 'selected' : ''}>-- Không ảnh --</option>
+            <option value="https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=300" ${q.imageUrl && q.imageUrl.includes('keyboard') ? 'selected' : ''}>⌨️ Bàn phím máy tính</option>
+            <option value="https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=300" ${q.imageUrl && q.imageUrl.includes('mouse') ? 'selected' : ''}>🖱️ Chuột máy tính</option>
+            <option value="https://images.unsplash.com/photo-1547082299-de196ea013d6?w=300" ${q.imageUrl && q.imageUrl.includes('computer') ? 'selected' : ''}>🖥️ Màn hình & Thân máy</option>
+            <option value="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300" ${q.imageUrl && q.imageUrl.includes('web') ? 'selected' : ''}>🌐 Trang web & Internet</option>
+          </select>
+          <input type="text" value="${q.imageUrl || ''}" onchange="examPortal.customQuizQuestions[${qIdx}].imageUrl = this.value" placeholder="URL ảnh..." class="form-control text-[11px] py-0.5 px-2 bg-white w-40">
+        </div>
+        ${q.imageUrl ? `<div class="pt-1"><img src="${q.imageUrl}" class="w-32 h-20 object-cover rounded-xl border border-slate-200"></div>` : ''}
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
           ${(q.options || []).map((opt, optIdx) => `

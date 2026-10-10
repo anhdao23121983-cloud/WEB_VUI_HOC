@@ -310,6 +310,58 @@ class ExamService {
     return res;
   }
 
+  // 0d. Tự động tráo đổi ngẫu nhiên thứ tự câu hỏi & đáp án để tạo 4 Mã Đề (101, 102, 103, 104)
+  generate4ExamCodes(exam) {
+    if (!exam) return [];
+    const questions = exam.questions || (exam.matrixJson?.questions || []);
+    if (!questions || questions.length === 0) return [];
+
+    const codes = [101, 102, 103, 104];
+    const variants = [];
+
+    codes.forEach((code, codeIdx) => {
+      const shuffledQ = questions.map((q, qIdx) => {
+        const optShift = (codeIdx + qIdx) % 4;
+        const origOptions = [...(q.options || [])];
+        const origCorrectIndex = q.correctAnswer || 0;
+
+        const cleanOpts = origOptions.map(o => (o || '').replace(/^[A-D]\.\s*/, ''));
+        const rotatedOpts = [];
+        for (let i = 0; i < 4; i++) {
+          rotatedOpts.push(cleanOpts[(i + optShift) % 4] || `Đáp án ${i + 1}`);
+        }
+
+        const correctText = cleanOpts[origCorrectIndex] || cleanOpts[0];
+        const newCorrectIdx = rotatedOpts.findIndex(t => t === correctText);
+
+        const formattedOpts = rotatedOpts.map((text, i) => `${['A', 'B', 'C', 'D'][i]}. ${text}`);
+
+        return {
+          ...q,
+          options: formattedOpts,
+          correctAnswer: newCorrectIdx >= 0 ? newCorrectIdx : 0
+        };
+      });
+
+      const finalQuestions = [];
+      const len = shuffledQ.length;
+      for (let i = 0; i < len; i++) {
+        const targetIdx = (i * 7 + codeIdx * 3) % len;
+        finalQuestions.push(shuffledQ[targetIdx]);
+      }
+
+      variants.push({
+        code: code,
+        title: `${exam.title} (Mã đề ${code})`,
+        grade: exam.grade || 3,
+        durationMinutes: exam.durationMinutes || 15,
+        questions: finalQuestions
+      });
+    });
+
+    return variants;
+  }
+
   // 1. Lấy danh sách đề kiểm tra (hỗ trợ lọc khối lớp, loại đề, bộ sách và tìm kiếm)
   async getAllExams(gradeFilter = "all", searchQuery = "", typeFilter = "all", bookFilter = "all") {
     let list = [];

@@ -1256,6 +1256,121 @@ Chúc Thầy Cô và các em học sinh có những tiết học Tin học thậ
 
     window.app?.showToast("📄 Đã xuất file Word phiếu tư vấn AI thành công!", "success");
   }
+
+  // 12. XUẤT ĐỀ KIỂM TRA RA FILE WORD (.DOCX / .DOC) CHUẨN THỂ THỨC BỘ GD&ĐT KÈM ĐÁP ÁN & MA TRẬN
+  exportExamToWord(exam, codeVariant = null) {
+    if (!exam) return false;
+    const title = (exam.title || "Đề Kiểm Tra Tin Học").toUpperCase();
+    const grade = exam.grade || 3;
+    const questions = exam.questions || (exam.matrixJson?.questions || []);
+    const code = codeVariant ? `MÃ ĐỀ: ${codeVariant}` : "MÃ ĐỀ: 101";
+
+    const filename = `${this.slugify(title)}_${codeVariant || '101'}.doc`;
+
+    const htmlContent = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset="utf-8">
+        <title>${title}</title>
+        <style>
+          body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 1.35; color: #000; margin: 20mm 20mm 20mm 25mm; }
+          .header-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+          .header-table td { vertical-align: top; font-size: 11pt; text-align: center; }
+          .title { text-align: center; font-size: 14pt; font-weight: bold; text-transform: uppercase; margin: 10px 0 5px 0; }
+          .subtitle { text-align: center; font-size: 11pt; font-style: italic; margin-bottom: 15px; }
+          .q-title { font-weight: bold; margin-top: 10px; margin-bottom: 4px; }
+          .q-opt { margin-left: 20px; margin-bottom: 4px; }
+          .answer-key-table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: center; }
+          .answer-key-table th, .answer-key-table td { border: 1px solid #000; padding: 6px; font-size: 10pt; }
+          .student-box { width: 100%; border: 1px solid #000; border-collapse: collapse; margin-bottom: 15px; }
+          .student-box td { padding: 8px; font-size: 11pt; }
+        </style>
+      </head>
+      <body>
+        <table class="header-table">
+          <tr>
+            <td style="width: 50%;">
+              <b>PHÒNG GD&ĐT HUYỆN/THÀNH PHỐ</b><br>
+              <b>TRƯỜNG TIỂU HỌC VUI HỌC</b><br>
+              <i>Hệ thống: ANH ĐÀO • CLASSROOM</i><br>
+              --------------------
+            </td>
+            <td style="width: 50%;">
+              <b>BÀI KIỂM TRA TRẮC NGHIỆM KHTN/TIN HỌC</b><br>
+              <b>NĂM HỌC 2025 - 2026</b><br>
+              <b style="color: #b91c1c; font-size: 13pt;">${code}</b>
+            </td>
+          </tr>
+        </table>
+
+        <div class="title">${title}</div>
+        <div class="subtitle">Môn học: Tin học - Khối Lớp ${grade} | Thời gian làm bài: ${exam.durationMinutes || 15} phút (Không kể thời gian phát đề)</div>
+
+        <table class="student-box">
+          <tr>
+            <td><b>Họ và tên học sinh:</b> ................................................................................................ <b>Lớp:</b> ${grade}A...</td>
+          </tr>
+          <tr>
+            <td><b>Trường:</b> Trường Tiểu Học Vui Học • <b>Ngày kiểm tra:</b> ..... / ..... / 2026</td>
+          </tr>
+        </table>
+
+        <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 4px;">PHẦN I: TRẮC NGHIỆM KHÁCH QUAN (${questions.length} CÂU)</div>
+
+        ${questions.map((q, idx) => `
+          <div style="margin-bottom: 12px; page-break-inside: avoid;">
+            <div class="q-title">Câu ${idx + 1}: ${(q.question || '').replace(/^\[Câu \d+\]\s*/, '')}</div>
+            ${q.imageUrl ? `<div style="margin: 6px 0;"><img src="${q.imageUrl}" style="max-width: 280px; max-height: 160px; border: 1px solid #94a3b8; border-radius: 4px;"></div>` : ''}
+            <div class="q-opt">
+              ${(q.options || []).map(opt => `<div>${opt}</div>`).join('')}
+            </div>
+          </div>
+        `).join('')}
+
+        <br><br>
+        <div style="page-break-before: always;"></div>
+        <div class="title" style="font-size: 13pt;">BẢNG ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM BÀI KIỂM TRA (${code})</div>
+        <p><b>Môn học:</b> Tin học Lớp ${grade} | <b>Thời gian:</b> ${exam.durationMinutes || 15} phút</p>
+        <table class="answer-key-table">
+          <tr style="background-color: #f1f5f9;">
+            ${questions.map((q, idx) => `<th>Câu ${idx + 1}</th>`).join('')}
+          </tr>
+          <tr>
+            ${questions.map(q => `<td><b style="color: #047857; font-size: 11pt;">${['A', 'B', 'C', 'D'][q.correctAnswer || 0]}</b></td>`).join('')}
+          </tr>
+        </table>
+
+        <br>
+        <table class="header-table" style="margin-top: 30px;">
+          <tr>
+            <td style="width: 50%; text-align: center;">
+              <b>DUYỆT CỦA TỔ CHUYÊN MÔN</b><br><br><br><br>
+              .....................................................
+            </td>
+            <td style="width: 50%; text-align: center;">
+              <i>Ngày ...... tháng ...... năm 2026</i><br>
+              <b>GIÁO VIÊN BIÊN SOẠN</b><br><br><br><br>
+              <b>Cô Giáo Anh Đào</b>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    window.app?.showToast(`📄 Đã xuất file Word "${filename}" chuẩn A4 thành công!`, "success");
+    return true;
+  }
 }
 
 window.docExportService = new DocExportService();
