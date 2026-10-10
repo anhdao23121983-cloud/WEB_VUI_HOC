@@ -40,44 +40,7 @@
       <button onclick="window.location.hash='landing'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">Trang Chủ</button>
       <button id="nav-btn-teacher" onclick="window.location.hash='teacher'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">👩‍🏫 Giáo Viên (CV 2345)</button>
       <button id="nav-btn-admin-users" onclick="window.location.hash='admin'" class="px-2.5 py-1.5 rounded-lg font-black text-xs text-purple-800 bg-purple-100 hover:bg-purple-200 border border-purple-300 shadow-sm transition-all" title="Quản lý toàn bộ danh sách Giáo viên và Học sinh">👥 Quản Lý GV & HS</button>
-      <!-- Menu Bài Giảng Điện Tử Kèm Dropdown Các Lớp 3, 4, 5 -->
-      <div class="relative group">
-        <button onclick="window.location.hash='lectures'" class="px-2.5 py-1.5 rounded-lg font-black text-xs text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 flex items-center gap-1 transition-all shadow-xs">
-          <span>📊</span> <span>Bài Giảng Điện Tử</span> <span class="text-[10px] text-amber-700 font-bold">▼</span>
-        </button>
-        <!-- Dropdown Sub-menu -->
-        <div class="absolute left-0 top-full mt-1 w-60 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 hidden group-hover:block z-50 animate-pop">
-          <div class="px-3.5 py-1 text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
-            DANH MỤC BÀI GIẢNG TIN HỌC
-          </div>
-          <a href="#lectures-3" onclick="lecturePortal.selectFolder(3)" class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-cyan-50 hover:text-cyan-700 transition-all">
-            <span class="text-base p-1 bg-cyan-100 text-cyan-800 rounded-lg shrink-0">🎒</span>
-            <div>
-              <p class="font-black leading-tight text-slate-900">Bài Giảng Tin Lớp 3</p>
-              <p class="text-[10px] text-slate-500 font-normal">Khám phá máy tính & chuột</p>
-            </div>
-          </a>
-          <a href="#lectures-4" onclick="lecturePortal.selectFolder(4)" class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-all">
-            <span class="text-base p-1 bg-purple-100 text-purple-800 rounded-lg shrink-0">🚀</span>
-            <div>
-              <p class="font-black leading-tight text-slate-900">Bài Giảng Tin Lớp 4</p>
-              <p class="text-[10px] text-slate-500 font-normal">Soạn thảo Word & Scratch</p>
-            </div>
-          </a>
-          <a href="#lectures-5" onclick="lecturePortal.selectFolder(5)" class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all">
-            <span class="text-base p-1 bg-emerald-100 text-emerald-800 rounded-lg shrink-0">⭐</span>
-            <div>
-              <p class="font-black leading-tight text-slate-900">Bài Giảng Tin Lớp 5</p>
-              <p class="text-[10px] text-slate-500 font-normal">Bảng tính & Trình chiếu</p>
-            </div>
-          </a>
-          <div class="border-t border-slate-100 mt-1 pt-1">
-            <a href="#lectures" onclick="lecturePortal.selectFolder('all')" class="flex items-center gap-2 px-3.5 py-1.5 text-xs font-black text-amber-700 hover:bg-amber-50 transition-all">
-              <span>📂 Tất Cả Bài Giảng 3-4-5</span>
-            </a>
-          </div>
-        </div>
-      </div>
+
       <button onclick="window.location.hash='exams'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition-all">📝 Kiểm Tra</button>
       <button onclick="window.location.hash='lab3d'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-purple-800 bg-purple-50 hover:bg-purple-100 transition-all">🧪 Mô Phỏng 3D</button>
       <button onclick="window.location.hash='student'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">🎒 Học Sinh (Lớp 3-5)</button>
