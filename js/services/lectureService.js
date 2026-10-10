@@ -330,6 +330,31 @@ class LectureService {
     return { success: true };
   }
 
+  // 9b. Xóa tất cả bài giảng theo khối lớp (Lớp 3, Lớp 4, Lớp 5) trên LocalStorage & Supabase
+  async deleteLecturesByGrade(grade) {
+    const g = parseInt(grade, 10);
+    this.clearCache();
+
+    // 1. Xóa khỏi LocalStorage
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    if (db.lectures) {
+      db.lectures = db.lectures.filter(l => parseInt(l.grade, 10) !== g);
+      localStorage.setItem("app_mock_db", JSON.stringify(db));
+    }
+
+    // 2. Xóa khỏi Supabase Database Cloud
+    if (window.supabaseService?.isReady()) {
+      try {
+        const client = window.supabaseService.client;
+        await client.from("lecture_slides").delete().eq("grade_level", g);
+      } catch (err) {
+        console.warn("Lỗi kết nối xóa bài giảng Supabase theo khối lớp:", err);
+      }
+    }
+
+    return { success: true };
+  }
+
   // 10. Tự động sinh phân cảnh Video hoạt họa AI từ Slide (Auto AI Video Generator)
   generateSlideFrames(lecture) {
     const title = lecture.title || "Bài Giảng Tin Học";

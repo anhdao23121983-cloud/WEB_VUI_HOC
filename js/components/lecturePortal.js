@@ -456,20 +456,46 @@ class LecturePortal {
 
         <!-- Danh Sách Card Bài Giảng Điện Tử -->
         <div class="space-y-4">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between flex-wrap gap-2">
             <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
               <span>📚 DANH SÁCH BÀI GIẢNG ${this.selectedFolder !== 'all' ? `KHỐI ${this.selectedFolder}` : ''}</span>
               <span class="badge badge-cyan font-black text-xs">${this.lectures.length} Bài</span>
             </h3>
-            <button onclick="lectureUploadModal.openModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-emerald btn-sm font-black shadow-md flex items-center gap-1.5 px-3 py-1.5">
-              <span>📤</span> <span>Tải Lên Bài Giảng Điện Tử</span>
-            </button>
+            <div class="flex items-center gap-2">
+              ${isTeacher && this.selectedFolder !== 'all' && this.lectures.length > 0 ? `
+                <button onclick="lecturePortal.executeDeleteAllGradeLectures(${this.selectedFolder})" class="btn btn-outline btn-sm font-black text-rose-600 bg-rose-50 border-rose-200 hover:bg-rose-100 flex items-center gap-1" title="Xóa toàn bộ các bài giảng điện tử trong khối lớp này">
+                  <span>🗑️</span> <span>Xóa Hết Bài Lớp ${this.selectedFolder}</span>
+                </button>
+              ` : ''}
+              <button onclick="lectureUploadModal.openModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-emerald btn-sm font-black shadow-md flex items-center gap-1.5 px-3 py-1.5">
+                <span>📤</span> <span>Tải Lên Bài Giảng Điện Tử</span>
+              </button>
+            </div>
           </div>
 
           ${this.renderLectureGrid(isTeacher, user)}
         </div>
       </div>
     `;
+  }
+
+  async executeDeleteAllGradeLectures(grade) {
+    const user = window.authService?.getUser();
+    const isTeacher = user && (user.role === 'teacher' || user.role === 'admin');
+
+    if (!isTeacher) {
+      window.app.showToast("⚠️ Chỉ Giáo viên mới có quyền xóa tất cả bài giảng!", "warning");
+      return;
+    }
+
+    if (!confirm(`Cô có chắc chắn muốn xóa toàn bộ tất cả bài giảng điện tử Lớp ${grade} khỏi hệ thống và Supabase không?`)) {
+      return;
+    }
+
+    window.app.showToast(`🗑️ Đang xóa tất cả bài giảng Lớp ${grade}...`, "info");
+    await window.lectureService.deleteLecturesByGrade(grade);
+    window.app.showToast(`🎉 Đã xóa sạch toàn bộ bài giảng Lớp ${grade}!`, "success");
+    this.render("main-content-area");
   }
 
   selectFolder(grade) {

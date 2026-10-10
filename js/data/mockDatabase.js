@@ -243,42 +243,6 @@ const MOCK_DATABASE = {
   // 6. KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT SLIDES
   lectures: [
     {
-      id: "lec_01",
-      title: "Bài Giảng Điện Tử: Khám Phá Máy Tính Để Bàn",
-      grade: 3,
-      topicName: "Chủ đề A: Máy tính và em",
-      lessonId: "L3_02",
-      authorName: "Cô Giáo Anh Đào",
-      schoolName: "Trường Tiểu Học Vui Học",
-      fileName: "BaiGiang_TinHoc3_KhamPhaMayTinh.pptx",
-      fileSizeText: "6.8 MB",
-      fileType: "pptx",
-      fileUrl: "https://docs.google.com/presentation/d/e/2PACX-1vT1Z5u7X9.../embed",
-      slideCount: 22,
-      downloadCount: 145,
-      viewCount: 520,
-      thumbnailColor: "from-blue-600 to-cyan-500",
-      description: "Bài giảng PowerPoint thiết kế hoạt họa sinh động 4 bộ phận máy tính: Thân máy, Màn hình, Bàn phím, Chuột."
-    },
-    {
-      id: "lec_02",
-      title: "Bài Giảng Điện Tử: Em Tập Sử Dụng Chuột Máy Tính",
-      grade: 3,
-      topicName: "Chủ đề A: Máy tính và em",
-      lessonId: "L3_03",
-      authorName: "Cô Giáo Anh Đào",
-      schoolName: "Trường Tiểu Học Vui Học",
-      fileName: "BaiGiang_TinHoc3_TapSuDungChuot.pptx",
-      fileSizeText: "4.5 MB",
-      fileType: "pptx",
-      fileUrl: "https://docs.google.com/presentation/d/e/2PACX-1vT1Z5u7X9.../embed",
-      slideCount: 18,
-      downloadCount: 98,
-      viewCount: 380,
-      thumbnailColor: "from-emerald-600 to-teal-500",
-      description: "Hình ảnh hướng dẫn thực hành cầm chuột bằng tay phải, nháy đơn, nháy kép và kéo thả đối tượng."
-    },
-    {
       id: "lec_03",
       title: "Bài Giảng Điện Tử: Phần Cứng & Phần Mềm Máy Tính",
       grade: 4,
@@ -317,11 +281,15 @@ const MOCK_DATABASE = {
   ]
 };
 
-// Khởi tạo LocalStorage nếu chưa có hoặc cập nhật thêm trường mới
+// Khởi tạo và đồng bộ dọn dẹp LocalStorage cho các bài giảng Lớp 3
 try {
-  const existing = JSON.parse(localStorage.getItem("app_mock_db"));
+  let existing = JSON.parse(localStorage.getItem("app_mock_db"));
   if (!existing || !existing.lectures) {
     localStorage.setItem("app_mock_db", JSON.stringify(MOCK_DATABASE));
+  } else {
+    // Xóa triệt để các bài giảng Lớp 3 đã lưu trong LocalStorage
+    existing.lectures = (existing.lectures || []).filter(l => parseInt(l.grade, 10) !== 3);
+    localStorage.setItem("app_mock_db", JSON.stringify(existing));
   }
 } catch (e) {
   localStorage.setItem("app_mock_db", JSON.stringify(MOCK_DATABASE));
