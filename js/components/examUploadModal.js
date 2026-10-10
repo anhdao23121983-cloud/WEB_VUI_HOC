@@ -128,6 +128,12 @@ class ExamUploadModal {
     this.existingExam = null;
     this.selectedFile = null;
     this.selectedFileDataUrl = null;
+
+    const btnSubmit = document.getElementById("btn-submit-exam-upload");
+    if (btnSubmit) {
+      btnSubmit.innerHTML = "🚀 Tải Lên & Lưu Đề";
+      btnSubmit.classList.remove("pointer-events-none");
+    }
   }
 
   // Xử lý khi chọn file từ máy tính
@@ -186,7 +192,7 @@ class ExamUploadModal {
     }
   }
 
-  // Lưu và tải đề thi lên hệ thống
+  // Lưu và tải đề thi lên hệ thống (TỨC THÌ 0.01 GIÂY - TRY FINALLY PROOF)
   async submitUpload() {
     const title = document.getElementById("exam-title-input")?.value || "";
     const grade = parseInt(document.getElementById("exam-grade-input")?.value) || 3;
@@ -208,92 +214,103 @@ class ExamUploadModal {
     }
 
     const btnSubmit = document.getElementById("btn-submit-exam-upload");
-    if (btnSubmit) {
-      btnSubmit.innerHTML = "⚡ Đang xử lý & lưu đề thi siêu tốc...";
-      btnSubmit.classList.add("pointer-events-none");
-    }
 
-    // Chuẩn bị URL tập tin tức thì (DataURL / ObjectURL / linkUrl)
-    let fileUrl = linkUrl.trim();
-    let fileName = "De_Kiem_Tra_TinHoc.docx";
-    let fileSizeText = "2.1 MB";
-    let fileType = "docx";
+    try {
+      if (btnSubmit) {
+        btnSubmit.innerHTML = "⚡ Đang xử lý...";
+        btnSubmit.classList.add("pointer-events-none");
+      }
 
-    if (this.selectedFile) {
-      fileName = this.selectedFile.name;
-      fileSizeText = (this.selectedFile.size / (1024 * 1024)).toFixed(1) + " MB";
-      fileType = fileName.split('.').pop().toLowerCase();
-      fileUrl = this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
-    }
+      // Chuẩn bị URL tập tin tức thì (DataURL / ObjectURL / linkUrl)
+      let fileUrl = linkUrl.trim();
+      let fileName = "De_Kiem_Tra_TinHoc.docx";
+      let fileSizeText = "2.1 MB";
+      let fileType = "docx";
 
-    const selectedFileRef = this.selectedFile;
+      if (this.selectedFile) {
+        fileName = this.selectedFile.name;
+        fileSizeText = (this.selectedFile.size / (1024 * 1024)).toFixed(1) + " MB";
+        fileType = fileName.split('.').pop().toLowerCase();
+        fileUrl = this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
+      }
 
-    // CHẾ ĐỘ CHỈNH SỬA (EDIT MODE)
-    if (this.isEditMode && this.editingExamId) {
-      const updatePayload = {
+      const selectedFileRef = this.selectedFile;
+
+      // CHẾ ĐỘ CHỈNH SỬA (EDIT MODE)
+      if (this.isEditMode && this.editingExamId) {
+        const updatePayload = {
+          title: title,
+          grade: grade,
+          examType: type,
+          bookSeries: series,
+          durationMinutes: duration,
+          description: desc,
+          authorName: user.name
+        };
+
+        if (this.selectedFile) {
+          updatePayload.fileName = fileName;
+          updatePayload.fileSizeText = fileSizeText;
+          updatePayload.fileType = fileType;
+          updatePayload.fileUrl = fileUrl;
+        }
+
+        window.examService.updateExam(this.editingExamId, updatePayload);
+        window.app.showToast("⚡ Đã cập nhật đề kiểm tra siêu tốc!", "success");
+        this.closeModal();
+        if (window.examPortal) window.examPortal.render("main-content-area");
+
+        // Đồng bộ ngầm file lên Supabase Storage (Non-blocking Background Task)
+        if (selectedFileRef && window.supabaseService?.isReady()) {
+          window.supabaseService.uploadFileToStorage(selectedFileRef, "exam-files", 8000).then(uploadRes => {
+            if (uploadRes?.success && uploadRes?.url) {
+              window.examService.updateExam(this.editingExamId, { fileUrl: uploadRes.url });
+            }
+          });
+        }
+        return;
+      }
+
+      // CHẾ ĐỘ TẠO MỚI (CREATE MODE - LƯU TỨC THÌ 0.01 GIÂY)
+      const res = await window.examService.uploadExam({
         title: title,
         grade: grade,
         examType: type,
         bookSeries: series,
         durationMinutes: duration,
-        description: desc,
-        authorName: user.name
-      };
+        authorName: user.name,
+        createdByUsername: user.username,
+        fileName: fileName,
+        fileSizeText: fileSizeText,
+        fileType: fileType,
+        fileUrl: fileUrl,
+        description: desc
+      });
 
-      if (this.selectedFile) {
-        updatePayload.fileName = fileName;
-        updatePayload.fileSizeText = fileSizeText;
-        updatePayload.fileType = fileType;
-        updatePayload.fileUrl = fileUrl;
+      // Đóng Modal & Cập nhật giao diện TỨC THÌ (Zero delay!)
+      this.closeModal();
+      window.app.showToast("⚡ Đã tải lên đề kiểm tra siêu tốc thành công!", "success");
+      if (window.examPortal) {
+        window.examPortal.render("main-content-area");
       }
 
-      window.examService.updateExam(this.editingExamId, updatePayload);
-      window.app.showToast("⚡ Đã cập nhật đề kiểm tra siêu tốc!", "success");
-      this.closeModal();
-      if (window.examPortal) window.examPortal.render("main-content-area");
-
-      // Đồng bộ ngầm file lên Supabase Storage (Non-blocking Background Task)
-      if (selectedFileRef && window.supabaseService?.isReady()) {
+      // Tải file lên Supabase Storage ngầm (Background Task - Không chặn giao diện người dùng)
+      if (selectedFileRef && window.supabaseService?.isReady() && res?.exam?.id) {
+        const createdExamId = res.exam.id;
         window.supabaseService.uploadFileToStorage(selectedFileRef, "exam-files", 8000).then(uploadRes => {
           if (uploadRes?.success && uploadRes?.url) {
-            window.examService.updateExam(this.editingExamId, { fileUrl: uploadRes.url });
+            window.examService.updateExam(createdExamId, { fileUrl: uploadRes.url });
           }
         });
       }
-      return;
-    }
-
-    // CHẾ ĐỘ TẠO MỚI (CREATE MODE - LƯU TỨC THÌ 0.01 GIÂY)
-    const res = await window.examService.uploadExam({
-      title: title,
-      grade: grade,
-      examType: type,
-      bookSeries: series,
-      durationMinutes: duration,
-      authorName: user.name,
-      createdByUsername: user.username,
-      fileName: fileName,
-      fileSizeText: fileSizeText,
-      fileType: fileType,
-      fileUrl: fileUrl,
-      description: desc
-    });
-
-    // Đóng Modal & Cập nhật giao diện TỨC THÌ (Zero delay!)
-    this.closeModal();
-    window.app.showToast("⚡ Đã tải lên đề kiểm tra siêu tốc thành công!", "success");
-    if (window.examPortal) {
-      window.examPortal.render("main-content-area");
-    }
-
-    // Tải file lên Supabase Storage ngầm (Background Task - Không chặn giao diện người dùng)
-    if (selectedFileRef && window.supabaseService?.isReady() && res?.data?.id) {
-      const createdExamId = res.data.id;
-      window.supabaseService.uploadFileToStorage(selectedFileRef, "exam-files", 8000).then(uploadRes => {
-        if (uploadRes?.success && uploadRes?.url) {
-          window.examService.updateExam(createdExamId, { fileUrl: uploadRes.url });
-        }
-      });
+    } catch (err) {
+      console.error("Lỗi submitUpload:", err);
+      window.app.showToast("Có lỗi xảy ra khi lưu đề thi, vui lòng thử lại!", "error");
+    } finally {
+      if (btnSubmit) {
+        btnSubmit.innerHTML = this.isEditMode ? "💾 Lưu Thay Đổi" : "🚀 Tải Lên & Lưu Đề";
+        btnSubmit.classList.remove("pointer-events-none");
+      }
     }
   }
 }
