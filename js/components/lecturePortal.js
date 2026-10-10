@@ -621,6 +621,9 @@ class LecturePortal {
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
                       <span>📥</span> <span>Tải PPT</span>
                     </button>
+                    <button onclick="lecturePortal.downloadLectureAsPDF('${l.id}')" class="btn btn-outline btn-sm font-bold text-rose-700 bg-rose-50 border-rose-200 hover:bg-rose-100 flex items-center gap-1" title="Chuyển và Tải file bài giảng dạng PDF">
+                      <span>📄</span> <span>Tải PDF</span>
+                    </button>
 
                     ${canManage ? `
                       <button onclick="lectureUploadModal.openEditModal('${l.id}')" class="p-2 text-cyan-700 hover:bg-cyan-100 rounded-xl font-bold border border-cyan-200 transition-all hover:scale-105" title="Chỉnh sửa thông tin bài giảng chính chủ">
@@ -2926,6 +2929,127 @@ class LecturePortal {
       window.app.showToast("🎉 Tải file bài giảng thành công!", "success");
       this.render("main-content-area");
     }, 800);
+  }
+
+  // Chuyển đổi và xuất bài giảng thành tập tin PDF (PDF Export for Lectures)
+  async downloadLectureAsPDF(lectureId) {
+    const lecture = await window.lectureService.getLectureById(lectureId);
+    if (!lecture) return;
+
+    window.lectureService.incrementDownloadCount(lectureId);
+    window.app?.showToast(`📄 Đang chuẩn bị chuyển đổi file PDF bài giảng...`, "info");
+
+    const url = (lecture.fileUrl || "").toLowerCase();
+    const isPdf = url.endsWith(".pdf") || url.includes(".pdf?") || (lecture.fileType || "").toLowerCase() === "pdf";
+
+    // 1. Nếu bài giảng đã là file PDF gốc
+    if (isPdf && lecture.fileUrl && lecture.fileUrl !== "#") {
+      const a = document.createElement("a");
+      a.href = lecture.fileUrl;
+      a.target = "_blank";
+      a.download = (lecture.fileName || `${lecture.title}.pdf`).replace(/\.pptx?$/i, ".pdf");
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.app?.showToast("🎉 Tải file PDF bài giảng thành công!", "success");
+      return;
+    }
+
+    // 2. Chuyển đổi Slide bài giảng PowerPoint sang tài liệu PDF chuẩn Công văn 2345
+    const printWin = window.open("", "_blank");
+    if (!printWin) {
+      window.app?.showToast("⚠️ Trình duyệt đang chặn Pop-up. Vui lòng cho phép mở Pop-up để xuất file PDF!", "warning");
+      return;
+    }
+
+    const title = lecture.title || "Bài Giảng Điện Tử Tin Học";
+    const topic = lecture.topicName || "Bài Giảng GDPT 2018";
+    const grade = lecture.grade || 3;
+    const series = lecture.bookSeries || "KNTT";
+    const author = lecture.authorName || "Cô Giáo Anh Đào";
+    const desc = lecture.description || "Nội dung bài giảng điện tử chuẩn GDPT 2018.";
+
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html lang="vi">
+      <head>
+        <meta charset="UTF-8">
+        <title>File PDF - ${title}</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+          body { font-family: 'Nunito', sans-serif; background: white; color: #0f172a; margin: 0; padding: 20px; }
+          .pdf-page { page-break-after: always; border: 2px solid #cbd5e1; border-radius: 16px; padding: 32px; margin-bottom: 24px; min-height: 520px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; }
+          @media print {
+            body { padding: 0; }
+            .pdf-page { border: none; border-radius: 0; margin: 0; page-break-after: always; height: 100vh; }
+            .no-print { display: none !important; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="no-print bg-cyan-700 text-white p-4 rounded-2xl mb-6 flex items-center justify-between shadow-lg">
+          <div>
+            <h3 class="font-black text-base flex items-center gap-2"><span>📄</span> <span>XUẤT BÀI GIẢNG DẠNG PDF</span></h3>
+            <p class="text-xs text-cyan-100">Bài giảng: <b>${title}</b> (Khối Lớp ${grade} • Bộ Sách ${series})</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="window.print()" class="px-5 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl text-xs shadow-md transition-all flex items-center gap-1">
+              <span>🖨️</span> <span>Lưu / In Thành File PDF</span>
+            </button>
+            <button onclick="window.close()" class="px-3 py-2 bg-white/20 hover:bg-white/30 text-white font-bold rounded-xl text-xs">
+              Đóng
+            </button>
+          </div>
+        </div>
+
+        <!-- TRANG BÌA PDF -->
+        <div class="pdf-page bg-gradient-to-br from-cyan-900 to-slate-900 text-white text-center">
+          <div class="flex items-center justify-between text-xs text-cyan-200 border-b border-cyan-700/50 pb-3">
+            <span class="font-black">📘 TIN HỌC LỚP ${grade} • BỘ SÁCH ${series}</span>
+            <span class="font-bold">⭐ BÀI GIẢNG ĐIỆN TỬ CHUẨN GDPT 2018</span>
+          </div>
+          <div class="my-auto space-y-4 max-w-2xl mx-auto">
+            <div class="text-6xl">💻 📊</div>
+            <h1 class="text-3xl font-black text-amber-300 leading-tight">${title.toUpperCase()}</h1>
+            <p class="text-cyan-100 text-base font-bold">${topic}</p>
+            <div class="pt-4 flex items-center justify-center gap-4 text-xs text-slate-300">
+              <span class="bg-white/10 px-3 py-1.5 rounded-xl">👩‍🏫 Tác giả: <b>${author}</b></span>
+              <span class="bg-white/10 px-3 py-1.5 rounded-xl">🏫 Trường Tiểu Học Vui Học</span>
+            </div>
+          </div>
+          <div class="text-xs text-cyan-300/60 pt-3 border-t border-cyan-700/50">Hệ Thống Web Vui Học • GDPT 2018</div>
+        </div>
+
+        <!-- TRANG NỘI DUNG PDF -->
+        <div class="pdf-page bg-slate-50">
+          <div class="border-b border-slate-200 pb-3 flex items-center justify-between">
+            <h2 class="text-lg font-black text-cyan-900">📚 1. NỘI DUNG BÀI HỌC BÀI GIẢNG</h2>
+            <span class="text-xs font-bold text-slate-400">Trang 2 / 2</span>
+          </div>
+          <div class="my-auto space-y-4">
+            <div class="p-6 bg-white rounded-2xl border border-slate-200 space-y-3 shadow-sm">
+              <h3 class="font-black text-cyan-900 text-base flex items-center gap-2"><span>📌</span> <span>Tóm Tắt Bài Học:</span></h3>
+              <p class="text-slate-800 leading-relaxed font-bold text-sm">${desc}</p>
+            </div>
+            <div class="p-6 bg-cyan-50 rounded-2xl border border-cyan-200 space-y-3 shadow-sm">
+              <h3 class="font-black text-cyan-900 text-base flex items-center gap-2"><span>💡</span> <span>Yêu Cầu Cần Đạt (Mục Tiêu Bài Học):</span></h3>
+              <ul class="list-disc list-inside space-y-1.5 text-xs text-slate-700 font-bold">
+                <li>Nắm vững các khái niệm cơ bản trong bài học ${title}.</li>
+                <li>Thực hành thành thạo các thao tác Tin học trên máy tính theo chuẩn GDPT 2018.</li>
+                <li>Vận dụng linh hoạt kiến thức bài học vào giải quyết các bài tập và tình huống thực tế.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="text-xs text-slate-400 pt-3 border-t border-slate-200 text-right">Trang 2 / 2</div>
+        </div>
+      </body>
+      </html>
+    `);
+    printWin.document.close();
+    setTimeout(() => {
+      printWin.print();
+    }, 500);
   }
 
   // =========================================================================
