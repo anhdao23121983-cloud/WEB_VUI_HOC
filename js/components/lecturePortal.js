@@ -237,16 +237,18 @@ class LecturePortal {
     const user = window.authService?.getUser();
     const isTeacher = user && (user.role === 'teacher' || user.role === 'admin');
     
-    // Tải toàn bộ bài giảng
-    const effectiveGrade = this.selectedFolder !== "all" ? this.selectedFolder : this.currentGrade;
-    let allLectures = await window.lectureService.getAllLectures(effectiveGrade, this.searchQuery, this.currentBookSeries, this.currentSemester);
+    // Nạp toàn bộ bài giảng 1 lần duy nhất từ RAM cache siêu tốc 0.001s
+    const rawAll = await window.lectureService.getAllLectures("all", this.searchQuery, this.currentBookSeries, this.currentSemester);
     const favoriteIds = window.lectureService.getFavoriteIds();
     
-    // Thống kê theo 3 thư mục con
-    const rawAll = await window.lectureService.getAllLectures("all");
+    // Thống kê số lượng bài giảng các khối
     const countLop3 = rawAll.filter(l => l.grade === 3).length;
     const countLop4 = rawAll.filter(l => l.grade === 4).length;
     const countLop5 = rawAll.filter(l => l.grade === 5).length;
+
+    // Lọc bài giảng theo thư mục con đang chọn (Lớp 3, 4, 5 hoặc Tất cả)
+    const effectiveGrade = this.selectedFolder !== "all" ? this.selectedFolder : this.currentGrade;
+    let allLectures = effectiveGrade !== "all" ? rawAll.filter(l => l.grade === parseInt(effectiveGrade, 10)) : rawAll;
 
     // Đếm số lượng theo danh mục
     const myLecturesCount = user ? allLectures.filter(l => (l.createdByUsername === user.username) || (l.authorName === user.name) || user.role === 'admin').length : 0;
@@ -620,6 +622,16 @@ class LecturePortal {
   switchTab(tab) {
     this.currentTab = tab;
     this.render("main-content-area");
+  }
+
+  selectFolder(grade) {
+    this.selectedFolder = grade;
+    this.currentGrade = grade;
+    if (window.location.hash === '#lectures' || window.location.hash.startsWith('#lectures-')) {
+      this.render("main-content-area");
+    } else {
+      window.location.hash = grade === 'all' ? '#lectures' : `#lectures-${grade}`;
+    }
   }
 
   selectGrade(grade) {

@@ -20,9 +20,9 @@ class LectureService {
   async getAllLectures(gradeFilter = "all", searchQuery = "", bookFilter = "all", semesterFilter = "all") {
     let list = [];
 
-    // TỐI ƯU SIÊU TỐC: Dùng bộ nhớ cache nếu đã nạp trong 30 giây gần nhất
+    // TỐI ƯU SIÊU TỐC: Dùng bộ nhớ cache nếu đã nạp trong 60 giây gần nhất
     const now = Date.now();
-    if (this.cachedLectures && (now - this.lastFetchTime < 30000)) {
+    if (this.cachedLectures && (now - this.lastFetchTime < 60000)) {
       list = [...this.cachedLectures];
     } else if (window.supabaseService?.isReady()) {
       try {
@@ -67,10 +67,12 @@ class LectureService {
         ...item,
         semester: item.semester || (item.topicName && (item.topicName.includes("Chủ đề D") || item.topicName.includes("Chủ đề E") || item.topicName.includes("Chủ đề F")) ? "sem2" : "sem1")
       }));
+    }
 
-      if (gradeFilter !== "all") {
-        list = list.filter(l => l.grade === parseInt(gradeFilter));
-      }
+    // Lọc theo Khối lớp (3, 4, 5) siêu tốc từ RAM
+    if (gradeFilter !== "all") {
+      const g = parseInt(gradeFilter, 10);
+      list = list.filter(l => l.grade === g);
     }
 
     // Lọc theo bộ sách (KNTT, CD, CTST)
