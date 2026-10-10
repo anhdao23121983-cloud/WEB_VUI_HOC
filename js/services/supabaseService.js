@@ -412,8 +412,8 @@ class SupabaseService {
     return logs;
   }
 
-  // 8. TẢI TẬP TIN TRỰC TIẾP LÊN SUPABASE STORAGE BUCKET
-  async uploadFileToStorage(file, bucketName = "lecture-files") {
+  // 8. TẢI TẬP TIN TRỰC TIẾP LÊN SUPABASE STORAGE BUCKET (TỐI ƯU SIÊU TỐC TIMEOUT 2.5S)
+  async uploadFileToStorage(file, bucketName = "lecture-files", timeoutMs = 2500) {
     if (!this.isReady()) {
       return { success: false, url: null, error: "Chưa kết nối Supabase Cloud Database" };
     }
@@ -422,17 +422,26 @@ class SupabaseService {
       const fileExt = file.name.split(".").pop();
       const cleanFileName = file.name.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
       const fileName = `${Date.now()}_${cleanFileName}.${fileExt}`;
-      const filePath = `lectures/${fileName}`;
+      const folderName = bucketName === "exam-files" ? "exams" : "lectures";
+      const filePath = `${folderName}/${fileName}`;
 
-      const { data, error } = await this.client.storage
+      const uploadPromise = this.client.storage
         .from(bucketName)
         .upload(filePath, file, {
           cacheControl: "3600",
           upsert: true
         });
 
+      const timeoutPromise = new Promise(resolve =>
+        setTimeout(() => resolve({ error: { message: "Storage upload timeout 2.5s (Chuyển sang chế độ lưu tức thì)" } }), timeoutMs)
+      );
+
+      const res = await Promise.race([uploadPromise, timeoutPromise]);
+      const data = res?.data;
+      const error = res?.error;
+
       if (error) {
-        console.warn("Lỗi upload file lên Supabase Storage:", error.message);
+        console.warn("⚠️ Tải file Storage chờ lâu hoặc lỗi (tự chuyển sang lưu siêu tốc):", error.message);
         return { success: false, url: null, error: error.message };
       }
 
@@ -441,10 +450,10 @@ class SupabaseService {
         .from(bucketName)
         .getPublicUrl(filePath);
 
-      console.log("✅ Đã upload file thành công lên Supabase Storage:", publicUrlData.publicUrl);
+      console.log("✅ Đã upload file thành công lên Supabase Storage:", publicUrlData?.publicUrl);
       return {
         success: true,
-        url: publicUrlData.publicUrl,
+        url: publicUrlData?.publicUrl,
         filePath: filePath
       };
     } catch (err) {

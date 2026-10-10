@@ -209,18 +209,21 @@ class ExamUploadModal {
 
     const btnSubmit = document.getElementById("btn-submit-exam-upload");
     if (btnSubmit) {
-      btnSubmit.innerHTML = "⏳ Đang lưu và đồng bộ Supabase...";
+      btnSubmit.innerHTML = "⚡ Đang xử lý & lưu đề thi siêu tốc...";
       btnSubmit.classList.add("pointer-events-none");
     }
 
     let uploadedPublicUrl = linkUrl.trim();
 
-    // Thử tải file lên Supabase Storage Bucket 'exam-files' nếu có tập tin được chọn
+    // Tải file siêu tốc lên Supabase Storage với timeout 2s (nếu quá 2s tự động dùng chế độ lưu tức thì)
     if (this.selectedFile && window.supabaseService?.isReady()) {
-      if (btnSubmit) btnSubmit.innerHTML = "⏳ Đang tải file đề thi lên Supabase Storage Cloud...";
-      const uploadRes = await window.supabaseService.uploadFileToStorage(this.selectedFile, "exam-files");
-      if (uploadRes.success && uploadRes.url) {
-        uploadedPublicUrl = uploadRes.url;
+      try {
+        const uploadRes = await window.supabaseService.uploadFileToStorage(this.selectedFile, "exam-files", 2000);
+        if (uploadRes.success && uploadRes.url) {
+          uploadedPublicUrl = uploadRes.url;
+        }
+      } catch (err) {
+        console.warn("Dùng DataURL/ObjectURL để lưu siêu tốc:", err);
       }
     }
 

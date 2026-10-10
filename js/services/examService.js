@@ -654,12 +654,15 @@ class ExamService {
           payload.id = examData.id;
         }
 
-        const { data, error } = await client.from("exam_assessments").insert([payload]).select().single();
+        const dbPromise = client.from("exam_assessments").insert([payload]).select().single();
+        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ data: null, error: { message: "Supabase DB timeout" } }), 2000));
+        const { data, error } = await Promise.race([dbPromise, timeoutPromise]);
+
         if (data && data.id) {
           examObj.id = data.id;
         }
       } catch (err) {
-        console.warn("Lỗi lưu đề thi lên Supabase:", err);
+        console.warn("Lỗi đồng bộ đề thi lên Supabase (Đã lưu bản địa siêu tốc):", err);
       }
     }
 
