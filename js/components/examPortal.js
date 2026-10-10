@@ -393,15 +393,13 @@ class ExamPortal {
 
               <!-- Quick action in folder: Tải Đề, AI Tạo Đề SGK & Bảng Xếp Hạng Khối -->
               <div class="flex items-center gap-2 flex-wrap">
-                ${isTeacher ? `
-                  <button onclick="examUploadModal.openModal(${this.selectedFolder})" class="btn btn-emerald btn-sm font-black shadow-lg flex items-center gap-1.5 hover:scale-105 transition-all">
-                    <span>📤</span> <span>Tải Đề Từ Máy Tính Up</span>
-                  </button>
-                  <button onclick="examPortal.openCustomQuizCreatorModal(${this.selectedFolder})" class="btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white btn-sm font-black shadow-lg flex items-center gap-1.5 hover:scale-105 transition-all">
-                    <span>✨</span> <span>AI Tạo Đề SGK (Trắc Nghiệm)</span>
-                  </button>
-                ` : ''}
-                <button onclick="examPortal.openStudentLeaderboardModal(${this.selectedFolder})" class="btn bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 btn-sm font-black shadow-lg flex items-center gap-1.5 hover:scale-105 transition-all">
+                <button onclick="examUploadModal.openModal(${this.selectedFolder})" class="btn btn-emerald btn-sm font-black shadow-lg flex items-center gap-1.5 hover:scale-105 transition-all" title="Giáo viên tải đề kiểm tra từ máy tính lên thư mục lớp này">
+                  <span>📤</span> <span>Tải Đề Từ Máy Tính Up</span>
+                </button>
+                <button onclick="examPortal.openCustomQuizCreatorModal(${this.selectedFolder})" class="btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white btn-sm font-black shadow-lg flex items-center gap-1.5 hover:scale-105 transition-all" title="AI tự tạo đề kiểm tra trắc nghiệm bám sát từng bài trong sách giáo khoa Lớp ${this.selectedFolder}">
+                  <span>✨</span> <span>AI Tạo Đề SGK (Trắc Nghiệm)</span>
+                </button>
+                <button onclick="examPortal.openStudentLeaderboardModal(${this.selectedFolder})" class="btn bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 btn-sm font-black shadow-lg flex items-center gap-1.5 hover:scale-105 transition-all" title="Xem bảng xếp thứ hạng học sinh của Khối ${this.selectedFolder}">
                   <span>🏆</span> <span>Bảng Xếp Hạng Khối ${this.selectedFolder}</span>
                 </button>
                 <button onclick="examPortal.exportClassGradebookDoc('${this.selectedFolder}A')" class="btn btn-outline btn-sm font-black bg-white text-slate-700 flex items-center gap-1 shadow-sm">
@@ -1791,6 +1789,23 @@ class ExamPortal {
   switchTab(tab) {
     this.currentTab = tab;
     this.render("main-content-area");
+  }
+
+  enterFolder(grade) {
+    this.selectedFolder = grade !== "all" ? (parseInt(grade) || grade) : "all";
+    if (grade !== "all") {
+      this.currentGrade = parseInt(grade) || grade;
+    }
+
+    const landingView = document.getElementById("landing-view");
+    const portalView = document.getElementById("portal-view");
+    if (landingView && portalView) {
+      landingView.classList.add("hidden");
+      portalView.classList.remove("hidden");
+    }
+
+    this.render("main-content-area");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   selectGrade(grade) {
