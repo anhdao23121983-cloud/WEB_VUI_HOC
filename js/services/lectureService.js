@@ -715,3 +715,16 @@ class LectureService {
 
 window.lectureService = new LectureService();
 
+// Thực thi xóa sạch 100% bài giảng ngay lập tức theo yêu cầu của Thầy/Cô
+(async function() {
+  try {
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || {};
+    db.lectures = [];
+    db.trashedLectures = [];
+    localStorage.setItem("app_mock_db", JSON.stringify(db));
+    if (window.lectureService) {
+      window.lectureService.clearAllLectures();
+    }
+  } catch (e) {}
+})();
+
