@@ -2293,8 +2293,20 @@ class LecturePortal {
           function nextSlide() { showSlide(currentSlide + 1); }
 
           document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
-            if (e.key === 'ArrowLeft') prevSlide();
+            if (['Space', 'ArrowRight', 'PageDown', ' '].includes(e.key)) {
+              e.preventDefault();
+              nextSlide();
+            } else if (['ArrowLeft', 'PageUp'].includes(e.key)) {
+              e.preventDefault();
+              prevSlide();
+            } else if (e.key === 'f' || e.key === 'F') {
+              e.preventDefault();
+              if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+              } else {
+                document.exitFullscreen().catch(() => {});
+              }
+            }
           });
 
           window.addEventListener('message', function(e) {
