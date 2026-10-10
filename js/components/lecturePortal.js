@@ -592,41 +592,14 @@ class LecturePortal {
                   </div>
                 </div>
 
-                <!-- Hàng nút hành động đa năng -->
+                <!-- Hàng nút hành động bài giảng -->
                 <div class="space-y-2 pt-2 border-t border-slate-100">
-                  <div class="grid grid-cols-2 gap-2">
-                    <button onclick="lecturePortal.openSlideVideoPlayer('${l.id}')" class="btn btn-amber btn-sm font-black flex items-center justify-center gap-1 shadow-sm" title="Tự động chuyển Slide thành Video hoạt họa AI có thuyết minh tiếng Việt giọng Nữ">
-                      <span>🎬</span> <span>Video Hoạt Họa AI</span>
-                    </button>
-                    <button onclick="lecturePortal.openFlipbook('${l.id}')" class="btn bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white btn-sm font-black flex items-center justify-center gap-1 shadow-sm hover:scale-105 transition-all" title="Trình chiếu Sách 3D Lật Trang Siêu Thực có chế độ Ban Đêm Neon & Giọng Nữ Cô Giáo đọc">
-                      <span>📖</span> <span>Sách 3D & Giọng AI</span>
-                    </button>
-                  </div>
-
-                  <div class="grid grid-cols-4 gap-1">
-                    <button onclick="lecturePortal.downloadLessonPlanDoc('${l.id}')" class="btn btn-outline btn-xs font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200 flex items-center justify-center gap-0.5" title="Tải Kế hoạch bài dạy Giáo án Word chuẩn Công văn 2345">
-                      <span>📄</span> <span>Giáo Án</span>
-                    </button>
-                    <button onclick="lecturePortal.openIcebreakerGame('${l.id}')" class="btn btn-outline btn-xs font-black text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 flex items-center justify-center gap-0.5" title="Trò chơi đố vui khởi động 3 phút đầu giờ">
-                      <span>⚡</span> <span>Khởi Động</span>
-                    </button>
-                    <button onclick="lecturePortal.downloadWorksheet('${l.id}')" class="btn btn-outline btn-xs font-black text-cyan-800 bg-cyan-50 hover:bg-cyan-100 border-cyan-200 flex items-center justify-center gap-0.5" title="Tải Phiếu bài tập in ấn Word (.doc) cho học sinh">
-                      <span>📝</span> <span>Phiếu BT</span>
-                    </button>
-                    <button onclick="lecturePortal.openLectureQRModal('${l.id}')" class="btn btn-outline btn-xs font-black text-blue-800 bg-blue-50 hover:bg-blue-100 border-blue-200 flex items-center justify-center gap-0.5" title="Tạo mã QR chia sẻ cho học sinh quét điện thoại">
-                      <span>📱</span> <span>Mã QR</span>
-                    </button>
-                  </div>
-
-                  <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
-                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình bài giảng có Bút Laser đỏ & Bút vẽ dạ quang">
+                  <div class="flex items-center justify-between gap-1.5 pt-1 flex-wrap">
+                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide bài giảng có Bút Laser đỏ & Bút vẽ dạ quang">
                       <span>🎨</span> <span>Trình Chiếu & Laser</span>
                     </button>
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
                       <span>📥</span> <span>Tải PPT</span>
-                    </button>
-                    <button onclick="lecturePortal.downloadBundleZip('${l.id}')" class="btn btn-outline btn-sm font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 border-amber-300 flex items-center gap-1" title="Tải trọn bộ Gói học liệu (Slide PPTX + Giáo án Word + Phiếu bài tập)">
-                      <span>📦</span> <span>Trọn Gói</span>
                     </button>
 
                     ${isTeacher ? `
