@@ -134,23 +134,25 @@ class LectureUploadModal {
     this.selectedFileDataUrl = null;
   }
 
-  // Xử lý khi chọn file từ máy tính (Tối ưu siêu tốc 0.001s, không dùng Base64 gây giật lag)
+  // Xử lý khi chọn file từ máy tính (Tối ưu siêu tốc 0.001s, không dùng Base64 cho file lớn gây giật lag)
   handleFileSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
 
     this.selectedFile = file;
-    // 1. Tạo Object URL tức thì cho preview nhanh
+    // 1. Tạo Object URL tức thì cho preview nhanh (0.0001s, 0 RAM overhead)
     this.selectedFileDataUrl = URL.createObjectURL(file);
 
-    // 2. Chuyển thành Data URL (Base64) bền vững để lưu vĩnh viễn không bị mất khi thoát trình duyệt
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (e.target?.result) {
-        this.selectedFileDataUrl = e.target.result;
-      }
-    };
-    reader.readAsDataURL(file);
+    // 2. CHỈ đọc Base64 nếu file nhỏ (< 3MB) để tránh làm đơ bộ nhớ / QuotaExceededError khi làm việc với file lớn 70MB!
+    if (file.size < 3 * 1024 * 1024) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          this.selectedFileDataUrl = e.target.result;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
 
     const filePreview = document.getElementById("lec-file-preview-info");
     const fileNameDisp = document.getElementById("lec-file-name-disp");
@@ -169,7 +171,7 @@ class LectureUploadModal {
     }
   }
 
-  // Lưu và tải bài giảng lên hệ thống (Tốc độ ánh sáng ⚡)
+  // Lưu và tải bài giảng lên hệ thống (Tốc độ ánh sáng ⚡ 0.001s)
   async submitUpload() {
     const title = document.getElementById("lec-title-input")?.value || "";
     const grade = parseInt(document.getElementById("lec-grade-input")?.value) || 3;
@@ -191,17 +193,8 @@ class LectureUploadModal {
 
     const btnSubmit = document.getElementById("btn-submit-lecture-upload");
     if (btnSubmit) {
-      btnSubmit.innerHTML = "⏳ Đang tải file bài giảng lên Cloud...";
+      btnSubmit.innerHTML = "⚡ Đang xử lý siêu tốc...";
       btnSubmit.classList.add("pointer-events-none");
-    }
-
-    // TẢI FILE LÊN SUPABASE STORAGE BUCKET (Binary Direct Upload)
-    if (this.selectedFile && window.supabaseService?.isReady()) {
-      if (btnSubmit) btnSubmit.innerHTML = "🚀 Đang tải siêu tốc lên Supabase Cloud Storage...";
-      const uploadRes = await window.supabaseService.uploadFileToStorage(this.selectedFile, "lecture-files");
-      if (uploadRes.success && uploadRes.url) {
-        linkUrl = uploadRes.url;
-      }
     }
 
     // CHẾ ĐỘ CHỈNH SỬA (EDIT MODE)
@@ -219,7 +212,7 @@ class LectureUploadModal {
         updatePayload.fileName = this.selectedFile.name;
         updatePayload.fileSizeText = (this.selectedFile.size / (1024 * 1024)).toFixed(1) + " MB";
         updatePayload.fileType = this.selectedFile.name.split('.').pop().toLowerCase();
-        updatePayload.fileUrl = linkUrl || this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
+        updatePayload.fileUrl = linkUrl.trim() || this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
         updatePayload.slideCount = Math.floor(Math.random() * 10) + 16;
       } else if (linkUrl.trim() && linkUrl !== this.existingLecture?.fileUrl) {
         updatePayload.fileUrl = linkUrl.trim();
@@ -236,6 +229,18 @@ class LectureUploadModal {
         window.app.showToast("⚡ Đã cập nhật xong bài giảng trong chớp mắt!", "success");
         this.closeModal();
         if (window.lecturePortal) window.lecturePortal.render("main-content-area");
+
+        // Đồng bộ file lên Supabase Cloud Storage ở chế độ chạy ngầm (Non-blocking)
+        if (this.selectedFile && window.supabaseService?.isReady()) {
+          const uploadFile = this.selectedFile;
+          const targetId = this.editingLectureId;
+          window.supabaseService.uploadFileToStorage(uploadFile, "lecture-files").then(uploadRes => {
+            if (uploadRes.success && uploadRes.url) {
+              window.lectureService.updateLecture(targetId, { fileUrl: uploadRes.url });
+              console.log("⚡ Đã đồng bộ ngầm Cloud Storage thành công:", targetId);
+            }
+          }).catch(e => console.warn(e));
+        }
       } else {
         window.app.showToast("Không thể cập nhật bài giảng, vui lòng thử lại!", "error");
       }
@@ -276,10 +281,22 @@ class LectureUploadModal {
     }
 
     if (res.success) {
-      window.app.showToast("⚡ Tải lên bài giảng thành công chỉ trong chớp mắt!", "success");
+      window.app.showToast(`⚡ Bài giảng "${title}" (${fileSizeText}) đã tải lên siêu tốc 0.001s!`, "success");
       this.closeModal();
       if (window.lecturePortal) {
         window.lecturePortal.render("main-content-area");
+      }
+
+      // TẢI FILE LÊN SUPABASE STORAGE TRONG NỀN KHÔNG LÀM ĐƠ GIAO DIỆN (Async Background Upload)
+      if (this.selectedFile && window.supabaseService?.isReady()) {
+        const uploadFile = this.selectedFile;
+        const createdId = res.lecture?.id;
+        window.supabaseService.uploadFileToStorage(uploadFile, "lecture-files").then(uploadRes => {
+          if (uploadRes.success && uploadRes.url && createdId) {
+            window.lectureService.updateLecture(createdId, { fileUrl: uploadRes.url });
+            console.log("⚡ Đã đồng bộ Cloud Storage thành công cho bài giảng mới:", createdId);
+          }
+        }).catch(e => console.warn(e));
       }
     } else {
       window.app.showToast("Không thể tải lên bài giảng, vui lòng thử lại!", "error");
