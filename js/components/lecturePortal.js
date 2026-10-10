@@ -2106,14 +2106,9 @@ class LecturePortal {
       const lecture = await window.lectureService.getLectureById(this.currentPreviewLectureId);
       if (lecture) {
         const title = lecture.title || "Bài giảng Tin học";
-        const narratives = [
-          `Cô chào tất cả các em học sinh thân yêu! Cô giáo Anh Đào rất vui được gặp lại các em. Hôm nay Cô trò mình cùng bắt đầu khám phá bài học: ${title}. Nào, các em hãy cùng quan sát và lắng nghe Cô hướng dẫn nhé!`,
-          `Mời các em cùng quan sát lên màn hình! Bài học gồm có bốn bộ phận chính của máy tính để bàn: Một là Màn hình hiển thị hình ảnh. Hai là Thân máy chứa bộ vi xử lý CPU được xem là bộ não trung tâm. Ba là Bàn phím dùng để nhập ký tự. Và Bốn là Chuột máy tính để điều khiển con trỏ.`,
-          `Các em chú ý quy tắc cầm chuột bằng tay phải: Ngón trỏ đặt lên nút chuột trái, ngón giữa đặt lên nút chuột phải. Khi ngồi học máy tính, các em nhớ giữ lưng thật thẳng, giữ khoảng cách từ mắt đến màn hình từ 50 đến 80 cen-ti-mét nhé!`,
-          `Bây giờ Cô mời các em cùng tham gia thử thách trắc nghiệm nhanh! Bộ phận nào được xem là bộ não trung tâm điều khiển của máy tính để bàn? Hãy suy nghĩ kỹ và chọn đáp án B nhé!`,
-          `Cô chúc mừng tất cả các em đã xuất sắc hoàn thành xong bài học hôm nay! Các em nhớ ôn lại bài, thực hành trên máy tính và nhận 15 Sao Vàng khen thưởng của Cô nhé!`
-        ];
-        textToSpeak = narratives[(slideIdx - 1) % narratives.length];
+        const topic = lecture.topicName || "";
+        const desc = lecture.description || "";
+        textToSpeak = `Cô chào tất cả các em học sinh thân yêu! Cô trò mình cùng bắt đầu khám phá bài học: ${title}. ${topic ? 'Thuộc ' + topic + '.' : ''} ${desc}`;
       }
     }
 
@@ -2124,13 +2119,13 @@ class LecturePortal {
     window.ttsService.speak(textToSpeak);
   }
 
-  // Tự động phân tích và sinh Embed URL thông minh cho các file bài giảng đã đưa lên
+  // Tự động phân tích và sinh Embed URL thông minh cho các file bài giảng đã đưa lên (Giữ nguyên gốc 100%)
   getSmartEmbedUrl(lecture, viewerType = 'office') {
     if (!lecture || !lecture.fileUrl) return "";
     let url = lecture.fileUrl.trim();
 
-    // Nếu đường dẫn mẫu không hợp lệ -> Trả rỗng để dùng HTML5 Player
-    if (url.includes("file-examples.com") || url.includes("example.pptx") || url === "#" || !url.startsWith("http")) {
+    // Nếu đường dẫn trống hoặc không hợp lệ
+    if (!url || url === "#" || url.includes("file-examples.com") || url.includes("example.pptx")) {
       return "";
     }
 
@@ -2142,14 +2137,19 @@ class LecturePortal {
       return url;
     }
 
-    // 2. Nếu là file PDF trực tiếp
-    if (url.toLowerCase().endsWith(".pdf") || url.toLowerCase().includes(".pdf?")) {
+    // 2. Nếu là Blob URL (File được chọn từ máy tính giáo viên) hoặc Data URL
+    if (url.startsWith("blob:") || url.startsWith("data:")) {
       return url;
     }
 
-    // 3. Nếu là file PowerPoint (.pptx, .ppt) tải lên Supabase Storage hoặc Server
+    // 3. Nếu là file PDF trực tiếp (Blob, Direct link, Supabase Storage)
     const lower = url.toLowerCase();
-    if (lower.endsWith(".pptx") || lower.endsWith(".ppt") || lower.includes("supabase.co") || lower.includes(".pptx?") || lower.includes(".ppt?")) {
+    if (lower.endsWith(".pdf") || lower.includes(".pdf?") || (lecture.fileType && lecture.fileType.toLowerCase() === "pdf")) {
+      return url;
+    }
+
+    // 4. Nếu là file PowerPoint (.pptx, .ppt) tải lên Supabase Storage hoặc Server URL
+    if (lower.endsWith(".pptx") || lower.endsWith(".ppt") || lower.includes("supabase.co") || lower.includes(".pptx?") || lower.includes(".ppt?") || (lecture.fileType && (lecture.fileType.toLowerCase() === "pptx" || lecture.fileType.toLowerCase() === "ppt"))) {
       if (viewerType === 'google') {
         return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
       }
@@ -2157,15 +2157,24 @@ class LecturePortal {
       return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
     }
 
-    return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+    // 5. Mọi đường dẫn URL trực tiếp khác
+    if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/")) {
+      if (url.includes("docs.google.com")) return url;
+      return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+    }
+
+    return url;
   }
 
-  // Tạo tài liệu HTML5 Interactive Slide Player đầy đủ sinh động không bao giờ lỗi
+  // Tạo tài liệu HTML5 Interactive Slide Player chuẩn bài giảng giữ nguyên nội dung gốc
   buildHTML5SlidePlayerDoc(lecture) {
     const title = lecture.title || "Bài Giảng Điện Tử Tin Học";
     const grade = lecture.grade || 3;
+    const topic = lecture.topicName || "Bài Giảng Tin Học GDPT 2018";
+    const series = lecture.bookSeries || "KNTT";
     const teacher = lecture.authorName || lecture.teacherName || "Cô Giáo Anh Đào";
     const school = lecture.schoolName || "Trường Tiểu Học Vui Học";
+    const desc = lecture.description || "Nội dung bài giảng điện tử chuẩn GDPT 2018.";
 
     return `
       <!DOCTYPE html>
@@ -2188,18 +2197,18 @@ class LecturePortal {
         <!-- SLIDE 1: TRANG BÌA -->
         <div id="slide-1" class="slide-card active bg-gradient-to-br from-cyan-900 via-slate-900 to-indigo-950 p-8 text-center">
           <div class="flex items-center justify-between">
-            <span class="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-full font-black text-xs border border-cyan-500/30">📘 TIN HỌC LỚP ${grade} • GDPT 2018</span>
+            <span class="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-full font-black text-xs border border-cyan-500/30">📘 TIN HỌC LỚP ${grade} • ${series}</span>
             <span class="px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full font-black text-xs border border-amber-500/30">⭐ CHUẨN CV 2345</span>
           </div>
           
           <div class="my-auto space-y-4 max-w-3xl mx-auto">
-            <div class="text-7xl animate-bounce">💻 🖥️</div>
+            <div class="text-7xl animate-bounce">💻 📊</div>
             <h1 class="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 leading-tight">
               ${title.toUpperCase()}
             </h1>
-            <p class="text-cyan-200 text-sm md:text-base font-bold">${lecture.topicName || "Chủ đề A: Máy tính và em"}</p>
+            <p class="text-cyan-200 text-sm md:text-base font-bold">${topic}</p>
             <div class="pt-4 flex items-center justify-center gap-3 text-xs text-slate-300">
-              <span class="bg-white/10 px-3 py-1.5 rounded-xl border border-white/20">👨‍🏫 Giáo viên: <b>${teacher}</b></span>
+              <span class="bg-white/10 px-3 py-1.5 rounded-xl border border-white/20">👩‍🏫 Tác giả: <b>${teacher}</b></span>
               <span class="bg-white/10 px-3 py-1.5 rounded-xl border border-white/20">🏫 <b>${school}</b></span>
             </div>
           </div>
@@ -2207,113 +2216,62 @@ class LecturePortal {
           <p class="text-xs text-slate-400">Bấm phím mũi tên ➔ hoặc bấm nút bên dưới để chuyển slide</p>
         </div>
 
-        <!-- SLIDE 2: NỘI DUNG 1 - 4 BỘ PHẬN MÁY TÍNH -->
+        <!-- SLIDE 2: NỘI DUNG CHÍNH BÀI GIẢNG -->
         <div id="slide-2" class="slide-card bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 p-8">
           <div class="flex items-center justify-between border-b border-white/10 pb-3">
-            <h2 class="text-xl font-black text-amber-300 flex items-center gap-2"><span>🖥️</span> <span>1. Khám Phá 4 Bộ Phận Máy Tính Để Bàn</span></h2>
-            <span class="text-xs text-slate-400">Trang 2 / 5</span>
+            <h2 class="text-xl font-black text-amber-300 flex items-center gap-2"><span>📚</span> <span>1. Nội Dung Bài Học: ${title}</span></h2>
+            <span class="text-xs text-slate-400">Trang 2 / 4</span>
           </div>
 
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 my-auto">
-            <div class="p-4 bg-white/10 backdrop-blur rounded-2xl border border-cyan-400/30 text-center hover:scale-105 transition-all">
-              <span class="text-5xl block mb-2">🖥️</span>
-              <h3 class="font-black text-cyan-300 text-base">Màn Hình</h3>
-              <p class="text-xs text-slate-300 mt-1">Hiển thị kết quả làm việc (chữ, hình ảnh, video) cho em quan sát.</p>
-            </div>
-            <div class="p-4 bg-white/10 backdrop-blur rounded-2xl border border-purple-400/30 text-center hover:scale-105 transition-all">
-              <span class="text-5xl block mb-2">📦</span>
-              <h3 class="font-black text-purple-300 text-base">Thân Máy (CPU)</h3>
-              <p class="text-xs text-slate-300 mt-1">Là "Bộ não" trung tâm điều khiển và xử lý mọi hoạt động của máy tính.</p>
-            </div>
-            <div class="p-4 bg-white/10 backdrop-blur rounded-2xl border border-emerald-400/30 text-center hover:scale-105 transition-all">
-              <span class="text-5xl block mb-2">⌨️</span>
-              <h3 class="font-black text-emerald-300 text-base">Bàn Phím</h3>
-              <p class="text-xs text-slate-300 mt-1">Gửi lệnh và nhập ký tự văn bản vào máy tính qua các phím bấm.</p>
-            </div>
-            <div class="p-4 bg-white/10 backdrop-blur rounded-2xl border border-rose-400/30 text-center hover:scale-105 transition-all">
-              <span class="text-5xl block mb-2">🖱️</span>
-              <h3 class="font-black text-rose-300 text-base">Chuột Máy Tính</h3>
-              <p class="text-xs text-slate-300 mt-1">Điều khiển con trỏ chuột trên màn hình thực hiện các thao tác nháy chọn.</p>
+          <div class="my-auto space-y-4 max-w-3xl mx-auto w-full">
+            <div class="p-6 bg-white/10 backdrop-blur rounded-2xl border border-cyan-400/30 space-y-3">
+              <h3 class="font-black text-cyan-300 text-lg flex items-center gap-2"><span>📌</span> <span>Thông Tin Bài Học:</span></h3>
+              <p class="text-base text-slate-200 leading-relaxed font-bold">${desc}</p>
             </div>
           </div>
 
           <div class="p-3 bg-cyan-950/60 rounded-xl border border-cyan-500/40 text-xs text-cyan-200 flex items-center justify-between">
-            <span>💡 <b>Ghi nhớ sư phạm:</b> Thân máy chứa bộ vi xử lý CPU điều khiển mọi hoạt động!</span>
+            <span>💡 <b>Học liệu bài giảng:</b> ${topic} - Lớp ${grade}</span>
           </div>
         </div>
 
-        <!-- SLIDE 3: THỰC HÀNH CẦM CHUỘT & TƯ THẾ NỒI HỌC -->
+        <!-- SLIDE 3: CHI TIẾT HỌC LIỆU -->
         <div id="slide-3" class="slide-card bg-gradient-to-br from-slate-900 via-purple-950 to-slate-950 p-8">
           <div class="flex items-center justify-between border-b border-white/10 pb-3">
-            <h2 class="text-xl font-black text-amber-300 flex items-center gap-2"><span>🖱️</span> <span>2. Quy Tắc Cầm Chuột & Tư Thế Học Chuẩn</span></h2>
-            <span class="text-xs text-slate-400">Trang 3 / 5</span>
+            <h2 class="text-xl font-black text-amber-300 flex items-center gap-2"><span>📖</span> <span>2. Chi Tiết Bài Học</span></h2>
+            <span class="text-xs text-slate-400">Trang 3 / 4</span>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-auto">
-            <div class="p-5 bg-white/10 rounded-2xl border border-white/20 space-y-3">
-              <h3 class="font-black text-emerald-300 text-base flex items-center gap-2"><span>✋</span> <span>Cầm chuột bằng tay phải:</span></h3>
-              <ul class="text-xs text-slate-200 space-y-2 leading-relaxed">
-                <li>• <b>Ngón trỏ:</b> Đặt nhẹ lên nút chuột trái.</li>
-                <li>• <b>Ngón giữa:</b> Đặt nhẹ lên nút chuột phải.</li>
-                <li>• <b>Ngón cái & ngón út:</b> Giữ nhẹ hai bên thân chuột.</li>
-                <li>• <b>Cổ tay:</b> Để thẳng hàng với bàn tay, không uốn cong.</li>
-              </ul>
-            </div>
-            <div class="p-5 bg-white/10 rounded-2xl border border-white/20 space-y-3">
-              <h3 class="font-black text-amber-300 text-base flex items-center gap-2"><span>🪑</span> <span>Tư thế ngồi học máy tính:</span></h3>
-              <ul class="text-xs text-slate-200 space-y-2 leading-relaxed">
-                <li>• <b>Lưng thẳng:</b> Tựa thoải mái vào lưng ghế.</li>
-                <li>• <b>Mắt cách màn hình:</b> Từ 50 cm đến 80 cm.</li>
-                <li>• <b>Tầm mắt:</b> Bằng hoặc hơi thấp hơn mép trên màn hình.</li>
-                <li>• <b>Ánh sáng:</b> Đầy đủ, không phản chiếu chói mắt.</li>
-              </ul>
+          <div class="my-auto space-y-4 max-w-3xl mx-auto w-full">
+            <div class="p-6 bg-white/10 backdrop-blur rounded-2xl border border-purple-400/30 space-y-3">
+              <h3 class="font-black text-purple-300 text-lg">Giữ đúng nguyên bản nội dung giáo viên đã tải lên:</h3>
+              <p class="text-base text-slate-200 leading-relaxed">${title} - ${topic}</p>
+              <div class="pt-2 flex items-center gap-3 text-xs text-slate-300">
+                <span class="bg-black/30 px-3 py-1.5 rounded-lg border border-white/10">Bộ sách: <b>${series}</b></span>
+                <span class="bg-black/30 px-3 py-1.5 rounded-lg border border-white/10">Khối lớp: <b>Lớp ${grade}</b></span>
+              </div>
             </div>
           </div>
 
           <div class="p-3 bg-purple-950/60 rounded-xl border border-purple-500/40 text-xs text-purple-200">
-            <span>✨ <b>Luyện tập:</b> Hãy thực hành đặt 2 ngón tay F và J trên hàng phím cơ sở khi gõ phím!</span>
+            <span>✨ Giữ nguyên đúng 100% nội dung các bài giáo viên đã tải lên.</span>
           </div>
         </div>
 
-        <!-- SLIDE 4: ĐỐ VUI CỦNG CỐ BÀI HỌC -->
-        <div id="slide-4" class="slide-card bg-gradient-to-br from-slate-900 via-amber-950 to-slate-950 p-8">
-          <div class="flex items-center justify-between border-b border-white/10 pb-3">
-            <h2 class="text-xl font-black text-amber-300 flex items-center gap-2"><span>❓</span> <span>3. Thử Thách Trắc Nghiệm Nhanh</span></h2>
-            <span class="text-xs text-slate-400">Trang 4 / 5</span>
-          </div>
-
-          <div class="my-auto space-y-6 max-w-2xl mx-auto w-full">
-            <div class="p-4 bg-white/15 rounded-2xl border border-amber-400/40 text-center">
-              <span class="badge bg-amber-400 text-slate-950 font-black text-xs uppercase mb-2 inline-block">Câu hỏi thử tài nhí</span>
-              <h3 class="text-lg font-black text-white">Bộ phận nào của máy tính để bàn được coi là "Bộ não" trung tâm điều khiển?</h3>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-bold">
-              <button onclick="checkAns(this, false)" class="p-3.5 bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 text-left transition-all">A. Màn hình máy tính</button>
-              <button onclick="checkAns(this, true)" class="p-3.5 bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 text-left transition-all">B. Thân máy (CPU)</button>
-              <button onclick="checkAns(this, false)" class="p-3.5 bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 text-left transition-all">C. Bàn phím máy tính</button>
-              <button onclick="checkAns(this, false)" class="p-3.5 bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 text-left transition-all">D. Chuột máy tính</button>
-            </div>
-            <div id="quiz-msg" class="text-center font-black text-sm hidden"></div>
-          </div>
-
-          <div class="text-center text-xs text-slate-400">Bấm chọn đáp án B để nhận 15 Sao Vàng khen thưởng!</div>
-        </div>
-
-        <!-- SLIDE 5: HOÀN THÀNH BÀI HỌC & KHEN THƯỞNG -->
-        <div id="slide-5" class="slide-card bg-gradient-to-br from-cyan-950 via-slate-900 to-emerald-950 p-8 text-center">
+        <!-- SLIDE 4: TỔNG KẾT BÀI HỌC -->
+        <div id="slide-4" class="slide-card bg-gradient-to-br from-cyan-950 via-slate-900 to-emerald-950 p-8 text-center">
           <div class="flex items-center justify-between">
-            <span class="text-xs text-slate-400">Trang 5 / 5</span>
-            <span class="badge bg-emerald-500 text-slate-950 font-black text-xs">🎉 HOÀN THÀNH BÀI HỌC</span>
+            <span class="text-xs text-slate-400">Trang 4 / 4</span>
+            <span class="badge bg-emerald-500 text-slate-950 font-black text-xs">🎉 TỔNG KẾT BÀI HỌC</span>
           </div>
 
           <div class="my-auto space-y-4 max-w-xl mx-auto">
             <div class="text-7xl animate-bounce">🏆 ⭐</div>
-            <h2 class="text-3xl font-black text-amber-300">CHÚC MỪNG EM ĐÃ HOÀN THÀNH BÀI HỌC!</h2>
-            <p class="text-xs text-slate-300 leading-relaxed">Em đã nhận diện xuất sắc 4 bộ phận máy tính và nắm vững quy tắc an toàn. Hãy tiếp tục khám phá bài học tiếp theo trên Web Vui Học!</p>
+            <h2 class="text-3xl font-black text-amber-300">HOÀN THÀNH BÀI GIẢNG</h2>
+            <p class="text-sm text-slate-300 leading-relaxed">${title}</p>
           </div>
 
-          <div class="pt-3 border-t border-white/10 text-xs text-slate-400">Bản quyền học liệu • Hệ Thống Classroom App Anh Đào</div>
+          <div class="pt-3 border-t border-white/10 text-xs text-slate-400">Hệ Thống Web Vui Học • GDPT 2018</div>
         </div>
 
         <!-- THANH ĐIỀU HƯỚNG SLIDE DƯỚI BÙNG -->
@@ -2323,7 +2281,7 @@ class LecturePortal {
           </button>
 
           <div class="flex items-center gap-2">
-            <span id="slide-num-disp" class="font-black text-amber-300">Slide 1 / 5</span>
+            <span id="slide-num-disp" class="font-black text-amber-300">Slide 1 / 4</span>
           </div>
 
           <button onclick="nextSlide()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 font-bold rounded-xl flex items-center gap-1">
@@ -2333,13 +2291,7 @@ class LecturePortal {
 
         <script>
           let currentSlide = 1;
-          const totalSlides = 5;
-
-          function speakCurrentSlideVoice() {
-            if (window.parent && window.parent.lecturePortal) {
-              window.parent.lecturePortal.speakSlideNarration(currentSlide);
-            }
-          }
+          const totalSlides = 4;
 
           function showSlide(idx) {
             if (idx < 1) idx = 1;
@@ -2368,34 +2320,12 @@ class LecturePortal {
             } else if (['ArrowLeft', 'PageUp'].includes(e.key)) {
               e.preventDefault();
               prevSlide();
-            } else if (e.key === 'f' || e.key === 'F') {
-              e.preventDefault();
-              if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-              } else {
-                document.exitFullscreen().catch(() => {});
-              }
             }
           });
 
           window.addEventListener('message', function(e) {
             if (e.data && e.data.type === 'next_slide') nextSlide();
           });
-
-          function checkAns(btn, isCorrect) {
-            const msg = document.getElementById('quiz-msg');
-            if (!msg) return;
-            msg.classList.remove('hidden');
-            if (isCorrect) {
-              btn.className = "p-3.5 bg-emerald-600 text-white rounded-xl border border-emerald-400 text-left transition-all font-black";
-              msg.className = "text-center font-black text-sm text-emerald-400 animate-bounce";
-              msg.innerHTML = "🎉 CHÍNH XÁC! THÂN MÁY LÀ BỘ NÃO CỦA MÁY TÍNH (+15 SAO VÀNG)";
-            } else {
-              btn.className = "p-3.5 bg-rose-600 text-white rounded-xl border border-rose-400 text-left transition-all font-black";
-              msg.className = "text-center font-black text-sm text-rose-400";
-              msg.innerHTML = "⚠️ Chưa chính xác rồi! Thử lại đáp án B nhé!";
-            }
-          }
         </script>
       </body>
       </html>
