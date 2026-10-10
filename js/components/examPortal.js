@@ -391,19 +391,19 @@ class ExamPortal {
                 </div>
               </div>
 
-              <!-- Quick action in folder: Tải Đề, AI Tạo Đề SGK & Bảng Xếp Hạng Khối -->
+              <!-- Quick action in folder: Tải Đề Up, Tải Đề Về Máy Tính, AI Tạo Đề SGK & Bảng Xếp Hạng Khối -->
               <div class="flex items-center gap-2 flex-wrap">
-                <button onclick="examUploadModal.openModal(${this.selectedFolder})" class="btn btn-emerald btn-sm font-black shadow-lg flex items-center gap-1.5 hover:scale-105 transition-all" title="Giáo viên tải đề kiểm tra từ máy tính lên thư mục lớp này">
-                  <span>📤</span> <span>Tải Đề Từ Máy Tính Up</span>
+                <button onclick="examUploadModal.openModal(${this.selectedFolder})" class="btn bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs py-2 px-3.5 rounded-xl border border-amber-300 flex items-center gap-1.5 shadow-md hover:scale-105 transition-all" title="Giáo viên tải bài kiểm tra từ máy tính lên thư mục lớp này">
+                  <span>📤</span> <span>Tải Bài Kiểm Tra Up (Từ Máy Tính)</span>
                 </button>
-                <button onclick="examPortal.openCustomQuizCreatorModal(${this.selectedFolder})" class="btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white btn-sm font-black shadow-lg flex items-center gap-1.5 hover:scale-105 transition-all" title="AI tự tạo đề kiểm tra trắc nghiệm bám sát từng bài trong sách giáo khoa Lớp ${this.selectedFolder}">
+                <button onclick="examPortal.downloadFolderZip(${this.selectedFolder})" class="btn bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs py-2 px-3.5 rounded-xl border border-blue-400 flex items-center gap-1.5 shadow-md hover:scale-105 transition-all" title="Tải toàn bộ bài kiểm tra và đáp án trong thư mục Lớp ${this.selectedFolder} về máy tính dạng .zip">
+                  <span>📥</span> <span>Tải Bài Kiểm Tra Về Máy Tính</span>
+                </button>
+                <button onclick="examPortal.openCustomQuizCreatorModal(${this.selectedFolder})" class="btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs py-2 px-3.5 rounded-xl border border-purple-400 flex items-center gap-1.5 shadow-md hover:scale-105 transition-all" title="AI tự tạo đề kiểm tra trắc nghiệm bám sát từng bài trong sách giáo khoa Lớp ${this.selectedFolder}">
                   <span>✨</span> <span>AI Tạo Đề SGK (Trắc Nghiệm)</span>
                 </button>
-                <button onclick="examPortal.openStudentLeaderboardModal(${this.selectedFolder})" class="btn bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 btn-sm font-black shadow-lg flex items-center gap-1.5 hover:scale-105 transition-all" title="Xem bảng xếp thứ hạng học sinh của Khối ${this.selectedFolder}">
+                <button onclick="examPortal.openStudentLeaderboardModal(${this.selectedFolder})" class="btn bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-500 hover:to-amber-500 text-slate-950 font-black text-xs py-2 px-3.5 rounded-xl border border-yellow-300 flex items-center gap-1.5 shadow-md hover:scale-105 transition-all" title="Xem bảng xếp thứ hạng học sinh của Khối ${this.selectedFolder}">
                   <span>🏆</span> <span>Bảng Xếp Hạng Khối ${this.selectedFolder}</span>
-                </button>
-                <button onclick="examPortal.exportClassGradebookDoc('${this.selectedFolder}A')" class="btn btn-outline btn-sm font-black bg-white text-slate-700 flex items-center gap-1 shadow-sm">
-                  <span>📊</span> <span>Bảng Điểm Lớp ${this.selectedFolder}A</span>
                 </button>
               </div>
             </div>
