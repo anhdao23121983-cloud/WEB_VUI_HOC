@@ -244,16 +244,16 @@ const MOCK_DATABASE = {
   lectures: []
 };
 
-// Khởi tạo và đồng bộ dọn dẹp LocalStorage cho các bài giảng Lớp 3, Lớp 4 và Lớp 5
+// Khởi tạo và bảo lưu bài giảng điện tử trong LocalStorage (Bảo vệ bài giảng KHÔNG BỊ MẤT sau khi thoát/mở lại trang web)
 try {
   let existing = JSON.parse(localStorage.getItem("app_mock_db"));
-  if (!existing || !existing.lectures) {
+  if (!existing) {
     localStorage.setItem("app_mock_db", JSON.stringify(MOCK_DATABASE));
-  } else {
-    // Xóa triệt để các bài giảng Lớp 3, Lớp 4 và Lớp 5 đã lưu trong LocalStorage
+  } else if (!existing.lectures) {
     existing.lectures = [];
     localStorage.setItem("app_mock_db", JSON.stringify(existing));
   }
+  // GIỮ NGUYÊN existing.lectures: Đảm bảo bài giảng đã tải lên của Giáo viên luôn tồn tại lâu dài!
 } catch (e) {
   localStorage.setItem("app_mock_db", JSON.stringify(MOCK_DATABASE));
 }

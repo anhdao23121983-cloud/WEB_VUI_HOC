@@ -214,6 +214,7 @@ class LectureUploadModal {
         updatePayload.fileType = this.selectedFile.name.split('.').pop().toLowerCase();
         updatePayload.fileUrl = linkUrl.trim() || this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
         updatePayload.slideCount = Math.floor(Math.random() * 10) + 16;
+        updatePayload.file = this.selectedFile;
       } else if (linkUrl.trim() && linkUrl !== this.existingLecture?.fileUrl) {
         updatePayload.fileUrl = linkUrl.trim();
       }
@@ -272,7 +273,8 @@ class LectureUploadModal {
       fileType: fileType,
       fileUrl: fileUrl,
       slideCount: Math.floor(Math.random() * 10) + 15,
-      description: desc
+      description: desc,
+      file: this.selectedFile
     });
 
     if (btnSubmit) {
