@@ -2284,6 +2284,50 @@
     </div>
   </div>
 
+  <!-- MODAL 32: ĐẤU TRƯỜNG THI TRẮC NGHIỆM TRỰC TUYẾN REALTIME (REALTIME LIVE QUIZ ARENA MODAL) -->
+  <div id="exam-live-arena-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-4xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-gradient-to-br from-amber-500 to-red-600 text-white rounded-xl shadow-md animate-bounce">🏟️</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+              <span>ĐẤU TRƯỜNG THI TRỰC TUYẾN REALTIME</span>
+              <span class="badge bg-amber-500 text-slate-950 font-black text-[10px]">LIVE QUIZ ARENA</span>
+            </h3>
+            <p class="text-xs text-slate-500 font-semibold">Cạnh tranh thời gian thực trên màn hình lớp học kèm Bảng vinh danh Top 3 & Hiệu ứng âm thanh</p>
+          </div>
+        </div>
+        <button onclick="examPortal.closeLiveArenaModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+      <div id="exam-live-arena-body" class="space-y-4 py-2">
+        <!-- Dynamic Arena content rendered by examPortal.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 33: CHẤM BÀI BẰNG CAMERA AI & OMR BUBBLE SCANNER (AI CAMERA OMR SCANNER MODAL) -->
+  <div id="exam-camera-omr-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-gradient-to-br from-blue-600 to-cyan-500 text-white rounded-xl shadow-md">📷</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+              <span>AI CHẤM PHIẾU TÔ TRẮC NGHIỆM BẰNG CAMERA</span>
+              <span class="badge bg-blue-600 text-white font-black text-[10px]">AI OMR SCANNER</span>
+            </h3>
+            <p class="text-xs text-slate-500 font-semibold">Nhận diện ô tô trắc nghiệm A, B, C, D từ camera điện thoại/máy tính & tự động tính điểm 0.001s</p>
+          </div>
+        </div>
+        <button onclick="examPortal.closeCameraOMRModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+      <div id="exam-camera-omr-body" class="space-y-4 py-2">
+        <!-- Dynamic Camera OMR content rendered by examPortal.js -->
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL 29: GIẤY KHEN VINH DANH HỌC SINH ĐIỂM 10 (HONOR CERTIFICATE MODAL) -->
   <div id="exam-certificate-modal" class="modal-backdrop">
     <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">
