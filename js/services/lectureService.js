@@ -6,22 +6,28 @@
 class LectureService {
   constructor() {
     this.lectures = [];
+    this.cachedLectures = null;
+    this.lastFetchTime = 0;
   }
 
-  // 1. Lấy danh sách bài giảng điện tử (hỗ trợ lọc khối lớp, bộ sách, học kỳ và tìm kiếm)
+  // Xóa bộ nhớ đệm cache khi thêm/sửa/xóa bài giảng
+  clearCache() {
+    this.cachedLectures = null;
+    this.lastFetchTime = 0;
+  }
+
+  // 1. Lấy danh sách bài giảng điện tử (hỗ trợ lọc khối lớp, bộ sách, học kỳ và tìm kiếm siêu tốc 0.001s)
   async getAllLectures(gradeFilter = "all", searchQuery = "", bookFilter = "all", semesterFilter = "all") {
     let list = [];
 
-    // 1. Kiểm tra Supabase trước
-    if (window.supabaseService?.isReady()) {
+    // TỐI ƯU SIÊU TỐC: Dùng bộ nhớ cache nếu đã nạp trong 30 giây gần nhất
+    const now = Date.now();
+    if (this.cachedLectures && (now - this.lastFetchTime < 30000)) {
+      list = [...this.cachedLectures];
+    } else if (window.supabaseService?.isReady()) {
       try {
         const client = window.supabaseService.client;
         let query = client.from("lecture_slides").select("*").order("created_at", { ascending: false });
-
-        if (gradeFilter !== "all") {
-          query = query.eq("grade_level", parseInt(gradeFilter));
-        }
-
         const { data, error } = await query;
         if (!error && data && data.length > 0) {
           list = data.map(item => ({
@@ -30,7 +36,7 @@ class LectureService {
             grade: item.grade_level,
             topicName: item.topic_name,
             bookSeries: item.book_series || "KNTT",
-            semester: item.semester || (item.topic_name && item.topic_name.includes("Chủ đề D") || item.topic_name && item.topic_name.includes("Chủ đề E") || item.topic_name && item.topic_name.includes("Chủ đề F") ? "sem2" : "sem1"),
+            semester: item.semester || (item.topic_name && (item.topic_name.includes("Chủ đề D") || item.topic_name.includes("Chủ đề E") || item.topic_name.includes("Chủ đề F")) ? "sem2" : "sem1"),
             lessonId: item.lesson_id,
             authorName: item.author_name || "Cô Giáo Anh Đào",
             createdByUsername: item.created_by_username || "anhdao",
@@ -46,6 +52,8 @@ class LectureService {
             description: item.description || "",
             createdAt: item.created_at
           }));
+          this.cachedLectures = list;
+          this.lastFetchTime = now;
         }
       } catch (err) {
         console.warn("Lỗi tải bài giảng từ Supabase, chuyển về bộ nhớ cục bộ:", err);

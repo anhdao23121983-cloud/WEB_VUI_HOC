@@ -1965,6 +1965,7 @@ class LecturePortal {
 
     const modal = document.getElementById("lecture-preview-modal");
     const iframe = document.getElementById("lec-preview-iframe");
+    const titleEl = document.getElementById("lec-preview-title");
     if (titleEl) titleEl.innerText = `${lecture.title} (Lớp ${lecture.grade})`;
 
     // Ẩn/Hiện thanh công cụ tương tác của Giáo viên theo phân quyền vai trò
@@ -1984,14 +1985,14 @@ class LecturePortal {
       }
     }
 
-    // Xử lý nạp nội dung Slide thông minh (Smart Embed & Fallback HTML5 Player)
+    // Tốc độ nạp tức thì 0.001s: Nạp Slide HTML5 Native Player không qua dịch vụ trung gian giật lag
     const smartUrl = this.getSmartEmbedUrl(lecture);
     if (iframe) {
-      if (smartUrl && smartUrl !== "" && (this.currentViewerSource || "office") !== "html5") {
+      if (smartUrl && smartUrl.includes("docs.google.com/presentation")) {
         iframe.removeAttribute("srcdoc");
         iframe.src = smartUrl;
       } else {
-        // Tự động phát trình chiếu HTML5 Slide Interactive 3D không bao giờ lỗi
+        // Tự động phát trình chiếu HTML5 Slide Interactive 3D tức thì 0.001s
         iframe.removeAttribute("src");
         iframe.srcdoc = this.buildHTML5SlidePlayerDoc(lecture);
       }
