@@ -311,6 +311,7 @@ class LectureService {
 
   // 9. Xóa bài giảng điện tử (Xóa cả LocalStorage và Supabase Cloud)
   async deleteLecture(id) {
+    this.clearCache();
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     if (db.lectures) {
       db.lectures = db.lectures.filter(l => l.id !== id);
