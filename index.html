@@ -2337,6 +2337,28 @@
     </div>
   </div>
 
+  <!-- MODAL 34: BẢNG XẾP THỨ HẠNG HỌC SINH THEO KHỐI LỚP (EXAM STUDENT LEADERBOARD MODAL) -->
+  <div id="exam-student-leaderboard-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-4xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 rounded-xl shadow-md animate-bounce">🏆</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+              <span>BẢNG XẾP THỨ HẠNG HỌC SINH THEO KHỐI LỚP</span>
+              <span class="badge bg-amber-500 text-slate-950 font-black text-[10px]">LEADERBOARD</span>
+            </h3>
+            <p class="text-xs text-slate-500 font-semibold">Vinh danh các học sinh có kết quả kiểm tra cao nhất, nhiều sao vàng nhất & thời gian làm bài nhanh nhất</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('exam-student-leaderboard-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+      <div id="exam-student-leaderboard-body" class="space-y-4 py-2">
+        <!-- Dynamic Leaderboard content rendered by examPortal.js -->
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL 29: GIẤY KHEN VINH DANH HỌC SINH ĐIỂM 10 (HONOR CERTIFICATE MODAL) -->
   <div id="exam-certificate-modal" class="modal-backdrop">
     <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">

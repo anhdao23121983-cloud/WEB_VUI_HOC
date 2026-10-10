@@ -1357,6 +1357,66 @@ class ExamService {
     return attempts;
   }
 
+  // 15b. Tổng hợp Bảng Xếp Thứ Hạng Học Sinh Theo Khối Lớp (Exam Leaderboard)
+  getExamStudentLeaderboard(gradeFilter = 'all', classFilter = 'all') {
+    const attempts = this.getExamHistory({ grade: gradeFilter, className: classFilter });
+    const studentMap = {};
+
+    attempts.forEach(att => {
+      const key = att.studentUsername || att.studentName;
+      if (!studentMap[key]) {
+        studentMap[key] = {
+          studentName: att.studentName,
+          studentUsername: key,
+          className: att.className || (att.grade === 3 ? "3A" : att.grade === 4 ? "4A" : "5A"),
+          grade: att.grade || 3,
+          highestScore: att.score || 0,
+          totalScoreSum: att.score || 0,
+          examsCount: 1,
+          starsEarned: att.starsEarned || 10,
+          fastestDuration: att.durationSpentSeconds || 180,
+          lastSubmittedAt: att.submittedAt
+        };
+      } else {
+        const st = studentMap[key];
+        st.examsCount += 1;
+        st.totalScoreSum += (att.score || 0);
+        st.starsEarned += (att.starsEarned || 10);
+        if (att.score > st.highestScore) {
+          st.highestScore = att.score;
+        }
+        if (att.durationSpentSeconds && att.durationSpentSeconds < st.fastestDuration) {
+          st.fastestDuration = att.durationSpentSeconds;
+        }
+      }
+    });
+
+    const leaderboard = Object.values(studentMap).map(st => {
+      st.avgScore = Number((st.totalScoreSum / st.examsCount).toFixed(1));
+      return st;
+    });
+
+    // Sắp xếp: Điểm cao nhất desc -> Điểm trung bình desc -> Số sao desc -> Thời gian asc
+    leaderboard.sort((a, b) => {
+      if (b.highestScore !== a.highestScore) return b.highestScore - a.highestScore;
+      if (b.avgScore !== a.avgScore) return b.avgScore - a.avgScore;
+      if (b.starsEarned !== a.starsEarned) return b.starsEarned - a.starsEarned;
+      return a.fastestDuration - b.fastestDuration;
+    });
+
+    // Gán thứ hạng & danh hiệu
+    leaderboard.forEach((st, idx) => {
+      st.rank = idx + 1;
+      if (st.rank === 1) st.badge = "🥇 Quán Quân Tin Học";
+      else if (st.rank === 2) st.badge = "🥈 Á Quân Xuất Sắc";
+      else if (st.rank === 3) st.badge = "🥉 Bậc Thầy Trắc Nghiệm";
+      else if (st.rank <= 5) st.badge = "⭐ Top 5 Ngôi Sao";
+      else st.badge = "🏅 Học Sinh Tiên Tiến";
+    });
+
+    return leaderboard;
+  }
+
   // Lấy 1 bản ghi bài thi theo ID
   getAttemptById(id) {
     const history = this.getExamHistory();

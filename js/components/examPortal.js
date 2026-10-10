@@ -147,6 +147,9 @@ class ExamPortal {
             <button onclick="examPortal.openAnalyticsModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Xem phổ điểm và tỷ lệ xếp loại T-H-C">
               <span>📈</span> <span>Phổ Điểm</span>
             </button>
+            <button onclick="examPortal.openStudentLeaderboardModal(examPortal.selectedFolder !== 'all' ? examPortal.selectedFolder : 'all')" class="btn bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs py-2.5 px-3.5 rounded-xl border border-amber-300 flex items-center gap-1.5 shadow-lg hover:scale-105 transition-all" title="Xem bảng xếp thứ hạng học sinh theo Khối 3, 4, 5 và Lớp">
+              <span>🏆</span> <span>Bảng Xếp Hạng Học Sinh</span>
+            </button>
             ${isTeacher ? `
               <button onclick="examPortal.openLiveArenaModal()" class="btn bg-gradient-to-r from-amber-500 to-red-600 hover:from-amber-600 hover:to-red-700 text-white font-black text-xs py-2.5 px-3.5 rounded-xl border border-white/30 flex items-center gap-1.5 shadow-lg hover:scale-105 transition-all animate-bounce" title="Bật đấu trường thi trắc nghiệm trực tuyến thời gian thực">
                 <span>🏟️</span> <span>Đấu Trường Live</span>
@@ -3737,6 +3740,253 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
     if (!this.omrResult) return;
     window.app?.showToast(`💾 Đã lưu kết quả ${this.omrResult.score} điểm của học sinh ${this.omrResult.studentName} vào Sổ điểm lớp!`, "success");
     this.closeCameraOMRModal();
+  }
+
+  // =========================================================================
+  // BẢNG XẾP THỨ HẠNG HỌC SINH THEO KHỐI LỚP (STUDENT LEADERBOARD)
+  // =========================================================================
+  openStudentLeaderboardModal(defaultGrade = 'all', defaultClass = 'all') {
+    this.leaderboardGrade = defaultGrade;
+    this.leaderboardClass = defaultClass;
+    this.leaderboardSearch = "";
+    this.renderStudentLeaderboardContent();
+    const modal = document.getElementById("exam-student-leaderboard-modal");
+    if (modal) modal.classList.add("active");
+  }
+
+  setLeaderboardGrade(grade) {
+    this.leaderboardGrade = grade;
+    this.renderStudentLeaderboardContent();
+  }
+
+  setLeaderboardClass(className) {
+    this.leaderboardClass = className;
+    this.renderStudentLeaderboardContent();
+  }
+
+  setLeaderboardSearch(query) {
+    this.leaderboardSearch = query;
+    this.renderStudentLeaderboardContent();
+  }
+
+  renderStudentLeaderboardContent() {
+    const body = document.getElementById("exam-student-leaderboard-body");
+    if (!body) return;
+
+    const grade = this.leaderboardGrade || 'all';
+    const className = this.leaderboardClass || 'all';
+    const searchQuery = (this.leaderboardSearch || "").toLowerCase();
+
+    let leaderboard = window.examService.getExamStudentLeaderboard(grade, className) || [];
+
+    if (searchQuery.trim()) {
+      leaderboard = leaderboard.filter(st => 
+        st.studentName.toLowerCase().includes(searchQuery) || 
+        st.className.toLowerCase().includes(searchQuery) ||
+        (st.studentUsername && st.studentUsername.toLowerCase().includes(searchQuery))
+      );
+    }
+
+    const top1 = leaderboard[0];
+    const top2 = leaderboard[1];
+    const top3 = leaderboard[2];
+
+    body.innerHTML = `
+      <div class="space-y-5 animate-pop">
+        <!-- Filter Bar: Khối Lớp + Lớp + Tìm Kiếm -->
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-3 shadow-xs">
+          <!-- Grade Filter Tabs -->
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-xs font-bold text-slate-700 mr-1">Khối Lớp:</span>
+            <button onclick="examPortal.setLeaderboardGrade('all')" class="btn btn-xs font-bold ${grade === 'all' ? 'bg-amber-500 text-slate-950 font-black shadow-md' : 'btn-outline text-slate-600'}">
+              Tất Cả
+            </button>
+            <button onclick="examPortal.setLeaderboardGrade(3)" class="btn btn-xs font-bold ${grade === 3 || grade === '3' ? 'bg-blue-600 text-white font-black shadow-md' : 'btn-outline text-slate-600'}">
+              🎒 Khối 3
+            </button>
+            <button onclick="examPortal.setLeaderboardGrade(4)" class="btn btn-xs font-bold ${grade === 4 || grade === '4' ? 'bg-amber-600 text-white font-black shadow-md' : 'btn-outline text-slate-600'}">
+              🚀 Khối 4
+            </button>
+            <button onclick="examPortal.setLeaderboardGrade(5)" class="btn btn-xs font-bold ${grade === 5 || grade === '5' ? 'bg-emerald-600 text-white font-black shadow-md' : 'btn-outline text-slate-600'}">
+              ⭐ Khối 5
+            </button>
+          </div>
+
+          <!-- Class Filter Chips -->
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-xs font-bold text-slate-700 mr-1">Lớp:</span>
+            <button onclick="examPortal.setLeaderboardClass('all')" class="px-2.5 py-1 rounded-lg text-xs font-bold ${className === 'all' ? 'bg-slate-800 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}">
+              Tất cả lớp
+            </button>
+            ${['3A', '3B', '4A', '4B', '5A', '5B'].map(c => `
+              <button onclick="examPortal.setLeaderboardClass('${c}')" class="px-2 py-1 rounded-lg text-xs font-bold ${className === c ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}">
+                ${c}
+              </button>
+            `).join('')}
+          </div>
+
+          <!-- Search Input -->
+          <div class="w-full md:w-56">
+            <input type="text" value="${this.leaderboardSearch || ''}" oninput="examPortal.setLeaderboardSearch(this.value)" placeholder="🔍 Tìm tên học sinh..." class="form-control text-xs font-bold py-1.5 px-3">
+          </div>
+        </div>
+
+        <!-- BỰC VINH DANH TOP 3 HỌC SINH XUẤT SẮC (PODIUM) -->
+        ${leaderboard.length > 0 ? `
+          <div class="p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl border-2 border-amber-400 shadow-2xl text-white space-y-4">
+            <div class="text-center space-y-0.5">
+              <span class="badge bg-amber-400 text-slate-950 font-black text-[10px] uppercase tracking-wider">🌟 KHÔNG GIAN VINH DANH KHỐI LỚP 🌟</span>
+              <h3 class="text-lg font-black text-amber-300">TOP 3 THÍ SINH DẪN ĐẦU BẢNG XẾP HẠNG</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end pt-2">
+              <!-- TOP 2: Á QUÂN (BÊN TRÁI) -->
+              ${top2 ? `
+                <div class="order-2 md:order-1 bg-slate-800/80 border-2 border-slate-300 p-4 rounded-2xl text-center space-y-2 relative shadow-xl hover:scale-105 transition-all">
+                  <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-300 text-slate-950 font-black text-xs px-3 py-0.5 rounded-full shadow-md">🥈 HẠNG 2 • Á QUÂN</span>
+                  <div class="w-16 h-16 mx-auto rounded-full bg-slate-100 border-2 border-slate-300 text-3xl flex items-center justify-center shadow-lg mt-2">
+                    👧
+                  </div>
+                  <div>
+                    <h4 class="font-black text-sm text-slate-100">${top2.studentName}</h4>
+                    <p class="text-xs text-slate-300 font-bold">Lớp ${top2.className}</p>
+                  </div>
+                  <div class="bg-slate-900/60 p-2 rounded-xl text-xs space-y-1">
+                    <p class="font-black text-slate-200">Điểm Cao Nhất: <span class="text-amber-300 text-base">${top2.highestScore}</span>/10</p>
+                    <p class="text-[11px] text-amber-300 font-bold">⭐ ${top2.starsEarned} Sao • ⚡ ${top2.fastestDuration}s</p>
+                  </div>
+                </div>
+              ` : '<div class="hidden md:block"></div>'}
+
+              <!-- TOP 1: QUÁN QUÂN (TRUNG TÂM - CAO NHẤT) -->
+              ${top1 ? `
+                <div class="order-1 md:order-2 bg-gradient-to-b from-amber-500/20 via-yellow-500/30 to-amber-600/30 border-4 border-amber-400 p-5 rounded-3xl text-center space-y-2 relative shadow-2xl hover:scale-105 transition-all ring-4 ring-amber-400/30">
+                  <span class="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-black text-xs px-4 py-1 rounded-full shadow-xl border border-white flex items-center gap-1">
+                    👑 HẠNG 1 • QUÁN QUÂN
+                  </span>
+                  <div class="w-20 h-20 mx-auto rounded-full bg-amber-400 border-4 border-white text-4xl flex items-center justify-center shadow-2xl mt-2 animate-bounce" style="animation-duration: 2.5s;">
+                    👦
+                  </div>
+                  <div>
+                    <h4 class="font-black text-base text-amber-300 drop-shadow-md">${top1.studentName}</h4>
+                    <p class="text-xs text-yellow-200 font-bold">Lớp ${top1.className}</p>
+                  </div>
+                  <div class="bg-amber-950/80 border border-amber-400/50 p-2.5 rounded-2xl text-xs space-y-1 shadow-inner">
+                    <p class="font-black text-white">Điểm Đỉnh Cao: <span class="text-amber-300 text-xl font-mono">${top1.highestScore}</span>/10</p>
+                    <p class="text-xs text-amber-200 font-bold">⭐ ${top1.starsEarned} Sao Vàng • ⚡ ${top1.fastestDuration}s</p>
+                    <span class="badge bg-amber-400 text-slate-950 text-[10px] font-black inline-block mt-1">🏆 BẬC THẦY TIN HỌC</span>
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- TOP 3: BẬC THẦY TRẮC NGHIỆM (BÊN PHẢI) -->
+              ${top3 ? `
+                <div class="order-3 border-2 border-amber-700/80 bg-amber-950/40 p-4 rounded-2xl text-center space-y-2 relative shadow-xl hover:scale-105 transition-all">
+                  <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-700 text-white font-black text-xs px-3 py-0.5 rounded-full shadow-md">🥉 HẠNG 3</span>
+                  <div class="w-16 h-16 mx-auto rounded-full bg-amber-900 border-2 border-amber-600 text-3xl flex items-center justify-center shadow-lg mt-2">
+                    🧑‍💻
+                  </div>
+                  <div>
+                    <h4 class="font-black text-sm text-slate-100">${top3.studentName}</h4>
+                    <p class="text-xs text-amber-200/80 font-bold">Lớp ${top3.className}</p>
+                  </div>
+                  <div class="bg-slate-900/60 p-2 rounded-xl text-xs space-y-1">
+                    <p class="font-black text-slate-200">Điểm Cao Nhất: <span class="text-amber-300 text-base">${top3.highestScore}</span>/10</p>
+                    <p class="text-[11px] text-amber-300 font-bold">⭐ ${top3.starsEarned} Sao • ⚡ ${top3.fastestDuration}s</p>
+                  </div>
+                </div>
+              ` : '<div class="hidden md:block"></div>'}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- BẢNG DANH SÁCH CHI TIẾT THỨ HẠNG HỌC SINH -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+              <span>📊 DANH SÁCH XẾP HẠNG HỌC SINH (${leaderboard.length})</span>
+            </h4>
+            <span class="text-[11px] text-slate-500 font-semibold">Tự động sắp xếp theo Điểm cao nhất ➔ Điểm TB ➔ Tổng Sao ➔ Tốc độ</span>
+          </div>
+
+          <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm bg-white">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 font-black border-b border-slate-200">
+                  <th class="p-3 text-center w-16">Thứ Hạng</th>
+                  <th class="p-3">Họ và Tên Học Sinh</th>
+                  <th class="p-3">Lớp & Khối</th>
+                  <th class="p-3 text-center">Điểm Cao Nhất</th>
+                  <th class="p-3 text-center">Điểm TB</th>
+                  <th class="p-3 text-center">Tổng Sao Vàng</th>
+                  <th class="p-3 text-center">Thời Gian Nộp</th>
+                  <th class="p-3 text-center">Danh Hiệu Vinh Danh</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 font-semibold">
+                ${leaderboard.length === 0 ? `
+                  <tr>
+                    <td colspan="8" class="p-8 text-center text-slate-400 font-bold">
+                      🚫 Chưa tìm thấy kết quả xếp hạng học sinh cho bộ lọc này.
+                    </td>
+                  </tr>
+                ` : leaderboard.map((st, idx) => {
+                  const rank = idx + 1;
+                  const rankBadge = rank === 1 ? '🥇 Hạng 1' : rank === 2 ? '🥈 Hạng 2' : rank === 3 ? '🥉 Hạng 3' : `#${rank}`;
+                  const rankBg = rank === 1 ? 'bg-amber-100 text-amber-900 border-amber-300' : rank === 2 ? 'bg-slate-100 text-slate-800' : rank === 3 ? 'bg-amber-50 text-amber-800' : 'bg-slate-50 text-slate-600';
+                  const titleBadge = rank === 1 ? '🥇 Quán Quân Tin Học' : rank === 2 ? '🥈 Á Quân Tin Học' : rank === 3 ? '🥉 Bậc Thầy Trắc Nghiệm' : st.highestScore >= 9.0 ? '🌟 Học Sinh Xuất Sắc' : '👍 Học Sinh Tiên Tiến';
+
+                  return `
+                    <tr class="hover:bg-amber-50/50 transition-colors ${rank <= 3 ? 'font-bold' : ''}">
+                      <td class="p-3 text-center">
+                        <span class="px-2.5 py-1 rounded-xl text-xs font-black border ${rankBg}">
+                          ${rankBadge}
+                        </span>
+                      </td>
+                      <td class="p-3">
+                        <div class="flex items-center gap-2">
+                          <span class="text-xl">${rank === 1 ? '👦' : rank === 2 ? '👧' : '🧑‍💻'}</span>
+                          <div>
+                            <span class="font-black text-slate-900 block text-xs md:text-sm">${st.studentName}</span>
+                            <span class="text-[10px] text-slate-400">@${st.studentUsername || 'hs'} • ${st.examsCount} lần làm bài</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="p-3">
+                        <span class="badge bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-black">
+                          Lớp ${st.className}
+                        </span>
+                      </td>
+                      <td class="p-3 text-center">
+                        <span class="text-sm font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200">
+                          ${st.highestScore}/10
+                        </span>
+                      </td>
+                      <td class="p-3 text-center font-bold text-slate-700">
+                        ${st.avgScore}
+                      </td>
+                      <td class="p-3 text-center">
+                        <span class="badge badge-amber text-xs font-black">
+                          ⭐ ${st.starsEarned}
+                        </span>
+                      </td>
+                      <td class="p-3 text-center text-slate-500 font-mono text-[11px]">
+                        ⚡ ${st.fastestDuration} giây
+                      </td>
+                      <td class="p-3 text-center">
+                        <span class="badge ${rank === 1 ? 'bg-amber-500 text-slate-950' : rank === 2 ? 'bg-slate-700 text-white' : rank === 3 ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-700'} text-[10px] font-black">
+                          ${titleBadge}
+                        </span>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
   }
 }
 
