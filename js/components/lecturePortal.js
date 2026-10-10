@@ -2189,6 +2189,14 @@ class LecturePortal {
       return url;
     }
 
+    // 2b. Nếu là đường dẫn file Google Drive (drive.google.com/file/d/FILE_ID/...)
+    if (url.includes("drive.google.com/file/d/")) {
+      if (!url.includes("/preview")) {
+        return url.replace(/\/view\??.*/, "/preview").replace(/\/edit\??.*/, "/preview");
+      }
+      return url;
+    }
+
     const lower = url.toLowerCase();
     const fileType = (lecture.fileType || "").toLowerCase();
     const fileName = (lecture.fileName || "").toLowerCase();

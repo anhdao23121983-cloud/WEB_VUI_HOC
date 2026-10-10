@@ -867,10 +867,18 @@
           </div>
         </div>
 
-        <!-- Hoặc Dán Link Web / Canva / Google Slides -->
-        <div class="form-group pt-1 border-t border-slate-200">
-          <label class="form-label font-bold text-slate-600">Hoặc Dán Đường Dẫn Trình Chiếu Online (Canva / Google Slides / Drive):</label>
-          <input type="text" id="lec-link-input" class="form-control text-xs font-mono" placeholder="https://canva.com/design/... hoặc https://docs.google.com/presentation/...">
+        <!-- Hoặc Dán Link Web / Canva / Google Slides / Google Drive Cloud -->
+        <div class="form-group pt-2 border-t border-slate-200 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="form-label font-bold text-slate-700 flex items-center gap-1.5">
+              <span>☁️</span> <span>Tự Động Sao Lưu Đám Mây (Google Drive / OneDrive / Canva):</span>
+            </label>
+            <a href="https://drive.google.com" target="_blank" class="text-[11px] font-bold text-cyan-700 hover:text-cyan-900 bg-cyan-50 px-2 py-0.5 rounded-lg border border-cyan-200 flex items-center gap-1" title="Mở trang Google Drive cá nhân để lấy link chia sẻ">
+              <span>🌐</span> <span>Mở Google Drive</span>
+            </a>
+          </div>
+          <input type="text" id="lec-link-input" class="form-control text-xs font-mono" placeholder="https://drive.google.com/file/d/... hoặc https://docs.google.com/presentation/...">
+          <p class="text-[10px] text-slate-500 font-medium">💡 Dán link Google Drive/OneDrive giúp bài giảng được sao lưu an toàn 100% trên Đám mây cá nhân của Thầy/Cô.</p>
         </div>
 
         <div class="form-group">
