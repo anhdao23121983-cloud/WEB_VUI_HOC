@@ -94,9 +94,9 @@ class ExamPortal {
 
       // Thống kê theo 3 thư mục con
       const rawAll = (await window.examService.getAllExams("all")) || [];
-      const countLop3 = rawAll.filter(e => e.grade === 3).length;
-      const countLop4 = rawAll.filter(e => e.grade === 4).length;
-      const countLop5 = rawAll.filter(e => e.grade === 5).length;
+      const countLop3 = rawAll.filter(e => parseInt(e.grade, 10) === 3).length;
+      const countLop4 = rawAll.filter(e => parseInt(e.grade, 10) === 4).length;
+      const countLop5 = rawAll.filter(e => parseInt(e.grade, 10) === 5).length;
 
       // Lấy cấu hình tùy chỉnh của 3 thư mục
       const cfg3 = window.examService.getFolderConfig(3) || { title: "Kiểm Tra Môn Tin Lớp 3", icon: "📁" };
@@ -1008,16 +1008,17 @@ class ExamPortal {
   // MỞ / CHUYỂN THƯ MỤC (KIỂM TRA KHÓA MẬT KHẨU)
   // =========================================================================
   enterFolder(grade) {
-    if (grade !== "all") {
-      const isLocked = window.examService.isFolderLockedForUser(grade);
+    const target = (grade !== "all" && grade !== undefined && grade !== null) ? parseInt(grade, 10) : "all";
+    if (target !== "all") {
+      const isLocked = window.examService.isFolderLockedForUser(target);
       if (isLocked) {
-        this.openFolderLockModal(grade);
+        this.openFolderLockModal(target);
         return;
       }
     }
 
-    this.selectedFolder = grade;
-    this.currentGrade = grade;
+    this.selectedFolder = target;
+    this.currentGrade = target;
 
     // Đảm bảo hiển thị vùng portal-view và ẩn landing-view
     const views = ["landing-view", "auth-view"];

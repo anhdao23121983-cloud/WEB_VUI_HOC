@@ -513,7 +513,7 @@ class ExamService {
     // Lọc theo Khối lớp (3, 4, 5) siêu tốc từ RAM (0.001s)
     if (gradeFilter !== "all") {
       const g = parseInt(gradeFilter, 10);
-      list = list.filter(e => e.grade === g);
+      list = list.filter(e => parseInt(e.grade, 10) === g);
     }
 
     // Lọc theo Loại đề (15P, Giữa kỳ, Cuối kỳ)
