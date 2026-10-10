@@ -2357,8 +2357,6 @@ class LecturePortal {
 
             const numDisp = document.getElementById('slide-num-disp');
             if (numDisp) numDisp.innerText = 'Slide ' + currentSlide + ' / ' + totalSlides;
-
-            speakCurrentSlideVoice();
           }
 
           function prevSlide() { showSlide(currentSlide - 1); }
