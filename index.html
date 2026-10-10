@@ -40,7 +40,44 @@
       <button onclick="window.location.hash='landing'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">Trang Chủ</button>
       <button id="nav-btn-teacher" onclick="window.location.hash='teacher'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">👩‍🏫 Giáo Viên (CV 2345)</button>
       <button id="nav-btn-admin-users" onclick="window.location.hash='admin'" class="px-2.5 py-1.5 rounded-lg font-black text-xs text-purple-800 bg-purple-100 hover:bg-purple-200 border border-purple-300 shadow-sm transition-all" title="Quản lý toàn bộ danh sách Giáo viên và Học sinh">👥 Quản Lý GV & HS</button>
-      <button onclick="window.location.hash='lectures'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-amber-800 bg-amber-50 hover:bg-amber-100 transition-all">📊 Bài Giảng Điện Tử</button>
+      <!-- Menu Bài Giảng Điện Tử Kèm Dropdown Các Lớp 3, 4, 5 -->
+      <div class="relative group">
+        <button onclick="window.location.hash='lectures'" class="px-2.5 py-1.5 rounded-lg font-black text-xs text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 flex items-center gap-1 transition-all shadow-xs">
+          <span>📊</span> <span>Bài Giảng Điện Tử</span> <span class="text-[10px] text-amber-700 font-bold">▼</span>
+        </button>
+        <!-- Dropdown Sub-menu -->
+        <div class="absolute left-0 top-full mt-1 w-60 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 hidden group-hover:block z-50 animate-pop">
+          <div class="px-3.5 py-1 text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
+            DANH MỤC BÀI GIẢNG TIN HỌC
+          </div>
+          <a href="#lectures-3" onclick="lecturePortal.selectFolder(3)" class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-cyan-50 hover:text-cyan-700 transition-all">
+            <span class="text-base p-1 bg-cyan-100 text-cyan-800 rounded-lg shrink-0">🎒</span>
+            <div>
+              <p class="font-black leading-tight text-slate-900">Bài Giảng Tin Lớp 3</p>
+              <p class="text-[10px] text-slate-500 font-normal">Khám phá máy tính & chuột</p>
+            </div>
+          </a>
+          <a href="#lectures-4" onclick="lecturePortal.selectFolder(4)" class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-all">
+            <span class="text-base p-1 bg-purple-100 text-purple-800 rounded-lg shrink-0">🚀</span>
+            <div>
+              <p class="font-black leading-tight text-slate-900">Bài Giảng Tin Lớp 4</p>
+              <p class="text-[10px] text-slate-500 font-normal">Soạn thảo Word & Scratch</p>
+            </div>
+          </a>
+          <a href="#lectures-5" onclick="lecturePortal.selectFolder(5)" class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all">
+            <span class="text-base p-1 bg-emerald-100 text-emerald-800 rounded-lg shrink-0">⭐</span>
+            <div>
+              <p class="font-black leading-tight text-slate-900">Bài Giảng Tin Lớp 5</p>
+              <p class="text-[10px] text-slate-500 font-normal">Bảng tính & Trình chiếu</p>
+            </div>
+          </a>
+          <div class="border-t border-slate-100 mt-1 pt-1">
+            <a href="#lectures" onclick="lecturePortal.selectFolder('all')" class="flex items-center gap-2 px-3.5 py-1.5 text-xs font-black text-amber-700 hover:bg-amber-50 transition-all">
+              <span>📂 Tất Cả Bài Giảng 3-4-5</span>
+            </a>
+          </div>
+        </div>
+      </div>
       <button onclick="window.location.hash='exams'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition-all">📝 Kiểm Tra</button>
       <button onclick="window.location.hash='lab3d'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-purple-800 bg-purple-50 hover:bg-purple-100 transition-all">🧪 Mô Phỏng 3D</button>
       <button onclick="window.location.hash='arena'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-rose-800 bg-rose-50 hover:bg-rose-100 transition-all">⚡ Đấu Trường Tin Học</button>
@@ -59,6 +96,7 @@
           <p id="nav-user-role" class="text-[10px] text-slate-500 font-bold">Giáo viên</p>
         </div>
         <button onclick="app.openProfileModal()" class="text-xs text-cyan-700 font-bold ml-1 hover:underline hidden sm:inline" title="Chỉnh sửa hồ sơ và mật khẩu">Hồ Sơ</button>
+        <button onclick="app.openSettings()" class="text-xs text-amber-700 font-bold ml-1 hover:underline hidden sm:inline" title="Cấu hình kết nối Supabase Database & Gemini AI">⚙️ Cài Đặt DB</button>
         <button onclick="app.handleLogout()" class="text-xs text-rose-600 font-bold ml-1 hover:underline">Đăng Xuất</button>
       </div>
 
@@ -859,68 +897,11 @@
     <div class="modal-content p-4 md:p-6 max-w-5xl h-[90vh] flex flex-col space-y-3 animate-pop">
       <div class="flex items-center justify-between pb-2 border-b border-slate-200 shrink-0">
         <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-amber-100 rounded-xl">📊</span>
-          <div>
-            <h3 id="lec-preview-title" class="text-base font-black text-slate-900">Trình Chiếu Bài Giảng Điện Tử</h3>
-            <p id="lec-preview-subtitle" class="text-[11px] text-cyan-700 font-bold">Chế Độ Xem, Bút Vẽ Laser & Đố Vui 10s Tương Tác</p>
-          </div>
+          <h3 id="lec-preview-title" class="text-base font-black text-slate-900">Trình Chiếu Bài Giảng Điện Tử</h3>
         </div>
 
-        <!-- Toolbar Bút Vẽ, Đố Vui, Ô Chữ, Ghép Thẻ, Nối Cột, Bắn Bóng, Scratch 3D, Vòng Quay & Tặng Sao (Dành Cho Giáo Viên) -->
+        <!-- Các Nút Điều Khiển Trình Chiếu Chuẩn Gọn Gàng -->
         <div id="lec-preview-teacher-tools" class="flex items-center gap-2 flex-wrap">
-          <button onclick="lecturePortal.toggleInSlideStarAward()" class="btn bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 btn-xs font-black shadow-md flex items-center gap-1 hover:scale-105 transition-all" title="Tặng Sao Vàng khen thưởng trực tiếp cho học sinh (Đồng bộ Supabase Database)">
-            <span>⭐</span> <span>Tặng Sao</span>
-          </button>
-          <button onclick="lecturePortal.toggleInSlideScratch()" class="btn bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mở trò chơi Thả Khối Lập Trình Scratch 3D tương tác trên Slide">
-            <span>🐱</span> <span>Scratch 3D</span>
-          </button>
-          <button onclick="lecturePortal.toggleInSlideBubblePop()" class="btn bg-gradient-to-r from-teal-400 to-emerald-600 hover:from-teal-500 hover:to-emerald-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mở trò chơi Bắn Bong Bóng Tìm Từ Khóa 3D tương tác trên Slide">
-            <span>🎈</span> <span>Bắn Bóng 3D</span>
-          </button>
-          <button onclick="lecturePortal.toggleInSlideColumnMatch()" class="btn bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mở trò chơi Nối Cột Định Nghĩa 3D tương tác trên Slide">
-            <span>⚡</span> <span>Nối Cột 3D</span>
-          </button>
-          <button onclick="lecturePortal.toggleInSlideMemoryCard()" class="btn bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mở trò chơi Ghép Thẻ Trí Nhớ 3D tương tác trên Slide">
-            <span>🃏</span> <span>Ghép Thẻ 3D</span>
-          </button>
-          <button onclick="lecturePortal.toggleInSlideGoldenBell()" class="btn bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mở Đấu Trường Rung Chuông Vàng 3D củng cố bài học">
-            <span>🔔</span> <span>Rung Chuông</span>
-          </button>
-          <button onclick="lecturePortal.toggleInSlideLuckyWheel()" class="btn bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mở Vòng Quay May Mắn gọi tên học sinh ngẫu nhiên">
-            <span>🎡</span> <span>Vòng Quay</span>
-          </button>
-          <button onclick="lecturePortal.toggleInSlideCrossword()" class="btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mở trò chơi Ô Chữ Bí Mật 3D tương tác trên Slide">
-            <span>🧩</span> <span>Ô Chữ 3D</span>
-          </button>
-          <button onclick="lecturePortal.toggleInSlideQuiz()" class="btn bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all">
-            <span>⚡</span> <span>Đố Vui 10s</span>
-          </button>
-          <button onclick="lecturePortal.toggleInSlideRobotMaze()" class="btn bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mô phỏng Mê Cung Thuật Toán Robot 3D điều hướng tương tác trên Slide">
-            <span>🤖</span> <span>Robot Mê Cung</span>
-          </button>
-          <button onclick="lecturePortal.openRealtimeBuzzerModal()" class="btn bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Mở Đấu Trường Bấm Chuông Trực Tuyến bằng điện thoại học sinh">
-            <span>🔔</span> <span>Bấm Chuông</span>
-          </button>
-          <button onclick="lecturePortal.openVoiceRecorderModal()" class="btn bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Ghi âm lời giảng trực tiếp của Cô Giáo kèm theo slide">
-            <span>🎙️</span> <span>Ghi Âm Lời Giảng</span>
-          </button>
-          <button onclick="lecturePortal.openLectureQRModal()" class="btn bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Tạo mã QR Code sắc nét để học sinh quét điện thoại vào học">
-            <span>📱</span> <span>QR Chia Sẻ</span>
-          </button>
-          <button onclick="lecturePortal.openPresenterView()" class="btn bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Bật chế độ 2 màn hình dành riêng cho Cô Giáo (Presenter View)">
-            <span>🖥️</span> <span>Presenter View</span>
-          </button>
-          <button onclick="lecturePortal.toggleDrawingMode('lec-preview-canvas')" class="btn btn-amber btn-xs font-black shadow-sm flex items-center gap-1">
-            <span>🎨</span> <span>Bút Vẽ & Laser</span>
-          </button>
-        </div>
-
-          <button id="btn-speak-slide-voice" onclick="lecturePortal.speakSlideNarration()" class="btn bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Bật giọng đọc AI Cô Giáo Đà Nẵng (Miền Trung) thuyết minh bài học">
-            <span>🎙️</span> <span>Giọng Cô Đà Nẵng</span>
-          </button>
-          <button id="btn-switch-viewer" onclick="lecturePortal.switchViewerSource()" class="btn bg-amber-500 hover:bg-amber-600 text-slate-950 btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Chuyển sang nguồn trình chiếu HTML5 3D dự phòng không bao giờ lỗi">
-            <span>🔄</span> <span>Đổi Nguồn Viewer</span>
-          </button>
           <button id="btn-auto-play-slide" onclick="lecturePortal.toggleAutoPlaySlide()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Bật/Tắt tự động lật slide sau mỗi 10 giây">
             <span>▶️</span> <span>Tự Động Chạy (10s)</span>
           </button>
@@ -931,34 +912,6 @@
             <span>🖥️</span> <span>Toàn Màn Hình</span>
           </button>
           <button onclick="lecturePortal.closePreviewModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700 ml-1">✕</button>
-        </div>
-
-        <!-- Thanh Âm Thanh Khen Thưởng Nhanh Của Cô Giáo (Teacher Voice Soundboard Bar) -->
-        <div id="lec-preview-teacher-soundboard" class="p-2 bg-gradient-to-r from-pink-950/90 via-purple-950/90 to-slate-900 rounded-2xl border border-pink-500/30 flex items-center justify-between gap-2 shrink-0 text-xs flex-wrap">
-          <div class="flex items-center gap-1.5 text-pink-300 font-black">
-            <span class="text-base animate-pulse">🎙️</span>
-            <span>CỔ VŨ CÔ GIÁO:</span>
-          </div>
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <button onclick="ttsService.playApplause(3.5, true)" class="px-2.5 py-1 rounded-xl font-black bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 hover:scale-105 active:scale-95 shadow-md flex items-center gap-1 transition-all" title="Bật tiếng vỗ tay rộn ràng cả lớp chúc mừng điểm 10!">
-              <span>👏</span> <span>Vỗ Tay Điểm 10</span>
-            </button>
-            <button onclick="ttsService.playPraise('excellent')" class="px-2.5 py-1 rounded-xl font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-sm flex items-center gap-1 transition-all hover:scale-105 active:scale-95" title="Cô khen: Xuất sắc lắm em ơi! +15 Sao Vàng">
-              <span>🎉</span> <span>Xuất Sắc</span>
-            </button>
-            <button onclick="ttsService.playPraise('cheer')" class="px-2.5 py-1 rounded-xl font-bold bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-sm flex items-center gap-1 transition-all hover:scale-105 active:scale-95" title="Cô khen: Hoan hô bạn đã trả lời chính xác!">
-              <span>👏</span> <span>Hoan Hô</span>
-            </button>
-            <button onclick="ttsService.playPraise('smart')" class="px-2.5 py-1 rounded-xl font-bold bg-cyan-400 text-slate-950 hover:bg-cyan-300 shadow-sm flex items-center gap-1 transition-all hover:scale-105 active:scale-95" title="Cô khen: Câu trả lời rất thông minh & sáng tạo!">
-              <span>⭐</span> <span>Thông Minh</span>
-            </button>
-            <button onclick="ttsService.playPraise('champion')" class="px-2.5 py-1 rounded-xl font-bold bg-purple-500 text-white hover:bg-purple-400 shadow-sm flex items-center gap-1 transition-all hover:scale-105 active:scale-95" title="Cô khen: Chúc mừng Quán Quân của đấu trường!">
-              <span>🚀</span> <span>Quán Quân</span>
-            </button>
-            <button onclick="ttsService.playPraise('encourage')" class="px-2.5 py-1 rounded-xl font-bold bg-pink-600 text-white hover:bg-pink-500 shadow-sm flex items-center gap-1 transition-all hover:scale-105 active:scale-95" title="Cô động viên: Cố gắng lên một chút nữa là đúng rồi em ơi!">
-              <span>💪</span> <span>Cố Lên Nào</span>
-            </button>
-          </div>
         </div>
       </div>
 
@@ -1586,7 +1539,7 @@
       </div>
 
       <div class="flex items-center justify-between pt-2 border-t border-slate-200 shrink-0 text-xs">
-        <span class="text-slate-500 font-semibold">💡 Thầy Cô có thể bấm <b>'🎨 Bút Vẽ & Laser'</b> hoặc <b>'⚡ Đố Vui 10s'</b> để tương tác trực tiếp cùng học sinh.</span>
+        <span class="text-slate-500 font-semibold">💡 Bấm nút <b>'Toàn Màn Hình'</b> để có trải nghiệm giảng dạy tốt nhất hoặc bấm <b>'Đóng Trình Chiếu'</b> để thoát.</span>
         <button onclick="lecturePortal.closePreviewModal()" class="btn btn-outline btn-sm">Đóng Trình Chiếu</button>
       </div>
     </div>

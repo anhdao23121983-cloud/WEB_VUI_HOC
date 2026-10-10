@@ -86,9 +86,12 @@ class Application {
     } else if (route === "gamehub") {
       document.getElementById("portal-view")?.classList.remove("hidden");
       window.gameHub.render("main-content-area");
-    } else if (route === "lectures") {
+    } else if (route.startsWith("lectures")) {
       document.getElementById("portal-view")?.classList.remove("hidden");
-      window.lecturePortal.render("main-content-area");
+      if (route === "lectures-3") window.lecturePortal.selectFolder(3);
+      else if (route === "lectures-4") window.lecturePortal.selectFolder(4);
+      else if (route === "lectures-5") window.lecturePortal.selectFolder(5);
+      else window.lecturePortal.render("main-content-area");
     } else if (route === "exams") {
       document.getElementById("portal-view")?.classList.remove("hidden");
       window.examPortal.render("main-content-area");
@@ -355,7 +358,21 @@ class Application {
 
     document.getElementById("settings-modal")?.classList.remove("active");
     this.checkSupabaseStatus();
-    this.showToast("⚙️ Đã lưu cấu hình kết nối thành công!", "success");
+    this.showToast("⚙️ Đã lưu cấu hình kết nối Supabase thành công!", "success");
+  }
+
+  // Mở Modal Cài Đặt & Điền sẵn thông tin cấu hình hiện tại
+  openSettings() {
+    const sbUrlInput = document.getElementById("settings-sb-url");
+    const sbKeyInput = document.getElementById("settings-sb-key");
+    const aiKeyInput = document.getElementById("settings-ai-key");
+
+    if (sbUrlInput) sbUrlInput.value = localStorage.getItem("sb_url") || CONFIG.SUPABASE.URL || "";
+    if (sbKeyInput) sbKeyInput.value = localStorage.getItem("sb_anon_key") || CONFIG.SUPABASE.ANON_KEY || "";
+    if (aiKeyInput) aiKeyInput.value = localStorage.getItem("gemini_api_key") || CONFIG.AI.GEMINI_API_KEY || "";
+
+    const modal = document.getElementById("settings-modal");
+    if (modal) modal.classList.add("active");
   }
 
   // =========================================================================

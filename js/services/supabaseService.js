@@ -52,6 +52,11 @@ class SupabaseService {
     };
   }
 
+  // Kiểm tra Supabase Client đã sẵn sàng 100%
+  isReady() {
+    return this.isLive && this.client !== null;
+  }
+
   // 1. LẤY DANH SÁCH KẾ HOẠCH BÀI DẠY (LESSON_PLANS)
   async getLessonPlans() {
     if (this.isLive && this.client) {

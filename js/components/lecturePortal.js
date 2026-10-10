@@ -270,21 +270,38 @@ class LecturePortal {
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Trình chiếu slide có Bút Laser, 2 Màn Hình Presenter View, Bấm Chuông Trực Tuyến, Ghi Âm Lời Giảng, Robot Mê Cung 3D & Giọng Đọc Nữ Tiếng Việt</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Hệ thống kho bài giảng điện tử chuẩn sư phạm, hỗ trợ giáo viên tải lên, lưu trữ và trình chiếu trực tuyến mượt mà.</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
-            <button onclick="lecturePortal.openRealtimeBuzzerModal()" class="btn bg-rose-600 hover:bg-rose-500 text-white font-black text-xs py-2.5 px-3.5 rounded-xl shadow-md flex items-center gap-1.5 hover:scale-105 transition-all">
-              <span class="text-base animate-bounce">🔔</span> <span>Đấu Trường Bấm Chuông</span>
+            <button onclick="lectureUploadModal.openModal(${effectiveGrade !== 'all' ? effectiveGrade : 3})" class="btn btn-emerald btn-lg font-black shadow-2xl flex items-center gap-2 shrink-0 hover:scale-105 transition-all px-5 py-3 text-white bg-gradient-to-r from-emerald-500 to-teal-600 border-2 border-white">
+              <span class="text-xl">📤</span> <span>Tải Lên Bài Giảng Điện Tử (.pptx / .pdf)</span>
             </button>
-            <button onclick="lecturePortal.openVoiceRecorderModal()" class="btn bg-pink-600 hover:bg-pink-500 text-white font-black text-xs py-2.5 px-3.5 rounded-xl shadow-md flex items-center gap-1.5 hover:scale-105 transition-all">
-              <span class="text-base">🎙️</span> <span>Ghi Âm Lời Giảng</span>
+          </div>
+        </div>
+
+        <!-- Thanh Menu Danh Mục Bài Giảng Điện Tử (Bài giảng Tin lớp 3, lớp 4, lớp 5) -->
+        <div class="p-4 bg-white rounded-3xl border border-slate-200 shadow-sm flex items-center justify-between gap-4 flex-wrap">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl p-2 bg-amber-100 text-amber-800 rounded-2xl">📊</span>
+            <div>
+              <h3 class="font-black text-slate-900 text-sm md:text-base leading-tight">MENU BÀI GIẢNG ĐIỆN TỬ TIN HỌC</h3>
+              <p class="text-[11px] text-slate-500 font-bold">Chọn mục bài giảng theo khối lớp để xem danh sách tương ứng</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="lecturePortal.selectFolder('all')" class="px-4 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-1.5 ${this.selectedFolder === 'all' ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+              <span>📂</span> <span>Tất Cả Bài Giảng</span>
             </button>
-            <button onclick="lecturePortal.openGroupTimerModal()" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md">
-              <span class="text-base">⏱️</span> <span>Đồng Hồ Nhóm</span>
+            <button onclick="lecturePortal.selectFolder(3)" class="px-4 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-1.5 ${this.selectedFolder === 3 ? 'bg-cyan-600 text-white shadow-md' : 'bg-cyan-50 text-cyan-800 hover:bg-cyan-100 border border-cyan-200'}">
+              <span>🎒</span> <span>Bài Giảng Tin Lớp 3</span>
             </button>
-            <button onclick="lectureUploadModal.openModal(${effectiveGrade !== 'all' ? effectiveGrade : 3})" class="btn btn-amber btn-lg font-black shadow-xl flex items-center gap-2 shrink-0 hover:scale-105 transition-all">
-              <span class="text-xl">📤</span> <span>Đưa Bài Giảng Lên</span>
+            <button onclick="lecturePortal.selectFolder(4)" class="px-4 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-1.5 ${this.selectedFolder === 4 ? 'bg-purple-600 text-white shadow-md' : 'bg-purple-50 text-purple-800 hover:bg-purple-100 border border-purple-200'}">
+              <span>🚀</span> <span>Bài Giảng Tin Lớp 4</span>
+            </button>
+            <button onclick="lecturePortal.selectFolder(5)" class="px-4 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-1.5 ${this.selectedFolder === 5 ? 'bg-emerald-600 text-white shadow-md' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200'}">
+              <span>⭐</span> <span>Bài Giảng Tin Lớp 5</span>
             </button>
           </div>
         </div>
@@ -316,8 +333,8 @@ class LecturePortal {
               </div>
               <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
                 <span class="text-blue-700 font-black flex items-center gap-1">📂 Vào thư mục ➔</span>
-                <button onclick="event.stopPropagation(); lectureUploadModal.openModal(3)" class="text-amber-800 font-bold bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded-xl shadow-xs flex items-center gap-1">
-                  <span>➕</span> <span>Đưa Bài Lên</span>
+                <button onclick="event.stopPropagation(); lectureUploadModal.openModal(3)" class="text-emerald-800 font-bold bg-emerald-100 hover:bg-emerald-200 px-3 py-1 rounded-xl shadow-xs flex items-center gap-1">
+                  <span>📤</span> <span>Tải Bài Lên</span>
                 </button>
               </div>
             </div>
@@ -334,8 +351,8 @@ class LecturePortal {
               </div>
               <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
                 <span class="text-purple-700 font-black flex items-center gap-1">📂 Vào thư mục ➔</span>
-                <button onclick="event.stopPropagation(); lectureUploadModal.openModal(4)" class="text-amber-800 font-bold bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded-xl shadow-xs flex items-center gap-1">
-                  <span>➕</span> <span>Đưa Bài Lên</span>
+                <button onclick="event.stopPropagation(); lectureUploadModal.openModal(4)" class="text-emerald-800 font-bold bg-emerald-100 hover:bg-emerald-200 px-3 py-1 rounded-xl shadow-xs flex items-center gap-1">
+                  <span>📤</span> <span>Tải Bài Lên</span>
                 </button>
               </div>
             </div>
@@ -352,8 +369,8 @@ class LecturePortal {
               </div>
               <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
                 <span class="text-emerald-700 font-black flex items-center gap-1">📂 Vào thư mục ➔</span>
-                <button onclick="event.stopPropagation(); lectureUploadModal.openModal(5)" class="text-amber-800 font-bold bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded-xl shadow-xs flex items-center gap-1">
-                  <span>➕</span> <span>Đưa Bài Lên</span>
+                <button onclick="event.stopPropagation(); lectureUploadModal.openModal(5)" class="text-emerald-800 font-bold bg-emerald-100 hover:bg-emerald-200 px-3 py-1 rounded-xl shadow-xs flex items-center gap-1">
+                  <span>📤</span> <span>Tải Bài Lên</span>
                 </button>
               </div>
             </div>
@@ -442,8 +459,8 @@ class LecturePortal {
               <span>📚 DANH SÁCH BÀI GIẢNG ${this.selectedFolder !== 'all' ? `KHỐI ${this.selectedFolder}` : ''}</span>
               <span class="badge badge-cyan font-black text-xs">${this.lectures.length} Bài</span>
             </h3>
-            <button onclick="lectureUploadModal.openModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-amber btn-xs font-black shadow-md flex items-center gap-1">
-              <span>➕</span> <span>Đưa Bài Giảng Lên</span>
+            <button onclick="lectureUploadModal.openModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-emerald btn-sm font-black shadow-md flex items-center gap-1.5 px-3 py-1.5">
+              <span>📤</span> <span>Tải Lên Bài Giảng Điện Tử</span>
             </button>
           </div>
 
@@ -1948,17 +1965,7 @@ class LecturePortal {
 
     const modal = document.getElementById("lecture-preview-modal");
     const iframe = document.getElementById("lec-preview-iframe");
-    const titleEl = document.getElementById("lec-preview-title");
-    const subtitleEl = document.getElementById("lec-preview-subtitle");
-    const teacherTools = document.getElementById("lec-preview-teacher-tools");
-    const teacherSoundboard = document.getElementById("lec-preview-teacher-soundboard");
-
     if (titleEl) titleEl.innerText = `${lecture.title} (Lớp ${lecture.grade})`;
-    if (subtitleEl) {
-      subtitleEl.innerText = isTeacher 
-        ? "Chế Độ Trình Chiếu Bài Giảng Điện Tử Cho Giáo Viên (Có Bút Vẽ, Đố Vui 10s & Âm Thanh Cổ Vũ)" 
-        : "Chế Độ Xem Bài Giảng Điện Tử Cho Học Sinh";
-    }
 
     // Ẩn/Hiện thanh công cụ tương tác của Giáo viên theo phân quyền vai trò
     if (teacherTools) {

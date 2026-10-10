@@ -47,19 +47,12 @@ class TeacherPortal {
         </div>
 
         <!-- Thống Kê Nhanh (Stats Cards) -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="glass-card p-4 flex items-center gap-4">
             <span class="text-3xl p-3 bg-cyan-100 text-cyan-700 rounded-2xl">📝</span>
             <div>
               <p class="text-xs text-slate-500 font-bold">GIÁO ÁN ĐÃ LƯU</p>
               <h4 class="text-2xl font-black text-slate-800">${plans.length} bài</h4>
-            </div>
-          </div>
-          <div class="glass-card p-4 flex items-center gap-4">
-            <span class="text-3xl p-3 bg-emerald-100 text-emerald-700 rounded-2xl">📚</span>
-            <div>
-              <p class="text-xs text-slate-500 font-bold">KHỐI LỚP QUẢN LÝ</p>
-              <h4 class="text-2xl font-black text-slate-800">Lớp 3, 4, 5</h4>
             </div>
           </div>
           <div class="glass-card p-4 flex items-center gap-4">
