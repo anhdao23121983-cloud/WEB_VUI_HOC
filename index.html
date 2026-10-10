@@ -2145,8 +2145,18 @@
           </select>
         </div>
 
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">4. Chọn Số Lượng Câu Hỏi Trắc Nghiệm:</label>
+          <select id="ai-gen-num-questions" class="form-control text-xs font-bold">
+            <option value="5">⚡ 5 Câu Trắc Nghiệm (Khởi động / 15 phút)</option>
+            <option value="10" selected>📝 10 Câu Trắc Nghiệm (Bài kiểm tra 20 phút chuẩn)</option>
+            <option value="15">📚 15 Câu Trắc Nghiệm (Bài thi Giữa Học Kỳ)</option>
+            <option value="20">👑 20 Câu Trắc Nghiệm (Bài thi Cuối Học Kỳ)</option>
+          </select>
+        </div>
+
         <div class="p-3 bg-purple-50 rounded-xl border border-purple-200 text-purple-900 text-[11px] leading-relaxed">
-          💡 <b>Cơ chế AI:</b> Hệ thống sẽ tự động tạo 7 câu trắc nghiệm (7.0 điểm) chuẩn 4 mức độ nhận thức (Thông tư 27) + 2 bài thực hành máy tính (3.0 điểm) và lưu ngay vào Ngân Hàng Đề!
+          💡 <b>Cơ chế AI:</b> Hệ thống sẽ tự động sinh số lượng câu trắc nghiệm được chọn bám sát SGK chuẩn 4 mức độ nhận thức (Thông tư 27) và lưu ngay vào Ngân Hàng Đề!
         </div>
       </div>
 
@@ -2352,8 +2362,24 @@
         </div>
         <button onclick="document.getElementById('exam-student-leaderboard-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
       </div>
-      <div id="exam-student-leaderboard-body" class="space-y-4 py-2">
-        <!-- Dynamic Leaderboard content rendered by examPortal.js -->
+  <!-- MODAL 35: CHẾ ĐỘ ÔN LUYỆN TRẮC NGHIỆM THEO BÀI SGK (PRACTICE SGK QUIZ MODAL) -->
+  <div id="exam-practice-sgk-modal" class="modal-backdrop">
+    <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl p-1.5 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-xl shadow-md">📖</span>
+          <div>
+            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+              <span>ÔN LUYỆN TRẮC NGHIỆM THEO BÀI SGK</span>
+              <span class="badge bg-emerald-600 text-white font-black text-[10px]">PRACTICE MODE</span>
+            </h3>
+            <p class="text-xs text-slate-500 font-semibold">Luyện tập từng câu trắc nghiệm bám sát bài học SGK Tin 3, 4, 5 kèm đáp án và giải thích ngay lập tức</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('exam-practice-sgk-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
+      </div>
+      <div id="exam-practice-sgk-body" class="space-y-4 py-2">
+        <!-- Dynamic Practice content rendered by examPortal.js -->
       </div>
     </div>
   </div>

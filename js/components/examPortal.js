@@ -150,6 +150,9 @@ class ExamPortal {
             <button onclick="examPortal.openStudentLeaderboardModal(examPortal.selectedFolder !== 'all' ? examPortal.selectedFolder : 'all')" class="btn bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs py-2.5 px-3.5 rounded-xl border border-amber-300 flex items-center gap-1.5 shadow-lg hover:scale-105 transition-all" title="Xem bảng xếp thứ hạng học sinh theo Khối 3, 4, 5 và Lớp">
               <span>🏆</span> <span>Bảng Xếp Hạng Học Sinh</span>
             </button>
+            <button onclick="examPortal.openPracticeSGKModal(examPortal.selectedFolder !== 'all' ? examPortal.selectedFolder : 3)" class="btn bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-xs py-2.5 px-3.5 rounded-xl border border-white/30 flex items-center gap-1.5 shadow-lg hover:scale-105 transition-all" title="Chế độ ôn luyện trắc nghiệm theo bài SGK kèm đáp án và giải thích">
+              <span>📖</span> <span>Ôn Luyện SGK</span>
+            </button>
             ${isTeacher ? `
               <button onclick="examPortal.openLiveArenaModal()" class="btn bg-gradient-to-r from-amber-500 to-red-600 hover:from-amber-600 hover:to-red-700 text-white font-black text-xs py-2.5 px-3.5 rounded-xl border border-white/30 flex items-center gap-1.5 shadow-lg hover:scale-105 transition-all animate-bounce" title="Bật đấu trường thi trắc nghiệm trực tuyến thời gian thực">
                 <span>🏟️</span> <span>Đấu Trường Live</span>
@@ -2852,6 +2855,7 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
     const grade = document.getElementById("ai-gen-grade")?.value || (this.selectedFolder !== 'all' ? this.selectedFolder : "3");
     const topicKey = document.getElementById("ai-gen-topic")?.value || "topic_a";
     const series = document.getElementById("ai-gen-series")?.value || "KNTT";
+    const numQuestions = document.getElementById("ai-gen-num-questions")?.value || "10";
 
     const btn = document.getElementById("btn-submit-ai-gen");
     if (btn) {
@@ -2859,8 +2863,8 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
       btn.classList.add("pointer-events-none");
     }
 
-    window.app.showToast("✨ AI đang tổng hợp kiến thức và sinh đề kiểm tra mới...", "info");
-    const res = await window.examService.generateExamByTopicAI(grade, topicKey, series);
+    window.app.showToast(`✨ AI đang biên soạn Đề ${numQuestions} câu trắc nghiệm bám sát SGK...`, "info");
+    const res = await window.examService.generateExamByTopicAI(grade, topicKey, series, numQuestions);
 
     if (btn) {
       btn.innerHTML = "✨ Bắt Đầu Sinh Đề Ngay";
@@ -2870,7 +2874,7 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
     document.getElementById("ai-exam-generator-modal")?.classList.remove("active");
 
     if (res.success) {
-      window.app.showToast(`🎉 AI đã sinh thành công Đề kiểm tra mới và lưu vào Ngân Hàng Đề!`, "success");
+      window.app.showToast(`🎉 AI đã sinh thành công Đề thi ${numQuestions} câu trắc nghiệm và lưu vào Thư mục Lớp ${grade}!`, "success");
       this.render("main-content-area");
     }
   }
@@ -3987,6 +3991,203 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
               </tbody>
             </table>
           </div>
+        </div>
+    `;
+  }
+
+  // =========================================================================
+  // GỢI Ý 3: CHẾ ĐỘ ÔN LUYỆN TRẮC NGHIỆM THEO BÀI SGK (PRACTICE SGK QUIZ)
+  // =========================================================================
+  openPracticeSGKModal(defaultGrade = 3) {
+    this.practiceGrade = parseInt(defaultGrade) || 3;
+    this.practiceLessonId = "g3_b1";
+    this.practiceQIndex = 0;
+    this.practiceAnswers = {}; // { qIdx: selectedOptionIdx }
+    this.practiceStars = 0;
+
+    this.practiceQuestions = window.examService.generateQuestionsForSGKLesson(this.practiceGrade, this.practiceLessonId, 8);
+    this.renderPracticeSGKContent();
+
+    const modal = document.getElementById("exam-practice-sgk-modal");
+    if (modal) modal.classList.add("active");
+  }
+
+  setPracticeGrade(grade) {
+    this.practiceGrade = parseInt(grade);
+    const lessons = window.examService.getSGKLessons(this.practiceGrade);
+    this.practiceLessonId = lessons[0]?.id || `g${this.practiceGrade}_b1`;
+    this.practiceQIndex = 0;
+    this.practiceAnswers = {};
+    this.practiceQuestions = window.examService.generateQuestionsForSGKLesson(this.practiceGrade, this.practiceLessonId, 8);
+    this.renderPracticeSGKContent();
+  }
+
+  setPracticeLesson(lessonId) {
+    this.practiceLessonId = lessonId;
+    this.practiceQIndex = 0;
+    this.practiceAnswers = {};
+    this.practiceQuestions = window.examService.generateQuestionsForSGKLesson(this.practiceGrade, this.practiceLessonId, 8);
+    this.renderPracticeSGKContent();
+  }
+
+  selectPracticeAnswer(qIdx, optionIdx) {
+    if (this.practiceAnswers[qIdx] !== undefined) return; // Đã trả lời rồi
+
+    const q = this.practiceQuestions[qIdx];
+    this.practiceAnswers[qIdx] = optionIdx;
+
+    if (optionIdx === q.correctAnswer || optionIdx === q.correct) {
+      this.practiceStars += 5;
+      window.app?.showToast("✅ Chính xác tuyệt đối! Em được cộng +5 Sao Vàng ⭐", "success");
+    } else {
+      window.app?.showToast("❌ Tiếc quá! Em hãy đọc giải thích kiến thức bên dưới nhé.", "info");
+    }
+
+    this.renderPracticeSGKContent();
+  }
+
+  nextPracticeQuestion() {
+    if (this.practiceQIndex + 1 < this.practiceQuestions.length) {
+      this.practiceQIndex++;
+      this.renderPracticeSGKContent();
+    }
+  }
+
+  prevPracticeQuestion() {
+    if (this.practiceQIndex > 0) {
+      this.practiceQIndex--;
+      this.renderPracticeSGKContent();
+    }
+  }
+
+  speakPracticeQuestion() {
+    const q = this.practiceQuestions[this.practiceQIndex];
+    if (!q) return;
+    const text = `Câu hỏi ${this.practiceQIndex + 1}: ${q.question}. Giải thích: ${q.explanation || 'Hãy chọn đáp án chuẩn xác nhất.'}`;
+    window.ttsService?.speak(text);
+  }
+
+  renderPracticeSGKContent() {
+    const body = document.getElementById("exam-practice-sgk-body");
+    if (!body) return;
+
+    const lessons = window.examService.getSGKLessons(this.practiceGrade) || [];
+    const questions = this.practiceQuestions || [];
+    const qIdx = this.practiceQIndex;
+    const currentQ = questions[qIdx] || {};
+    const selectedAns = this.practiceAnswers[qIdx];
+    const isAnswered = selectedAns !== undefined;
+    const correctIdx = currentQ.correctAnswer !== undefined ? currentQ.correctAnswer : currentQ.correct;
+
+    body.innerHTML = `
+      <div class="space-y-5 animate-pop text-xs text-slate-800">
+        <!-- Filter Bar: Khối + Bài Học SGK + Số Sao -->
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-3">
+          <!-- Grade Tabs -->
+          <div class="flex items-center gap-1.5">
+            <span class="font-bold text-slate-700">Khối Lớp:</span>
+            <button onclick="examPortal.setPracticeGrade(3)" class="btn btn-xs font-bold ${this.practiceGrade === 3 ? 'bg-blue-600 text-white font-black' : 'btn-outline'}">🎒 Lớp 3</button>
+            <button onclick="examPortal.setPracticeGrade(4)" class="btn btn-xs font-bold ${this.practiceGrade === 4 ? 'bg-amber-600 text-white font-black' : 'btn-outline'}">🚀 Lớp 4</button>
+            <button onclick="examPortal.setPracticeGrade(5)" class="btn btn-xs font-bold ${this.practiceGrade === 5 ? 'bg-emerald-600 text-white font-black' : 'btn-outline'}">⭐ Lớp 5</button>
+          </div>
+
+          <!-- Select Lesson -->
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <span class="font-bold text-slate-700 shrink-0">Bài Học:</span>
+            <select onchange="examPortal.setPracticeLesson(this.value)" class="form-control text-xs font-bold py-1 px-2.5">
+              ${lessons.map(l => `
+                <option value="${l.id}" ${this.practiceLessonId === l.id ? 'selected' : ''}>${l.title}</option>
+              `).join('')}
+            </select>
+          </div>
+
+          <!-- Stars Badge -->
+          <div class="badge badge-amber font-black text-xs px-3 py-1 shadow-sm">
+            ⭐ ${this.practiceStars} Sao Luyện Tập
+          </div>
+        </div>
+
+        <!-- Question Tracker (1..N) -->
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-1 flex-wrap">
+            ${questions.map((q, idx) => {
+              const ans = this.practiceAnswers[idx];
+              const cIdx = q.correctAnswer !== undefined ? q.correctAnswer : q.correct;
+              const isCorrect = ans === cIdx;
+              const btnClass = idx === qIdx ? 'ring-2 ring-emerald-500 font-black' : '';
+              const bgClass = ans === undefined ? 'bg-slate-100 text-slate-700 border-slate-200' : isCorrect ? 'bg-emerald-500 text-white font-black' : 'bg-rose-500 text-white font-black';
+              
+              return `
+                <button onclick="examPortal.practiceQIndex = ${idx}; examPortal.renderPracticeSGKContent();" class="w-8 h-8 rounded-xl text-xs font-bold border ${bgClass} ${btnClass} transition-all">
+                  ${idx + 1}
+                </button>
+              `;
+            }).join('')}
+          </div>
+
+          <button onclick="examPortal.speakPracticeQuestion()" class="btn bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 btn-xs font-bold flex items-center gap-1">
+            <span>🔊</span> <span>Đọc AI</span>
+          </button>
+        </div>
+
+        <!-- Current Question Box -->
+        ${currentQ ? `
+          <div class="p-5 bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-3xl border-2 border-emerald-400 space-y-4 shadow-xl">
+            <div class="flex items-center justify-between">
+              <span class="badge bg-emerald-500 text-slate-950 font-black text-[10px]">CÂU ${qIdx + 1} / ${questions.length}</span>
+              <span class="badge bg-white/20 text-cyan-200 font-bold text-[10px]">${currentQ.level || 'Mức 1 (Nhận biết)'}</span>
+            </div>
+
+            <h3 class="text-sm md:text-base font-black leading-snug text-slate-100">${currentQ.question}</h3>
+
+            <!-- 4 Options A B C D -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+              ${(currentQ.options || []).map((opt, oIdx) => {
+                let optStyle = "bg-white/10 hover:bg-white/20 border-white/20 text-white";
+                let optBadge = "";
+
+                if (isAnswered) {
+                  if (oIdx === correctIdx) {
+                    optStyle = "bg-emerald-600/90 border-emerald-400 text-white ring-2 ring-emerald-300 font-black";
+                    optBadge = "✅ ĐÁP ÁN ĐÚNG";
+                  } else if (oIdx === selectedAns) {
+                    optStyle = "bg-rose-600/90 border-rose-400 text-white font-bold";
+                    optBadge = "❌ LỰA CHỌN CỦA EM";
+                  } else {
+                    optStyle = "bg-white/5 opacity-50 border-white/10 text-slate-400";
+                  }
+                }
+
+                return `
+                  <button onclick="examPortal.selectPracticeAnswer(${qIdx}, ${oIdx})" ${isAnswered ? 'disabled' : ''} class="p-3.5 rounded-2xl border text-left text-xs font-bold transition-all flex items-center justify-between gap-2 ${optStyle}">
+                    <span>${opt}</span>
+                    ${optBadge ? `<span class="badge bg-white/20 text-white text-[9px] shrink-0 font-black">${optBadge}</span>` : ''}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- Explanation Box (Khi đã trả lời) -->
+          ${isAnswered ? `
+            <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-1.5 animate-pop">
+              <div class="flex items-center gap-1.5 text-emerald-900 font-black text-xs">
+                <span>💡 GIẢI THÍCH KIẾN THỨC SGK:</span>
+              </div>
+              <p class="text-xs text-emerald-950 font-medium leading-relaxed">${currentQ.explanation || 'Đáp án chính xác được xác nhận bám sát chương trình Tin học GDPT 2018.'}</p>
+            </div>
+          ` : ''}
+        ` : ''}
+
+        <!-- Footer Control Buttons -->
+        <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+          <button onclick="examPortal.prevPracticeQuestion()" ${qIdx === 0 ? 'disabled' : ''} class="btn btn-outline btn-sm font-bold">
+            ◀ Câu Trước
+          </button>
+          
+          <button onclick="examPortal.nextPracticeQuestion()" ${qIdx + 1 >= questions.length ? 'disabled' : ''} class="btn btn-emerald btn-sm font-black shadow-md">
+            Câu Tiếp ➔
+          </button>
         </div>
       </div>
     `;

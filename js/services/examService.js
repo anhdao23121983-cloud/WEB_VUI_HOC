@@ -1433,9 +1433,12 @@ class ExamService {
     return { success: true };
   }
 
-  // 17. AI Tự Động Sinh Đề Kiểm Tra Hoàn Chỉnh Theo Chủ Đề Bài Học (GDPT 2018)
-  async generateExamByTopicAI(grade, topicKey, series = "KNTT") {
+  // 17. AI Tự Động Sinh Đề Kiểm Tra Hoàn Chỉnh Theo Chủ Đề Bài Học (GDPT 2018) & Số lượng câu (5, 10, 15, 20)
+  async generateExamByTopicAI(grade, topicKey, series = "KNTT", numQuestions = 10) {
     await new Promise(r => setTimeout(r, 700));
+
+    const num = parseInt(numQuestions) || 10;
+    const g = parseInt(grade) || 3;
 
     const topicTitles = {
       "topic_a": "Chủ đề A: Máy tính và em",
@@ -1447,20 +1450,21 @@ class ExamService {
     };
 
     const topicName = topicTitles[topicKey] || "Chủ đề A: Máy tính và em";
-    const title = `Đề Kiểm Tra Đánh Giá Định Kỳ Theo ${topicName} (Lớp ${grade})`;
+    const seriesText = series === 'KNTT' ? "Kết Nối Tri Thức" : series === 'CD' ? "Cánh Diều" : "Chân Trời Sáng Tạo";
+    const title = `Đề AI Trắc Nghiệm ${num} Câu (${seriesText}): ${topicName} - Lớp ${g}`;
 
     const newExam = {
       title: title,
-      grade: parseInt(grade),
-      examType: "regular",
+      grade: g,
+      examType: num >= 15 ? "final_term_1" : num >= 10 ? "mid_term_1" : "quiz_15p",
       bookSeries: series,
-      durationMinutes: 35,
+      durationMinutes: num >= 20 ? 40 : num >= 15 ? 30 : num >= 10 ? 20 : 15,
       totalScore: 10,
-      fileName: `De_AI_${topicKey}_Lop${grade}.docx`,
+      fileName: `De_AI_${num}Cau_${topicKey}_Lop${g}.docx`,
       fileSizeText: "1.9 MB",
       fileType: "docx",
       fileUrl: "#",
-      description: `Đề kiểm tra trắc nghiệm & thực hành do AI tự động biên soạn theo chuẩn ${topicName}, bám sát Thông tư 27/2020 và GDPT 2018.`
+      description: `Đề kiểm tra ${num} câu trắc nghiệm do AI tự động biên soạn theo chuẩn ${topicName} (Sách ${seriesText} Lớp ${g}), bám sát Thông tư 27/2020 và GDPT 2018.`
     };
 
     const uploadRes = await this.uploadExam(newExam);
