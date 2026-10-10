@@ -399,6 +399,28 @@ class LectureService {
     return { success: true };
   }
 
+  // 9e. Xóa sạch 100% tất cả các bài giảng trong thư mục Bài Giảng Điện Tử (Cả LocalStorage và Supabase)
+  async clearAllLectures() {
+    this.clearCache();
+
+    // 1. Xóa sạch trong LocalStorage
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    db.lectures = [];
+    localStorage.setItem("app_mock_db", JSON.stringify(db));
+
+    // 2. Xóa sạch trên Supabase Cloud Database
+    if (window.supabaseService?.isReady()) {
+      try {
+        const client = window.supabaseService.client;
+        await client.from("lecture_slides").delete().gte("created_at", "1970-01-01T00:00:00Z");
+      } catch (err) {
+        console.warn("Lỗi làm sạch bài giảng Supabase:", err);
+      }
+    }
+
+    return { success: true };
+  }
+
   // 9d. Khôi phục bài giảng từ Thùng Rác trở lại thư mục khối lớp gốc
   async restoreLectureFromTrash(id) {
     this.clearCache();

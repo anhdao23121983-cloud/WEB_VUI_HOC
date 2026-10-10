@@ -468,7 +468,11 @@ class LecturePortal {
               <span class="badge badge-cyan font-black text-xs">${this.lectures.length} Bài</span>
             </h3>
             <div class="flex items-center gap-2">
-
+              ${isTeacher ? `
+                <button onclick="lecturePortal.executeClearAllLectures()" class="btn btn-outline btn-sm font-bold text-rose-600 bg-rose-50 border-rose-200 hover:bg-rose-100 flex items-center gap-1" title="Xóa sạch tất cả các bài giảng điện tử trong thư mục">
+                  <span>🧹</span> <span>Xóa Sạch Thư Mục</span>
+                </button>
+              ` : ''}
               <button onclick="lectureUploadModal.openModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-emerald btn-sm font-black shadow-md flex items-center gap-1.5 px-3 py-1.5">
                 <span>📤</span> <span>Tải Lên Bài Giảng Điện Tử</span>
               </button>
@@ -497,6 +501,25 @@ class LecturePortal {
     window.app.showToast(`🗑️ Đang xóa tất cả bài giảng Lớp ${grade}...`, "info");
     await window.lectureService.deleteLecturesByGrade(grade);
     window.app.showToast(`🎉 Đã xóa sạch toàn bộ bài giảng Lớp ${grade}!`, "success");
+    this.render("main-content-area");
+  }
+
+  async executeClearAllLectures() {
+    const user = window.authService?.getUser();
+    const isTeacher = user && (user.role === 'teacher' || user.role === 'admin');
+
+    if (!isTeacher) {
+      window.app.showToast("⚠️ Chỉ Giáo viên hoặc Admin mới có quyền làm sạch thư mục bài giảng!", "warning");
+      return;
+    }
+
+    if (!confirm("Thầy/Cô có chắc chắn muốn XÓA SẠCH 100% toàn bộ tất cả bài giảng trong thư mục Bài Giảng Điện Tử không? Thao tác này sẽ dọn dẹp sạch kho bài giảng.")) {
+      return;
+    }
+
+    window.app.showToast("🧹 Đang xóa sạch tất cả bài giảng trong thư mục...", "info");
+    await window.lectureService.clearAllLectures();
+    window.app.showToast("🎉 Đã làm sạch toàn bộ bài giảng trong thư mục thành công!", "success");
     this.render("main-content-area");
   }
 
