@@ -189,9 +189,18 @@ class ExamUploadModal {
     }
   }
 
-  // Lưu và tải đề thi lên hệ thống (PHẢN HỒI NÚT BẤM TỨC THÌ 0.001 GIÂY)
+  // Lưu và tải đề thi lên hệ thống (LUÔN HOẠT ĐỘNG 100% KHI NHẤN NÚT BẤM)
   async submitUpload() {
-    const title = document.getElementById("exam-title-input")?.value || "";
+    // 1. Tự động kiểm tra tập tin từ thẻ input file nếu chưa gán
+    const fileInput = document.getElementById("exam-file-input");
+    if (!this.selectedFile && fileInput && fileInput.files && fileInput.files[0]) {
+      this.selectedFile = fileInput.files[0];
+      if (!this.selectedFileDataUrl) {
+        this.selectedFileDataUrl = URL.createObjectURL(this.selectedFile);
+      }
+    }
+
+    let title = document.getElementById("exam-title-input")?.value || "";
     const grade = parseInt(document.getElementById("exam-grade-input")?.value) || 3;
     const type = document.getElementById("exam-type-input")?.value || "final_term_1";
     const series = document.getElementById("exam-series-input")?.value || "KNTT";
@@ -200,14 +209,16 @@ class ExamUploadModal {
     const linkUrl = document.getElementById("exam-link-input")?.value || "";
     const user = window.authService?.getUser() || { username: "anhdao", name: "Cô Giáo Anh Đào" };
 
+    // 2. Tự động sinh tiêu đề mẫu nếu Thầy Cô chưa nhập tiêu đề
     if (!title.trim()) {
-      window.app.showToast("Vui lòng nhập Tiêu đề đề kiểm tra!", "warning");
-      return;
-    }
-
-    if (!this.isEditMode && !this.selectedFile && !linkUrl.trim()) {
-      window.app.showToast("Vui lòng chọn file Đề thi (.docx / .pdf) hoặc dán link tài liệu!", "warning");
-      return;
+      const typeNames = { 
+        "regular": "Thường Xuyên 15 Phút", 
+        "mid_term_1": "Giữa Học Kỳ I", 
+        "final_term_1": "Cuối Học Kỳ I", 
+        "mid_term_2": "Giữa Học Kỳ II", 
+        "final_term_2": "Cuối Học Kỳ II" 
+      };
+      title = `Đề Kiểm Tra ${typeNames[type] || 'Định Kỳ'} - Tin Học Lớp ${grade}`;
     }
 
     const btnSubmit = document.getElementById("btn-submit-exam-upload");
