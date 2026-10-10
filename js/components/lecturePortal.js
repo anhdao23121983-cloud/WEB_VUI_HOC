@@ -537,6 +537,7 @@ class LecturePortal {
           const sInfo = seriesLabels[l.bookSeries] || seriesLabels["KNTT"];
           const isFav = window.lectureService.isFavorite(l.id);
           const semesterText = l.semester === "sem2" ? "🌸 Học Kỳ 2" : "🍂 Học Kỳ 1";
+          const canManage = this.canManageLecture(l, user);
 
           return `
             <div class="glass-card overflow-hidden hover:border-cyan-500 transition-all duration-300 shadow-md hover:shadow-xl flex flex-col justify-between group relative">
@@ -598,14 +599,18 @@ class LecturePortal {
                       <span>📥</span> <span>Tải PPT</span>
                     </button>
 
-                    ${isTeacher ? `
-                      <button onclick="lectureUploadModal.openEditModal('${l.id}')" class="p-2 text-cyan-700 hover:bg-cyan-100 rounded-xl font-bold border border-cyan-200 transition-all hover:scale-105" title="Chỉnh sửa thông tin & đổi file PowerPoint">
+                    ${canManage ? `
+                      <button onclick="lectureUploadModal.openEditModal('${l.id}')" class="p-2 text-cyan-700 hover:bg-cyan-100 rounded-xl font-bold border border-cyan-200 transition-all hover:scale-105" title="Chỉnh sửa thông tin bài giảng chính chủ">
                         ✏️
                       </button>
-                      <button onclick="lecturePortal.openDeleteConfirmModal('${l.id}', '${l.title.replace(/'/g, "\\'")}')" class="p-2 text-rose-600 hover:bg-rose-100 rounded-xl font-bold border border-rose-200 transition-all hover:scale-105" title="Xóa bỏ bài giảng này khỏi hệ thống & Supabase">
+                      <button onclick="lecturePortal.openDeleteConfirmModal('${l.id}', '${l.title.replace(/'/g, "\\'")}')" class="p-2 text-rose-600 hover:bg-rose-100 rounded-xl font-bold border border-rose-200 transition-all hover:scale-105" title="Xóa bỏ bài giảng chính chủ">
                         🗑️
                       </button>
-                    ` : ''}
+                    ` : (isTeacher ? `
+                      <span class="px-2 py-1.5 text-slate-400 bg-slate-100 rounded-xl border border-slate-200 cursor-not-allowed text-[11px] font-bold flex items-center gap-1" title="Bảo mật chính chủ: Bài giảng này do tác giả (${l.authorName || 'Giáo viên khác'}) tạo ra. Chỉ chính chủ hoặc Admin mới được phép xóa/sửa.">
+                        🔒 Bài tác giả khác
+                      </span>
+                    ` : '')}
                   </div>
                 </div>
               </div>
@@ -614,6 +619,27 @@ class LecturePortal {
         }).join("")}
       </div>
     `;
+  }
+
+  // Kiểm tra phân quyền quản lý bài giảng theo đúng tác giả chính chủ hoặc Admin
+  canManageLecture(lecture, user) {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    if (user.role !== 'teacher') return false;
+
+    if (!lecture || (!lecture.createdByUsername && !lecture.authorName)) return true;
+
+    const currentUsername = (user.username || "").toLowerCase();
+    const creatorUsername = (lecture.createdByUsername || "").toLowerCase();
+    const currentName = (user.name || "").toLowerCase();
+    const creatorName = (lecture.authorName || "").toLowerCase();
+
+    if (creatorUsername && currentUsername === creatorUsername) return true;
+    if (creatorName && currentName && (currentName === creatorName || currentName.includes(creatorName) || creatorName.includes(currentName))) return true;
+
+    if ((creatorUsername === 'anhdao' || creatorName.includes('anh đào')) && (currentUsername === 'anhdao' || currentName.includes('anh đào'))) return true;
+
+    return false;
   }
 
   toggleFavorite(id) {
@@ -625,12 +651,18 @@ class LecturePortal {
   // =========================================================================
   // XÓA BÀI GIẢNG ĐIỆN TỬ (DELETE LECTURE SLIDE)
   // =========================================================================
-  openDeleteConfirmModal(id, title) {
+  async openDeleteConfirmModal(id, title) {
     const user = window.authService?.getUser();
     const isTeacher = user && (user.role === 'teacher' || user.role === 'admin');
 
     if (!isTeacher) {
       window.app.showToast("⚠️ Rào cản bảo mật: Chỉ Giáo viên hoặc Admin mới có quyền xóa bài giảng!", "warning");
+      return;
+    }
+
+    const lecture = await window.lectureService.getLectureById(id);
+    if (lecture && !this.canManageLecture(lecture, user)) {
+      window.app.showToast(`⚠️ Rào cản chính chủ: Bài giảng này do tác giả "${lecture.authorName || 'Giáo viên khác'}" tạo ra. Chỉ tác giả chính chủ hoặc Admin mới được phép xóa!`, "danger");
       return;
     }
 

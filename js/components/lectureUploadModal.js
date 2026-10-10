@@ -75,6 +75,11 @@ class LectureUploadModal {
     const lecture = await window.lectureService.getLectureById(lectureId);
     if (!lecture) return;
 
+    if (window.lecturePortal && !window.lecturePortal.canManageLecture(lecture, user)) {
+      window.app.showToast(`⚠️ Rào cản chính chủ: Bài giảng này do tác giả "${lecture.authorName || 'Giáo viên khác'}" tạo ra. Chỉ tác giả chính chủ hoặc Admin mới được phép chỉnh sửa!`, "danger");
+      return;
+    }
+
     this.isEditMode = true;
     this.editingLectureId = lectureId;
     this.existingLecture = lecture;
