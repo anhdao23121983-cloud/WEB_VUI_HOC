@@ -585,8 +585,8 @@ class LecturePortal {
                   </div>
 
                   <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
-                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình có Robot Mê Cung, Bấm Chuông, Ghi Âm Lời Giảng, 2 Màn Hình Presenter View & Bút Laser">
-                      <span>🎨</span> <span>Trình Chiếu & Laser</span>
+                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình bài giảng">
+                      <span>🖥️</span> <span>Trình Chiếu Bài Giảng</span>
                     </button>
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
                       <span>📥</span> <span>Tải PPT</span>
