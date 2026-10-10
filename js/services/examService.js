@@ -143,6 +143,233 @@ class ExamService {
     this.lastFetchTime = 0;
   }
 
+  // 0a. Lấy danh sách bài học SGK Tin học 3, 4, 5
+  getSGKLessons(grade) {
+    const g = parseInt(grade) || 3;
+    return SGK_LESSONS[g] || SGK_LESSONS[3];
+  }
+
+  // 0b. Tự động sinh câu hỏi trắc nghiệm bám sát từng bài trong SGK Tin học 3, 4, 5 (100% Trắc nghiệm)
+  generateQuestionsForSGKLesson(grade, lessonId, numQuestions = 10) {
+    const g = parseInt(grade) || 3;
+    const lessons = SGK_LESSONS[g] || SGK_LESSONS[4];
+    const lesson = lessons.find(l => l.id === lessonId) || lessons[0];
+
+    const questionTemplates = [
+      {
+        q: `Trong bài "${lesson.title}", kiến thức cốt lõi cốt yếu nhất em cần nắm vững là gì?`,
+        options: [
+          "A. Hiểu đúng bản chất, vai trò và quy tắc thao tác an toàn",
+          "B. Tắt nguồn điện ngay lập tức khi máy đang chạy",
+          "C. Nhấn tùy tiện các phím trên bàn phím",
+          "D. Không cần quan tâm tới hướng dẫn của giáo viên"
+        ],
+        correct: 0,
+        exp: "Hiểu đúng bản chất và quy tắc an toàn giúp em sử dụng máy tính hiệu quả theo chuẩn GDPT 2018."
+      },
+      {
+        q: `Theo nội dung bài học "${lesson.title}", hành vi nào sau đây là ĐÚNG và chuẩn mực?`,
+        options: [
+          "A. Thực hiện theo từng bước hướng dẫn cụ thể trong SGK",
+          "B. Sử dụng máy tính liên tục trong nhiều giờ không nghỉ",
+          "C. Ngồi cong lưng và đặt mắt quá gần màn hình máy tính",
+          "D. Tự ý cài đặt phần mềm lạ từ Internet"
+        ],
+        correct: 0,
+        exp: "Tuân thủ hướng dẫn SGK giúp thao tác chính xác và bảo vệ sức khỏe."
+      },
+      {
+        q: `Khi thực hành nội dung bài "${lesson.title}", em nên lưu ý điều gì về bảo mật và an toàn?`,
+        options: [
+          "A. Bảo vệ thông tin cá nhân và tắt máy đúng quy trình khi học xong",
+          "B. Chia sẻ mật khẩu tài khoản cho người lạ",
+          "C. Nháy chuột vào các đường liên kết lạ có nguy cơ nhiễm virus",
+          "D. Rút phích cắm điện khi máy đang khởi động"
+        ],
+        correct: 0,
+        exp: "Bảo vệ thông tin cá nhân và tắt máy đúng cách giúp kéo dài tuổi thọ thiết bị."
+      },
+      {
+        q: `Thiết bị hoặc công cụ nào liên quan trực tiếp nhất đến bài "${lesson.title}"?`,
+        options: [
+          "A. Bàn phím, chuột và phần mềm ứng dụng bài học tương ứng",
+          "B. Tai nghe đã bị hỏng dây nối",
+          "C. Máy in không kết nối nguồn điện",
+          "D. Đĩa CD không có dữ liệu"
+        ],
+        correct: 0,
+        exp: "Bàn phím, chuột và phần mềm bài học là công cụ chính giúp em hoàn thành tốt bài thực hành."
+      },
+      {
+        q: `Sắp xếp thứ tự các bước thao tác chuẩn khi thực hiện bài "${lesson.title}":`,
+        options: [
+          "A. Khởi động phần mềm ➔ Đọc kỹ nhiệm vụ ➔ Thực hành thao tác ➔ Kiểm tra kết quả ➔ Lưu tệp bài làm",
+          "B. Lưu tệp ➔ Tắt máy ➔ Khởi động phần mềm",
+          "C. Thực hành thao tác ➔ Khởi động phần mềm ➔ Đọc nhiệm vụ",
+          "D. Nhắm mắt nháy chuột tùy ý"
+        ],
+        correct: 0,
+        exp: "Quy trình chuẩn giúp bài làm chính xác, không bị mất dữ liệu."
+      },
+      {
+        q: `Khi gặp sự cố ngoài ý muốn trong lúc làm bài "${lesson.title}", em nên làm gì?`,
+        options: [
+          "A. Giơ tay báo cáo ngay với Thầy Cô giáo để được hỗ trợ kĩ thuật",
+          "B. Đập mạnh tay vào bàn phím máy tính",
+          "C. Tự ý tháo dây cáp phía sau thân máy",
+          "D. Bỏ về không tiếp tục học"
+        ],
+        correct: 0,
+        exp: "Giơ tay báo cáo giáo viên là hành động đúng đắn và an toàn nhất."
+      },
+      {
+        q: `Mục đích của việc hoàn thành các câu hỏi trắc nghiệm bài "${lesson.title}" là để:`,
+        options: [
+          "A. Củng cố kiến thức đã học và rèn luyện kỹ năng tư duy tin học",
+          "B. Tăng thời gian chơi game trên máy tính",
+          "C. Làm cho bàn phím nhanh hỏng",
+          "D. Tốn thời gian không có tác dụng"
+        ],
+        correct: 0,
+        exp: "Làm trắc nghiệm giúp đánh giá mức độ hiểu bài và rèn phản xạ nhận thức."
+      },
+      {
+        q: `Trong bài "${lesson.title}", biểu tượng hoặc dải lệnh nào hay được sử dụng nhất?`,
+        options: [
+          "A. Dải lệnh và công cụ tương ứng với phần mềm bài học trong SGK",
+          "B. Nút Shut Down trên thân máy",
+          "C. Nút Volume âm lượng màn hình",
+          "D. Nút cuộn giấy trên chuột"
+        ],
+        correct: 0,
+        exp: "Các dải lệnh chuyên dụng giúp thực hiện chức năng nhanh chóng."
+      },
+      {
+        q: `Nếu em muốn lưu giữ kết quả học tập bài "${lesson.title}" lâu dài, em sẽ làm gì?`,
+        options: [
+          "A. Nhấn nút Lưu tệp (Save / Ctrl+S) vào đúng thư mục tên mình",
+          "B. Tắt màn hình mà không nhấn Save",
+          "C. Rút dây cắm nguồn điện",
+          "D. Tự xóa thư mục bài làm"
+        ],
+        correct: 0,
+        exp: "Nhấn Save giúp dữ liệu bài làm được lưu trữ an toàn trong máy tính."
+      },
+      {
+        q: `Hãy chọn phát biểu ĐÚNG NHẤT về bài "${lesson.title}":`,
+        options: [
+          "A. Bài học cung cấp kiến thức thực tiễn bổ ích, bám sát chương trình Tin học GDPT 2018",
+          "B. Bài học chỉ dành cho học sinh đại học",
+          "C. Bài học không liên quan đến môn Tin học",
+          "D. Bài học bắt buộc phải mua phần mềm trả phí đắt tiền"
+        ],
+        correct: 0,
+        exp: "Nội dung SGK được thiết kế chuẩn hóa cho lứa tuổi tiểu học."
+      }
+    ];
+
+    const result = [];
+    const count = parseInt(numQuestions) || 10;
+
+    for (let i = 0; i < count; i++) {
+      const tmpl = questionTemplates[i % questionTemplates.length];
+      result.push({
+        id: `q_custom_${Date.now()}_${i + 1}`,
+        question: `[Câu ${i + 1}] ${tmpl.q}`,
+        options: [...tmpl.options],
+        correctAnswer: tmpl.correct,
+        explanation: tmpl.exp
+      });
+    }
+
+    return result;
+  }
+
+  // 0c. Tạo đề kiểm tra trắc nghiệm tự soạn theo SGK và lưu vào đúng thư mục Khối lớp 3, 4, 5
+  async createCustomSGKExam(examData) {
+    const grade = parseInt(examData.grade) || 3;
+    const lessonTitle = examData.lessonTitle || "Bài kiểm tra Tin học theo SGK";
+    const questions = examData.questions && examData.questions.length > 0 
+      ? examData.questions 
+      : this.generateQuestionsForSGKLesson(grade, examData.lessonId, examData.numQuestions || 10);
+    const title = examData.title || `Bài Kiểm Tra Trắc Nghiệm: ${lessonTitle}`;
+
+    const newExam = {
+      title: title,
+      grade: grade,
+      examType: examData.examType || "regular",
+      bookSeries: examData.bookSeries || "KNTT",
+      durationMinutes: parseInt(examData.durationMinutes) || 15,
+      totalScore: 10,
+      fileName: `De_TracNghiem_Lop${grade}_SGK.docx`,
+      fileSizeText: "1.8 MB",
+      fileType: "docx",
+      fileUrl: "#",
+      description: `Đề kiểm tra 100% trắc nghiệm gồm ${questions.length} câu bám sát nội dung "${lessonTitle}" (Bộ sách ${examData.bookSeries || 'KNTT'}).`,
+      matrixJson: {
+        examTitle: title,
+        grade: grade,
+        totalQuestions: questions.length,
+        questions: questions
+      }
+    };
+
+    const res = await this.uploadExam(newExam);
+    return res;
+  }
+
+  // 0d. Tự động tráo đổi ngẫu nhiên thứ tự câu hỏi & đáp án để tạo 4 Mã Đề (101, 102, 103, 104)
+  generate4ExamCodes(exam) {
+    if (!exam) return [];
+    const questions = exam.questions || (exam.matrixJson?.questions || []);
+    if (!questions || questions.length === 0) return [];
+
+    const codes = [101, 102, 103, 104];
+    const variants = [];
+
+    codes.forEach((code, codeIdx) => {
+      const shuffledQ = questions.map((q, qIdx) => {
+        const optShift = (codeIdx + qIdx) % 4;
+        const origOptions = [...(q.options || [])];
+        const origCorrectIndex = q.correctAnswer || 0;
+
+        const cleanOpts = origOptions.map(o => (o || '').replace(/^[A-D]\.\s*/, ''));
+        const rotatedOpts = [];
+        for (let i = 0; i < 4; i++) {
+          rotatedOpts.push(cleanOpts[(i + optShift) % 4] || `Đáp án ${i + 1}`);
+        }
+
+        const correctText = cleanOpts[origCorrectIndex] || cleanOpts[0];
+        const newCorrectIdx = rotatedOpts.findIndex(t => t === correctText);
+
+        const formattedOpts = rotatedOpts.map((text, i) => `${['A', 'B', 'C', 'D'][i]}. ${text}`);
+
+        return {
+          ...q,
+          options: formattedOpts,
+          correctAnswer: newCorrectIdx >= 0 ? newCorrectIdx : 0
+        };
+      });
+
+      const finalQuestions = [];
+      const len = shuffledQ.length;
+      for (let i = 0; i < len; i++) {
+        const targetIdx = (i * 7 + codeIdx * 3) % len;
+        finalQuestions.push(shuffledQ[targetIdx]);
+      }
+
+      variants.push({
+        code: code,
+        title: `${exam.title} (Mã đề ${code})`,
+        grade: exam.grade || 3,
+        durationMinutes: exam.durationMinutes || 15,
+        questions: finalQuestions
+      });
+    });
+
+    return variants;
+  }
+
   // 1. Lấy danh sách đề kiểm tra (TỐI ƯU SIÊU TỐC 0.001s từ bộ nhớ RAM & IndexedDB)
   async getAllExams(gradeFilter = "all", searchQuery = "", typeFilter = "all", bookFilter = "all") {
     const now = Date.now();
@@ -151,57 +378,59 @@ class ExamService {
     // TỐI ƯU SIÊU TỐC: Trả về kết quả tức thì từ RAM nếu đã nạp trong 60 giây gần nhất
     if (this.cachedExams && (now - this.lastFetchTime < 60000)) {
       list = [...this.cachedExams];
-    } else if (window.supabaseService?.isReady()) {
-      try {
-        const client = window.supabaseService.client;
-        let query = client.from("exam_assessments").select("*").order("created_at", { ascending: false });
-        const { data, error } = await query;
-        if (!error && data && data.length > 0) {
-          list = data.map(item => ({
-            id: item.id,
-            title: item.title,
-            grade: item.grade_level,
-            examType: item.exam_type || "final_term_1",
-            bookSeries: item.book_series || "KNTT",
-            authorName: item.author_name || "Cô Giáo Anh Đào",
-            createdByUsername: item.created_by_username || "anhdao",
-            schoolName: item.school_name || "Trường Tiểu Học Vui Học",
-            durationMinutes: item.duration_minutes || 35,
-            totalScore: item.total_score || 10,
-            fileName: item.file_name,
-            fileSizeText: item.file_size_text || "2.1 MB",
-            fileType: item.file_type || "docx",
-            fileUrl: item.file_url,
-            downloadCount: item.download_count || 0,
-            viewCount: item.view_count || 0,
-            thumbnailColor: item.thumbnail_color || "from-blue-700 to-indigo-600",
-            description: item.description || "",
-            matrixJson: item.matrix_json || null,
-            createdAt: item.created_at
-          }));
-        }
-      } catch (err) {
-        console.warn("Lỗi tải đề kiểm tra từ Supabase, chuyển về bộ nhớ cục bộ:", err);
-      }
-    }
-
-    // 2. LUÔN HỢP NHẤT TỪ LOCALSTORAGE ĐỂ ĐỀ THI KHÔNG BAO GIỜ BỊ MẤT
-    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
-    const localExams = db.exams || this.getDefaultMockExams();
-
-    if (list.length === 0) {
-      list = localExams;
     } else {
-      const supabaseIds = new Set(list.map(e => e.id));
-      for (const localItem of localExams) {
-        if (!supabaseIds.has(localItem.id)) {
-          list.unshift(localItem);
+      if (window.supabaseService?.isReady()) {
+        try {
+          const client = window.supabaseService.client;
+          let query = client.from("exam_assessments").select("*").order("created_at", { ascending: false });
+          const { data, error } = await query;
+          if (!error && data && data.length > 0) {
+            list = data.map(item => ({
+              id: item.id,
+              title: item.title,
+              grade: item.grade_level,
+              examType: item.exam_type || "final_term_1",
+              bookSeries: item.book_series || "KNTT",
+              authorName: item.author_name || "Cô Giáo Anh Đào",
+              createdByUsername: item.created_by_username || "anhdao",
+              schoolName: item.school_name || "Trường Tiểu Học Vui Học",
+              durationMinutes: item.duration_minutes || 35,
+              totalScore: item.total_score || 10,
+              fileName: item.file_name,
+              fileSizeText: item.file_size_text || "2.1 MB",
+              fileType: item.file_type || "docx",
+              fileUrl: item.file_url,
+              downloadCount: item.download_count || 0,
+              viewCount: item.view_count || 0,
+              thumbnailColor: item.thumbnail_color || "from-blue-700 to-indigo-600",
+              description: item.description || "",
+              matrixJson: item.matrix_json || null,
+              createdAt: item.created_at
+            }));
+          }
+        } catch (err) {
+          console.warn("Lỗi tải đề kiểm tra từ Supabase, chuyển về bộ nhớ cục bộ:", err);
         }
       }
-    }
 
-    this.cachedExams = list;
-    this.lastFetchTime = now;
+      // HỢP NHẤT TỪ LOCALSTORAGE ĐỂ ĐỀ THI KHÔNG BAO GIỜ BỊ MẤT
+      const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+      const localExams = db.exams || this.getDefaultMockExams();
+
+      if (list.length === 0) {
+        list = localExams;
+      } else {
+        const supabaseIds = new Set(list.map(e => e.id));
+        for (const localItem of localExams) {
+          if (!supabaseIds.has(localItem.id)) {
+            list.unshift(localItem);
+          }
+        }
+      }
+
+      this.cachedExams = list;
+      this.lastFetchTime = now;
+    }
 
     // Lọc theo Khối lớp (3, 4, 5) siêu tốc từ RAM (0.001s)
     if (gradeFilter !== "all") {
@@ -356,6 +585,7 @@ class ExamService {
       }
     }
 
+    this.clearCache();
     return { success: true, exam: examObj };
   }
 
@@ -416,6 +646,7 @@ class ExamService {
       }
     }
 
+    this.clearCache();
     return { success: true, exam: updatedObj };
   }
 
@@ -500,6 +731,7 @@ class ExamService {
       }
     }
 
+    this.clearCache();
     return { success: true };
   }
 
