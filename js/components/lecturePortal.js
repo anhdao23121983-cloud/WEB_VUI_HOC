@@ -2156,12 +2156,12 @@ class LecturePortal {
     if (!lecture || !lecture.fileUrl) return "";
     let url = lecture.fileUrl.trim();
 
-    // Nếu đường dẫn trống hoặc không hợp lệ
+    // 1. Nếu đường dẫn trống hoặc mẫu không hợp lệ
     if (!url || url === "#" || url.includes("file-examples.com") || url.includes("example.pptx")) {
       return "";
     }
 
-    // 1. Nếu là Google Slides / Presentation
+    // 2. Nếu là Google Slides / Presentation
     if (url.includes("docs.google.com/presentation")) {
       if (!url.includes("/embed")) {
         url = url.replace(/\/pub\??.*/, "/embed").replace(/\/edit\??.*/, "/embed");
@@ -2169,33 +2169,40 @@ class LecturePortal {
       return url;
     }
 
-    // 2. Nếu là Blob URL (File được chọn từ máy tính giáo viên) hoặc Data URL
-    if (url.startsWith("blob:") || url.startsWith("data:")) {
-      return url;
-    }
-
-    // 3. Nếu là file PDF trực tiếp (Blob, Direct link, Supabase Storage)
     const lower = url.toLowerCase();
-    if (lower.endsWith(".pdf") || lower.includes(".pdf?") || (lecture.fileType && lecture.fileType.toLowerCase() === "pdf")) {
+    const fileType = (lecture.fileType || "").toLowerCase();
+    const fileName = (lecture.fileName || "").toLowerCase();
+    const isPdf = lower.endsWith(".pdf") || lower.includes(".pdf?") || fileType === "pdf" || fileName.endsWith(".pdf");
+
+    // 3. Nếu là file PDF (Dù là Blob URL, Data URL hay Link công khai) - Trình duyệt xem được trực tiếp mượt mà
+    if (isPdf) {
       return url;
     }
 
-    // 4. Nếu là file PowerPoint (.pptx, .ppt) tải lên Supabase Storage hoặc Server URL
-    if (lower.endsWith(".pptx") || lower.endsWith(".ppt") || lower.includes("supabase.co") || lower.includes(".pptx?") || lower.includes(".ppt?") || (lecture.fileType && (lecture.fileType.toLowerCase() === "pptx" || lecture.fileType.toLowerCase() === "ppt"))) {
+    // 4. Nếu là Blob URL (File PowerPoint .pptx/.ppt chọn trực tiếp từ máy tính) hoặc Data URL
+    // Giải thích kỹ thuật: Trình duyệt KHÔNG xem được trực tiếp binary PPTX qua iframe src=blob (sẽ bị màn hình đen).
+    // Office Online Viewer cũng KHÔNG thể kết nối tới blob: URL local qua internet.
+    // => Trả rỗng để tự động trình chiếu qua HTML5 Slide Presentation Player sinh động, chuẩn 100%!
+    if (url.startsWith("blob:") || url.startsWith("data:")) {
+      return "";
+    }
+
+    // 5. Nếu là file PowerPoint (.pptx, .ppt) tải lên Supabase Storage hoặc Server URL công khai
+    if (lower.endsWith(".pptx") || lower.endsWith(".ppt") || lower.includes("supabase.co") || lower.includes(".pptx?") || lower.includes(".ppt?") || fileType === "pptx" || fileType === "ppt") {
       if (viewerType === 'google') {
         return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
       }
-      // Mặc định dùng Office Online Web Viewer trình chiếu cực mượt
+      // Dùng Office Online Web Viewer trình chiếu công khai
       return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
     }
 
-    // 5. Mọi đường dẫn URL trực tiếp khác
-    if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/")) {
+    // 6. Mọi đường dẫn URL trực tiếp khác
+    if (url.startsWith("http://") || url.startsWith("https://")) {
       if (url.includes("docs.google.com")) return url;
       return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
     }
 
-    return url;
+    return "";
   }
 
   // Tạo tài liệu HTML5 Interactive Slide Player chuẩn bài giảng giữ nguyên nội dung gốc
