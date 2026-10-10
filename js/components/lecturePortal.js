@@ -595,7 +595,10 @@ class LecturePortal {
                 <!-- Hàng nút hành động bài giảng -->
                 <div class="space-y-2 pt-2 border-t border-slate-100">
                   <div class="flex items-center justify-between gap-1.5 pt-1 flex-wrap">
-                    <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Tải file PowerPoint về máy">
+                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide bài giảng có Bút Laser đỏ & Bút vẽ dạ quang">
+                      <span>🎨</span> <span>Trình Chiếu & Laser</span>
+                    </button>
+                    <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
                       <span>📥</span> <span>Tải PPT</span>
                     </button>
 
@@ -2289,8 +2292,13 @@ class LecturePortal {
             <span>◀️</span> <span>Slide Trước</span>
           </button>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-3">
             <span id="slide-num-disp" class="font-black text-amber-300">Slide 1 / 4</span>
+            ${lecture.fileUrl && lecture.fileUrl !== '#' ? `
+              <a href="${lecture.fileUrl}" download="${lecture.fileName || 'BaiGiang.pptx'}" target="_blank" class="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 font-bold rounded-xl border border-amber-500/40 flex items-center gap-1 transition-all" title="Mở / Tải về file PowerPoint gốc giáo viên đã tải lên">
+                <span>📥</span> <span class="hidden sm:inline">File Gốc:</span> <b>${lecture.fileName || 'PPTX'}</b>
+              </a>
+            ` : ''}
           </div>
 
           <button onclick="nextSlide()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 font-bold rounded-xl flex items-center gap-1">
