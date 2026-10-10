@@ -135,8 +135,8 @@ class ExamPortal {
                 <span>📡</span> <span>Giám Thị Live</span>
               </button>
             ` : ''}
-            <button onclick="examPortal.downloadFolderZip(examPortal.selectedFolder)" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Tải toàn bộ đề thi, đáp án và bảng điểm dạng tệp nén .zip">
-              <span>📦</span> <span>Tải Trọn Bộ (.zip)</span>
+            <button onclick="examPortal.downloadFolderZip(examPortal.selectedFolder)" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="Tải toàn bộ bài kiểm tra, đáp án và bảng điểm từ hệ thống về máy tính dạng file .zip">
+              <span>📥</span> <span>Tải Bài Kiểm Tra Về Máy Tính</span>
             </button>
             <button onclick="examPortal.openBatchPrintModal(examPortal.selectedFolder)" class="btn bg-white/20 hover:bg-white/30 text-white font-black text-xs py-2.5 px-3.5 rounded-xl backdrop-blur-md border border-white/30 flex items-center gap-1.5 shadow-md" title="In toàn bộ đề thi và đáp án ra giấy máy in">
               <span>🖨️</span> <span>In Hàng Loạt</span>
