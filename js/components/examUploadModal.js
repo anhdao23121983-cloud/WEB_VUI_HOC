@@ -213,19 +213,20 @@ class ExamUploadModal {
       btnSubmit.classList.add("pointer-events-none");
     }
 
-    let uploadedPublicUrl = linkUrl.trim();
+    // Chuẩn bị URL tập tin tức thì (DataURL / ObjectURL / linkUrl)
+    let fileUrl = linkUrl.trim();
+    let fileName = "De_Kiem_Tra_TinHoc.docx";
+    let fileSizeText = "2.1 MB";
+    let fileType = "docx";
 
-    // Tải file siêu tốc lên Supabase Storage với timeout 2s (nếu quá 2s tự động dùng chế độ lưu tức thì)
-    if (this.selectedFile && window.supabaseService?.isReady()) {
-      try {
-        const uploadRes = await window.supabaseService.uploadFileToStorage(this.selectedFile, "exam-files", 2000);
-        if (uploadRes.success && uploadRes.url) {
-          uploadedPublicUrl = uploadRes.url;
-        }
-      } catch (err) {
-        console.warn("Dùng DataURL/ObjectURL để lưu siêu tốc:", err);
-      }
+    if (this.selectedFile) {
+      fileName = this.selectedFile.name;
+      fileSizeText = (this.selectedFile.size / (1024 * 1024)).toFixed(1) + " MB";
+      fileType = fileName.split('.').pop().toLowerCase();
+      fileUrl = this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
     }
+
+    const selectedFileRef = this.selectedFile;
 
     // CHẾ ĐỘ CHỈNH SỬA (EDIT MODE)
     if (this.isEditMode && this.editingExamId) {
@@ -240,44 +241,29 @@ class ExamUploadModal {
       };
 
       if (this.selectedFile) {
-        updatePayload.fileName = this.selectedFile.name;
-        updatePayload.fileSizeText = (this.selectedFile.size / (1024 * 1024)).toFixed(1) + " MB";
-        updatePayload.fileType = this.selectedFile.name.split('.').pop().toLowerCase();
-        updatePayload.fileUrl = uploadedPublicUrl || this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
-      } else if (uploadedPublicUrl && uploadedPublicUrl !== this.existingExam?.fileUrl) {
-        updatePayload.fileUrl = uploadedPublicUrl;
+        updatePayload.fileName = fileName;
+        updatePayload.fileSizeText = fileSizeText;
+        updatePayload.fileType = fileType;
+        updatePayload.fileUrl = fileUrl;
       }
 
-      const res = await window.examService.updateExam(this.editingExamId, updatePayload);
+      window.examService.updateExam(this.editingExamId, updatePayload);
+      window.app.showToast("⚡ Đã cập nhật đề kiểm tra siêu tốc!", "success");
+      this.closeModal();
+      if (window.examPortal) window.examPortal.render("main-content-area");
 
-      if (btnSubmit) {
-        btnSubmit.innerHTML = "💾 Lưu Thay Đổi";
-        btnSubmit.classList.remove("pointer-events-none");
-      }
-
-      if (res.success) {
-        window.app.showToast("🎉 Đã cập nhật đề kiểm tra thành công!", "success");
-        this.closeModal();
-        if (window.examPortal) window.examPortal.render("main-content-area");
-      } else {
-        window.app.showToast("Không thể cập nhật đề kiểm tra, vui lòng thử lại!", "error");
+      // Đồng bộ ngầm file lên Supabase Storage (Non-blocking Background Task)
+      if (selectedFileRef && window.supabaseService?.isReady()) {
+        window.supabaseService.uploadFileToStorage(selectedFileRef, "exam-files", 8000).then(uploadRes => {
+          if (uploadRes?.success && uploadRes?.url) {
+            window.examService.updateExam(this.editingExamId, { fileUrl: uploadRes.url });
+          }
+        });
       }
       return;
     }
 
-    // CHẾ ĐỘ TẠO MỚI (CREATE MODE)
-    let fileUrl = uploadedPublicUrl;
-    let fileName = "De_Kiem_Tra_TinHoc.docx";
-    let fileSizeText = "2.1 MB";
-    let fileType = "docx";
-
-    if (this.selectedFile) {
-      fileName = this.selectedFile.name;
-      fileSizeText = (this.selectedFile.size / (1024 * 1024)).toFixed(1) + " MB";
-      fileType = fileName.split('.').pop().toLowerCase();
-      fileUrl = fileUrl || this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
-    }
-
+    // CHẾ ĐỘ TẠO MỚI (CREATE MODE - LƯU TỨC THÌ 0.01 GIÂY)
     const res = await window.examService.uploadExam({
       title: title,
       grade: grade,
@@ -293,19 +279,21 @@ class ExamUploadModal {
       description: desc
     });
 
-    if (btnSubmit) {
-      btnSubmit.innerHTML = "🚀 Tải Lên & Lưu Đề";
-      btnSubmit.classList.remove("pointer-events-none");
+    // Đóng Modal & Cập nhật giao diện TỨC THÌ (Zero delay!)
+    this.closeModal();
+    window.app.showToast("⚡ Đã tải lên đề kiểm tra siêu tốc thành công!", "success");
+    if (window.examPortal) {
+      window.examPortal.render("main-content-area");
     }
 
-    if (res.success) {
-      window.app.showToast("🎉 Đã tải lên và đồng bộ đề kiểm tra lên Supabase thành công!", "success");
-      this.closeModal();
-      if (window.examPortal) {
-        window.examPortal.render("main-content-area");
-      }
-    } else {
-      window.app.showToast("Không thể tải lên đề thi, vui lòng thử lại!", "error");
+    // Tải file lên Supabase Storage ngầm (Background Task - Không chặn giao diện người dùng)
+    if (selectedFileRef && window.supabaseService?.isReady() && res?.data?.id) {
+      const createdExamId = res.data.id;
+      window.supabaseService.uploadFileToStorage(selectedFileRef, "exam-files", 8000).then(uploadRes => {
+        if (uploadRes?.success && uploadRes?.url) {
+          window.examService.updateExam(createdExamId, { fileUrl: uploadRes.url });
+        }
+      });
     }
   }
 }

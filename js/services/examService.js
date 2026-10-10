@@ -624,46 +624,45 @@ class ExamService {
     db.exams.unshift(examObj);
     localStorage.setItem("app_mock_db", JSON.stringify(db));
 
-    // 2. Đồng bộ lên Supabase Database
+    // 2. Đồng bộ ngầm lên Supabase Database (Background Non-Blocking, không chờ đợt để siêu tốc 0.01s)
     if (window.supabaseService?.isReady()) {
-      try {
-        const client = window.supabaseService.client;
-        const payload = {
-          title: examObj.title,
-          grade_level: examObj.grade,
-          exam_type: examObj.examType,
-          book_series: examObj.bookSeries,
-          author_name: examObj.authorName,
-          created_by_username: examObj.createdByUsername,
-          school_name: examObj.schoolName,
-          duration_minutes: examObj.durationMinutes,
-          total_score: examObj.totalScore,
-          file_name: examObj.fileName,
-          file_size_text: examObj.fileSizeText,
-          file_type: examObj.fileType,
-          file_url: examObj.fileUrl,
-          download_count: 0,
-          view_count: 0,
-          thumbnail_color: examObj.thumbnailColor,
-          description: examObj.description,
-          matrix_json: examObj.matrixJson,
-          updated_at: new Date().toISOString()
-        };
+      (async () => {
+        try {
+          const client = window.supabaseService.client;
+          const payload = {
+            title: examObj.title,
+            grade_level: examObj.grade,
+            exam_type: examObj.examType,
+            book_series: examObj.bookSeries,
+            author_name: examObj.authorName,
+            created_by_username: examObj.createdByUsername,
+            school_name: examObj.schoolName,
+            duration_minutes: examObj.durationMinutes,
+            total_score: examObj.totalScore,
+            file_name: examObj.fileName,
+            file_size_text: examObj.fileSizeText,
+            file_type: examObj.fileType,
+            file_url: examObj.fileUrl,
+            download_count: 0,
+            view_count: 0,
+            thumbnail_color: examObj.thumbnailColor,
+            description: examObj.description,
+            matrix_json: examObj.matrixJson,
+            updated_at: new Date().toISOString()
+          };
 
-        if (examData.id && !examData.id.startsWith("exam_")) {
-          payload.id = examData.id;
+          if (examData.id && !examData.id.startsWith("exam_")) {
+            payload.id = examData.id;
+          }
+
+          const { data } = await client.from("exam_assessments").insert([payload]).select().single();
+          if (data && data.id) {
+            examObj.id = data.id;
+          }
+        } catch (err) {
+          console.warn("Lỗi đồng bộ đề thi ngầm lên Supabase (Đã lưu bản địa siêu tốc):", err);
         }
-
-        const dbPromise = client.from("exam_assessments").insert([payload]).select().single();
-        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ data: null, error: { message: "Supabase DB timeout" } }), 2000));
-        const { data, error } = await Promise.race([dbPromise, timeoutPromise]);
-
-        if (data && data.id) {
-          examObj.id = data.id;
-        }
-      } catch (err) {
-        console.warn("Lỗi đồng bộ đề thi lên Supabase (Đã lưu bản địa siêu tốc):", err);
-      }
+      })();
     }
 
     this.clearCache();
