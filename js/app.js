@@ -97,7 +97,11 @@ class Application {
       if (route === "exams-3") window.examPortal.enterFolder(3);
       else if (route === "exams-4") window.examPortal.enterFolder(4);
       else if (route === "exams-5") window.examPortal.enterFolder(5);
-      else if (route === "exams-custom") {
+      else if (route === "exams-upload" || route === "exams-my") {
+        window.examPortal.enterFolder("all");
+        window.examPortal.switchTab("my_exams");
+        setTimeout(() => window.examUploadModal?.openModal(3), 150);
+      } else if (route === "exams-custom") {
         window.examPortal.enterFolder("all");
         setTimeout(() => window.examPortal.openCustomQuizCreatorModal(3), 150);
       } else {
