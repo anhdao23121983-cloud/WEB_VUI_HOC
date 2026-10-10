@@ -498,7 +498,7 @@ class ExamPortal {
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <span>📝 DANH SÁCH TỆP TIN TRONG ${this.selectedFolder === 'all' ? 'TẤT CẢ THƯ MỤC' : currentFolderCfg.title.toUpperCase()}</span>
+              <span>📝 DANH SÁCH TỆP TIN TRONG ${this.selectedFolder === 'all' ? 'TẤT CẢ THƯ MỤC' : ((currentFolderCfg && currentFolderCfg.title) ? currentFolderCfg.title.toUpperCase() : 'THƯ MỤC KIỂM TRA')}</span>
               <span class="badge badge-emerald font-black text-xs">${this.exams.length} Tệp</span>
             </h3>
             ${isTeacher ? `

@@ -205,8 +205,20 @@ class ExamService {
         description: "Đề kiểm tra trắc nghiệm & lập trình Scratch, bảng tính Excel đơn giản bám sát chương trình GDPT 2018.",
         matrixJson: null,
         createdAt: "2026-09-10T08:00:00.000Z"
+  }
+
+  // Đọc dữ liệu an toàn từ LocalStorage chống lỗi SyntaxError
+  getLocalStorageDB() {
+    try {
+      const raw = localStorage.getItem("app_mock_db");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") return parsed;
       }
-    ];
+    } catch (e) {
+      console.warn("Lỗi đọc dữ liệu đệm LocalStorage:", e);
+    }
+    return (typeof MOCK_DATABASE !== 'undefined' ? MOCK_DATABASE : { exams: [], exam_attempts: [] });
   }
 
   // 0a. Lấy danh sách bài học SGK Tin học 3, 4, 5
@@ -480,8 +492,8 @@ class ExamService {
       }
 
       // HỢP NHẤT TỪ LOCALSTORAGE ĐỂ ĐỀ THI KHÔNG BAO GIỜ BỊ MẤT
-      const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
-      const localExams = db.exams || this.getDefaultMockExams();
+      const db = this.getLocalStorageDB();
+      const localExams = (db && db.exams && db.exams.length > 0) ? db.exams : this.getDefaultMockExams();
 
       if (list.length === 0) {
         list = localExams;
