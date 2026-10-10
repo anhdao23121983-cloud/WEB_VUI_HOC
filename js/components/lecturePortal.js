@@ -585,8 +585,8 @@ class LecturePortal {
                   </div>
 
                   <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
-                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình bài giảng">
-                      <span>🖥️</span> <span>Trình Chiếu Bài Giảng</span>
+                    <button onclick="lecturePortal.previewLecture('${l.id}')" class="btn btn-primary btn-sm flex-1 font-black flex items-center justify-center gap-1 shadow-sm" title="Trình chiếu Slide toàn màn hình bài giảng có Bút Laser đỏ & Bút vẽ dạ quang">
+                      <span>🎨</span> <span>Trình Chiếu & Laser</span>
                     </button>
                     <button onclick="lecturePortal.downloadLecture('${l.id}')" class="btn btn-outline btn-sm font-bold flex items-center gap-1" title="Tải file PowerPoint về máy">
                       <span>📥</span> <span>Tải PPT</span>
@@ -1966,42 +1966,34 @@ class LecturePortal {
     const modal = document.getElementById("lecture-preview-modal");
     const iframe = document.getElementById("lec-preview-iframe");
     const titleEl = document.getElementById("lec-preview-title");
+    const teacherTools = document.getElementById("lec-preview-teacher-tools");
+    const teacherSoundboard = document.getElementById("lec-teacher-soundboard");
+
     if (titleEl) titleEl.innerText = `${lecture.title} (Lớp ${lecture.grade})`;
 
-    // Ẩn/Hiện thanh công cụ tương tác của Giáo viên theo phân quyền vai trò
     if (teacherTools) {
-      if (isTeacher) {
-        teacherTools.classList.remove("hidden");
-      } else {
-        teacherTools.classList.add("hidden");
-      }
+      teacherTools.classList.remove("hidden");
     }
 
     if (teacherSoundboard) {
-      if (isTeacher) {
-        teacherSoundboard.classList.remove("hidden");
-      } else {
-        teacherSoundboard.classList.add("hidden");
-      }
+      teacherSoundboard.classList.remove("hidden");
     }
 
-    // Tốc độ nạp tức thì 0.001s: Nạp Slide HTML5 Native Player không qua dịch vụ trung gian giật lag
+    // Tốc độ nạp tức thì: Nạp Slide PowerPoint / PDF đã đưa lên hoặc nạp HTML5 Native Player nếu không có file
     const smartUrl = this.getSmartEmbedUrl(lecture);
     if (iframe) {
-      if (smartUrl && smartUrl.includes("docs.google.com/presentation")) {
+      if (smartUrl) {
         iframe.removeAttribute("srcdoc");
         iframe.src = smartUrl;
       } else {
-        // Tự động phát trình chiếu HTML5 Slide Interactive 3D tức thì 0.001s
+        // Nếu bài giảng chưa có file tải lên hoặc file demo -> dùng Trình chiếu HTML5 Player
         iframe.removeAttribute("src");
         iframe.srcdoc = this.buildHTML5SlidePlayerDoc(lecture);
       }
     }
 
     if (modal) modal.classList.add("active");
-    if (isTeacher) {
-      this.initDrawingCanvas("lec-preview-canvas");
-    }
+    this.initDrawingCanvas("lec-preview-canvas");
   }
 
   // Đổi nguồn phát viewer dự phòng (Office Online -> HTML5 Player -> Google Docs)
@@ -2063,17 +2055,17 @@ class LecturePortal {
     window.ttsService.speak(textToSpeak);
   }
 
-  // Tự động phân tích và sinh Embed URL thông minh
-  getSmartEmbedUrl(lecture) {
+  // Tự động phân tích và sinh Embed URL thông minh cho các file bài giảng đã đưa lên
+  getSmartEmbedUrl(lecture, viewerType = 'office') {
     if (!lecture || !lecture.fileUrl) return "";
     let url = lecture.fileUrl.trim();
 
-    // Nếu đường dẫn bị hỏng hoặc chứa file-examples.com -> Trả rỗng để dùng HTML5 Player
+    // Nếu đường dẫn mẫu không hợp lệ -> Trả rỗng để dùng HTML5 Player
     if (url.includes("file-examples.com") || url.includes("example.pptx") || url === "#" || !url.startsWith("http")) {
       return "";
     }
 
-    // Nếu là Google Presentation
+    // 1. Nếu là Google Slides / Presentation
     if (url.includes("docs.google.com/presentation")) {
       if (!url.includes("/embed")) {
         url = url.replace(/\/pub\??.*/, "/embed").replace(/\/edit\??.*/, "/embed");
@@ -2081,12 +2073,22 @@ class LecturePortal {
       return url;
     }
 
-    // Nếu là file trực tiếp (.pptx, .ppt, .pdf) từ Supabase Storage hoặc Server
-    if (url.endsWith(".pptx") || url.endsWith(".ppt") || url.endsWith(".pdf")) {
-      return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+    // 2. Nếu là file PDF trực tiếp
+    if (url.toLowerCase().endsWith(".pdf") || url.toLowerCase().includes(".pdf?")) {
+      return url;
     }
 
-    return url;
+    // 3. Nếu là file PowerPoint (.pptx, .ppt) tải lên Supabase Storage hoặc Server
+    const lower = url.toLowerCase();
+    if (lower.endsWith(".pptx") || lower.endsWith(".ppt") || lower.includes("supabase.co") || lower.includes(".pptx?") || lower.includes(".ppt?")) {
+      if (viewerType === 'google') {
+        return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+      }
+      // Mặc định dùng Office Online Web Viewer trình chiếu cực mượt
+      return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
+    }
+
+    return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
   }
 
   // Tạo tài liệu HTML5 Interactive Slide Player đầy đủ sinh động không bao giờ lỗi
