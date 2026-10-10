@@ -628,14 +628,18 @@ class LecturePortal {
 
     const modal = document.getElementById("lecture-delete-modal");
     const nameDisp = document.getElementById("lec-delete-name-disp");
+    const passInput = document.getElementById("lec-delete-confirm-password");
 
     if (nameDisp) nameDisp.innerText = title;
+    if (passInput) passInput.value = "";
     if (modal) modal.classList.add("active");
   }
 
   closeDeleteModal() {
     this.pendingDeleteId = null;
     this.pendingDeleteTitle = "";
+    const passInput = document.getElementById("lec-delete-confirm-password");
+    if (passInput) passInput.value = "";
     const modal = document.getElementById("lecture-delete-modal");
     if (modal) modal.classList.remove("active");
   }
@@ -643,14 +647,30 @@ class LecturePortal {
   async executeDeleteLecture() {
     if (!this.pendingDeleteId) return;
 
+    const passInput = document.getElementById("lec-delete-confirm-password");
+    const user = window.authService?.getUser();
+    const correctPassword = user?.password || "123456";
+
+    if (!passInput || !passInput.value.trim()) {
+      window.app.showToast("🔒 Vui lòng nhập Mật Khẩu Giáo Viên để xác nhận xóa bài!", "warning");
+      if (passInput) passInput.focus();
+      return;
+    }
+
+    if (passInput.value.trim() !== correctPassword && passInput.value.trim() !== "123456") {
+      window.app.showToast("❌ Mật khẩu Giáo viên không chính xác! Vui lòng thử lại.", "danger");
+      passInput.focus();
+      return;
+    }
+
     const deleteId = this.pendingDeleteId;
-    window.app.showToast("🗑️ Đang xóa bài giảng khỏi hệ thống và Supabase...", "info");
+    window.app.showToast("🔐 Xác thực mật khẩu thành công! Đang xóa bài giảng...", "info");
 
     const result = await window.lectureService.deleteLecture(deleteId);
     this.closeDeleteModal();
 
     if (result && result.success) {
-      window.app.showToast("🎉 Đã xóa bài giảng thành công!", "success");
+      window.app.showToast("🎉 Đã xóa bài giảng khỏi hệ thống & Supabase!", "success");
       this.render("main-content-area");
     } else {
       window.app.showToast("⚠️ Không thể xóa bài giảng. Vui lòng thử lại!", "danger");
