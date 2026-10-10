@@ -137,10 +137,76 @@ class ExamService {
     this.lastFetchTime = 0;
   }
 
-  // Xóa bộ nhớ đệm cache khi thêm/sửa/xóa đề thi
-  clearCache() {
-    this.cachedExams = null;
-    this.lastFetchTime = 0;
+  // Danh sách đề thi mẫu mặc định dự phòng khi offline hoặc cơ sở dữ liệu trống
+  getDefaultMockExams() {
+    return [
+      {
+        id: "exam_301",
+        title: "Đề Kiểm Tra Đánh Giá Định Kỳ Môn Tin Học Lớp 3 (Học Kỳ I)",
+        grade: 3,
+        examType: "final_term_1",
+        bookSeries: "KNTT",
+        authorName: "Cô Giáo Anh Đào",
+        createdByUsername: "anhdao",
+        schoolName: "Trường Tiểu Học Vui Học",
+        durationMinutes: 35,
+        totalScore: 10,
+        fileName: "De_Kiem_Tra_TinHoc_Lop3_HK1.docx",
+        fileSizeText: "2.1 MB",
+        fileType: "docx",
+        fileUrl: "#",
+        downloadCount: 45,
+        viewCount: 180,
+        thumbnailColor: "from-blue-700 to-indigo-600",
+        description: "Đề kiểm tra trắc nghiệm & tự luận đánh giá kiến thức máy tính, chuột và bàn phím theo Thông tư 27/2020.",
+        matrixJson: null,
+        createdAt: "2026-09-01T08:00:00.000Z"
+      },
+      {
+        id: "exam_401",
+        title: "Đề Kiểm Tra Định Kỳ Môn Tin Học Lớp 4 (Giữa Học Kỳ I)",
+        grade: 4,
+        examType: "mid_term_1",
+        bookSeries: "KNTT",
+        authorName: "Cô Giáo Anh Đào",
+        createdByUsername: "anhdao",
+        schoolName: "Trường Tiểu Học Vui Học",
+        durationMinutes: 35,
+        totalScore: 10,
+        fileName: "De_Kiem_Tra_TinHoc_Lop4_GHK1.docx",
+        fileSizeText: "2.4 MB",
+        fileType: "docx",
+        fileUrl: "#",
+        downloadCount: 62,
+        viewCount: 230,
+        thumbnailColor: "from-amber-600 to-orange-600",
+        description: "Đề kiểm tra trắc nghiệm & tự luận đánh giá phần cứng, phần mềm, cây thư mục và soạn thảo trình chiếu PowerPoint.",
+        matrixJson: null,
+        createdAt: "2026-09-05T08:00:00.000Z"
+      },
+      {
+        id: "exam_501",
+        title: "Đề Kiểm Tra Khảo sát Định Kỳ Môn Tin Học Lớp 5 (Cuối Học Kỳ I)",
+        grade: 5,
+        examType: "final_term_1",
+        bookSeries: "KNTT",
+        authorName: "Cô Giáo Anh Đào",
+        createdByUsername: "anhdao",
+        schoolName: "Trường Tiểu Học Vui Học",
+        durationMinutes: 35,
+        totalScore: 10,
+        fileName: "De_Kiem_Tra_TinHoc_Lop5_HK1.docx",
+        fileSizeText: "2.8 MB",
+        fileType: "docx",
+        fileUrl: "#",
+        downloadCount: 88,
+        viewCount: 310,
+        thumbnailColor: "from-emerald-700 to-teal-600",
+        description: "Đề kiểm tra trắc nghiệm & lập trình Scratch, bảng tính Excel đơn giản bám sát chương trình GDPT 2018.",
+        matrixJson: null,
+        createdAt: "2026-09-10T08:00:00.000Z"
+      }
+    ];
   }
 
   // 0a. Lấy danh sách bài học SGK Tin học 3, 4, 5
@@ -1064,7 +1130,7 @@ class ExamService {
       durationSpentSeconds: labData.durationSpentSeconds || 45,
       isForceSubmitted: false
     };
-    return await this.saveExamAttempt(attemptObj);
+    return await this.submitExamAttempt(attemptObj);
   }
 
   // 13. Tổng hợp số liệu Thống Kê & Phổ Điểm Kiểm Tra
@@ -1361,11 +1427,13 @@ class ExamService {
       }
     };
 
+    const g = parseInt(grade) || 3;
+    const base = defaultConfigs[g] || defaultConfigs[3];
     try {
       const saved = JSON.parse(localStorage.getItem("exam_folder_configs")) || {};
-      return { ...defaultConfigs[grade], ...(saved[grade] || {}) };
+      return { ...base, ...(saved[g] || saved[grade] || {}) };
     } catch (e) {
-      return defaultConfigs[grade];
+      return base;
     }
   }
 

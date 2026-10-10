@@ -79,40 +79,41 @@ class ExamPortal {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const user = window.authService?.getUser();
-    const isTeacher = user && (user.role === 'teacher' || user.role === 'admin');
-    
-    // Tải toàn bộ đề kiểm tra
-    const effectiveGrade = this.selectedFolder !== "all" ? this.selectedFolder : this.currentGrade;
-    let allExams = await window.examService.getAllExams(effectiveGrade, this.searchQuery, this.currentExamType, this.currentBookSeries);
-    const favoriteIds = window.examService.getFavoriteIds();
-    
-    // Đếm số lượng theo danh mục
-    const myExamsCount = user ? allExams.filter(e => (e.createdByUsername === user.username) || (e.authorName === user.name) || user.role === 'admin').length : 0;
-    const favoritesCount = allExams.filter(e => favoriteIds.includes(e.id)).length;
+    try {
+      const user = window.authService?.getUser();
+      const isTeacher = user && (user.role === 'teacher' || user.role === 'admin');
+      
+      // Tải toàn bộ đề kiểm tra
+      const effectiveGrade = this.selectedFolder !== "all" ? this.selectedFolder : this.currentGrade;
+      let allExams = (await window.examService.getAllExams(effectiveGrade, this.searchQuery, this.currentExamType, this.currentBookSeries)) || [];
+      const favoriteIds = window.examService.getFavoriteIds() || [];
+      
+      // Đếm số lượng theo danh mục
+      const myExamsCount = user ? allExams.filter(e => (e.createdByUsername === user.username) || (e.authorName === user.name) || user.role === 'admin').length : 0;
+      const favoritesCount = allExams.filter(e => favoriteIds.includes(e.id)).length;
 
-    // Thống kê theo 3 thư mục con
-    const rawAll = await window.examService.getAllExams("all");
-    const countLop3 = rawAll.filter(e => e.grade === 3).length;
-    const countLop4 = rawAll.filter(e => e.grade === 4).length;
-    const countLop5 = rawAll.filter(e => e.grade === 5).length;
+      // Thống kê theo 3 thư mục con
+      const rawAll = (await window.examService.getAllExams("all")) || [];
+      const countLop3 = rawAll.filter(e => e.grade === 3).length;
+      const countLop4 = rawAll.filter(e => e.grade === 4).length;
+      const countLop5 = rawAll.filter(e => e.grade === 5).length;
 
-    // Lấy cấu hình tùy chỉnh của 3 thư mục
-    const cfg3 = window.examService.getFolderConfig(3);
-    const cfg4 = window.examService.getFolderConfig(4);
-    const cfg5 = window.examService.getFolderConfig(5);
+      // Lấy cấu hình tùy chỉnh của 3 thư mục
+      const cfg3 = window.examService.getFolderConfig(3) || { title: "Kiểm Tra Môn Tin Lớp 3", icon: "📁" };
+      const cfg4 = window.examService.getFolderConfig(4) || { title: "Kiểm Tra Môn Tin Lớp 4", icon: "📁" };
+      const cfg5 = window.examService.getFolderConfig(5) || { title: "Kiểm Tra Môn Tin Lớp 5", icon: "📁" };
 
-    if (this.currentTab === "my_exams" && user) {
-      this.exams = allExams.filter(e => (e.createdByUsername === user.username) || (e.authorName === user.name) || user.role === 'admin');
-    } else if (this.currentTab === "favorites") {
-      this.exams = allExams.filter(e => favoriteIds.includes(e.id));
-    } else {
-      this.exams = allExams;
-    }
+      if (this.currentTab === "my_exams" && user) {
+        this.exams = allExams.filter(e => (e.createdByUsername === user.username) || (e.authorName === user.name) || user.role === 'admin');
+      } else if (this.currentTab === "favorites") {
+        this.exams = allExams.filter(e => favoriteIds.includes(e.id));
+      } else {
+        this.exams = allExams;
+      }
 
-    const currentFolderCfg = this.selectedFolder !== "all" ? window.examService.getFolderConfig(this.selectedFolder) : null;
+      const currentFolderCfg = this.selectedFolder !== "all" ? window.examService.getFolderConfig(this.selectedFolder) : cfg3;
 
-    container.innerHTML = `
+      container.innerHTML = `
       <div class="space-y-6 animate-pop">
         <!-- Banner Ngân Hàng Đề Kiểm Tra Rực Rỡ -->
         <div class="banner-anhdao flex flex-col md:flex-row items-center justify-between gap-6">
@@ -521,10 +522,23 @@ class ExamPortal {
             ` : ''}
           </div>
 
-          ${this.renderExamGrid(isTeacher, user)}
+      ${this.renderExamGrid(isTeacher, user)}
         </div>
       </div>
     `;
+    } catch (err) {
+      console.error("Lỗi khi dựng giao diện ExamPortal:", err);
+      container.innerHTML = `
+        <div class="glass-card p-8 text-center space-y-4 max-w-lg mx-auto my-12 animate-pop">
+          <span class="text-6xl block">⚠️</span>
+          <h3 class="text-xl font-black text-slate-900">ĐÃ TỰ ĐỘNG KHÔI PHỤC NGÂN HÀNG ĐỀ THI</h3>
+          <p class="text-xs text-slate-600 font-medium">Hệ thống đã tự động khôi phục dữ liệu đệm đề thi. Thầy Cô vui lòng bấm nút bên dưới để tải lại mượt mà!</p>
+          <button onclick="window.location.reload()" class="btn btn-primary font-black px-6 py-2.5 rounded-xl shadow-lg bg-cyan-700 hover:bg-cyan-800 text-white">
+            🔄 Tải Lại Trang Web
+          </button>
+        </div>
+      `;
+    }
   }
 
   // =========================================================================
