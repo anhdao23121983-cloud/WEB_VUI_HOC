@@ -2070,34 +2070,53 @@ class LecturePortal {
     this.initDrawingCanvas("lec-preview-canvas");
   }
 
-  // Đổi nguồn phát viewer dự phòng (Office Online -> HTML5 Player -> Google Docs)
+  // Đổi nguồn phát viewer dự phòng (Office Online -> Google Docs -> HTML5 Native Player)
   async switchViewerSource() {
     if (!this.currentPreviewLectureId) return;
     const lecture = await window.lectureService.getLectureById(this.currentPreviewLectureId);
     if (!lecture) return;
 
-    this.currentViewerSource = (this.currentViewerSource || 'office') === 'office' ? 'html5' : 'office';
-    const iframe = document.getElementById("lec-preview-iframe");
+    const modes = ['office', 'google', 'html5'];
+    const currentIdx = modes.indexOf(this.currentViewerSource || 'office');
+    const nextMode = modes[(currentIdx + 1) % modes.length];
+    this.currentViewerSource = nextMode;
 
-    if (this.currentViewerSource === 'html5') {
+    const iframe = document.getElementById("lec-preview-iframe");
+    const lblServer = document.getElementById("lbl-viewer-server-name");
+
+    if (nextMode === 'html5') {
       if (iframe) {
         iframe.removeAttribute("src");
         iframe.srcdoc = this.buildHTML5SlidePlayerDoc(lecture);
       }
-      window.app?.showToast("✨ Đã chuyển sang Trình Chiếu Slide HTML5 Interactive 3D (Không lo lỗi mạng)!", "success");
-    } else {
+      if (lblServer) lblServer.innerText = "Server: HTML5 Offline";
+      window.app?.showToast("✨ Đã chuyển sang Server HTML5 Native Player (Không lo lỗi mạng)!", "success");
+    } else if (nextMode === 'google') {
       if (iframe) {
-        const smartUrl = this.getSmartEmbedUrl(lecture);
+        const smartUrl = this.getSmartEmbedUrl(lecture, 'google');
         if (smartUrl) {
           iframe.removeAttribute("srcdoc");
           iframe.src = smartUrl;
-          window.app?.showToast("🔄 Đã chuyển về Trình xem Online!", "info");
         } else {
           iframe.removeAttribute("src");
           iframe.srcdoc = this.buildHTML5SlidePlayerDoc(lecture);
-          window.app?.showToast("✨ Đang dùng Trình chiếu HTML5 Interactive 3D chuẩn!", "success");
         }
       }
+      if (lblServer) lblServer.innerText = "Server: Google Docs";
+      window.app?.showToast("🌐 Đã chuyển sang Server Trình Xem Google Docs Viewer!", "info");
+    } else {
+      if (iframe) {
+        const smartUrl = this.getSmartEmbedUrl(lecture, 'office');
+        if (smartUrl) {
+          iframe.removeAttribute("srcdoc");
+          iframe.src = smartUrl;
+        } else {
+          iframe.removeAttribute("src");
+          iframe.srcdoc = this.buildHTML5SlidePlayerDoc(lecture);
+        }
+      }
+      if (lblServer) lblServer.innerText = "Server: Office Online";
+      window.app?.showToast("💼 Đã chuyển về Server Microsoft Office Online!", "info");
     }
   }
 

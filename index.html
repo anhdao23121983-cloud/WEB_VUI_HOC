@@ -904,6 +904,9 @@
           <button id="btn-download-lecture-file" onclick="lecturePortal.downloadCurrentLectureFile()" class="btn bg-emerald-600 hover:bg-emerald-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Tải file bài giảng PowerPoint (.pptx) hoặc tài liệu PDF về máy">
             <span>📥</span> <span>Tải Bài Giảng (.pptx)</span>
           </button>
+          <button id="btn-switch-viewer-server" onclick="lecturePortal.switchViewerSource()" class="btn bg-amber-500 hover:bg-amber-600 text-slate-950 btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Chuyển đổi Server trình xem dự phòng: Microsoft Office 🔄 Google Docs 🔄 HTML5 Native Offline">
+            <span>🔄</span> <span id="lbl-viewer-server-name">Đổi Server Xem (Microsoft/Google/HTML5)</span>
+          </button>
           <button id="btn-fullscreen-preview" onclick="lecturePortal.toggleFullscreenPreview()" class="btn bg-purple-600 hover:bg-purple-700 text-white btn-xs font-black shadow-sm flex items-center gap-1 hover:scale-105 transition-all" title="Phóng to toàn màn hình thiết bị">
             <span>🖥️</span> <span>Toàn Màn Hình</span>
           </button>
