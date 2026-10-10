@@ -619,6 +619,44 @@ class LecturePortal {
     this.render("main-content-area");
   }
 
+  // =========================================================================
+  // XÓA BÀI GIẢNG ĐIỆN TỬ (DELETE LECTURE SLIDE)
+  // =========================================================================
+  openDeleteConfirmModal(id, title) {
+    this.pendingDeleteId = id;
+    this.pendingDeleteTitle = title;
+
+    const modal = document.getElementById("lecture-delete-modal");
+    const nameDisp = document.getElementById("lec-delete-name-disp");
+
+    if (nameDisp) nameDisp.innerText = title;
+    if (modal) modal.classList.add("active");
+  }
+
+  closeDeleteModal() {
+    this.pendingDeleteId = null;
+    this.pendingDeleteTitle = "";
+    const modal = document.getElementById("lecture-delete-modal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  async executeDeleteLecture() {
+    if (!this.pendingDeleteId) return;
+
+    const deleteId = this.pendingDeleteId;
+    window.app.showToast("🗑️ Đang xóa bài giảng khỏi hệ thống và Supabase...", "info");
+
+    const result = await window.lectureService.deleteLecture(deleteId);
+    this.closeDeleteModal();
+
+    if (result && result.success) {
+      window.app.showToast("🎉 Đã xóa bài giảng thành công!", "success");
+      this.render("main-content-area");
+    } else {
+      window.app.showToast("⚠️ Không thể xóa bài giảng. Vui lòng thử lại!", "danger");
+    }
+  }
+
   switchTab(tab) {
     this.currentTab = tab;
     this.render("main-content-area");
