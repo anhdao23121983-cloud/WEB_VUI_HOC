@@ -241,54 +241,17 @@ const MOCK_DATABASE = {
   ],
 
   // 6. KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT SLIDES
-  lectures: [
-    {
-      id: "lec_03",
-      title: "Bài Giảng Điện Tử: Phần Cứng & Phần Mềm Máy Tính",
-      grade: 4,
-      topicName: "Chủ đề A: Máy tính và em",
-      lessonId: "L4_01",
-      authorName: "Cô Giáo Anh Đào",
-      schoolName: "Trường Tiểu Học Vui Học",
-      fileName: "BaiGiang_TinHoc4_PhanCungPhanMem.pptx",
-      fileSizeText: "8.2 MB",
-      fileType: "pptx",
-      fileUrl: "https://docs.google.com/presentation/d/e/2PACX-1vT1Z5u7X9.../embed",
-      slideCount: 26,
-      downloadCount: 180,
-      viewCount: 640,
-      thumbnailColor: "from-amber-500 to-orange-600",
-      description: "Trực quan hóa sự khác biệt giữa phần cứng vật lý và các phần mềm ứng dụng trong đời sống."
-    },
-    {
-      id: "lec_04",
-      title: "Bài Giảng Điện Tử: Tìm Kiếm Thông Tin An Toàn Trên Internet",
-      grade: 5,
-      topicName: "Chủ đề C: Tổ chức lưu trữ và tìm kiếm",
-      lessonId: "L5_01",
-      authorName: "Cô Giáo Anh Đào",
-      schoolName: "Trường Tiểu Học Vui Học",
-      fileName: "BaiGiang_TinHoc5_TimKiemInternet.pptx",
-      fileSizeText: "5.7 MB",
-      fileType: "pptx",
-      fileUrl: "https://docs.google.com/presentation/d/e/2PACX-1vT1Z5u7X9.../embed",
-      slideCount: 24,
-      downloadCount: 210,
-      viewCount: 890,
-      thumbnailColor: "from-purple-600 to-indigo-600",
-      description: "Kỹ năng tra cứu thông tin bằng từ khóa chính xác và bảo vệ an toàn thông tin cá nhân trên mạng."
-    }
-  ]
+  lectures: []
 };
 
-// Khởi tạo và đồng bộ dọn dẹp LocalStorage cho các bài giảng Lớp 3
+// Khởi tạo và đồng bộ dọn dẹp LocalStorage cho các bài giảng Lớp 3, Lớp 4 và Lớp 5
 try {
   let existing = JSON.parse(localStorage.getItem("app_mock_db"));
   if (!existing || !existing.lectures) {
     localStorage.setItem("app_mock_db", JSON.stringify(MOCK_DATABASE));
   } else {
-    // Xóa triệt để các bài giảng Lớp 3 đã lưu trong LocalStorage
-    existing.lectures = (existing.lectures || []).filter(l => parseInt(l.grade, 10) !== 3);
+    // Xóa triệt để các bài giảng Lớp 3, Lớp 4 và Lớp 5 đã lưu trong LocalStorage
+    existing.lectures = [];
     localStorage.setItem("app_mock_db", JSON.stringify(existing));
   }
 } catch (e) {
