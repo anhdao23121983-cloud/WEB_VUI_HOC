@@ -147,8 +147,8 @@ class ExamPortal {
               <span>📈</span> <span>Phổ Điểm</span>
             </button>
             ${isTeacher ? `
-              <button onclick="examPortal.openAIGeneratorModal()" class="btn bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-black text-xs py-2.5 px-3.5 rounded-xl border border-white/30 flex items-center gap-1.5 shadow-lg hover:scale-105 transition-all" title="AI tự động sinh đề theo từng chủ đề A, B, C, D, E, F">
-                <span>✨</span> <span>AI Sinh Đề</span>
+              <button onclick="examPortal.openCustomQuizCreatorModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs py-2.5 px-3.5 rounded-xl border border-white/30 flex items-center gap-1.5 shadow-lg hover:scale-105 transition-all" title="Tự tạo bài kiểm tra trắc nghiệm theo bài học SGK Lớp 3, 4, 5">
+                <span>✨</span> <span>Tự Tạo Bài Kiểm Tra SGK</span>
               </button>
               <button onclick="examUploadModal.openModal(${this.selectedFolder !== 'all' ? this.selectedFolder : 3})" class="btn btn-amber btn-sm font-black shadow-xl flex items-center gap-1.5 shrink-0 hover:scale-105 transition-all">
                 <span>📤</span> <span>Tải Đề Lên</span>
@@ -3007,6 +3007,225 @@ Trân trọng cảm ơn Quý Phụ huynh đã luôn đồng hành cùng nhà tr�
       window.docExportService.exportFolderZip(grade);
     } else {
       window.app.showToast("Dịch vụ nén Zip đang khởi tạo, vui lòng thử lại sau 1 giây!", "warning");
+    }
+  }
+
+  // =========================================================================
+  // BỘ TỰ TẠO BÀI KIỂM TRA TRẮC NGHIỆM THEO SÁCH GIÁO KHOA TIN HỌC 3, 4, 5
+  // =========================================================================
+  openCustomQuizCreatorModal(defaultGrade = 3) {
+    const modal = document.getElementById("exam-custom-sgk-modal");
+    const body = document.getElementById("exam-custom-sgk-body");
+    if (!modal || !body) return;
+
+    const g = (this.selectedFolder !== "all") ? this.selectedFolder : defaultGrade;
+    this.customQuizSelectedGrade = parseInt(g) || 3;
+    this.customQuizQuestions = [];
+
+    this.renderCustomQuizForm();
+    modal.classList.add("active");
+  }
+
+  renderCustomQuizForm() {
+    const body = document.getElementById("exam-custom-sgk-body");
+    if (!body) return;
+
+    const lessons = window.examService.getSGKLessons(this.customQuizSelectedGrade);
+
+    body.innerHTML = `
+      <div class="space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Chọn Khối Lớp -->
+          <div>
+            <label class="form-label font-bold text-xs">1. Thư Mục Khối Lớp (*)</label>
+            <select id="custom-quiz-grade" onchange="examPortal.onCustomQuizGradeChange(this.value)" class="form-control text-xs font-bold bg-white">
+              <option value="3" ${this.customQuizSelectedGrade === 3 ? 'selected' : ''}>🎒 Bài kiểm tra Tin lớp 3</option>
+              <option value="4" ${this.customQuizSelectedGrade === 4 ? 'selected' : ''}>🚀 Bài kiểm tra Tin lớp 4</option>
+              <option value="5" ${this.customQuizSelectedGrade === 5 ? 'selected' : ''}>⭐ Bài kiểm tra Tin lớp 5</option>
+            </select>
+          </div>
+
+          <!-- Chọn Bộ Sách -->
+          <div>
+            <label class="form-label font-bold text-xs">2. Bộ Sách SGK (*)</label>
+            <select id="custom-quiz-series" class="form-control text-xs font-bold bg-white">
+              <option value="KNTT" selected>Kết Nối Tri Thức Với Cuộc Sống</option>
+              <option value="CD">Cánh Diều</option>
+              <option value="CTST">Chân Trời Sáng Tạo</option>
+            </select>
+          </div>
+
+          <!-- Số Lượng Câu -->
+          <div>
+            <label class="form-label font-bold text-xs">3. Số Câu Trắc Nghiệm</label>
+            <select id="custom-quiz-num" onchange="examPortal.generateCustomQuizQuestions()" class="form-control text-xs font-bold bg-white">
+              <option value="5">5 Câu (10 Phút)</option>
+              <option value="10" selected>10 Câu (15 Phút)</option>
+              <option value="15">15 Câu (30 Phút)</option>
+              <option value="20">20 Câu (45 Phút)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Chọn Bài Học Theo SGK -->
+        <div>
+          <label class="form-label font-bold text-xs">4. Chọn Bài Học SGK Tin Học Lớp ${this.customQuizSelectedGrade} (*)</label>
+          <select id="custom-quiz-lesson" onchange="examPortal.onCustomQuizLessonChange()" class="form-control text-xs font-bold bg-purple-50/50 border-2 border-purple-200 focus:border-purple-600">
+            ${lessons.map(l => `<option value="${l.id}">${l.title} (${l.topic})</option>`).join('')}
+          </select>
+        </div>
+
+        <!-- Tiêu Đề Bài Kiểm Tra -->
+        <div>
+          <label class="form-label font-bold text-xs">5. Tiêu Đề Bài Kiểm Tra Tự Tạo (*)</label>
+          <input type="text" id="custom-quiz-title" class="form-control text-xs font-bold" placeholder="Nhập tiêu đề bài kiểm tra trắc nghiệm...">
+        </div>
+
+        <!-- Toolbar Câu Hỏi -->
+        <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+          <button type="button" onclick="examPortal.generateCustomQuizQuestions()" class="btn bg-purple-600 hover:bg-purple-700 text-white font-black text-xs py-2 px-3.5 rounded-xl flex items-center gap-1.5 shadow-md">
+            <span>✨</span> <span>Tự Động Sinh Câu Hỏi Trắc Nghiệm Bám SGK</span>
+          </button>
+          <button type="button" onclick="examPortal.addCustomQuizQuestion()" class="btn btn-outline btn-xs font-bold text-indigo-700 border-indigo-200 hover:bg-indigo-50">
+            <span>➕</span> <span>Thêm 1 Câu Hỏi Trắc Nghiệm</span>
+          </button>
+        </div>
+
+        <!-- List Xem Trước Câu Hỏi -->
+        <div id="custom-quiz-preview-list" class="space-y-3 max-h-72 overflow-y-auto pr-1">
+          <!-- Live Preview List -->
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
+          <button type="button" onclick="document.getElementById('exam-custom-sgk-modal').classList.remove('active')" class="btn btn-outline btn-sm">Hủy Bỏ</button>
+          <button type="button" onclick="examPortal.submitCustomSGKExam()" class="btn btn-primary btn-sm font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg flex items-center gap-1.5">
+            <span>💾</span> <span>Lưu Bài Kiểm Tra Vào Thư Mục Lớp ${this.customQuizSelectedGrade}</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    this.onCustomQuizLessonChange();
+  }
+
+  onCustomQuizGradeChange(gradeVal) {
+    this.customQuizSelectedGrade = parseInt(gradeVal) || 3;
+    this.renderCustomQuizForm();
+  }
+
+  onCustomQuizLessonChange() {
+    const lessonSelect = document.getElementById("custom-quiz-lesson");
+    const titleInput = document.getElementById("custom-quiz-title");
+    if (!lessonSelect || !titleInput) return;
+
+    const lessons = window.examService.getSGKLessons(this.customQuizSelectedGrade);
+    const selectedL = lessons.find(l => l.id === lessonSelect.value) || lessons[0];
+    titleInput.value = `Bài Kiểm Tra Trắc Nghiệm: ${selectedL.title} - Tin Học ${this.customQuizSelectedGrade}`;
+    this.generateCustomQuizQuestions();
+  }
+
+  generateCustomQuizQuestions() {
+    const lessonSelect = document.getElementById("custom-quiz-lesson");
+    const numSelect = document.getElementById("custom-quiz-num");
+    const previewList = document.getElementById("custom-quiz-preview-list");
+    if (!lessonSelect || !previewList) return;
+
+    const count = parseInt(numSelect?.value) || 10;
+    this.customQuizQuestions = window.examService.generateQuestionsForSGKLesson(this.customQuizSelectedGrade, lessonSelect.value, count);
+
+    this.renderCustomQuizQuestionsPreview();
+  }
+
+  renderCustomQuizQuestionsPreview() {
+    const previewList = document.getElementById("custom-quiz-preview-list");
+    if (!previewList) return;
+
+    if (!this.customQuizQuestions || this.customQuizQuestions.length === 0) {
+      previewList.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Chưa có câu hỏi nào. Bấm 'Tự Động Sinh' để tạo câu hỏi trắc nghiệm.</p>`;
+      return;
+    }
+
+    previewList.innerHTML = this.customQuizQuestions.map((q, qIdx) => `
+      <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-2 relative group hover:border-purple-300 transition-all">
+        <div class="flex items-center justify-between">
+          <span class="badge bg-purple-100 text-purple-800 text-[10px] font-black">CÂU HỎI TRẮC NGHIỆM ${qIdx + 1}</span>
+          <button type="button" onclick="examPortal.removeCustomQuizQuestion(${qIdx})" class="text-rose-500 hover:text-rose-700 text-xs font-bold">✕ Xóa câu này</button>
+        </div>
+        <input type="text" value="${(q.question || '').replace(/"/g, '&quot;')}" onchange="examPortal.customQuizQuestions[${qIdx}].question = this.value" class="form-control text-xs font-bold bg-white" placeholder="Nội dung câu hỏi...">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
+          ${(q.options || []).map((opt, optIdx) => `
+            <div class="flex items-center gap-2">
+              <input type="radio" name="correct_opt_${qIdx}" ${q.correctAnswer === optIdx ? 'checked' : ''} onchange="examPortal.customQuizQuestions[${qIdx}].correctAnswer = ${optIdx}">
+              <input type="text" value="${(opt || '').replace(/"/g, '&quot;')}" onchange="examPortal.customQuizQuestions[${qIdx}].options[${optIdx}] = this.value" class="form-control text-xs bg-white ${q.correctAnswer === optIdx ? 'border-emerald-500 font-bold text-emerald-800' : ''}">
+            </div>
+          `).join('')}
+        </div>
+        <p class="text-[10px] text-slate-500 italic">💡 Giải thích: ${q.explanation}</p>
+      </div>
+    `).join('');
+  }
+
+  addCustomQuizQuestion() {
+    if (!this.customQuizQuestions) this.customQuizQuestions = [];
+    const qIdx = this.customQuizQuestions.length + 1;
+    this.customQuizQuestions.push({
+      id: `q_custom_${Date.now()}`,
+      question: `[Câu ${qIdx}] Chọn khẳng định ĐÚNG nhất theo bài học SGK:`,
+      options: [
+        "A. Thực hiện đúng quy trình hướng dẫn trong sách giáo khoa",
+        "B. Tắt máy tính khi đang chạy ứng dụng",
+        "C. Không bấm lưu bài khi làm xong",
+        "D. Tự ý tháo nguồn điện máy tính"
+      ],
+      correctAnswer: 0,
+      explanation: "Học sinh luôn thực hiện đúng hướng dẫn SGK và tuân thủ an toàn."
+    });
+    this.renderCustomQuizQuestionsPreview();
+  }
+
+  removeCustomQuizQuestion(qIdx) {
+    if (!this.customQuizQuestions) return;
+    this.customQuizQuestions.splice(qIdx, 1);
+    this.renderCustomQuizQuestionsPreview();
+  }
+
+  async submitCustomSGKExam() {
+    const title = document.getElementById("custom-quiz-title")?.value || "";
+    const series = document.getElementById("custom-quiz-series")?.value || "KNTT";
+    const numSelect = document.getElementById("custom-quiz-num")?.value || "10";
+    const lessonSelect = document.getElementById("custom-quiz-lesson");
+
+    if (!title.trim()) {
+      window.app.showToast("Vui lòng nhập tiêu đề bài kiểm tra!", "warning");
+      return;
+    }
+
+    if (!this.customQuizQuestions || this.customQuizQuestions.length === 0) {
+      window.app.showToast("Bài kiểm tra cần có ít nhất 1 câu hỏi trắc nghiệm!", "warning");
+      return;
+    }
+
+    const lessons = window.examService.getSGKLessons(this.customQuizSelectedGrade);
+    const selectedL = lessons.find(l => l.id === lessonSelect?.value) || lessons[0];
+
+    const res = await window.examService.createCustomSGKExam({
+      title: title.trim(),
+      grade: this.customQuizSelectedGrade,
+      bookSeries: series,
+      lessonId: selectedL.id,
+      lessonTitle: selectedL.title,
+      questions: this.customQuizQuestions,
+      durationMinutes: (parseInt(numSelect) >= 15) ? 30 : 15
+    });
+
+    if (res.success) {
+      window.app.showToast(`✨ Đã tự tạo bài kiểm tra trắc nghiệm "${title}" và lưu vào Thư mục Lớp ${this.customQuizSelectedGrade} thành công!`, "success");
+      document.getElementById("exam-custom-sgk-modal")?.classList.remove("active");
+      this.enterFolder(this.customQuizSelectedGrade);
+    } else {
+      window.app.showToast("Không thể tạo bài kiểm tra, vui lòng thử lại!", "error");
     }
   }
 }
