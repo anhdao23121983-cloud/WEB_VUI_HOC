@@ -2442,6 +2442,33 @@ class LecturePortal {
     if (this.scratchActive) this.toggleInSlideScratch();
     if (this.robotMazeActive) this.toggleInSlideRobotMaze();
     if (this.starAwardActive) this.toggleInSlideStarAward();
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+  }
+
+  // TÍCH HỢP GIỌNG NỮ AI TIẾNG VIỆT THUYẾT MINH SLIDE TRÌNH CHIẾU
+  speakSlideNarration(slideIndex) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+
+    const narrations = {
+      1: "Chào mừng các em đến với Bài giảng điện tử Tin học chuẩn Bộ Giáo dục và Đào tạo!",
+      2: "Các em hãy quan sát 4 bộ phận chính của máy tính để bàn: Màn hình, Thân máy CPU, Bàn phím và Chuột máy tính.",
+      3: "Khi ngồi học máy tính, các em chú ý giữ lưng thẳng, giữ khoảng cách mắt từ 50 đến 80 cm.",
+      4: "Hãy cùng tham gia thử thách trắc nghiệm: Bộ phận nào được coi là bộ não trung tâm điều khiển của máy tính?",
+      5: "Chúc mừng các em đã hoàn thành xuất sắc bài học hôm nay và nhận được 15 sao khen thưởng!"
+    };
+
+    const text = narrations[slideIndex];
+    if (!text) return;
+
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "vi-VN";
+    utter.rate = this.speechRate || 0.9;
+    
+    const femaleVoice = this.getVietnameseFemaleVoice();
+    if (femaleVoice) utter.voice = femaleVoice;
+
+    window.speechSynthesis.speak(utter);
   }
 
   toggleDrawingMode(canvasId) {
