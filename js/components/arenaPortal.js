@@ -479,10 +479,16 @@ class ArenaPortal {
       <div class="p-6 md:p-8 bg-slate-950 text-white rounded-3xl border-2 border-rose-500 shadow-2xl space-y-5 animate-pop relative">
         <!-- Header Thanh Trận Đấu -->
         <div class="flex items-center justify-between pb-3 border-b border-rose-500/40 flex-wrap gap-3">
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 flex-wrap">
             <span class="badge bg-rose-600 text-white font-black text-xs uppercase px-3 py-1">
               CÂU HỎI ${this.currentQIndex + 1} / ${this.battleQuestions.length}
             </span>
+            ${q.difficulty === 'hard' 
+              ? `<span class="badge bg-rose-950/80 border border-rose-500 text-rose-300 font-black text-xs">🔴 VẬN DỤNG • ${this.questionMaxTimer || 25}s</span>`
+              : q.difficulty === 'medium'
+              ? `<span class="badge bg-amber-950/80 border border-amber-400 text-amber-300 font-black text-xs">🟡 THÔNG HIỂU • ${this.questionMaxTimer || 20}s</span>`
+              : `<span class="badge bg-emerald-950/80 border border-emerald-400 text-emerald-300 font-black text-xs">🟢 NHẬN BIẾT • ${this.questionMaxTimer || 15}s</span>`
+            }
             <span class="badge bg-amber-500 text-slate-950 font-black text-xs">
               ${userRank === 1 ? '🥇 BẠN DẪN ĐẦU TOP 1' : userRank === 2 ? '🥈 THỨ HẠNG TOP 2' : userRank === 3 ? '🥉 THỨ HẠNG TOP 3' : '🎖️ THỨ HẠNG TOP 4'}
             </span>
@@ -528,7 +534,7 @@ class ArenaPortal {
 
         <!-- Thanh Tiến Trình Thời Gian -->
         <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
-          <div id="arena-timer-bar" class="h-2.5 bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 rounded-full transition-all duration-1000" style="width: ${(this.timer / q.timeLimit) * 100}%"></div>
+          <div id="arena-timer-bar" class="h-2.5 bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 rounded-full transition-all duration-1000" style="width: ${(this.timer / (this.questionMaxTimer || 15)) * 100}%"></div>
         </div>
 
         <!-- Khung Câu Hỏi Nổi Bật -->
@@ -1240,7 +1246,16 @@ class ArenaPortal {
 
   renderLobbyLessonOptions(grade) {
     const list = this.getLessonsByGrade(grade);
-    return list.map(l => `<option value="${l.id}" ${l.id === this.selectedLobbyLesson ? 'selected' : ''}>${l.title}</option>`).join('');
+    return list.map(l => {
+      let count = 0;
+      if (window.arenaService?.getQuestionCountForLesson) {
+        count = window.arenaService.getQuestionCountForLesson(grade, l.id);
+      }
+      const badge = l.id === "all"
+        ? ` • [Toàn bộ ${count} câu hỏi]`
+        : (count > 0 ? ` • [${count} câu hỏi]` : ` • [Mở rộng cùng khối]`);
+      return `<option value="${l.id}" ${l.id === this.selectedLobbyLesson ? 'selected' : ''}>${l.title}${badge}</option>`;
+    }).join('');
   }
 
   selectLobbyGrade(grade) {
@@ -1674,10 +1689,29 @@ class ArenaPortal {
     }, 1500);
   }
 
+  // Tính toán thời gian làm bài linh hoạt sư phạm theo độ khó (Gợi ý 4)
+  getDynamicTimeLimit(q) {
+    if (!q) return 15;
+    let baseTime = 15;
+    if (q.difficulty === "hard") {
+      baseTime = 25; // Câu vận dụng cao: 25s
+    } else if (q.difficulty === "medium") {
+      baseTime = 20; // Câu thông hiểu/suy luận: 20s
+    } else {
+      baseTime = 15; // Câu nhận biết nhanh: 15s
+    }
+
+    // Bù thêm thời gian cho học sinh tiểu học nếu câu hỏi dài trên 100 ký tự
+    if (q.question && q.question.length > 100) {
+      baseTime += 5;
+    }
+    return baseTime;
+  }
+
   startQuestionTimer() {
     if (this.timerInterval) clearInterval(this.timerInterval);
     const q = this.battleQuestions[this.currentQIndex];
-    this.timer = this.selectedCustomTimer || (q ? q.timeLimit : 15);
+    this.timer = this.selectedCustomTimer || this.getDynamicTimeLimit(q);
     this.questionMaxTimer = this.timer;
 
     this.timerInterval = setInterval(() => {

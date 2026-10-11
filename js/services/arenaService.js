@@ -621,6 +621,37 @@ class ArenaService {
     return list;
   }
 
+  // Đếm nhanh số câu hỏi hiện có theo bài học và khối lớp (Gợi ý 1)
+  getQuestionCountForLesson(grade, lessonId) {
+    const g = parseInt(grade) || 3;
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || {};
+    const localSaved = (db.arena_questions && Array.isArray(db.arena_questions)) ? db.arena_questions : [];
+    const pool = [...this.initialQuestions];
+    localSaved.forEach(item => {
+      if (!pool.some(q => q.id === item.id || (q.question && q.question.trim().toLowerCase() === item.question?.trim().toLowerCase()))) {
+        pool.push(item);
+      }
+    });
+
+    const gradePool = pool.filter(q => q.grade === g);
+    if (!lessonId || lessonId === "all") {
+      return gradePool.length;
+    }
+
+    const cleanLesson = String(lessonId).toLowerCase().trim();
+    const lessonNum = cleanLesson.replace(/^bai_0?/, "");
+
+    return gradePool.filter(q => {
+      if (q.lessonId && q.lessonId.toLowerCase() === cleanLesson) return true;
+      if (!q.topic) return false;
+      const topicLower = q.topic.toLowerCase();
+      return topicLower.includes(`bài ${lessonNum}`) ||
+             topicLower.includes(`bài 0${lessonNum}`) ||
+             topicLower.includes(`bai ${lessonNum}`) ||
+             topicLower.includes(cleanLesson);
+    }).length;
+  }
+
   // 2. THÊM MỚI CÂU HỎI ĐẤU TRƯỜNG (CREATE & SYNC TO SUPABASE)
   async createQuestion(questionData) {
     const newId = "arena_q_" + Date.now();
