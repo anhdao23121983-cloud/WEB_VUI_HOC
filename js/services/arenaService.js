@@ -534,9 +534,11 @@ class ArenaService {
   }
   }
 
-  // 1. LẤY DANH SÁCH CÂU HỎI ĐẤU TRƯỜNG (SUPABASE + LOCAL FALLBACK)
+  // 1. LẤY DANH SÁCH CÂU HỎI ĐẤU TRƯỜNG (HỢP NHẤT SUPABASE + KHO SGK MẶC ĐỊNH)
   async getQuestions(gradeFilter = "all", topicFilter = "all", lessonFilter = "all") {
-    // 1. Thử lấy từ Supabase Cloud
+    let cloudQuestions = [];
+
+    // 1. Lấy thêm câu hỏi từ Supabase Cloud nếu có
     if (window.supabaseService?.isReady()) {
       try {
         let query = window.supabaseService.client
@@ -553,7 +555,7 @@ class ArenaService {
 
         const { data, error } = await query;
         if (!error && data && data.length > 0) {
-          let mapped = data.map(item => ({
+          cloudQuestions = data.map(item => ({
             id: item.id,
             grade: item.grade_level,
             lessonId: item.lesson_id || "",
@@ -567,26 +569,28 @@ class ArenaService {
             stars: item.stars_reward || 20,
             createdBy: item.created_by || "Cô Giáo Anh Đào"
           }));
-
-          if (lessonFilter !== "all") {
-            mapped = mapped.filter(q => q.lessonId === lessonFilter || (q.topic && q.topic.toLowerCase().includes(lessonFilter.replace("_", " "))));
-          }
-
-          // Đồng bộ lưu vào LocalStorage để cache offline
-          const db = JSON.parse(localStorage.getItem("app_mock_db")) || {};
-          db.arena_questions = mapped;
-          localStorage.setItem("app_mock_db", JSON.stringify(db));
-
-          return mapped;
         }
       } catch (err) {
         console.warn("Đọc arena_questions từ Supabase có cảnh báo, chuyển sang Local:", err);
       }
     }
 
-    // 2. Dự phòng Local Storage
+    // 2. Hợp nhất kho câu hỏi: Bắt đầu từ 60+ câu hỏi SGK Kết nối tri thức mặc định
+    // Đảm bảo LUÔN CÓ câu hỏi theo đúng từng bài học và khối lớp
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || {};
-    let list = db.arena_questions || this.initialQuestions;
+    const localSaved = (db.arena_questions && Array.isArray(db.arena_questions)) ? db.arena_questions : [];
+
+    // Hợp nhất: Initial SGK + Local saved + Cloud questions (không trùng lặp câu hỏi)
+    const combinedPool = [...this.initialQuestions];
+    [...localSaved, ...cloudQuestions].forEach(item => {
+      const exists = combinedPool.some(q => q.id === item.id || (q.question && q.question.trim().toLowerCase() === item.question?.trim().toLowerCase()));
+      if (!exists) {
+        combinedPool.push(item);
+      }
+    });
+
+    // 3. Tiến hành lọc theo Khối Lớp, Chủ Đề, Bài Học
+    let list = combinedPool;
 
     if (gradeFilter !== "all") {
       list = list.filter(q => q.grade === parseInt(gradeFilter));
@@ -595,7 +599,24 @@ class ArenaService {
       list = list.filter(q => q.topic === topicFilter);
     }
     if (lessonFilter !== "all") {
-      list = list.filter(q => q.lessonId === lessonFilter || (q.topic && q.topic.toLowerCase().includes(lessonFilter.replace("bai_", "bài "))));
+      const cleanLesson = String(lessonFilter).toLowerCase().trim(); // ví dụ "bai_6"
+      const lessonNum = cleanLesson.replace(/^bai_0?/, "");         // ví dụ "6"
+
+      const matchedList = list.filter(q => {
+        if (q.lessonId && q.lessonId.toLowerCase() === cleanLesson) return true;
+        if (!q.topic) return false;
+        const topicLower = q.topic.toLowerCase();
+        return topicLower.includes(`bài ${lessonNum}`) ||
+               topicLower.includes(`bài 0${lessonNum}`) ||
+               topicLower.includes(`bai ${lessonNum}`) ||
+               topicLower.includes(cleanLesson);
+      });
+
+      // Nếu bài học có câu hỏi khớp thì trả về danh sách đó
+      // Nếu bài học đó chưa có đủ câu, caller sẽ tự động bù thêm câu từ cùng khối
+      if (matchedList.length > 0) {
+        list = matchedList;
+      }
     }
     return list;
   }

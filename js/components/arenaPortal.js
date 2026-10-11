@@ -56,8 +56,22 @@ class ArenaPortal {
       localStorage.setItem("app_current_user", JSON.stringify(user));
     }
     this.playBeep(520, 0.1);
-    window.app.showToast(`🎭 Em đã chọn Linh Vật ${mascotId}! Sẵn sàng thi đấu!`, "success");
-    this.render("main-content-area");
+    window.app?.showToast?.(`🎭 Em đã chọn Linh Vật ${mascotId}! Sẵn sàng thi đấu!`, "success");
+
+    // Cập nhật giao diện mascot tức thì không làm mất trạng thái form chọn bài
+    this.getMascots().forEach(m => {
+      const btn = document.getElementById(`mascot-btn-${m.id}`);
+      if (btn) {
+        if (m.id === mascotId) {
+          btn.className = "p-2.5 rounded-2xl border-2 transition-all flex flex-col items-center gap-1 bg-gradient-to-b from-amber-500/30 via-yellow-400/20 to-amber-500/10 border-amber-400 text-white shadow-lg ring-2 ring-amber-300 scale-105 cursor-pointer";
+        } else {
+          btn.className = "p-2.5 rounded-2xl border-2 transition-all flex flex-col items-center gap-1 bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-slate-500 cursor-pointer";
+        }
+      }
+    });
+
+    const label = document.getElementById("selected-mascot-label");
+    if (label) label.innerText = mascotId;
   }
 
   // Khởi tạo Audio Context
@@ -426,13 +440,13 @@ class ArenaPortal {
                   <label class="font-black text-xs text-amber-300 flex items-center gap-2 uppercase tracking-wider">
                     <span>🎭</span> <span>BƯỚC 4: CHỌN LINH VẬT ĐẠI DIỆN THI ĐẤU:</span>
                   </label>
-                  <span class="text-[11px] text-amber-200/90 font-bold">Đang chọn: <b class="text-amber-300 text-sm">${this.selectedMascot || "🤖"}</b></span>
+                  <span class="text-[11px] text-amber-200/90 font-bold">Đang chọn: <b id="selected-mascot-label" class="text-amber-300 text-sm font-black">${this.selectedMascot || "🤖"}</b></span>
                 </div>
                 <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
                   ${this.getMascots().map(m => {
                     const isSelected = (this.selectedMascot || "🤖") === m.id;
                     return `
-                      <button type="button" onclick="arenaPortal.selectMascot('${m.id}')" class="p-2.5 rounded-2xl border-2 transition-all flex flex-col items-center gap-1 ${isSelected ? 'bg-gradient-to-b from-amber-500/30 via-yellow-400/20 to-amber-500/10 border-amber-400 text-white shadow-lg ring-2 ring-amber-300 scale-105' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-slate-500'}">
+                      <button type="button" id="mascot-btn-${m.id}" onclick="arenaPortal.selectMascot('${m.id}')" class="p-2.5 rounded-2xl border-2 transition-all flex flex-col items-center gap-1 cursor-pointer ${isSelected ? 'bg-gradient-to-b from-amber-500/30 via-yellow-400/20 to-amber-500/10 border-amber-400 text-white shadow-lg ring-2 ring-amber-300 scale-105' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-slate-500'}">
                         <span class="text-2xl filter drop-shadow">${m.id}</span>
                         <span class="text-[10px] font-black leading-tight text-center text-white">${m.name}</span>
                         <span class="text-[8px] opacity-75 font-normal text-center hidden sm:inline text-slate-300">${m.desc}</span>
@@ -444,7 +458,7 @@ class ArenaPortal {
 
               <!-- 5. NÚT VÀO ĐẤU TO LỚN NỔI BẬT -->
               <div class="pt-3">
-                <button onclick="arenaPortal.startLobbyBattle()" class="w-full py-4 rounded-2xl font-black text-base md:text-lg text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-500 hover:to-yellow-500 shadow-xl shadow-amber-400/30 hover:scale-101 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-200">
+                <button type="button" id="btn-start-arena-battle" onclick="arenaPortal.startLobbyBattle()" class="w-full py-4 rounded-2xl font-black text-base md:text-lg text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-500 hover:to-yellow-500 shadow-xl shadow-amber-400/30 hover:scale-101 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-200">
                   <span class="text-2xl animate-pulse">🚀</span> <span>BẮT ĐẦU VÀO ĐẤU NGAY ▶</span>
                 </button>
               </div>
@@ -1231,16 +1245,16 @@ class ArenaPortal {
 
   selectLobbyGrade(grade) {
     this.selectedLobbyGrade = parseInt(grade) || 3;
-    this.selectedLobbyLesson = "all";
+    this.selectedLobbyGradeInitialized = true;
     
     [3, 4, 5].forEach(g => {
       const btn = document.getElementById(`lobby-grade-${g}`);
       if (btn) {
         if (g === this.selectedLobbyGrade) {
           const colorClass = g === 3 ? 'bg-cyan-600 border-cyan-300 ring-cyan-300' : (g === 4 ? 'bg-emerald-600 border-emerald-300 ring-emerald-300' : 'bg-amber-600 border-amber-300 ring-amber-300');
-          btn.className = `p-3.5 rounded-2xl border-2 font-black text-xs md:text-sm text-center transition-all flex flex-col items-center gap-1 ${colorClass} text-white shadow-lg ring-2 scale-102`;
+          btn.className = `p-3.5 rounded-2xl border-2 font-black text-xs md:text-sm text-center transition-all flex flex-col items-center gap-1 ${colorClass} text-white shadow-lg ring-2 scale-102 cursor-pointer`;
         } else {
-          btn.className = `p-3.5 rounded-2xl border-2 font-black text-xs md:text-sm text-center transition-all flex flex-col items-center gap-1 bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800`;
+          btn.className = `p-3.5 rounded-2xl border-2 font-black text-xs md:text-sm text-center transition-all flex flex-col items-center gap-1 bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 cursor-pointer`;
         }
       }
     });
@@ -1248,40 +1262,51 @@ class ArenaPortal {
     const select = document.getElementById("lobby-lesson-select");
     if (select) {
       select.innerHTML = this.renderLobbyLessonOptions(this.selectedLobbyGrade);
+      this.selectedLobbyLesson = select.value || "all";
     }
+    this.playBeep(440, 0.08);
   }
 
   handleLobbyLessonChange(val) {
     this.selectedLobbyLesson = val;
+    this.playBeep(400, 0.06);
   }
 
   selectLobbyQuestionCount(count) {
-    this.selectedLobbyQuestionCount = count;
+    this.selectedLobbyQuestionCount = parseInt(count) || 10;
+    this.selectedQuestionCount = this.selectedLobbyQuestionCount;
     [5, 10, 15, 20].forEach(c => {
       const btn = document.getElementById(`lobby-count-${c}`);
       if (btn) {
-        if (c === count) {
-          btn.className = "p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-rose-600 border-rose-300 text-white shadow-md ring-2 ring-rose-300";
+        if (c === this.selectedLobbyQuestionCount) {
+          btn.className = "p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-rose-600 border-rose-300 text-white shadow-md ring-2 ring-rose-300 cursor-pointer scale-102";
         } else {
-          btn.className = "p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800";
+          btn.className = "p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 cursor-pointer";
         }
       }
     });
+    this.playBeep(480, 0.08);
   }
 
   async startLobbyBattle() {
-    const user = window.authService?.getUser();
+    let user = window.authService?.getUser();
     if (!user) {
-      window.app.showToast("⚡ Vui lòng Đăng nhập tài khoản để tham gia Đấu Trường!", "warning");
-      sessionStorage.setItem("post_login_redirect", "arena");
-      window.location.hash = "auth";
-      return;
+      user = {
+        name: "Học Sinh Khách",
+        className: `${this.selectedLobbyGrade || 3}A`,
+        grade: this.selectedLobbyGrade || 3,
+        avatar: this.selectedMascot || "🤖",
+        isGuest: true
+      };
+      window.app?.showToast?.("🎮 Em đang tham gia Đấu Trường với tư cách Học Sinh! (Đăng nhập để lưu điểm Bảng Vàng nhé)", "info");
     }
 
     const grade = this.selectedLobbyGrade || 3;
-    const lesson = this.selectedLobbyLesson || "all";
-    const count = this.selectedLobbyQuestionCount || 10;
+    const select = document.getElementById("lobby-lesson-select");
+    const lesson = (select && select.value) ? select.value : (this.selectedLobbyLesson || "all");
+    const count = parseInt(this.selectedLobbyQuestionCount) || 10;
 
+    this.playBeep(660, 0.15);
     await this.startBattleWithMode("blitz", grade, count, lesson);
   }
 
@@ -1406,7 +1431,7 @@ class ArenaPortal {
     this.streakCombo = 0;
     this.hasAnnouncedTop1 = false;
     this.competitors = [
-      { id: "user", name: user.name || "Học Sinh", avatar: user.avatar || "🎒", isUser: true, score: 0 },
+      { id: "user", name: user.name || "Học Sinh", avatar: this.selectedMascot || user.avatar || "🤖", isUser: true, score: 0 },
       { id: "bot_1", name: "🤖 Robot AI Vui Học", avatar: "🤖", isUser: false, score: 0, accuracy: 0.85 },
       { id: "bot_2", name: "👧 Bảo Ngọc (Lớp 4B)", avatar: "👧", isUser: false, score: 0, accuracy: 0.75 },
       { id: "bot_3", name: "👦 Hoàng Nam (Lớp 4C)", avatar: "👦", isUser: false, score: 0, accuracy: 0.70 }
@@ -1579,17 +1604,32 @@ class ArenaPortal {
   async startBattleWithMode(mode = "blitz", grade = 3, questionCount = 5, lessonFilter = "all") {
     this.selectedConfigGrade = grade;
     this.battleStartTime = Date.now();
+    
+    // 1. Lấy câu hỏi theo bài học và khối lớp
     let allQuestions = await window.arenaService.getQuestions(grade, "all", lessonFilter);
-    if (allQuestions.length === 0) {
-      window.app.showToast(`Đang lấy tất cả câu hỏi Lớp ${grade}...`, "info");
-      allQuestions = await window.arenaService.getQuestions(grade, "all", "all");
-    } else if (allQuestions.length < questionCount && lessonFilter !== "all") {
-      // Bổ sung thêm câu hỏi từ các bài khác cùng khối để đạt đủ số lượng học sinh đã chọn
+    
+    // 2. Nếu bài học chưa đủ số lượng câu hỏi học sinh chọn (ví dụ chọn 15 câu nhưng bài chỉ có 2-5 câu),
+    // tự động bổ sung thêm các câu hỏi khác cùng khối
+    if (allQuestions.length < questionCount) {
       const extraQuestions = await window.arenaService.getQuestions(grade, "all", "all");
       const existingIds = new Set(allQuestions.map(q => q.id));
       const needed = questionCount - allQuestions.length;
       const additional = extraQuestions.filter(q => !existingIds.has(q.id)).sort(() => 0.5 - Math.random()).slice(0, needed);
       allQuestions = [...allQuestions, ...additional];
+    }
+
+    // 3. Nếu vẫn chưa đủ số lượng, tự động luân chuyển thêm câu hỏi để LUÔN ĐỦ số câu học sinh đã chọn
+    if (allQuestions.length < questionCount && allQuestions.length > 0) {
+      const basePool = [...allQuestions];
+      while (allQuestions.length < questionCount) {
+        const pick = basePool[Math.floor(Math.random() * basePool.length)];
+        allQuestions.push({
+          ...pick,
+          id: pick.id + "_rep_" + allQuestions.length
+        });
+      }
+    } else if (allQuestions.length === 0) {
+      allQuestions = await window.arenaService.getQuestions("all", "all", "all");
     }
 
     const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
