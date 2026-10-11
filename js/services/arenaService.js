@@ -755,6 +755,7 @@ class ArenaService {
       studentName: matchData.studentName || user.name || user.username || "Nguyễn Văn An",
       studentClass: matchData.studentClass || user.class || user.className || "3A",
       grade: parseInt(grade) || 3,
+      avatar: matchData.avatar || user.avatar || localStorage.getItem("arena_mascot") || "🤖",
       score,
       totalCorrect,
       totalQuestions,
@@ -786,6 +787,7 @@ class ArenaService {
           student_name: matchObj.studentName,
           student_class: matchObj.studentClass,
           grade_level: matchObj.grade,
+          avatar: matchObj.avatar,
           score: matchObj.score,
           stars_earned: matchObj.starsEarned,
           total_correct: matchObj.totalCorrect,
@@ -841,6 +843,7 @@ class ArenaService {
             studentName: d.student_name,
             studentClass: d.student_class || "3A",
             grade: d.grade_level,
+            avatar: d.avatar || "🤖",
             score: Number(d.score),
             starsEarned: d.stars_earned,
             totalCorrect: d.total_correct,
@@ -855,13 +858,13 @@ class ArenaService {
     if (matches.length === 0) {
       const db = JSON.parse(localStorage.getItem("app_mock_db")) || {};
       matches = db.arena_matches || [
-        { studentName: "Trần Đức Nam", studentClass: "5A", grade: 5, score: 100, starsEarned: 150, durationSeconds: 18, totalCorrect: 5, totalQuestions: 5, createdAt: new Date().toISOString() },
-        { studentName: "Nguyễn Văn An", studentClass: "3A", grade: 3, score: 100, starsEarned: 140, durationSeconds: 22, totalCorrect: 5, totalQuestions: 5, createdAt: new Date().toISOString() },
-        { studentName: "Lê Thị Mai", studentClass: "4B", grade: 4, score: 95, starsEarned: 120, durationSeconds: 25, totalCorrect: 4, totalQuestions: 5, createdAt: new Date(Date.now() - 86400000).toISOString() },
-        { studentName: "Phạm Hoàng Bách", studentClass: "3B", grade: 3, score: 85, starsEarned: 95, durationSeconds: 28, totalCorrect: 4, totalQuestions: 5, createdAt: new Date(Date.now() - 172800000).toISOString() },
-        { studentName: "Vũ Bảo Châu", studentClass: "4A", grade: 4, score: 80, starsEarned: 85, durationSeconds: 30, totalCorrect: 4, totalQuestions: 5, createdAt: new Date(Date.now() - 259200000).toISOString() },
-        { studentName: "Đỗ Tuấn Kiệt", studentClass: "5B", grade: 5, score: 80, starsEarned: 80, durationSeconds: 32, totalCorrect: 3, totalQuestions: 5, createdAt: new Date(Date.now() - 345600000).toISOString() },
-        { studentName: "Hoàng Gia Huy", studentClass: "3A", grade: 3, score: 75, starsEarned: 70, durationSeconds: 35, totalCorrect: 3, totalQuestions: 5, createdAt: new Date(Date.now() - 432000000).toISOString() }
+        { studentName: "Trần Đức Nam", studentClass: "5A", grade: 5, avatar: "🚀", score: 100, starsEarned: 150, durationSeconds: 18, totalCorrect: 5, totalQuestions: 5, createdAt: new Date().toISOString() },
+        { studentName: "Nguyễn Văn An", studentClass: "3A", grade: 3, avatar: "🤖", score: 100, starsEarned: 140, durationSeconds: 22, totalCorrect: 5, totalQuestions: 5, createdAt: new Date().toISOString() },
+        { studentName: "Lê Thị Mai", studentClass: "4B", grade: 4, avatar: "🐱", score: 95, starsEarned: 120, durationSeconds: 25, totalCorrect: 4, totalQuestions: 5, createdAt: new Date(Date.now() - 86400000).toISOString() },
+        { studentName: "Phạm Hoàng Bách", studentClass: "3B", grade: 3, avatar: "🦁", score: 85, starsEarned: 95, durationSeconds: 28, totalCorrect: 4, totalQuestions: 5, createdAt: new Date(Date.now() - 172800000).toISOString() },
+        { studentName: "Vũ Bảo Châu", studentClass: "4A", grade: 4, avatar: "🦄", score: 80, starsEarned: 85, durationSeconds: 30, totalCorrect: 4, totalQuestions: 5, createdAt: new Date(Date.now() - 259200000).toISOString() },
+        { studentName: "Đỗ Tuấn Kiệt", studentClass: "5B", grade: 5, avatar: "🦊", score: 80, starsEarned: 80, durationSeconds: 32, totalCorrect: 3, totalQuestions: 5, createdAt: new Date(Date.now() - 345600000).toISOString() },
+        { studentName: "Hoàng Gia Huy", studentClass: "3A", grade: 3, avatar: "🤖", score: 75, starsEarned: 70, durationSeconds: 35, totalCorrect: 3, totalQuestions: 5, createdAt: new Date(Date.now() - 432000000).toISOString() }
       ];
 
       if (gradeFilter !== "all") matches = matches.filter(m => m.grade === parseInt(gradeFilter));
@@ -888,6 +891,7 @@ class ArenaService {
           studentName: m.studentName,
           studentClass: m.studentClass,
           grade: m.grade,
+          avatar: m.avatar || "🤖",
           matchesPlayed: 0,
           totalScore: 0,
           highestScore: 0,
@@ -897,6 +901,7 @@ class ArenaService {
         };
       }
       const st = studentMap[m.studentName];
+      if (m.avatar) st.avatar = m.avatar;
       st.matchesPlayed += 1;
       st.totalScore += m.score;
       if (m.score > st.highestScore) st.highestScore = m.score;

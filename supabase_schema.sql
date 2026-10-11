@@ -167,6 +167,7 @@ CREATE TABLE public.arena_matches (
     student_name TEXT NOT NULL,
     student_class TEXT DEFAULT '3A',
     grade_level INTEGER NOT NULL DEFAULT 3,
+    avatar TEXT DEFAULT '🤖',
     score NUMERIC(5,2) DEFAULT 0,
     stars_earned INTEGER DEFAULT 0,
     total_correct INTEGER DEFAULT 0,
@@ -174,6 +175,9 @@ CREATE TABLE public.arena_matches (
     duration_seconds INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Tự động bổ sung cột avatar nếu bảng đã tồn tại từ trước
+ALTER TABLE public.arena_matches ADD COLUMN IF NOT EXISTS avatar TEXT DEFAULT '🤖';
 
 -- ==============================================================================
 -- BẬT BẢO MẬT CẤP HÀNG (ROW LEVEL SECURITY - RLS) & PHÂN QUYỀN TRUY CẬP

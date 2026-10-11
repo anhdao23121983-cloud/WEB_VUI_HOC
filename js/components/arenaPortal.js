@@ -31,6 +31,33 @@ class ArenaPortal {
     this.selectedLobbyQuestionCount = 10;
     this.selectedQuestionCount = 10;
     this.lastMatchSummary = null;
+    this.selectedMascot = localStorage.getItem("arena_mascot") || "🤖";
+  }
+
+  // Danh sách 6 Linh Vật Đại Diện ngộ nghĩnh (Gợi ý 2)
+  getMascots() {
+    return [
+      { id: "🤖", name: "Robot Thông Thái", desc: "Tính toán siêu tốc" },
+      { id: "🐱", name: "Mèo Công Nghệ", desc: "Lanh lợi, hoạt bát" },
+      { id: "🚀", name: "Phi Thuyền Vũ Trụ", desc: "Tốc độ phi thường" },
+      { id: "🦁", name: "Sư Tử Dũng Cảm", desc: "Bản lĩnh kiên cường" },
+      { id: "🦄", name: "Kỳ Lân Sáng Tạo", desc: "Tư duy đột phá" },
+      { id: "🦊", name: "Cáo Nhanh Trí", desc: "Phản xạ thần tốc" }
+    ];
+  }
+
+  // Chọn Linh Vật Đại Diện
+  selectMascot(mascotId) {
+    this.selectedMascot = mascotId;
+    localStorage.setItem("arena_mascot", mascotId);
+    const user = window.authService?.getUser();
+    if (user) {
+      user.avatar = mascotId;
+      localStorage.setItem("app_current_user", JSON.stringify(user));
+    }
+    this.playBeep(520, 0.1);
+    window.app.showToast(`🎭 Em đã chọn Linh Vật ${mascotId}! Sẵn sàng thi đấu!`, "success");
+    this.render("main-content-area");
   }
 
   // Khởi tạo Audio Context
@@ -393,7 +420,29 @@ class ArenaPortal {
                 </div>
               </div>
 
-              <!-- 4. NÚT VÀO ĐẤU TO LỚN NỔI BẬT -->
+              <!-- 4. CHỌN LINH VẬT ĐẠI DIỆN THI ĐẤU (AVATAR MASCOT - GỢI Ý 2) -->
+              <div class="space-y-2">
+                <div class="flex items-center justify-between flex-wrap gap-1">
+                  <label class="font-black text-xs text-amber-300 flex items-center gap-2 uppercase tracking-wider">
+                    <span>🎭</span> <span>BƯỚC 4: CHỌN LINH VẬT ĐẠI DIỆN THI ĐẤU:</span>
+                  </label>
+                  <span class="text-[11px] text-amber-200/90 font-bold">Đang chọn: <b class="text-amber-300 text-sm">${this.selectedMascot || "🤖"}</b></span>
+                </div>
+                <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  ${this.getMascots().map(m => {
+                    const isSelected = (this.selectedMascot || "🤖") === m.id;
+                    return `
+                      <button type="button" onclick="arenaPortal.selectMascot('${m.id}')" class="p-2.5 rounded-2xl border-2 transition-all flex flex-col items-center gap-1 ${isSelected ? 'bg-gradient-to-b from-amber-500/30 via-yellow-400/20 to-amber-500/10 border-amber-400 text-white shadow-lg ring-2 ring-amber-300 scale-105' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-slate-500'}">
+                        <span class="text-2xl filter drop-shadow">${m.id}</span>
+                        <span class="text-[10px] font-black leading-tight text-center text-white">${m.name}</span>
+                        <span class="text-[8px] opacity-75 font-normal text-center hidden sm:inline text-slate-300">${m.desc}</span>
+                      </button>
+                    `;
+                  }).join("")}
+                </div>
+              </div>
+
+              <!-- 5. NÚT VÀO ĐẤU TO LỚN NỔI BẬT -->
               <div class="pt-3">
                 <button onclick="arenaPortal.startLobbyBattle()" class="w-full py-4 rounded-2xl font-black text-base md:text-lg text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-500 hover:to-yellow-500 shadow-xl shadow-amber-400/30 hover:scale-101 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-200">
                   <span class="text-2xl animate-pulse">🚀</span> <span>BẮT ĐẦU VÀO ĐẤU NGAY ▶</span>
@@ -689,7 +738,9 @@ class ArenaPortal {
           <!-- KHUNG VINH DANH TRẬN ĐẤU VỪA HOÀN THÀNH -->
           <div class="p-5 md:p-6 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 border-2 border-white/60 animate-pop">
             <div class="flex items-center gap-4 text-center md:text-left">
-              <span class="text-4xl md:text-5xl filter drop-shadow animate-bounce">🎉 🏆</span>
+              <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/40 flex items-center justify-center text-4xl shadow-inner shrink-0 animate-bounce">
+                ${this.lastMatchSummary.avatar || '🤖'}
+              </div>
               <div class="space-y-1">
                 <span class="badge bg-white/20 text-white font-black text-[10px] uppercase tracking-wider">KẾT QUẢ TRẬN ĐẤU VỪA HOÀN THÀNH</span>
                 <h3 class="text-lg md:text-xl font-black">Chúc mừng em ${this.lastMatchSummary.studentName} đã xuất sắc hoàn thành!</h3>
@@ -793,8 +844,8 @@ class ArenaPortal {
               <div class="relative inline-block mx-auto pt-1">
                 <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-3xl animate-bounce filter drop-shadow">🥈</div>
                 <div class="w-16 h-16 rounded-full p-1 bg-gradient-to-tr from-slate-300 via-white to-slate-400 ring-4 ring-slate-300 shadow-lg shadow-slate-400/40 flex items-center justify-center relative">
-                  <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-2xl font-black text-slate-200">
-                    🧑‍🎓
+                  <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-3xl font-black text-slate-200">
+                    ${top2.avatar || "🥈"}
                   </div>
                   <span class="absolute -bottom-2 -right-1 bg-slate-300 text-slate-950 font-black text-[10px] px-1.5 py-0.5 rounded-full border border-white shadow">
                     🥈 TOP 2
@@ -823,8 +874,8 @@ class ArenaPortal {
               <div class="relative inline-block mx-auto pt-2">
                 <div class="absolute -top-7 left-1/2 -translate-x-1/2 text-4xl animate-bounce filter drop-shadow">👑</div>
                 <div class="w-20 h-20 rounded-full p-1.5 bg-gradient-to-tr from-amber-500 via-yellow-200 to-amber-400 ring-4 ring-amber-400/90 shadow-2xl shadow-amber-500/50 flex items-center justify-center relative">
-                  <div class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center text-3xl font-black text-amber-300">
-                    🧑‍🎓
+                  <div class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center text-4xl font-black text-amber-300">
+                    ${top1.avatar || (currentUser && top1.studentName === currentUser.name ? (this.selectedMascot || "🤖") : "🤖")}
                   </div>
                   <span class="absolute -bottom-2 -right-1 bg-amber-400 text-slate-950 font-black text-[11px] px-2 py-0.5 rounded-full border-2 border-white shadow-md">
                     🥇 TOP 1
@@ -858,8 +909,8 @@ class ArenaPortal {
               <div class="relative inline-block mx-auto pt-1">
                 <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-3xl animate-bounce filter drop-shadow">🥉</div>
                 <div class="w-16 h-16 rounded-full p-1 bg-gradient-to-tr from-amber-600 via-orange-300 to-amber-700 ring-4 ring-amber-600/80 shadow-lg shadow-amber-600/40 flex items-center justify-center relative">
-                  <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-2xl font-black text-amber-200">
-                    🧑‍🎓
+                  <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-3xl font-black text-amber-200">
+                    ${top3.avatar || "🥉"}
                   </div>
                   <span class="absolute -bottom-2 -right-1 bg-amber-600 text-white font-black text-[10px] px-1.5 py-0.5 rounded-full border border-white shadow">
                     🥉 TOP 3
@@ -923,6 +974,9 @@ class ArenaPortal {
                     <span class="w-10 h-10 rounded-2xl flex items-center justify-center font-black text-sm ${isTop1 ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-300 shadow-md' : isTop2 ? 'bg-slate-300 text-slate-950' : isTop3 ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-700'}">
                       ${isTop1 ? '👑' : isTop2 ? '🥈' : isTop3 ? '🥉' : `#${idx + 1}`}
                     </span>
+                  </div>
+                  <div class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-xl shrink-0 border border-slate-200 shadow-xs ring-1 ring-slate-100">
+                    ${st.avatar || (isCurrentUser ? (this.selectedMascot || '🤖') : '🧑‍🎓')}
                   </div>
                   <div>
                     <h5 class="text-xs md:text-sm font-black text-slate-900 flex items-center gap-1.5 flex-wrap">
@@ -1697,12 +1751,14 @@ class ArenaPortal {
     const studentName = currentUser.name || currentUser.username || "Học sinh";
     const studentClass = currentUser.class || currentUser.className || "3A";
     const gradeLevel = this.selectedConfigGrade || (this.selectedGrade === "all" ? 4 : this.selectedGrade);
+    const mascot = this.selectedMascot || currentUser.avatar || localStorage.getItem("arena_mascot") || "🤖";
 
     // Lưu kết quả tóm tắt trận đấu để hiển thị nổi bật trên Bảng Xếp Hạng
     this.lastMatchSummary = {
       studentName,
       studentClass,
       grade: gradeLevel,
+      avatar: mascot,
       score: this.score,
       maxScore,
       totalCorrect: Math.round(this.score / 20),
@@ -1715,6 +1771,7 @@ class ArenaPortal {
     await window.arenaService.recordMatchResult({
       studentName,
       studentClass,
+      avatar: mascot,
       score: this.score,
       totalCorrect: Math.round(this.score / 20),
       totalQuestions: totalQuestions,
