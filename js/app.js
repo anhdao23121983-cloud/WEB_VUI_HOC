@@ -104,6 +104,19 @@ class Application {
       }
       document.getElementById("portal-view")?.classList.remove("hidden");
       window.arenaPortal.render("main-content-area");
+
+      // Gợi ý 2: Hiển thị thông báo Toast chào đón khi học sinh vừa bước vào Đấu Trường
+      const welcomeKey = "arena_welcome_" + (user.username || user.name || "user");
+      const alreadyWelcomed = sessionStorage.getItem(welcomeKey);
+      if (!alreadyWelcomed) {
+        sessionStorage.setItem(welcomeKey, "true");
+        this.showToast(`⚡ Chào mừng ${user.name || "em"} đến với Đấu Trường Tin Học Kết Nối Tri Thức! Hãy chọn khối lớp và bài học để bắt đầu thi đấu!`, "success");
+        if (window.ttsService?.speak) {
+          setTimeout(() => {
+            window.ttsService.speak(`Chào mừng ${user.name || "em"} đến với Đấu Trường Tin Học Kết Nối Tri Thức! Hãy chọn khối lớp và bài học để bắt đầu thi đấu nhé!`);
+          }, 350);
+        }
+      }
     } else {
       document.getElementById("landing-view")?.classList.remove("hidden");
     }

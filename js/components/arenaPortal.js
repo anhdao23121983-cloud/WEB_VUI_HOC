@@ -313,6 +313,20 @@ class ArenaPortal {
               <p class="text-slate-300 text-xs md:text-sm max-w-2xl mx-auto leading-relaxed">
                 Hệ thống câu hỏi trắc nghiệm chuẩn <b>SGK Tin học Kết nối tri thức với cuộc sống</b>. Tự chọn Khối lớp, Bài học theo sách và Số câu hỏi để tranh tài vinh danh trên Bảng Vàng!
               </p>
+
+              <!-- LỜI CHÀO MỪNG DŨNG SĨ ĐẤU TRƯỜNG (GỢI Ý 2) -->
+              <div class="max-w-2xl mx-auto p-3.5 bg-gradient-to-r from-amber-500/20 via-yellow-400/20 to-amber-500/20 rounded-2xl border border-amber-400/50 flex items-center justify-between gap-3 text-xs md:text-sm mt-3">
+                <div class="flex items-center gap-2.5 text-left">
+                  <span class="text-2xl animate-bounce">⚡</span>
+                  <div>
+                    <span class="text-amber-300 font-black">Xin chào dũng sĩ ${user.name || "Học sinh"} (${user.className || user.class || "Khối " + (user.grade || 3)})!</span>
+                    <p class="text-slate-300 text-[11px]">Sẵn sàng tranh tài! Chọn bài học và số câu hỏi bên dưới để bắt đầu leo Bảng Vàng!</p>
+                  </div>
+                </div>
+                <button type="button" onclick="arenaPortal.switchTab('leaderboard')" class="btn bg-amber-400 hover:bg-amber-300 text-slate-950 font-black btn-xs shadow-md shrink-0">
+                  🏆 Xem Bảng Vàng
+                </button>
+              </div>
             </div>
 
             <!-- BẢNG ĐIỀU KHIỂN CHỌN BÀI & CẤU HÌNH ĐẤU TRƯỜNG TRỰC TIẾP -->
