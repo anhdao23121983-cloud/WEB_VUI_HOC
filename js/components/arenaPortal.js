@@ -312,6 +312,15 @@ class ArenaPortal {
         </div>
       </div>
     `;
+
+    // Gắn trực tiếp Event Listener cho nút Vào Đấu Ngay để bảo đảm click 100% hoạt động
+    const startBtn = document.getElementById("btn-start-arena-battle");
+    if (startBtn) {
+      startBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.arenaPortal ? window.arenaPortal.startLobbyBattle() : this.startLobbyBattle();
+      });
+    }
   }
 
   // Render nội dung của Tab hiện tại
@@ -468,7 +477,7 @@ class ArenaPortal {
 
               <!-- 5. NÚT VÀO ĐẤU TO LỚN NỔI BẬT -->
               <div class="pt-3">
-                <button type="button" id="btn-start-arena-battle" onclick="arenaPortal.startLobbyBattle()" class="w-full py-4 rounded-2xl font-black text-base md:text-lg text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-500 hover:to-yellow-500 shadow-xl shadow-amber-400/30 hover:scale-101 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-200">
+                <button type="button" id="btn-start-arena-battle" onclick="window.arenaPortal.startLobbyBattle()" class="w-full py-4 rounded-2xl font-black text-base md:text-lg text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-500 hover:to-yellow-500 shadow-xl shadow-amber-400/30 hover:scale-101 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-200">
                   <span class="text-2xl animate-pulse">🚀</span> <span>BẮT ĐẦU VÀO ĐẤU NGAY ▶</span>
                 </button>
               </div>
@@ -1329,25 +1338,42 @@ class ArenaPortal {
   }
 
   async startLobbyBattle() {
-    let user = window.authService?.getUser();
-    if (!user) {
-      user = {
-        name: "Học Sinh Khách",
-        className: `${this.selectedLobbyGrade || 3}A`,
-        grade: this.selectedLobbyGrade || 3,
-        avatar: this.selectedMascot || "🤖",
-        isGuest: true
-      };
-      window.app?.showToast?.("🎮 Em đang tham gia Đấu Trường với tư cách Học Sinh! (Đăng nhập để lưu điểm Bảng Vàng nhé)", "info");
+    console.log("🚀 [ArenaPortal] startLobbyBattle kích hoạt!");
+    const btn = document.getElementById("btn-start-arena-battle");
+    if (btn) {
+      btn.innerHTML = `<span class="text-2xl animate-spin">⏳</span> <span>ĐANG KẾT NỐI ĐẤU TRƯỜNG...</span>`;
+      btn.disabled = true;
     }
 
-    const grade = this.selectedLobbyGrade || 3;
-    const select = document.getElementById("lobby-lesson-select");
-    const lesson = (select && select.value) ? select.value : (this.selectedLobbyLesson || "all");
-    const count = parseInt(this.selectedLobbyQuestionCount) || 10;
+    try {
+      let user = window.authService?.getUser();
+      if (!user) {
+        user = {
+          name: "Học Sinh Khách",
+          className: `${this.selectedLobbyGrade || 3}A`,
+          grade: this.selectedLobbyGrade || 3,
+          avatar: this.selectedMascot || "🤖",
+          isGuest: true
+        };
+        window.app?.showToast?.("🎮 Em đang tham gia Đấu Trường với tư cách Học Sinh! (Đăng nhập để lưu điểm Bảng Vàng nhé)", "info");
+      }
 
-    this.playBeep(660, 0.15);
-    await this.startBattleWithMode("blitz", grade, count, lesson);
+      const grade = parseInt(this.selectedLobbyGrade) || 3;
+      const select = document.getElementById("lobby-lesson-select");
+      const lesson = (select && select.value) ? select.value : (this.selectedLobbyLesson || "all");
+      const count = parseInt(this.selectedLobbyQuestionCount) || 10;
+
+      this.playBeep(660, 0.15);
+      this.currentTab = "live_arena";
+      await this.startBattleWithMode("blitz", grade, count, lesson);
+    } catch (err) {
+      console.error("❌ Lỗi khi khởi động trận đấu:", err);
+      window.app?.showToast?.("⚠️ Lỗi khởi động đấu trường: " + (err.message || err), "error");
+      if (btn) {
+        btn.innerHTML = `<span class="text-2xl animate-pulse">🚀</span> <span>BẮT ĐẦU VÀO ĐẤU NGAY ▶</span>`;
+        btn.disabled = false;
+      }
+    }
   }
 
   selectQuestionCount(count) {
@@ -1643,19 +1669,30 @@ class ArenaPortal {
 
   async startBattleWithMode(mode = "blitz", grade = 3, questionCount = 5, lessonFilter = "all") {
     this.selectedConfigGrade = grade;
+    this.currentTab = "live_arena";
     this.battleStartTime = Date.now();
     
-    // 1. Lấy câu hỏi theo bài học và khối lớp
-    let allQuestions = await window.arenaService.getQuestions(grade, "all", lessonFilter);
+    // 1. Lấy câu hỏi theo bài học và khối lớp an toàn
+    let allQuestions = [];
+    try {
+      if (window.arenaService?.getQuestions) {
+        allQuestions = await window.arenaService.getQuestions(grade, "all", lessonFilter);
+      }
+    } catch (err) {
+      console.warn("Lỗi khi tải câu hỏi từ arenaService:", err);
+    }
     
-    // 2. Nếu bài học chưa đủ số lượng câu hỏi học sinh chọn (ví dụ chọn 15 câu nhưng bài chỉ có 2-5 câu),
-    // tự động bổ sung thêm các câu hỏi khác cùng khối
+    // 2. Nếu bài học chưa đủ số lượng câu hỏi học sinh chọn, tự động bổ sung
     if (allQuestions.length < questionCount) {
-      const extraQuestions = await window.arenaService.getQuestions(grade, "all", "all");
-      const existingIds = new Set(allQuestions.map(q => q.id));
-      const needed = questionCount - allQuestions.length;
-      const additional = extraQuestions.filter(q => !existingIds.has(q.id)).sort(() => 0.5 - Math.random()).slice(0, needed);
-      allQuestions = [...allQuestions, ...additional];
+      try {
+        if (window.arenaService?.getQuestions) {
+          const extraQuestions = await window.arenaService.getQuestions(grade, "all", "all");
+          const existingIds = new Set(allQuestions.map(q => q.id));
+          const needed = questionCount - allQuestions.length;
+          const additional = extraQuestions.filter(q => !existingIds.has(q.id)).sort(() => 0.5 - Math.random()).slice(0, needed);
+          allQuestions = [...allQuestions, ...additional];
+        }
+      } catch (e) {}
     }
 
     // 3. Nếu vẫn chưa đủ số lượng, tự động luân chuyển thêm câu hỏi để LUÔN ĐỦ số câu học sinh đã chọn
@@ -1668,8 +1705,17 @@ class ArenaPortal {
           id: pick.id + "_rep_" + allQuestions.length
         });
       }
-    } else if (allQuestions.length === 0) {
-      allQuestions = await window.arenaService.getQuestions("all", "all", "all");
+    }
+
+    // 4. Nếu hoàn toàn không có câu hỏi (ngoại tuyến hoặc lỗi kết nối), dùng bộ câu hỏi SGK dự phòng tức thì
+    if (!allQuestions || allQuestions.length === 0) {
+      allQuestions = [
+        { id: "fallback_1", grade, question: "Thiết bị nào sau đây dùng để nhập dữ liệu chữ và số vào máy tính?", options: ["Bàn phím máy tính", "Màn hình", "Máy in", "Loa"], correctIndex: 0, stars: 20, difficulty: "easy", explanation: "Bàn phím dùng để nhập ký tự và số liệu vào máy tính." },
+        { id: "fallback_2", grade, question: "Thao tác nháy đúp chuột máy tính là gì?", options: ["Nhấn nút chuột trái 1 lần", "Nhấn nhanh nút chuột trái 2 lần liên tiếp", "Nhấn nút chuột phải", "Kéo thả chuột"], correctIndex: 1, stars: 20, difficulty: "easy", explanation: "Nháy đúp là thao tác nhấn nhanh nút chuột trái hai lần liên tiếp." },
+        { id: "fallback_3", grade, question: "Bộ não xử lý mọi thông tin trong máy tính là thiết bị nào?", options: ["Bộ xử lý trung tâm (CPU trong thân máy)", "Màn hình", "Bàn phím", "Chuột"], correctIndex: 0, stars: 20, difficulty: "medium", explanation: "CPU (Bộ xử lý trung tâm) được xem như bộ não của máy tính." },
+        { id: "fallback_4", grade, question: "Hàng phím cơ sở có hai phím định vị có gờ cho hai ngón trỏ là phím nào?", options: ["Phím F và J", "Phím A và L", "Phím G và H", "Phím Spacebar"], correctIndex: 0, stars: 20, difficulty: "medium", explanation: "Phím F và J có gờ nổi để đặt ngón trỏ tay trái và tay phải đúng vị trí." },
+        { id: "fallback_5", grade, question: "Để bảo vệ mắt khi ngồi trước máy tính, em nên làm gì?", options: ["Giữ khoảng cách mắt từ 50cm - 70cm với màn hình", "Ngồi sát vào màn hình để nhìn cho rõ", "Tắt hết đèn trong phòng khi dùng máy", "Nhìn liên tục không chớp mắt"], correctIndex: 0, stars: 20, difficulty: "easy", explanation: "Nên ngồi thẳng lưng và giữ khoảng cách 50-70cm với màn hình máy tính." }
+      ];
     }
 
     const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());

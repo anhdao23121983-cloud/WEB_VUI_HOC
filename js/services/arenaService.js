@@ -532,7 +532,6 @@ class ArenaService {
       localStorage.setItem("app_mock_db", JSON.stringify(db));
     }
   }
-  }
 
   // 1. LẤY DANH SÁCH CÂU HỎI ĐẤU TRƯỜNG (HỢP NHẤT SUPABASE + KHO SGK MẶC ĐỊNH)
   async getQuestions(gradeFilter = "all", topicFilter = "all", lessonFilter = "all") {
