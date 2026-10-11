@@ -812,6 +812,7 @@ class ArenaService {
       totalCorrect,
       totalQuestions,
       starsEarned,
+      speedStarsCount: matchData.speedStarsCount || 0,
       durationSeconds,
       mode,
       createdAt: new Date().toISOString()

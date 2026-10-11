@@ -32,6 +32,8 @@ class ArenaPortal {
     this.selectedQuestionCount = 10;
     this.lastMatchSummary = null;
     this.selectedMascot = localStorage.getItem("arena_mascot") || "🤖";
+    this.speedStarsCount = 0;
+    this.lastAnswerSpeedBonus = null;
   }
 
   // Danh sách 6 Linh Vật Đại Diện ngộ nghĩnh (Gợi ý 2)
@@ -104,6 +106,14 @@ class ArenaPortal {
     const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99];
     notes.forEach((freq, idx) => {
       setTimeout(() => this.playBeep(freq, 0.25), idx * 100);
+    });
+  }
+
+  // Âm thanh chuông gió lấp lánh khi đạt Sao Vàng Thần Tốc (<5s)
+  playSpeedStarChime() {
+    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+    notes.forEach((freq, idx) => {
+      setTimeout(() => this.playBeep(freq, 0.18), idx * 60);
     });
   }
 
@@ -572,14 +582,21 @@ class ArenaPortal {
 
         <!-- Giải thích Sư phạm (Khi đã chọn xong) -->
         ${this.isAnswerRevealed ? `
-          <div class="p-4 rounded-2xl border ${this.selectedOptionIndex === q.correctIndex ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-200' : 'bg-rose-950/40 border-rose-500/50 text-rose-200'} space-y-1 animate-pop flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <p class="font-black text-xs">${this.selectedOptionIndex === q.correctIndex ? '🎉 CHÍNH XÁC! TUYỆT VỜI!' : '⚠️ CHƯA CHÍNH XÁC!'}</p>
-              <p class="text-xs text-slate-300">${q.explanation || 'Hãy ghi nhớ kiến thức cốt lõi này nhé!'}</p>
+          <div class="p-4 rounded-2xl border ${this.selectedOptionIndex === q.correctIndex ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-200' : 'bg-rose-950/40 border-rose-500/50 text-rose-200'} space-y-2 animate-pop">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
+                <p class="font-black text-sm">${this.selectedOptionIndex === q.correctIndex ? '🎉 CHÍNH XÁC! TUYỆT VỜI!' : '⚠️ CHƯA CHÍNH XÁC!'}</p>
+                ${this.lastAnswerSpeedBonus?.isSpeed ? `
+                  <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-400/50 shadow-sm animate-pulse">
+                    ⚡ PHẢN XẠ THẦN TỐC (${this.lastAnswerSpeedBonus.timeSpent}s)! Thưởng nóng +10 ⭐
+                  </span>
+                ` : ''}
+              </div>
+              <button onclick="arenaPortal.nextQuestion()" class="btn btn-amber btn-md font-black shadow-lg flex items-center gap-1">
+                <span>${this.currentQIndex + 1 === this.battleQuestions.length ? '🏁 Xem Kết Quả' : 'Câu Tiếp Theo ▶'}</span>
+              </button>
             </div>
-            <button onclick="arenaPortal.nextQuestion()" class="btn btn-amber btn-md font-black shadow-lg flex items-center gap-1">
-              <span>${this.currentQIndex + 1 === this.battleQuestions.length ? '🏁 Xem Kết Quả' : 'Câu Tiếp Theo ▶'}</span>
-            </button>
+            <p class="text-xs text-slate-300">${q.explanation || 'Hãy ghi nhớ kiến thức cốt lõi này nhé!'}</p>
           </div>
         ` : ''}
       </div>
@@ -764,8 +781,16 @@ class ArenaPortal {
               <div class="space-y-1">
                 <span class="badge bg-white/20 text-white font-black text-[10px] uppercase tracking-wider">KẾT QUẢ TRẬN ĐẤU VỪA HOÀN THÀNH</span>
                 <h3 class="text-lg md:text-xl font-black">Chúc mừng em ${this.lastMatchSummary.studentName} đã xuất sắc hoàn thành!</h3>
-                <p class="text-cyan-100 text-xs md:text-sm font-semibold">
-                  Điểm số: <b class="text-amber-300 font-mono text-base">${this.lastMatchSummary.score} Điểm</b> • Đúng: <b class="text-white">${this.lastMatchSummary.totalCorrect}/${this.lastMatchSummary.totalQuestions} câu</b> • Thời gian: <b class="text-white">${this.lastMatchSummary.durationSeconds}s</b> • Thưởng: <b class="text-amber-300">⭐ +${this.lastMatchSummary.starsEarned} Sao</b>
+                <p class="text-cyan-100 text-xs md:text-sm font-semibold flex items-center flex-wrap gap-2">
+                  <span>Điểm số: <b class="text-amber-300 font-mono text-base">${this.lastMatchSummary.score} Điểm</b></span>
+                  <span>• Đúng: <b class="text-white">${this.lastMatchSummary.totalCorrect}/${this.lastMatchSummary.totalQuestions} câu</b></span>
+                  <span>• Thời gian: <b class="text-white">${this.lastMatchSummary.durationSeconds}s</b></span>
+                  <span>• Thưởng: <b class="text-amber-300">⭐ +${this.lastMatchSummary.starsEarned} Sao</b></span>
+                  ${this.lastMatchSummary.speedStarsCount > 0 ? `
+                    <span class="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-xs shadow inline-flex items-center gap-1 animate-bounce">
+                      ⚡ ${this.lastMatchSummary.speedStarsCount} pha Thần Tốc (+${this.lastMatchSummary.speedStarsCount * 10}⭐)
+                    </span>
+                  ` : ''}
                 </p>
               </div>
             </div>
@@ -1653,6 +1678,8 @@ class ArenaPortal {
     this.userAnswers = [];
     this.score = 0;
     this.starsEarned = 0;
+    this.speedStarsCount = 0;
+    this.lastAnswerSpeedBonus = null;
     this.selectedOptionIndex = null;
     this.isAnswerRevealed = false;
     this.battleActive = true;
@@ -1741,6 +1768,7 @@ class ArenaPortal {
     if (this.isAnswerRevealed) return;
     this.isAnswerRevealed = true;
     this.selectedOptionIndex = -1;
+    this.lastAnswerSpeedBonus = null;
     this.streakCombo = 0;
     this.playWrongSound();
     window.app.showToast("⏰ Hết thời gian suy nghĩ!", "error");
@@ -1755,6 +1783,9 @@ class ArenaPortal {
     this.isAnswerRevealed = true;
     const q = this.battleQuestions[this.currentQIndex];
 
+    // Tính thời gian suy nghĩ đã trôi qua
+    const timeSpent = Math.max(1, (this.questionMaxTimer || 15) - this.timer);
+
     if (optionIndex === q.correctIndex) {
       this.playVictorySound();
       this.streakCombo++;
@@ -1762,8 +1793,21 @@ class ArenaPortal {
       const comboBonus = (this.streakCombo - 1) * 20;
       const questionScore = 100 + speedBonus + comboBonus;
 
+      // Thưởng Sao Vàng Thần Tốc: Đúng trong <= 5s đầu => +10 Sao Vàng
+      const isSpeedBonus = (timeSpent <= 5);
+      const speedBonusStars = isSpeedBonus ? 10 : 0;
+      if (isSpeedBonus) {
+        this.speedStarsCount = (this.speedStarsCount || 0) + 1;
+        this.playSpeedStarChime();
+      }
+      this.lastAnswerSpeedBonus = {
+        isSpeed: isSpeedBonus,
+        timeSpent,
+        bonusStars: speedBonusStars
+      };
+
       this.score += questionScore;
-      this.starsEarned += q.stars;
+      this.starsEarned += (q.stars || 10) + speedBonusStars;
 
       // Tiếng vỗ tay rộn rã khi học sinh đạt chuỗi đúng liên tiếp (Gợi ý 2)
       if (this.streakCombo >= 2 && window.ttsService?.playApplause) {
@@ -1773,8 +1817,13 @@ class ArenaPortal {
       const userComp = (this.competitors || []).find(c => c.isUser);
       if (userComp) userComp.score = this.score;
 
-      window.app.showToast(`✅ Chính xác! +${questionScore} Điểm (Tốc độ +${speedBonus}) & +${q.stars} ⭐!`, "success");
+      if (isSpeedBonus) {
+        window.app.showToast(`⚡ THẦN TỐC! Đúng trong ${timeSpent}s: +${questionScore}đ & ⭐ +${(q.stars || 10) + speedBonusStars} Sao (+10 Sao Thần Tốc)!`, "success");
+      } else {
+        window.app.showToast(`✅ Chính xác! +${questionScore} Điểm (Tốc độ +${speedBonus}) & +${q.stars || 10} ⭐!`, "success");
+      }
     } else {
+      this.lastAnswerSpeedBonus = null;
       this.playWrongSound();
       this.streakCombo = 0;
       window.app.showToast("❌ Chưa đúng rồi!", "error");
@@ -1805,6 +1854,7 @@ class ArenaPortal {
     if (this.currentQIndex + 1 < this.battleQuestions.length) {
       this.currentQIndex++;
       this.selectedOptionIndex = null;
+      this.lastAnswerSpeedBonus = null;
       this.isAnswerRevealed = false;
       this.startQuestionTimer();
       this.render("main-content-area");
@@ -1838,6 +1888,7 @@ class ArenaPortal {
       totalCorrect: Math.round(this.score / 20),
       totalQuestions,
       starsEarned: this.starsEarned,
+      speedStarsCount: this.speedStarsCount || 0,
       durationSeconds: duration
     };
 
@@ -1850,6 +1901,7 @@ class ArenaPortal {
       totalCorrect: Math.round(this.score / 20),
       totalQuestions: totalQuestions,
       starsEarned: this.starsEarned,
+      speedStarsCount: this.speedStarsCount || 0,
       durationSeconds: duration,
       grade: gradeLevel
     });
@@ -2013,7 +2065,8 @@ class ArenaPortal {
 
     ctx.fillStyle = "#10b981";
     ctx.font = "900 18px Nunito, sans-serif";
-    ctx.fillText(`🎯 Thành tích: Đạt ${this.score || 100} Điểm • ⭐ +${this.starsEarned || 20} Sao Vàng Bảng Vàng`, 400, 385);
+    const speedBonusText = (this.lastMatchSummary?.speedStarsCount > 0) ? ` (⚡ ${this.lastMatchSummary.speedStarsCount} lần Thần Tốc)` : "";
+    ctx.fillText(`🎯 Thành tích: Đạt ${this.score || 100} Điểm • ⭐ +${this.starsEarned || 20} Sao Vàng Bảng Vàng${speedBonusText}`, 400, 385);
 
     // Date & Stamp Signature
     const todayStr = `Đà Nẵng, ngày ${new Date().getDate()} tháng ${new Date().getMonth() + 1} năm ${new Date().getFullYear()}`;
