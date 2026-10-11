@@ -24,6 +24,13 @@ class ArenaPortal {
 
     // Editing modal state
     this.editingQuestionId = null;
+
+    // Direct Lobby Selection State (Grade, Lesson KNTT, Question Count)
+    this.selectedLobbyGrade = 3;
+    this.selectedLobbyLesson = "all";
+    this.selectedLobbyQuestionCount = 10;
+    this.selectedQuestionCount = 10;
+    this.lastMatchSummary = null;
   }
 
   // Khởi tạo Audio Context
@@ -283,51 +290,101 @@ class ArenaPortal {
     }
 
     if (!this.battleActive) {
+      const user = window.authService?.getUser() || { name: "Học Sinh", grade: 3 };
+      if (!this.selectedLobbyGradeInitialized && user.grade) {
+        this.selectedLobbyGrade = parseInt(user.grade) || 3;
+        this.selectedLobbyGradeInitialized = true;
+      }
+
       return `
-        <div class="p-8 md:p-12 bg-slate-950 text-white rounded-3xl border-2 border-rose-500/50 shadow-2xl space-y-6 text-center animate-pop relative overflow-hidden">
-          <div class="absolute -top-24 -left-24 w-72 h-72 bg-rose-600/20 rounded-full blur-3xl pointer-events-none"></div>
-          <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="space-y-6">
+          <!-- HERO BANNER VÀ BẢNG ĐIỀU KHIỂN ĐẤU TRƯỜNG -->
+          <div class="p-6 md:p-10 bg-slate-950 text-white rounded-3xl border-2 border-rose-500/50 shadow-2xl space-y-6 animate-pop relative overflow-hidden">
+            <div class="absolute -top-24 -left-24 w-72 h-72 bg-rose-600/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
 
-          <div class="space-y-3 relative z-10">
-            <span class="text-6xl block animate-bounce filter drop-shadow-lg">⚡ 🏆 🎮</span>
-            <h3 class="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-rose-400 to-amber-300">
-              SẴN SÀNG THI ĐẤU ĐẤU TRƯỜNG TIN HỌC!
-            </h3>
-            <p class="text-slate-300 text-xs md:text-sm max-w-xl mx-auto leading-relaxed">
-              Tranh tài trực tiếp với 4 Đấu thủ Realtime! Chọn số câu hỏi và bài học SGK để bắt đầu sàn đấu trí tuệ công nghệ đỉnh cao.
-            </p>
-          </div>
-
-          <!-- Lựa chọn Chế độ thi đấu -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto relative z-10">
-            <div class="p-4 bg-slate-900/90 rounded-2xl border-2 border-cyan-500/40 hover:border-cyan-400 transition-all space-y-2 cursor-pointer text-left group" onclick="arenaPortal.openConfigModal(3)">
-              <div class="flex items-center justify-between">
-                <span class="text-3xl">🎒</span>
-                <span class="badge bg-cyan-600 text-white font-black text-[10px]">LỚP 3</span>
+            <div class="space-y-2 text-center relative z-10">
+              <div class="inline-flex items-center gap-2 px-3.5 py-1 bg-rose-500/20 border border-rose-400/40 rounded-full text-rose-300 font-black text-xs uppercase tracking-wider">
+                <span>⚡</span> SÀN ĐẤU TRẮC NGHIỆM TRỰC TUYẾN THỜI GIAN THỰC
               </div>
-              <h4 class="font-black text-sm text-cyan-300 group-hover:text-cyan-200">Đấu Trường Lớp 3</h4>
-              <p class="text-[11px] text-slate-400">Tùy chọn 10, 20, 30 câu & chọn từng bài học SGK Tin Học 3.</p>
-              <button class="btn btn-primary btn-xs w-full font-black mt-2">Bắt Đầu Đấu ▶</button>
+              <h3 class="text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-rose-400 to-amber-300">
+                ĐẤU TRƯỜNG TIN HỌC TIỂU HỌC
+              </h3>
+              <p class="text-slate-300 text-xs md:text-sm max-w-2xl mx-auto leading-relaxed">
+                Hệ thống câu hỏi trắc nghiệm chuẩn <b>SGK Tin học Kết nối tri thức với cuộc sống</b>. Tự chọn Khối lớp, Bài học theo sách và Số câu hỏi để tranh tài vinh danh trên Bảng Vàng!
+              </p>
             </div>
 
-            <div class="p-4 bg-slate-900/90 rounded-2xl border-2 border-emerald-500/40 hover:border-emerald-400 transition-all space-y-2 cursor-pointer text-left group" onclick="arenaPortal.openConfigModal(4)">
-              <div class="flex items-center justify-between">
-                <span class="text-3xl">🚀</span>
-                <span class="badge bg-emerald-600 text-white font-black text-[10px]">LỚP 4</span>
+            <!-- BẢNG ĐIỀU KHIỂN CHỌN BÀI & CẤU HÌNH ĐẤU TRƯỜNG TRỰC TIẾP -->
+            <div class="max-w-3xl mx-auto bg-slate-900/95 rounded-3xl border-2 border-amber-400/60 p-6 md:p-8 space-y-5 shadow-2xl relative z-10 backdrop-blur-md text-left">
+              
+              <!-- 1. CHỌN KHỐI LỚP (3, 4, 5) -->
+              <div class="space-y-2">
+                <label class="font-black text-xs text-amber-300 flex items-center gap-2 uppercase tracking-wider">
+                  <span>🎒</span> <span>BƯỚC 1: CHỌN KHỐI LỚP THI ĐẤU</span>
+                </label>
+                <div class="grid grid-cols-3 gap-3">
+                  <button type="button" onclick="arenaPortal.selectLobbyGrade(3)" id="lobby-grade-3" class="p-3.5 rounded-2xl border-2 font-black text-xs md:text-sm text-center transition-all flex flex-col items-center gap-1 ${this.selectedLobbyGrade === 3 ? 'bg-cyan-600 border-cyan-300 text-white shadow-lg ring-2 ring-cyan-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                    <span class="text-2xl">🎒</span>
+                    <span>Tin Lớp 3</span>
+                    <span class="text-[10px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
+                  </button>
+                  <button type="button" onclick="arenaPortal.selectLobbyGrade(4)" id="lobby-grade-4" class="p-3.5 rounded-2xl border-2 font-black text-xs md:text-sm text-center transition-all flex flex-col items-center gap-1 ${this.selectedLobbyGrade === 4 ? 'bg-emerald-600 border-emerald-300 text-white shadow-lg ring-2 ring-emerald-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                    <span class="text-2xl">🚀</span>
+                    <span>Tin Lớp 4</span>
+                    <span class="text-[10px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
+                  </button>
+                  <button type="button" onclick="arenaPortal.selectLobbyGrade(5)" id="lobby-grade-5" class="p-3.5 rounded-2xl border-2 font-black text-xs md:text-sm text-center transition-all flex flex-col items-center gap-1 ${this.selectedLobbyGrade === 5 ? 'bg-amber-600 border-amber-300 text-white shadow-lg ring-2 ring-amber-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                    <span class="text-2xl">⭐</span>
+                    <span>Tin Lớp 5</span>
+                    <span class="text-[10px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
+                  </button>
+                </div>
               </div>
-              <h4 class="font-black text-sm text-emerald-300 group-hover:text-emerald-200">Đấu Trường Lớp 4</h4>
-              <p class="text-[11px] text-slate-400">Tùy chọn 10, 20, 30 câu & chọn từng bài học SGK Tin Học 4.</p>
-              <button class="btn btn-emerald btn-xs w-full font-black mt-2">Bắt Đầu Đấu ▶</button>
-            </div>
 
-            <div class="p-4 bg-slate-900/90 rounded-2xl border-2 border-amber-500/40 hover:border-amber-400 transition-all space-y-2 cursor-pointer text-left group" onclick="arenaPortal.openConfigModal(5)">
-              <div class="flex items-center justify-between">
-                <span class="text-3xl">⭐</span>
-                <span class="badge bg-amber-600 text-white font-black text-[10px]">LỚP 5</span>
+              <!-- 2. CHỌN BÀI HỌC THEO SGK KẾT NỐI TRI THỨC -->
+              <div class="space-y-2">
+                <label class="font-black text-xs text-amber-300 flex items-center gap-2 uppercase tracking-wider">
+                  <span>📖</span> <span>BƯỚC 2: CHỌN BÀI THEO SÁCH KẾT NỐI TRI THỨC VỚI CUỘC SỐNG:</span>
+                </label>
+                <div class="relative">
+                  <select id="lobby-lesson-select" onchange="arenaPortal.handleLobbyLessonChange(this.value)" class="form-control font-bold text-xs md:text-sm p-3.5 bg-slate-950 border-2 border-slate-700 text-amber-200 rounded-2xl focus:border-amber-400 cursor-pointer w-full">
+                    ${this.renderLobbyLessonOptions(this.selectedLobbyGrade || 3)}
+                  </select>
+                </div>
               </div>
-              <h4 class="font-black text-sm text-amber-300 group-hover:text-amber-200">Đấu Trường Lớp 5</h4>
-              <p class="text-[11px] text-slate-400">Tùy chọn 10, 20, 30 câu & chọn từng bài học SGK Tin Học 5.</p>
-              <button class="btn btn-amber btn-xs w-full font-black mt-2">Bắt Đầu Đấu ▶</button>
+
+              <!-- 3. CHỌN SỐ LƯỢNG CÂU HỎI -->
+              <div class="space-y-2">
+                <label class="font-black text-xs text-amber-300 flex items-center gap-2 uppercase tracking-wider">
+                  <span>⚡</span> <span>BƯỚC 3: CHỌN SỐ LƯỢNG CÂU HỎI TRẮC NGHIỆM:</span>
+                </label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(5)" id="lobby-count-5" class="p-3 rounded-2xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 5 ? 'bg-rose-600 border-rose-300 text-white shadow-md ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                    🌱 5 CÂU
+                    <span class="block text-[10px] font-normal opacity-80 mt-0.5">Khởi Động Nhanh</span>
+                  </button>
+                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(10)" id="lobby-count-10" class="p-3 rounded-2xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 10 ? 'bg-rose-600 border-rose-300 text-white shadow-md ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                    🎯 10 CÂU
+                    <span class="block text-[10px] font-normal opacity-80 mt-0.5">Tiêu Chuẩn</span>
+                  </button>
+                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(15)" id="lobby-count-15" class="p-3 rounded-2xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 15 ? 'bg-rose-600 border-rose-300 text-white shadow-md ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                    🔥 15 CÂU
+                    <span class="block text-[10px] font-normal opacity-80 mt-0.5">Thử Thách</span>
+                  </button>
+                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(20)" id="lobby-count-20" class="p-3 rounded-2xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 20 ? 'bg-rose-600 border-rose-300 text-white shadow-md ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                    🏆 20 CÂU
+                    <span class="block text-[10px] font-normal opacity-80 mt-0.5">Toàn Diện</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 4. NÚT VÀO ĐẤU TO LỚN NỔI BẬT -->
+              <div class="pt-3">
+                <button onclick="arenaPortal.startLobbyBattle()" class="w-full py-4 rounded-2xl font-black text-base md:text-lg text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-500 hover:to-yellow-500 shadow-xl shadow-amber-400/30 hover:scale-101 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-200">
+                  <span class="text-2xl animate-pulse">🚀</span> <span>BẮT ĐẦU VÀO ĐẤU NGAY ▶</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -565,12 +622,21 @@ class ArenaPortal {
   }
 
   // =========================================================================
+  // =========================================================================
   // TAB 3: 🏆 LEADERBOARD VIEW (BẢNG VÀNG CÁ NHÂN & THI ĐUA TẬP THỂ LỚP)
   // =========================================================================
   async renderLeaderboardView() {
     if (!this.leaderboardSubTab) this.leaderboardSubTab = "individual";
-    const students = await window.arenaService.getStudentLeaderboard(this.selectedGrade, this.selectedClassFilter || "all");
-    const classes = await window.arenaService.getClassLeaderboard(this.selectedGrade);
+    this.leaderboardGradeFilter = this.leaderboardGradeFilter || "all";
+    this.leaderboardTimeFilter = this.leaderboardTimeFilter || "all";
+    this.leaderboardClassFilter = this.leaderboardClassFilter || "all";
+
+    const students = await window.arenaService.getStudentLeaderboard(
+      this.leaderboardGradeFilter,
+      this.leaderboardClassFilter,
+      this.leaderboardTimeFilter
+    );
+    const classes = await window.arenaService.getClassLeaderboard(this.leaderboardGradeFilter);
 
     return `
       <div class="space-y-6 animate-pop">
@@ -580,32 +646,60 @@ class ArenaPortal {
           
           <div class="space-y-1.5 text-center md:text-left z-10">
             <div class="flex items-center gap-2 justify-center md:justify-start flex-wrap">
-              <span class="badge bg-slate-950 text-amber-300 font-black text-xs uppercase px-3 py-1">🏆 ĐUA TOP LIÊN TRƯỜNG & LIÊN LỚP</span>
+              <span class="badge bg-slate-950 text-amber-300 font-black text-xs uppercase px-3 py-1">🏆 ĐUA TOP TOÀN TRƯỜNG</span>
               <span class="badge bg-white/40 text-slate-950 font-black text-xs">MÙA GIẢI 2026</span>
             </div>
             <h3 class="text-2xl md:text-3xl font-black tracking-tight">
               BẢNG TỔNG SẮP ĐẤU TRƯỜNG TIN HỌC
             </h3>
             <p class="text-xs md:text-sm font-bold text-slate-900 max-w-xl">
-              Vinh danh các Kiện tướng Tin học cá nhân xuất sắc và các tập thể Lớp dẫn đầu phong trào học tập số toàn trường!
+              Xếp hạng học sinh theo số điểm từ cao đến thấp! Vinh danh các Kiện tướng Tin học xuất sắc dẫn đầu toàn trường!
             </p>
           </div>
 
           <div class="flex items-center gap-2.5 flex-wrap justify-center shrink-0 z-10">
+            <!-- NÚT XUẤT EXCEL CHO GIÁO VIÊN -->
+            <button onclick="arenaPortal.exportLeaderboardToExcel()" class="btn bg-emerald-600 hover:bg-emerald-500 text-white font-black btn-md shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
+              <span>📥</span> <span>Xuất Bảng Điểm Excel (.xlsx)</span>
+            </button>
             <button onclick="arenaPortal.printClassCertificate()" class="btn bg-slate-950 hover:bg-slate-900 text-amber-300 font-black btn-md shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
               <span>🏛️</span> <span>Khen Thưởng Tập Thể Lớp</span>
             </button>
             <button onclick="simulation3D.openCertificateModal()" class="btn bg-white hover:bg-slate-100 text-slate-950 font-black btn-md shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
-              <span>🎖️</span> <span>In Giấy Khen A4 Cá Nhân</span>
+              <span>🎖️</span> <span>In Giấy Khen A4</span>
             </button>
           </div>
         </div>
+
+        ${this.lastMatchSummary ? `
+          <!-- KHUNG VINH DANH TRẬN ĐẤU VỪA HOÀN THÀNH -->
+          <div class="p-5 md:p-6 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 border-2 border-white/60 animate-pop">
+            <div class="flex items-center gap-4 text-center md:text-left">
+              <span class="text-4xl md:text-5xl filter drop-shadow animate-bounce">🎉 🏆</span>
+              <div class="space-y-1">
+                <span class="badge bg-white/20 text-white font-black text-[10px] uppercase tracking-wider">KẾT QUẢ TRẬN ĐẤU VỪA HOÀN THÀNH</span>
+                <h3 class="text-lg md:text-xl font-black">Chúc mừng em ${this.lastMatchSummary.studentName} đã xuất sắc hoàn thành!</h3>
+                <p class="text-cyan-100 text-xs md:text-sm font-semibold">
+                  Điểm số: <b class="text-amber-300 font-mono text-base">${this.lastMatchSummary.score} Điểm</b> • Đúng: <b class="text-white">${this.lastMatchSummary.totalCorrect}/${this.lastMatchSummary.totalQuestions} câu</b> • Thời gian: <b class="text-white">${this.lastMatchSummary.durationSeconds}s</b> • Thưởng: <b class="text-amber-300">⭐ +${this.lastMatchSummary.starsEarned} Sao</b>
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0 flex-wrap justify-center">
+              <button onclick="arenaPortal.openCertificateModal()" class="btn bg-white hover:bg-slate-100 text-slate-900 font-black btn-sm shadow-md">
+                🎖️ Xem Giấy Khen
+              </button>
+              <button onclick="arenaPortal.switchTab('live_arena')" class="btn bg-amber-400 hover:bg-amber-500 text-slate-950 font-black btn-sm shadow-md">
+                🎮 Đấu Trận Mới ▶
+              </button>
+            </div>
+          </div>
+        ` : ''}
 
         <!-- 3 SUB-TABS: CÁ NHÂN / ĐUA TOP LỚP / PHÂN TÍCH CHIẾN TÍCH -->
         <div class="flex items-center justify-between bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm flex-wrap gap-3">
           <div class="flex items-center gap-2 flex-wrap">
             <button onclick="arenaPortal.switchLeaderboardSubTab('individual')" class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${this.leaderboardSubTab === 'individual' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
-              <span>🧑‍🎓</span> <span>Bảng Vàng Cá Nhân</span>
+              <span>🧑‍🎓</span> <span>Bảng Xếp Hạng Cá Nhân (Theo Điểm Số)</span>
             </button>
             <button onclick="arenaPortal.switchLeaderboardSubTab('class_league')" class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${this.leaderboardSubTab === 'class_league' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
               <span>🏫</span> <span>Đua Top Tập Thể Lớp (Inter-Class League)</span>
@@ -618,6 +712,47 @@ class ArenaPortal {
           <span class="text-xs font-bold text-slate-500 pr-2">Cập nhật thời gian thực</span>
         </div>
 
+        <!-- BỘ LỌC BẢNG XẾP HẠNG THEO KHỐI LỚP VÀ THỜI GIAN (GỢI Ý 3) -->
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between flex-wrap gap-3">
+          <!-- 1. Lọc Khối Lớp -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-black text-slate-700 flex items-center gap-1">
+              <span>🎯</span> <span>Khối Lớp:</span>
+            </span>
+            <button onclick="arenaPortal.setLeaderboardGradeFilter('all')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${this.leaderboardGradeFilter === 'all' ? 'bg-slate-900 text-white font-black shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+              Tất Cả Khối
+            </button>
+            <button onclick="arenaPortal.setLeaderboardGradeFilter(3)" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${this.leaderboardGradeFilter == 3 ? 'bg-cyan-600 text-white font-black shadow-sm' : 'bg-cyan-50 text-cyan-800 hover:bg-cyan-100'}">
+              Khối 3
+            </button>
+            <button onclick="arenaPortal.setLeaderboardGradeFilter(4)" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${this.leaderboardGradeFilter == 4 ? 'bg-emerald-600 text-white font-black shadow-sm' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'}">
+              Khối 4
+            </button>
+            <button onclick="arenaPortal.setLeaderboardGradeFilter(5)" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${this.leaderboardGradeFilter == 5 ? 'bg-amber-600 text-white font-black shadow-sm' : 'bg-amber-50 text-amber-800 hover:bg-amber-100'}">
+              Khối 5
+            </button>
+          </div>
+
+          <!-- 2. Lọc Khung Thời Gian -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-black text-slate-700 flex items-center gap-1">
+              <span>⏱️</span> <span>Thời Gian:</span>
+            </span>
+            <button onclick="arenaPortal.setLeaderboardTimeFilter('all')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${this.leaderboardTimeFilter === 'all' ? 'bg-indigo-600 text-white font-black shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+              Toàn Thời Gian
+            </button>
+            <button onclick="arenaPortal.setLeaderboardTimeFilter('today')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${this.leaderboardTimeFilter === 'today' ? 'bg-indigo-600 text-white font-black shadow-sm' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}">
+              Hôm Nay
+            </button>
+            <button onclick="arenaPortal.setLeaderboardTimeFilter('week')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${this.leaderboardTimeFilter === 'week' ? 'bg-indigo-600 text-white font-black shadow-sm' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}">
+              Tuần Này
+            </button>
+            <button onclick="arenaPortal.setLeaderboardTimeFilter('month')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${this.leaderboardTimeFilter === 'month' ? 'bg-indigo-600 text-white font-black shadow-sm' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}">
+              Tháng Này
+            </button>
+          </div>
+        </div>
+
         <!-- NỘI DUNG TỪNG SUB-TAB -->
         ${this.leaderboardSubTab === 'individual' ? this.renderIndividualLeaderboardSubTab(students) : ''}
         ${this.leaderboardSubTab === 'class_league' ? this.renderClassLeagueSubTab(classes) : ''}
@@ -626,98 +761,176 @@ class ArenaPortal {
     `;
   }
 
-  // SUB-TAB 1: BẢNG VÀNG CÁ NHÂN (INDIVIDUAL)
+  // SUB-TAB 1: BẢNG VÀNG CÁ NHÂN (INDIVIDUAL - PODIUM VƯƠNG MIỆN HOÀNG GIA GỢI Ý 1)
   renderIndividualLeaderboardSubTab(students) {
     const top1 = students[0];
     const top2 = students[1];
     const top3 = students[2];
+    const currentUser = window.authService?.getUser();
 
     return `
       <div class="space-y-6 animate-pop">
-        <!-- TOP 3 PODIUM VINH DANH HOÀNH TRÁNG -->
+        <!-- TOP 3 PODIUM VINH DANH HOÀNG GIA (GỢI Ý 1) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-          <!-- TOP 2 (BẠC) -->
+          <!-- TOP 2 (BẠC - Á QUÂN) -->
           ${top2 ? `
-            <div class="p-5 rounded-3xl bg-gradient-to-b from-slate-100 to-slate-200 border-2 border-slate-300 text-center space-y-2.5 shadow-md relative order-2 md:order-1">
-              <span class="text-4xl block animate-bounce">🥈</span>
-              <span class="badge bg-slate-300 text-slate-900 font-black text-xs px-3 py-0.5">Á QUÂN TOÀN TRƯỜNG</span>
-              <h4 class="font-black text-base text-slate-900">${top2.studentName}</h4>
-              <p class="text-xs font-bold text-slate-600">Lớp ${top2.studentClass} • Khối ${top2.grade}</p>
-              <div class="p-2.5 bg-white rounded-2xl border border-slate-300 flex items-center justify-around text-xs font-black">
-                <span class="text-amber-600">⭐ ${top2.totalStars}</span>
+            <div class="p-5 rounded-3xl bg-gradient-to-b from-slate-100 via-white to-slate-200 border-2 border-slate-300 text-center space-y-2.5 shadow-lg relative order-2 md:order-1 ring-2 ring-slate-200">
+              <!-- Khung Avatar Bạc Á Quân -->
+              <div class="relative inline-block mx-auto pt-1">
+                <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-3xl animate-bounce filter drop-shadow">🥈</div>
+                <div class="w-16 h-16 rounded-full p-1 bg-gradient-to-tr from-slate-300 via-white to-slate-400 ring-4 ring-slate-300 shadow-lg shadow-slate-400/40 flex items-center justify-center relative">
+                  <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-2xl font-black text-slate-200">
+                    🧑‍🎓
+                  </div>
+                  <span class="absolute -bottom-2 -right-1 bg-slate-300 text-slate-950 font-black text-[10px] px-1.5 py-0.5 rounded-full border border-white shadow">
+                    🥈 TOP 2
+                  </span>
+                </div>
+              </div>
+
+              <div class="space-y-0.5">
+                <span class="badge bg-slate-300 text-slate-900 font-black text-xs px-3 py-0.5">Á QUÂN TOÀN TRƯỜNG</span>
+                <h4 class="font-black text-base text-slate-900 pt-0.5">${top2.studentName}</h4>
+                <p class="text-xs font-bold text-slate-600">Lớp ${top2.studentClass} • Khối ${top2.grade}</p>
+              </div>
+
+              <div class="p-2.5 bg-white rounded-2xl border border-slate-300 flex items-center justify-around text-xs font-black shadow-xs">
                 <span class="text-cyan-700">🎯 ${top2.highestScore} Đ</span>
-                <span class="text-slate-500">⏱️ ${top2.bestDuration}s</span>
+                <span class="text-amber-600">⭐ ${top2.totalStars}</span>
+                <span class="text-slate-500">⏱️ ${top2.bestDuration < 999 ? top2.bestDuration + 's' : '-'}</span>
               </div>
             </div>
           ` : ''}
 
-          <!-- TOP 1 (VÀNG) - PODIUM CAO NHẤT -->
+          <!-- TOP 1 (VÀNG - VƯƠNG MIỆN HOÀNG GIA - PODIUM CAO NHẤT) -->
           ${top1 ? `
-            <div class="p-6 rounded-3xl bg-gradient-to-b from-amber-200 via-amber-100 to-amber-200 border-3 border-amber-400 text-center space-y-3 shadow-xl relative order-1 md:order-2 transform md:-translate-y-4">
-              <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-amber-400 text-slate-950 px-4 py-1 rounded-full font-black text-xs uppercase tracking-wider shadow-md">
-                👑 QUÁN QUÂN
+            <div class="p-6 rounded-3xl bg-gradient-to-b from-amber-200 via-amber-100 to-amber-200 border-4 border-amber-400 text-center space-y-3 shadow-2xl relative order-1 md:order-2 transform md:-translate-y-5 ring-4 ring-amber-300/40">
+              <!-- Vương miện và Khung Avatar Hoàng Gia -->
+              <div class="relative inline-block mx-auto pt-2">
+                <div class="absolute -top-7 left-1/2 -translate-x-1/2 text-4xl animate-bounce filter drop-shadow">👑</div>
+                <div class="w-20 h-20 rounded-full p-1.5 bg-gradient-to-tr from-amber-500 via-yellow-200 to-amber-400 ring-4 ring-amber-400/90 shadow-2xl shadow-amber-500/50 flex items-center justify-center relative">
+                  <div class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center text-3xl font-black text-amber-300">
+                    🧑‍🎓
+                  </div>
+                  <span class="absolute -bottom-2 -right-1 bg-amber-400 text-slate-950 font-black text-[11px] px-2 py-0.5 rounded-full border-2 border-white shadow-md">
+                    🥇 TOP 1
+                  </span>
+                </div>
               </div>
-              <span class="text-5xl block animate-bounce pt-2">🥇</span>
-              <h4 class="font-black text-lg text-amber-950">${top1.studentName}</h4>
-              <p class="text-xs font-black text-amber-800">Lớp ${top1.studentClass} • Khối ${top1.grade}</p>
-              <div class="p-3 bg-white/90 rounded-2xl border border-amber-300 flex items-center justify-around text-xs font-black">
-                <span class="text-amber-600">⭐ ${top1.totalStars} Sao</span>
+
+              <div class="space-y-1">
+                <span class="inline-block bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 px-4 py-1 rounded-full font-black text-xs uppercase tracking-wider shadow-md">
+                  👑 QUÁN QUÂN HOÀNG GIA
+                </span>
+                <h4 class="font-black text-xl text-amber-950 pt-1">${top1.studentName}</h4>
+                <p class="text-xs font-black text-amber-800">Lớp ${top1.studentClass} • Khối Lớp ${top1.grade}</p>
+              </div>
+
+              <div class="p-3 bg-white/95 rounded-2xl border border-amber-300 flex items-center justify-around text-xs font-black shadow-sm">
                 <span class="text-cyan-700">🎯 ${top1.highestScore} Điểm</span>
-                <span class="text-slate-600">⏱️ ${top1.bestDuration}s</span>
+                <span class="text-amber-600">⭐ ${top1.totalStars} Sao</span>
+                <span class="text-slate-600">⏱️ ${top1.bestDuration < 999 ? top1.bestDuration + 's' : '-'}</span>
               </div>
-              <span class="inline-block text-[11px] font-black text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
-                🔥 Chuỗi Thắng Tuyệt Đối (${top1.perfectWins || 3} Trận 100đ)
+              <span class="inline-block text-[11px] font-black text-emerald-800 bg-emerald-100/90 px-3 py-1 rounded-full border border-emerald-300">
+                🔥 Chuỗi Thắng Tuyệt Đối (${top1.perfectWins || 1} Trận 100đ)
               </span>
             </div>
           ` : ''}
 
-          <!-- TOP 3 (ĐỒNG) -->
+          <!-- TOP 3 (ĐỒNG - QUÝ QUÂN) -->
           ${top3 ? `
-            <div class="p-5 rounded-3xl bg-gradient-to-b from-amber-100 to-orange-100 border-2 border-amber-300 text-center space-y-2.5 shadow-md relative order-3">
-              <span class="text-4xl block animate-bounce">🥉</span>
-              <span class="badge bg-amber-600 text-white font-black text-xs px-3 py-0.5">QUÝ QUÂN TOÀN TRƯỜNG</span>
-              <h4 class="font-black text-base text-slate-900">${top3.studentName}</h4>
-              <p class="text-xs font-bold text-slate-600">Lớp ${top3.studentClass} • Khối ${top3.grade}</p>
-              <div class="p-2.5 bg-white rounded-2xl border border-amber-300 flex items-center justify-around text-xs font-black">
-                <span class="text-amber-600">⭐ ${top3.totalStars}</span>
+            <div class="p-5 rounded-3xl bg-gradient-to-b from-amber-100 via-white to-orange-100 border-2 border-amber-300 text-center space-y-2.5 shadow-lg relative order-3 ring-2 ring-amber-200">
+              <!-- Khung Avatar Đồng Quý Quân -->
+              <div class="relative inline-block mx-auto pt-1">
+                <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-3xl animate-bounce filter drop-shadow">🥉</div>
+                <div class="w-16 h-16 rounded-full p-1 bg-gradient-to-tr from-amber-600 via-orange-300 to-amber-700 ring-4 ring-amber-600/80 shadow-lg shadow-amber-600/40 flex items-center justify-center relative">
+                  <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-2xl font-black text-amber-200">
+                    🧑‍🎓
+                  </div>
+                  <span class="absolute -bottom-2 -right-1 bg-amber-600 text-white font-black text-[10px] px-1.5 py-0.5 rounded-full border border-white shadow">
+                    🥉 TOP 3
+                  </span>
+                </div>
+              </div>
+
+              <div class="space-y-0.5">
+                <span class="badge bg-amber-600 text-white font-black text-xs px-3 py-0.5">QUÝ QUÂN TOÀN TRƯỜNG</span>
+                <h4 class="font-black text-base text-slate-900 pt-0.5">${top3.studentName}</h4>
+                <p class="text-xs font-bold text-slate-600">Lớp ${top3.studentClass} • Khối ${top3.grade}</p>
+              </div>
+
+              <div class="p-2.5 bg-white rounded-2xl border border-amber-300 flex items-center justify-around text-xs font-black shadow-xs">
                 <span class="text-cyan-700">🎯 ${top3.highestScore} Đ</span>
-                <span class="text-slate-500">⏱️ ${top3.bestDuration}s</span>
+                <span class="text-amber-600">⭐ ${top3.totalStars}</span>
+                <span class="text-slate-500">⏱️ ${top3.bestDuration < 999 ? top3.bestDuration + 's' : '-'}</span>
               </div>
             </div>
           ` : ''}
         </div>
 
-        <!-- BẢNG DANH SÁCH CHI TIẾT -->
+        <!-- BẢNG DANH SÁCH CHI TIẾT KÈM HUY HIỆU & NỔI BẬT HỌC SINH -->
         <div class="glass-card p-5 rounded-2xl space-y-3">
           <div class="flex items-center justify-between pb-2 border-b border-slate-200 text-xs font-black text-slate-500">
             <span>HẠNG & HỌC SINH</span>
-            <div class="flex items-center gap-6 md:gap-12">
-              <span>SỐ TRẬN</span>
+            <div class="flex items-center gap-6 md:gap-10">
+              <span class="hidden sm:inline">SỐ TRẬN</span>
               <span>ĐIỂM CAO NHẤT</span>
               <span>TỔNG SAO VÀNG</span>
+              <span class="hidden md:inline">THỜI GIAN NHANH NHẤT</span>
             </div>
           </div>
 
           <div class="space-y-2">
-            ${students.map((st, idx) => `
-              <div class="p-3.5 rounded-2xl bg-white border border-slate-200 flex items-center justify-between gap-3 shadow-xs hover:border-amber-400 transition-all">
+            ${students.length === 0 ? `
+              <div class="text-center py-8 text-slate-400 font-bold">
+                Chưa có dữ liệu thi đấu trong khung thời gian này. Hãy tham gia trận đấu đầu tiên!
+              </div>
+            ` : students.map((st, idx) => {
+              const isCurrentUser = currentUser && (st.studentName === currentUser.name || st.studentName === currentUser.username);
+              const isTop1 = idx === 0;
+              const isTop2 = idx === 1;
+              const isTop3 = idx === 2;
+
+              let rowBg = 'bg-white border border-slate-200';
+              if (isCurrentUser) {
+                rowBg = 'bg-amber-50/90 border-2 border-amber-400 ring-2 ring-amber-300/40 shadow-md';
+              } else if (isTop1) {
+                rowBg = 'bg-gradient-to-r from-amber-100/80 via-yellow-50 to-white border-2 border-amber-400 shadow-sm';
+              } else if (isTop2) {
+                rowBg = 'bg-gradient-to-r from-slate-100/70 via-white to-white border border-slate-300 shadow-xs';
+              } else if (isTop3) {
+                rowBg = 'bg-gradient-to-r from-amber-50/50 via-orange-50/20 to-white border border-amber-300 shadow-xs';
+              }
+
+              return `
+              <div class="p-3.5 rounded-2xl ${rowBg} flex items-center justify-between gap-3 hover:border-amber-400 transition-all">
                 <div class="flex items-center gap-3">
-                  <span class="w-8 h-8 rounded-full flex items-center justify-center font-black text-xs ${idx === 0 ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-300' : idx === 1 ? 'bg-slate-300 text-slate-950' : idx === 2 ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-700'}">
-                    ${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}
-                  </span>
+                  <div class="relative">
+                    <span class="w-10 h-10 rounded-2xl flex items-center justify-center font-black text-sm ${isTop1 ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-300 shadow-md' : isTop2 ? 'bg-slate-300 text-slate-950' : isTop3 ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-700'}">
+                      ${isTop1 ? '👑' : isTop2 ? '🥈' : isTop3 ? '🥉' : `#${idx + 1}`}
+                    </span>
+                  </div>
                   <div>
-                    <h5 class="text-xs md:text-sm font-black text-slate-900">${st.studentName}</h5>
+                    <h5 class="text-xs md:text-sm font-black text-slate-900 flex items-center gap-1.5 flex-wrap">
+                      ${st.studentName}
+                      ${isTop1 ? '<span class="badge bg-amber-400 text-slate-950 font-black text-[10px]">👑 Quán Quân</span>' : ''}
+                      ${isTop2 ? '<span class="badge bg-slate-300 text-slate-900 font-black text-[10px]">🥈 Á Quân</span>' : ''}
+                      ${isTop3 ? '<span class="badge bg-amber-600 text-white font-black text-[10px]">🥉 Quý Quân</span>' : ''}
+                      ${isCurrentUser ? '<span class="badge bg-amber-400 text-slate-950 font-black text-[10px] animate-pulse">BẠN</span>' : ''}
+                    </h5>
                     <p class="text-[11px] text-slate-500 font-bold">Lớp ${st.studentClass} • Khối Lớp ${st.grade}</p>
                   </div>
                 </div>
 
-                <div class="flex items-center gap-6 md:gap-12 text-xs font-black">
-                  <span class="text-slate-600 font-mono">${st.matchesPlayed || 1} Trận</span>
-                  <span class="text-cyan-700 font-mono">${st.highestScore} Điểm</span>
+                <div class="flex items-center gap-5 md:gap-10 text-xs font-black">
+                  <span class="text-slate-600 font-mono hidden sm:inline">${st.matchesPlayed || 1} Trận</span>
+                  <span class="text-cyan-700 font-mono text-sm md:text-base">${st.highestScore} Điểm</span>
                   <span class="text-amber-600 font-mono">⭐ +${st.totalStars}</span>
+                  <span class="text-slate-500 font-mono hidden md:inline text-[11px]">⏱️ ${st.bestDuration < 999 ? st.bestDuration + 's' : '-'}</span>
                 </div>
               </div>
-            `).join("")}
+            `;
+            }).join("")}
           </div>
         </div>
       </div>
@@ -883,9 +1096,145 @@ class ArenaPortal {
   // =========================================================================
   // LOGIC TRẬN ĐẤU & CẤU HÌNH ĐẤU TRƯỜNG CẢ 3 KHỐI LỚP (3, 4, 5)
   // =========================================================================
+  getLessonsByGrade(grade) {
+    const g = parseInt(grade) || 3;
+    if (g === 3) {
+      return [
+        { id: "all", title: "🌟 Tất Cả Các Bài Học (Toàn Bộ SGK Tin Học 3 - KNTT)" },
+        { id: "bai_1", title: "Bài 1. Thông tin và quyết định" },
+        { id: "bai_2", title: "Bài 2. Xử lý thông tin" },
+        { id: "bai_3", title: "Bài 3. Máy tính và em" },
+        { id: "bai_4", title: "Bài 4. Làm việc với máy tính" },
+        { id: "bai_5", title: "Bài 5. Sử dụng bàn phím máy tính" },
+        { id: "bai_6", title: "Bài 6. Sử dụng chuột máy tính" },
+        { id: "bai_7", title: "Bài 7. Sắp xếp để dễ tìm" },
+        { id: "bai_8", title: "Bài 8. Sơ đồ hình cây. Cây thư mục" },
+        { id: "bai_9", title: "Bài 9. An toàn với máy tính" },
+        { id: "bai_10", title: "Bài 10. Thực hành tạo sản phẩm" },
+        { id: "bai_11", title: "Bài 11. Em tập vẽ hình với Paint" },
+        { id: "bai_12", title: "Bài 12. Em tập gõ bàn phím 10 ngón" },
+        { id: "bai_13", title: "Bài 13. Thuật toán: Làm việc theo các bước" },
+        { id: "bai_14", title: "Bài 14. Chia việc lớn thành việc nhỏ" }
+      ];
+    } else if (g === 4) {
+      return [
+        { id: "all", title: "🌟 Tất Cả Các Bài Học (Toàn Bộ SGK Tin Học 4 - KNTT)" },
+        { id: "bai_1", title: "Bài 1. Phần cứng và phần mềm máy tính" },
+        { id: "bai_2", title: "Bài 2. Gõ bàn phím đúng cách" },
+        { id: "bai_3", title: "Bài 3. Thông tin trên trang web" },
+        { id: "bai_4", title: "Bài 4. Tìm kiếm thông tin trên Internet" },
+        { id: "bai_5", title: "Bài 5. Thao tác với tệp và thư mục" },
+        { id: "bai_6", title: "Bài 6. Sử dụng phần mềm khi được phép" },
+        { id: "bai_7", title: "Bài 7. Tạo bài trình chiếu" },
+        { id: "bai_8", title: "Bài 8. Định dạng văn bản trên trang chiếu" },
+        { id: "bai_9", title: "Bài 9. Hiệu ứng chuyển trang" },
+        { id: "bai_10", title: "Bài 10. Phần mềm soạn thảo văn bản" },
+        { id: "bai_11", title: "Bài 11. Chỉnh sửa văn bản" },
+        { id: "bai_12a", title: "Bài 12A. Thực hành đa phương tiện" },
+        { id: "bai_12b", title: "Bài 12B. Phần mềm luyện tập gõ bàn phím" },
+        { id: "bai_13", title: "Bài 13. Chơi với máy tính" },
+        { id: "bai_14", title: "Bài 14. Khám phá môi trường lập trình trực quan" },
+        { id: "bai_15", title: "Bài 15. Tạo chương trình máy tính để diễn tả ý tưởng" },
+        { id: "bai_16", title: "Bài 16. Chương trình của em" }
+      ];
+    } else {
+      return [
+        { id: "all", title: "🌟 Tất Cả Các Bài Học (Toàn Bộ SGK Tin Học 5 - KNTT)" },
+        { id: "bai_1", title: "Bài 1. Máy tính và câu chuyện xử lý thông tin" },
+        { id: "bai_2", title: "Bài 2. Khám phá thế giới thông tin số" },
+        { id: "bai_3", title: "Bài 3. Tìm kiếm thông tin chính xác trên Internet" },
+        { id: "bai_4", title: "Bài 4. Cây thư mục và lưu trữ dữ liệu" },
+        { id: "bai_5", title: "Bài 5. Bản quyền nội dung và đạo đức số" },
+        { id: "bai_6", title: "Bài 6. Sử dụng máy tính và bảo mật thông tin an toàn" },
+        { id: "bai_7", title: "Bài 7. Soạn thảo văn bản nâng cao" },
+        { id: "bai_8", title: "Bài 8. Thiết kế bài trình chiếu đa phương tiện" },
+        { id: "bai_9", title: "Bài 9. Biến số trong lập trình Scratch" },
+        { id: "bai_10", title: "Bài 10. Cấu trúc rẽ nhánh nếu... thì trong Scratch" },
+        { id: "bai_11", title: "Bài 11. Cấu trúc lặp trong Scratch" },
+        { id: "bai_12", title: "Bài 12. Dự án học tập: Tạo trò chơi Scratch" }
+      ];
+    }
+  }
+
+  renderLobbyLessonOptions(grade) {
+    const list = this.getLessonsByGrade(grade);
+    return list.map(l => `<option value="${l.id}" ${l.id === this.selectedLobbyLesson ? 'selected' : ''}>${l.title}</option>`).join('');
+  }
+
+  selectLobbyGrade(grade) {
+    this.selectedLobbyGrade = parseInt(grade) || 3;
+    this.selectedLobbyLesson = "all";
+    
+    [3, 4, 5].forEach(g => {
+      const btn = document.getElementById(`lobby-grade-${g}`);
+      if (btn) {
+        if (g === this.selectedLobbyGrade) {
+          const colorClass = g === 3 ? 'bg-cyan-600 border-cyan-300 ring-cyan-300' : (g === 4 ? 'bg-emerald-600 border-emerald-300 ring-emerald-300' : 'bg-amber-600 border-amber-300 ring-amber-300');
+          btn.className = `p-3.5 rounded-2xl border-2 font-black text-xs md:text-sm text-center transition-all flex flex-col items-center gap-1 ${colorClass} text-white shadow-lg ring-2 scale-102`;
+        } else {
+          btn.className = `p-3.5 rounded-2xl border-2 font-black text-xs md:text-sm text-center transition-all flex flex-col items-center gap-1 bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800`;
+        }
+      }
+    });
+
+    const select = document.getElementById("lobby-lesson-select");
+    if (select) {
+      select.innerHTML = this.renderLobbyLessonOptions(this.selectedLobbyGrade);
+    }
+  }
+
+  handleLobbyLessonChange(val) {
+    this.selectedLobbyLesson = val;
+  }
+
+  selectLobbyQuestionCount(count) {
+    this.selectedLobbyQuestionCount = count;
+    [5, 10, 15, 20].forEach(c => {
+      const btn = document.getElementById(`lobby-count-${c}`);
+      if (btn) {
+        if (c === count) {
+          btn.className = "p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-rose-600 border-rose-300 text-white shadow-md ring-2 ring-rose-300";
+        } else {
+          btn.className = "p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800";
+        }
+      }
+    });
+  }
+
+  async startLobbyBattle() {
+    const user = window.authService?.getUser();
+    if (!user) {
+      window.app.showToast("⚡ Vui lòng Đăng nhập tài khoản để tham gia Đấu Trường!", "warning");
+      sessionStorage.setItem("post_login_redirect", "arena");
+      window.location.hash = "auth";
+      return;
+    }
+
+    const grade = this.selectedLobbyGrade || 3;
+    const lesson = this.selectedLobbyLesson || "all";
+    const count = this.selectedLobbyQuestionCount || 10;
+
+    await this.startBattleWithMode("blitz", grade, count, lesson);
+  }
+
+  selectQuestionCount(count) {
+    this.selectedQuestionCount = count;
+    this.selectedG4QuestionCount = count;
+    [5, 10, 15, 20].forEach(c => {
+      const btn = document.getElementById(`btn-count-${c}`);
+      if (btn) {
+        if (c === count) {
+          btn.className = "p-2.5 rounded-2xl border-2 font-black text-xs text-center transition-all bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm";
+        } else {
+          btn.className = "p-2.5 rounded-2xl border-2 font-black text-xs text-center transition-all bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100";
+        }
+      }
+    });
+  }
+
   openConfigModal(grade = 4) {
     this.selectedConfigGrade = grade;
-    this.selectedG4QuestionCount = 10;
+    this.selectedG4QuestionCount = this.selectedQuestionCount || 10;
 
     const modal = document.getElementById("arena-config-modal");
     const titleEl = document.getElementById("arena-config-title");
@@ -893,62 +1242,11 @@ class ArenaPortal {
     const lessonSelect = document.getElementById("arena-lesson-select");
 
     if (titleEl) titleEl.innerText = `CẤU HÌNH ĐẤU TRƯỜNG TIN HỌC LỚP ${grade}`;
-    if (subtitleEl) subtitleEl.innerText = `Tùy chọn 10, 20, 30 câu hỏi & bài học SGK Tin Học ${grade}`;
+    if (subtitleEl) subtitleEl.innerText = `Tùy chọn số lượng câu hỏi & bài học SGK Kết nối tri thức Lớp ${grade}`;
 
     if (lessonSelect) {
-      let optionsHTML = `<option value="all" selected>🌟 Tất Cả Các Bài Học (Toàn Bộ SGK Lớp ${grade})</option>`;
-
-      if (grade === 3) {
-        optionsHTML += `
-          <option value="bai_1">Bài 1. Thông tin và quyết định</option>
-          <option value="bai_2">Bài 2. Xử lý thông tin</option>
-          <option value="bai_3">Bài 3. Máy tính và em</option>
-          <option value="bai_4">Bài 4. Làm việc với máy tính</option>
-          <option value="bai_5">Bài 5. Sử dụng bàn phím máy tính</option>
-          <option value="bai_6">Bài 6. Sử dụng chuột máy tính</option>
-          <option value="bai_7">Bài 7. Sắp xếp đồ dùng và tệp tin</option>
-          <option value="bai_8">Bài 8. Xem tin tức và giải trí trên Internet</option>
-          <option value="bai_9">Bài 9. An toàn trên Internet</option>
-          <option value="bai_10">Bài 10. Sơ đồ tư duy</option>
-        `;
-      } else if (grade === 4) {
-        optionsHTML += `
-          <option value="bai_1">Bài 1. Phần cứng và phần mềm máy tính</option>
-          <option value="bai_2">Bài 2. Gõ bàn phím đúng cách</option>
-          <option value="bai_3">Bài 3. Thông tin trên trang web</option>
-          <option value="bai_4">Bài 4. Tìm kiếm thông tin trên Internet</option>
-          <option value="bai_5">Bài 5. Thao tác với tệp và thư mục</option>
-          <option value="bai_6">Bài 6. Sử dụng phần mềm khi được phép</option>
-          <option value="bai_7">Bài 7. Tạo bài trình chiếu</option>
-          <option value="bai_8">Bài 8. Định dạng văn bản trên trang chiếu</option>
-          <option value="bai_9">Bài 9. Hiệu ứng chuyển trang</option>
-          <option value="bai_10">Bài 10. Phần mềm soạn thảo văn bản</option>
-          <option value="bai_11">Bài 11. Chỉnh sửa văn bản</option>
-          <option value="bai_12a">Bài 12A. Thực hành đa phương tiện</option>
-          <option value="bai_12b">Bài 12B. Phần mềm luyện tập gõ bàn phím</option>
-          <option value="bai_13">Bài 13. Chơi với máy tính</option>
-          <option value="bai_14">Bài 14. Khám phá môi trường lập trình trực quan</option>
-          <option value="bai_15">Bài 15. Tạo chương trình máy tính để diễn tả ý tưởng</option>
-          <option value="bai_16">Bài 16. Chương trình của em</option>
-        `;
-      } else if (grade === 5) {
-        optionsHTML += `
-          <option value="bai_1">Bài 1. Máy tính và câu chuyện xử lý thông tin</option>
-          <option value="bai_2">Bài 2. Tìm kiếm thông tin trên Internet</option>
-          <option value="bai_3">Bài 3. Mạng xã hội và an toàn Internet</option>
-          <option value="bai_4">Bài 4. Bản quyền tác giả và đạo đức số</option>
-          <option value="bai_5">Bài 5. Sử dụng máy tính an toàn</option>
-          <option value="bai_6">Bài 6. Soạn thảo văn bản nâng cao</option>
-          <option value="bai_7">Bài 7. Bài trình chiếu đa phương tiện</option>
-          <option value="bai_8">Bài 8. Thực hành tạo sản phẩm số</option>
-          <option value="bai_9">Bài 9. Biến và hằng trong lập trình Scratch</option>
-          <option value="bai_10">Bài 10. Khối lệnh điều kiện nếu... thì</option>
-          <option value="bai_11">Bài 11. Vòng lặp có điều kiện</option>
-          <option value="bai_12">Bài 12. Thuật toán tìm kiếm tuần tự và nhị phân</option>
-        `;
-      }
-
-      lessonSelect.innerHTML = optionsHTML;
+      const lessons = this.getLessonsByGrade(grade);
+      lessonSelect.innerHTML = lessons.map(l => `<option value="${l.id}">${l.title}</option>`).join('');
     }
 
     if (modal) modal.classList.add("active");
@@ -1067,6 +1365,134 @@ class ArenaPortal {
     }
   }
 
+  // Âm thanh đếm ngược tích tắc 5 giây cuối dồn dập (Gợi ý 2)
+  playTickingCountdown(secondsLeft) {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === "suspended") ctx.resume();
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      // Tần số tăng dần từ 600Hz đến 950Hz tạo cảm giác hồi hộp
+      const freq = 600 + (6 - secondsLeft) * 75;
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.09);
+    } catch (e) {
+      console.warn("Countdown tick sound error", e);
+    }
+  }
+
+  // Cập nhật bộ lọc Khối Lớp của Bảng Xếp Hạng (Gợi ý 3)
+  setLeaderboardGradeFilter(grade) {
+    this.leaderboardGradeFilter = grade;
+    this.render("main-content-area");
+  }
+
+  // Cập nhật bộ lọc Khung Thời Gian (Hôm nay, Tuần này, Tháng này) (Gợi ý 3)
+  setLeaderboardTimeFilter(timeRange) {
+    this.leaderboardTimeFilter = timeRange;
+    this.render("main-content-area");
+  }
+
+  // Cập nhật bộ lọc Lớp học (Gợi ý 3)
+  setLeaderboardClassFilter(cls) {
+    this.leaderboardClassFilter = cls;
+    this.render("main-content-area");
+  }
+
+  // Tải Bảng Điểm & Bảng Xếp Hạng ra file Excel chuẩn .xlsx (Gợi ý 4)
+  async exportLeaderboardToExcel() {
+    try {
+      const grade = this.leaderboardGradeFilter || "all";
+      const timeRange = this.leaderboardTimeFilter || "all";
+      const classFilter = this.leaderboardClassFilter || "all";
+      const students = await window.arenaService.getStudentLeaderboard(grade, classFilter, timeRange);
+
+      if (!students || students.length === 0) {
+        window.app.showToast("⚠️ Không có dữ liệu học sinh để xuất bảng điểm!", "warning");
+        return;
+      }
+
+      const gradeLabel = grade === "all" ? "Toan_Truong" : `Khoi_${grade}`;
+      const timeLabel = timeRange === "today" ? "Hom_Nay" : timeRange === "week" ? "Tuan_Nay" : timeRange === "month" ? "Thang_Nay" : "Toan_Thoi_Gian";
+      const fileName = `Bang_Diem_Dau_Truong_Tin_Hoc_${gradeLabel}_${timeLabel}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+      const excelData = students.map((st, idx) => {
+        let title = "Kiện Tướng Tin Học";
+        if (idx === 0) title = "👑 Quán Quân Hoàng Gia";
+        else if (idx === 1) title = "🥈 Á Quân Toàn Trường";
+        else if (idx === 2) title = "🥉 Quý Quân Toàn Trường";
+        else if (idx < 10) title = "⭐ Top 10 Xuất Sắc";
+
+        return {
+          "Hạng": idx + 1,
+          "Họ và Tên Học Sinh": st.studentName,
+          "Lớp": st.studentClass,
+          "Khối Lớp": `Khối ${st.grade}`,
+          "Điểm Cao Nhất": st.highestScore,
+          "Tổng Điểm Tích Lũy": st.totalScore,
+          "Tổng Sao Vàng": st.totalStars,
+          "Số Trận Thi Đấu": st.matchesPlayed,
+          "Thời Gian Nhanh Nhất (giây)": st.bestDuration < 999 ? st.bestDuration : "-",
+          "Chuỗi Trận 100đ": st.perfectWins || 0,
+          "Danh Hiệu Thi Đua": title
+        };
+      });
+
+      if (window.XLSX) {
+        const ws = window.XLSX.utils.json_to_sheet(excelData);
+        ws['!cols'] = [
+          { wch: 8 },  // Hạng
+          { wch: 26 }, // Họ tên
+          { wch: 8 },  // Lớp
+          { wch: 12 }, // Khối
+          { wch: 15 }, // Điểm cao nhất
+          { wch: 18 }, // Tổng điểm
+          { wch: 15 }, // Tổng sao
+          { wch: 15 }, // Số trận
+          { wch: 25 }, // Thời gian nhanh nhất
+          { wch: 16 }, // Chuỗi 100đ
+          { wch: 25 }  // Danh hiệu
+        ];
+        const wb = window.XLSX.utils.book_new();
+        window.XLSX.utils.book_append_sheet(wb, ws, "Bang_Diem_Dau_Truong");
+        window.XLSX.writeFile(wb, fileName);
+        window.app.showToast(`🎉 Đã xuất thành công file Excel: ${fileName}`, "success");
+      } else {
+        const headers = Object.keys(excelData[0]);
+        const csvRows = [
+          headers.join(","),
+          ...excelData.map(row => headers.map(h => `"${String(row[h] || '').replace(/"/g, '""')}"`).join(","))
+        ];
+        const blob = new Blob(["\uFEFF" + csvRows.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName.replace(".xlsx", ".csv");
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        window.app.showToast(`🎉 Đã xuất file CSV chuẩn Excel tiếng Việt: ${a.download}`, "success");
+      }
+    } catch (err) {
+      console.error("Lỗi xuất Excel:", err);
+      window.app.showToast("❌ Có lỗi xảy ra khi xuất file Excel!", "error");
+    }
+  }
+
   async startBattleWithConfig() {
     const lessonSelect = document.getElementById("arena-lesson-select");
     const selectedLesson = lessonSelect ? lessonSelect.value : "all";
@@ -1089,6 +1515,13 @@ class ArenaPortal {
     if (allQuestions.length === 0) {
       window.app.showToast(`Đang lấy tất cả câu hỏi Lớp ${grade}...`, "info");
       allQuestions = await window.arenaService.getQuestions(grade, "all", "all");
+    } else if (allQuestions.length < questionCount && lessonFilter !== "all") {
+      // Bổ sung thêm câu hỏi từ các bài khác cùng khối để đạt đủ số lượng học sinh đã chọn
+      const extraQuestions = await window.arenaService.getQuestions(grade, "all", "all");
+      const existingIds = new Set(allQuestions.map(q => q.id));
+      const needed = questionCount - allQuestions.length;
+      const additional = extraQuestions.filter(q => !existingIds.has(q.id)).sort(() => 0.5 - Math.random()).slice(0, needed);
+      allQuestions = [...allQuestions, ...additional];
     }
 
     const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
@@ -1146,6 +1579,15 @@ class ArenaPortal {
       if (timerDisp) timerDisp.innerText = `${this.timer}s`;
       if (timerBar) timerBar.style.width = `${(this.timer / this.questionMaxTimer) * 100}%`;
 
+      // Âm thanh đếm ngược hồi hộp tích tắc khi còn 5 giây cuối (Gợi ý 2)
+      if (this.timer <= 5 && this.timer > 0) {
+        this.playTickingCountdown(this.timer);
+        if (timerDisp) {
+          timerDisp.classList.add("text-rose-600", "font-black", "scale-110");
+          setTimeout(() => timerDisp?.classList.remove("scale-110"), 250);
+        }
+      }
+
       if (this.timer <= 0) {
         clearInterval(this.timerInterval);
         this.handleTimeout();
@@ -1180,6 +1622,11 @@ class ArenaPortal {
 
       this.score += questionScore;
       this.starsEarned += q.stars;
+
+      // Tiếng vỗ tay rộn rã khi học sinh đạt chuỗi đúng liên tiếp (Gợi ý 2)
+      if (this.streakCombo >= 2 && window.ttsService?.playApplause) {
+        window.ttsService.playApplause(1.8, false);
+      }
 
       const userComp = (this.competitors || []).find(c => c.isUser);
       if (userComp) userComp.score = this.score;
@@ -1232,15 +1679,34 @@ class ArenaPortal {
     const maxScore = totalQuestions * 20;
     const isPerfect = (this.score >= maxScore);
     const duration = Math.max(1, Math.round((Date.now() - (this.battleStartTime || Date.now())) / 1000));
+    const currentUser = window.authService?.getUser() || {};
+    const studentName = currentUser.name || currentUser.username || "Học sinh";
+    const studentClass = currentUser.class || currentUser.className || "3A";
+    const gradeLevel = this.selectedConfigGrade || (this.selectedGrade === "all" ? 4 : this.selectedGrade);
+
+    // Lưu kết quả tóm tắt trận đấu để hiển thị nổi bật trên Bảng Xếp Hạng
+    this.lastMatchSummary = {
+      studentName,
+      studentClass,
+      grade: gradeLevel,
+      score: this.score,
+      maxScore,
+      totalCorrect: Math.round(this.score / 20),
+      totalQuestions,
+      starsEarned: this.starsEarned,
+      durationSeconds: duration
+    };
 
     // 1. Lưu điểm số & Thời gian hoàn thành lên Supabase Cloud & Local
     await window.arenaService.recordMatchResult({
+      studentName,
+      studentClass,
       score: this.score,
       totalCorrect: Math.round(this.score / 20),
       totalQuestions: totalQuestions,
       starsEarned: this.starsEarned,
       durationSeconds: duration,
-      grade: this.selectedConfigGrade || (this.selectedGrade === "all" ? 4 : this.selectedGrade)
+      grade: gradeLevel
     });
 
     // 2. Hiệu ứng pháo hoa bắn chúc mừng khi đạt 100% điểm (Gợi ý 2)
@@ -1263,6 +1729,7 @@ class ArenaPortal {
     this.openCertificateModal();
 
     this.currentTab = "leaderboard";
+    this.leaderboardSubTab = "individual";
     this.render("main-content-area");
   }
 

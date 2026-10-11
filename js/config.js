@@ -11,7 +11,7 @@ const CONFIG = {
 
   // Cấu hình Supabase Trực Tuyến
   SUPABASE: {
-    URL: localStorage.getItem("sb_url") || "https://xqqckatsnsxukgeuxeit.supabase.co",
+    URL: localStorage.getItem("sb_url") || "https://bvkjniiuccykvirkndnz.supabase.co",
     ANON_KEY: localStorage.getItem("sb_anon_key") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxcWNrYXRzbnN4dWtnZXV4ZWl0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjE4Mjk2MywiZXhwIjoyMTAxNzU4OTYzfQ.Kd5ZQVXw1nV5AbSfB3iFt-AAGr7nUS9sS1AzWHkoOHQ",
     BUCKET_DOCS: "lesson-plans",
     BUCKET_GAMES: "game-assets"

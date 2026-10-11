@@ -31,14 +31,17 @@ class StudentPortal {
           </div>
 
           <!-- Điểm Sao & Đổi Quà -->
-          <div class="bg-white/15 backdrop-blur-md p-4 rounded-2xl border border-white/30 flex items-center gap-4">
-            <div class="text-center">
+          <div class="bg-white/15 backdrop-blur-md p-4 rounded-2xl border border-white/30 flex items-center gap-3 flex-wrap">
+            <div class="text-center pr-2">
               <p class="text-xs text-cyan-100 font-bold uppercase">Ngôi Sao Vàng</p>
               <h3 class="text-3xl font-black text-amber-300 flex items-center justify-center gap-1">
                 ⭐ <span id="student-live-stars">${user.stars || 180}</span>
               </h3>
             </div>
-            <button onclick="studentPortal.openGameHub()" class="btn btn-amber btn-sm font-black">
+            <button onclick="window.location.hash='arena'" class="btn bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 btn-sm font-black shadow-lg border border-amber-300">
+              ⚡ Đấu Trường Tin Học
+            </button>
+            <button onclick="studentPortal.openGameHub()" class="btn btn-outline btn-sm font-black text-white border-white/40">
               🎮 Vào Game Hub
             </button>
           </div>

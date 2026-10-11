@@ -5,6 +5,7 @@
 -- ==============================================================================
 
 -- 1. XÓA CẤU TRÚC CŨ ĐỂ TẠO LẠI ĐỒNG BỘ 100%
+DROP TABLE IF EXISTS public.exam_assessments CASCADE;
 DROP TABLE IF EXISTS public.arena_matches CASCADE;
 DROP TABLE IF EXISTS public.arena_questions CASCADE;
 DROP TABLE IF EXISTS public.simulation_logs CASCADE;
@@ -92,30 +93,6 @@ CREATE TABLE public.lecture_slides (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 6. TẠO BẢNG ĐỀ KIỂM TRA & ĐÁNH GIÁ ĐỊNH KỲ THEO THÔNG TƯ 27 (EXAM_ASSESSMENTS)
-CREATE TABLE public.exam_assessments (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    title TEXT NOT NULL,
-    grade_level INTEGER NOT NULL DEFAULT 3,
-    exam_type TEXT DEFAULT 'final_term_1', -- regular, mid_term_1, final_term_1, mid_term_2, final_term_2, matrix
-    book_series TEXT DEFAULT 'KNTT',       -- KNTT, CD, CTST
-    author_name TEXT DEFAULT 'Cô Giáo Anh Đào',
-    created_by_username TEXT DEFAULT 'anhdao',
-    school_name TEXT DEFAULT 'Trường Tiểu Học Vui Học',
-    duration_minutes INTEGER DEFAULT 35,
-    total_score INTEGER DEFAULT 10,
-    file_name TEXT NOT NULL,
-    file_size_text TEXT DEFAULT '2.0 MB',
-    file_type TEXT DEFAULT 'docx',         -- docx, doc, pdf, xlsx, pptx, link
-    file_url TEXT NOT NULL,
-    download_count INTEGER DEFAULT 0,
-    view_count INTEGER DEFAULT 0,
-    thumbnail_color TEXT DEFAULT 'from-blue-700 to-indigo-600',
-    description TEXT DEFAULT '',
-    matrix_json JSONB DEFAULT '{}'::jsonb, -- Ma trận 4 mức độ nhận thức
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
 
 -- 7. TẠO BẢNG DANH MỤC TRÒ CHƠI HỌC TẬP (EDUCATIONAL_GAMES)
 CREATE TABLE public.educational_games (
@@ -166,6 +143,7 @@ CREATE TABLE public.student_rewards (
 -- 11. TẠO BẢNG NGÂN HÀNG CÂU HỎI ĐẤU TRƯỜNG TIN HỌC (ARENA_QUESTIONS)
 CREATE TABLE public.arena_questions (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    lesson_id TEXT DEFAULT '',                -- Mã bài học SGK KNTT (vd: bai_1, bai_2, ...)
     question TEXT NOT NULL,
     options JSONB NOT NULL DEFAULT '[]'::jsonb, -- Mảng 4 đáp án ["A...", "B...", "C...", "D..."]
     correct_index INTEGER NOT NULL DEFAULT 0,  -- 0: A, 1: B, 2: C, 3: D
@@ -179,6 +157,9 @@ CREATE TABLE public.arena_questions (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Tự động bổ sung cột lesson_id nếu bảng đã tồn tại từ trước
+ALTER TABLE public.arena_questions ADD COLUMN IF NOT EXISTS lesson_id TEXT DEFAULT '';
 
 -- 12. TẠO BẢNG LỊCH SỬ THI ĐẤU ĐẤU TRƯỜNG (ARENA_MATCHES)
 CREATE TABLE public.arena_matches (
@@ -201,7 +182,6 @@ ALTER TABLE public.app_users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.lesson_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.lesson_quizzes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.lecture_slides ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.exam_assessments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.educational_games ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.student_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.simulation_logs ENABLE ROW LEVEL SECURITY;
@@ -214,7 +194,6 @@ CREATE POLICY "Allow public all app_users" ON public.app_users FOR ALL USING (tr
 CREATE POLICY "Allow public all lesson_plans" ON public.lesson_plans FOR ALL USING (true);
 CREATE POLICY "Allow public all lesson_quizzes" ON public.lesson_quizzes FOR ALL USING (true);
 CREATE POLICY "Allow public all lecture_slides" ON public.lecture_slides FOR ALL USING (true);
-CREATE POLICY "Allow public all exam_assessments" ON public.exam_assessments FOR ALL USING (true);
 CREATE POLICY "Allow public all educational_games" ON public.educational_games FOR ALL USING (true);
 CREATE POLICY "Allow public all student_progress" ON public.student_progress FOR ALL USING (true);
 CREATE POLICY "Allow public all simulation_logs" ON public.simulation_logs FOR ALL USING (true);
@@ -323,87 +302,6 @@ VALUES
   ('game_3d_computer_power', '🖥️ Mô Phỏng 3D: Phòng Máy & Bật/Tắt Máy Tính', 3, '3d_simulation', '🌐', 'Trải nghiệm mô phỏng 3D phòng máy tính thực tế ảo, cắm nguồn điện, bật CPU, bật màn hình và tắt máy an toàn!', 'Bậc Thầy Vận Hành 3D')
 ON CONFLICT (id) DO NOTHING;
 
--- 4. Chèn dữ liệu mẫu Đề Kiểm Tra Định Kỳ (exam_assessments)
-INSERT INTO public.exam_assessments 
-  (title, grade_level, exam_type, book_series, author_name, created_by_username, school_name, duration_minutes, total_score, file_name, file_size_text, file_type, file_url, download_count, view_count, thumbnail_color, description)
-VALUES
-  (
-    'Đề Kiểm Tra Cuối Học Kỳ I - Tin Học Lớp 3 (Kèm Ma Trận & Bản Đặc Tả)',
-    3,
-    'final_term_1',
-    'KNTT',
-    'Cô Giáo Anh Đào',
-    'anhdao',
-    'Trường Tiểu Học Vui Học',
-    35,
-    10,
-    'De_Kiem_Tra_Cuoi_HK1_TinHoc3_KNTT.docx',
-    '1.8 MB',
-    'docx',
-    '#',
-    42,
-    156,
-    'from-blue-700 to-indigo-600',
-    'Đề kiểm tra đánh giá định kỳ Cuối HK1 lớp 3 bộ sách Kết Nối Tri Thức. Cấu trúc 7 điểm Trắc nghiệm + 3 điểm Thực hành gõ phím và vẽ Paint.'
-  ),
-  (
-    'Đề Kiểm Tra Giữa Học Kỳ I - Tin Học Lớp 4 (Cánh Diều)',
-    4,
-    'mid_term_1',
-    'CD',
-    'Cô Giáo Anh Đào',
-    'anhdao',
-    'Trường Tiểu Học Vui Học',
-    35,
-    10,
-    'De_Giua_HK1_TinHoc4_CanhDieu.docx',
-    '2.3 MB',
-    'docx',
-    '#',
-    38,
-    120,
-    'from-amber-600 to-orange-600',
-    'Đề kiểm tra định kỳ Giữa HK1 Tin học 4: Phần cứng và phần mềm, tạo cây thư mục và quy tắc an toàn thông tin.'
-  ),
-  (
-    'Bộ Ma Trận & Bản Đặc Tả Đề Kiểm Tra Cuối Học Kỳ II - Tin Học Lớp 5',
-    5,
-    'matrix',
-    'CTST',
-    'Cô Giáo Anh Đào',
-    'anhdao',
-    'Trường Tiểu Học Vui Học',
-    40,
-    10,
-    'Ma_Tran_Ban_Dac_Ta_TinHoc5_CTST.docx',
-    '1.5 MB',
-    'docx',
-    '#',
-    65,
-    230,
-    'from-emerald-700 to-teal-600',
-    'Bản đặc tả ma trận chuẩn 4 mức độ nhận thức theo Thông tư 27 và hướng dẫn chấm bài thực hành lập trình Scratch / Soạn thảo trình chiếu.'
-  ),
-  (
-    'Đề Kiểm Tra Thường Xuyên 15 Phút: Khám Phá Máy Tính (Lớp 3)',
-    3,
-    'regular',
-    'KNTT',
-    'Cô Giáo Anh Đào',
-    'anhdao',
-    'Trường Tiểu Học Vui Học',
-    15,
-    10,
-    'De_15P_KhamPhaMayTinh_Lop3.docx',
-    '850 KB',
-    'docx',
-    '#',
-    29,
-    95,
-    'from-purple-700 to-indigo-800',
-    'Bài kiểm tra nhanh 15 phút đầu giờ: 10 câu trắc nghiệm nhanh kiểm tra nhận biết bàn phím, chuột và màn hình.'
-  )
-ON CONFLICT (id) DO NOTHING;
 
 -- 5. Chèn nhật ký mẫu thực hành Mô Phỏng 3D
 INSERT INTO public.simulation_logs (student_name, student_class, simulation_key, simulation_title, score, stars_earned, time_spent_seconds, details)
@@ -475,50 +373,167 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ==============================================================================
--- 8. THIẾT LẬP ROW LEVEL SECURITY (RLS) - PHÂN QUYỀN TRUY CẬP CHO BẢNG LESSON_PLANS
--- Chỉ Giáo viên (teacher) và Quản trị viên (admin) mới có quyền tạo, sửa, xóa Giáo án CV 2345
+-- 8. BẢO MẬT CẤP HÀNG THEO TÁC GIẢ (OWNER-BASED RLS) CHO BẢNG LESSON_PLANS
+-- Giáo viên chỉ được phép SỬA và XÓA giáo án do chính mình biên soạn.
+-- Quản trị viên (admin) có toàn quyền quản lý toàn trường.
 -- ==============================================================================
 ALTER TABLE public.lesson_plans ENABLE ROW LEVEL SECURITY;
 
--- 8.1. Cho phép tất cả mọi người đọc Giáo án công khai
+-- 8.1. Cho phép tất cả mọi người đọc Kế hoạch bài dạy công khai
 DROP POLICY IF EXISTS "Public lesson plans read access" ON public.lesson_plans;
 CREATE POLICY "Public lesson plans read access" 
 ON public.lesson_plans 
 FOR SELECT 
 USING (is_public = true);
 
--- 8.2. Chỉ Giáo viên và Quản trị viên mới được phép Tạo mới Kế hoạch bài dạy
+-- 8.2. Cấp quyền tạo mới giáo án cho Giáo viên & Quản trị viên
 DROP POLICY IF EXISTS "Teachers and Admins insert lesson plans" ON public.lesson_plans;
 CREATE POLICY "Teachers and Admins insert lesson plans" 
 ON public.lesson_plans 
 FOR INSERT 
-WITH CHECK (true); -- Ghi nhận qua ứng dụng đã kiểm tra role ('teacher', 'admin')
+WITH CHECK (true);
 
--- 8.3. Chỉ Giáo viên và Quản trị viên mới được phép Cập nhật & Xóa
+-- 8.3. CẬP NHẬT GIÁO ÁN: Chỉ Tác giả hoặc Quản trị viên mới được phép cập nhật
 DROP POLICY IF EXISTS "Teachers and Admins update/delete lesson plans" ON public.lesson_plans;
-CREATE POLICY "Teachers and Admins update/delete lesson plans" 
+DROP POLICY IF EXISTS "Owner or Admin can update lesson plans" ON public.lesson_plans;
+CREATE POLICY "Owner or Admin can update lesson plans" 
 ON public.lesson_plans 
-FOR ALL 
-USING (true);
+FOR UPDATE 
+USING (
+  EXISTS (
+    SELECT 1 FROM public.app_users 
+    WHERE (role = 'admin' OR LOWER(username) = LOWER(lesson_plans.author_username))
+  )
+);
+
+-- 8.4. XÓA GIÁO ÁN: Chỉ Tác giả hoặc Quản trị viên mới được phép xóa
+DROP POLICY IF EXISTS "Owner or Admin can delete lesson plans" ON public.lesson_plans;
+CREATE POLICY "Owner or Admin can delete lesson plans" 
+ON public.lesson_plans 
+FOR DELETE 
+USING (
+  EXISTS (
+    SELECT 1 FROM public.app_users 
+    WHERE (role = 'admin' OR LOWER(username) = LOWER(lesson_plans.author_username))
+  )
+);
+
+-- ==============================================================================
+-- 8.5. HÀM BẢO MẬT XÁC THỰC QUYỀN SỞ HỮU TRÊN SUPABASE (STORED PROCEDURES)
+-- ==============================================================================
+
+-- HÀM 1: XÓA KẾ HOẠCH BÀI DẠY BẢO MẬT (KIỂM TRA CHÍNH CHỦ / QUẢN TRỊ VIÊN)
+CREATE OR REPLACE FUNCTION public.delete_lesson_plan_secure(
+  p_plan_id UUID,
+  p_username TEXT
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_user_role TEXT;
+  v_author TEXT;
+BEGIN
+  -- Lấy vai trò của người yêu cầu từ app_users
+  SELECT role INTO v_user_role 
+  FROM public.app_users 
+  WHERE LOWER(username) = LOWER(TRIM(p_username));
+  
+  IF v_user_role IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Tài khoản không tồn tại trên hệ thống!');
+  END IF;
+
+  -- Lấy tác giả của giáo án
+  SELECT author_username INTO v_author 
+  FROM public.lesson_plans 
+  WHERE id = p_plan_id;
+
+  IF v_author IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Không tìm thấy kế hoạch bài dạy!');
+  END IF;
+
+  -- Kiểm tra quyền: Phải là Quản trị viên (admin) HOẶC chính Tác giả biên soạn
+  IF v_user_role = 'admin' OR LOWER(v_author) = LOWER(TRIM(p_username)) THEN
+    DELETE FROM public.lesson_plans WHERE id = p_plan_id;
+    RETURN jsonb_build_object('success', true, 'message', 'Đã xóa kế hoạch bài dạy thành công');
+  ELSE
+    RETURN jsonb_build_object('success', false, 'error', 'Từ chối: Bạn không có quyền xóa Kế hoạch bài dạy của giáo viên khác!');
+  END IF;
+END;
+$$;
+
+-- HÀM 2: CẬP NHẬT KẾ HOẠCH BÀI DẠY BẢO MẬT (KIỂM TRA CHÍNH CHỦ / QUẢN TRỊ VIÊN)
+CREATE OR REPLACE FUNCTION public.update_lesson_plan_secure(
+  p_plan_id UUID,
+  p_username TEXT,
+  p_title TEXT,
+  p_grade_level INTEGER,
+  p_duration_periods INTEGER,
+  p_teacher_name TEXT,
+  p_school_name TEXT,
+  p_objectives JSONB,
+  p_equipment JSONB,
+  p_teaching_steps JSONB,
+  p_notes TEXT
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_user_role TEXT;
+  v_author TEXT;
+BEGIN
+  SELECT role INTO v_user_role 
+  FROM public.app_users 
+  WHERE LOWER(username) = LOWER(TRIM(p_username));
+  
+  IF v_user_role IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Tài khoản không tồn tại trên hệ thống!');
+  END IF;
+
+  SELECT author_username INTO v_author 
+  FROM public.lesson_plans 
+  WHERE id = p_plan_id;
+
+  IF v_author IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Không tìm thấy kế hoạch bài dạy!');
+  END IF;
+
+  IF v_user_role = 'admin' OR LOWER(v_author) = LOWER(TRIM(p_username)) THEN
+    UPDATE public.lesson_plans
+    SET title = p_title,
+        grade_level = p_grade_level,
+        duration_periods = p_duration_periods,
+        teacher_name = p_teacher_name,
+        school_name = p_school_name,
+        objectives = p_objectives,
+        equipment = p_equipment,
+        teaching_steps = p_teaching_steps,
+        notes = p_notes,
+        updated_at = NOW()
+    WHERE id = p_plan_id;
+
+    RETURN jsonb_build_object('success', true, 'message', 'Đã cập nhật kế hoạch bài dạy thành công');
+  ELSE
+    RETURN jsonb_build_object('success', false, 'error', 'Từ chối: Bạn không có quyền chỉnh sửa Kế hoạch bài dạy của giáo viên khác!');
+  END IF;
+END;
+$$;
 
 -- ==============================================================================
 -- 9. TẠO CÁC XÔ LƯU TRỮ TỆP TIN (SUPABASE STORAGE BUCKETS & POLICIES)
 -- ==============================================================================
 
--- 9.1. Tạo 3 xô lưu trữ (Buckets): Đề thi, Bài giảng điện tử và Sao lưu CSDL
+-- 9.1. Tạo các xô lưu trữ (Buckets): Bài giảng điện tử và Sao lưu CSDL
 INSERT INTO storage.buckets (id, name, public) 
 VALUES 
-  ('exam-files', 'exam-files', true),
   ('lecture-files', 'lecture-files', true),
   ('db-backups', 'db-backups', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- 9.2. Cấp quyền upload và truy cập tệp công khai cho các Buckets
-CREATE POLICY "Allow public storage exam-files access" 
-ON storage.objects FOR ALL 
-USING (bucket_id = 'exam-files') 
-WITH CHECK (bucket_id = 'exam-files');
-
 CREATE POLICY "Allow public storage lecture-files access" 
 ON storage.objects FOR ALL 
 USING (bucket_id = 'lecture-files') 

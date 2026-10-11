@@ -37,6 +37,9 @@ class TeacherPortal {
             <p class="text-cyan-100 text-sm">${user.school || "Trường Tiểu Học Vui Học"} | Quản Lý Kế Hoạch Bài Dạy CV 2345, Ngân Hàng Câu Hỏi & Phân Quyền</p>
           </div>
           <div class="flex items-center gap-2.5 flex-wrap">
+            <button onclick="window.location.hash='arena'" class="btn bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-500 hover:to-yellow-500 text-slate-950 btn-lg font-black shadow-xl hover:scale-105 transition-all border border-amber-300 flex items-center gap-2">
+              <span class="text-xl animate-pulse">⚡</span> <span>Đấu Trường Tin Học</span>
+            </button>
             <button onclick="teacherPortal.openCreatePlanModal()" class="btn btn-emerald btn-lg font-bold shadow-lg">
               <span>✨ Soạn Giáo Án Mới (CV 2345)</span>
             </button>
@@ -132,31 +135,34 @@ class TeacherPortal {
         ${plans.map(plan => {
           const isAuthorOrAdmin = currentUser && (
             currentUser.role === "admin" ||
-            plan.authorId === currentUser.id ||
-            plan.authorUsername === currentUser.username ||
+            (plan.authorUsername && currentUser.username && plan.authorUsername.toLowerCase() === currentUser.username.toLowerCase()) ||
+            (plan.authorId && currentUser.id && plan.authorId === currentUser.id) ||
             (!plan.authorUsername && currentUser.role === "teacher")
           );
 
           return `
           <div class="p-5 bg-white rounded-xl border border-slate-200 hover:border-cyan-500 transition-all shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="space-y-1">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <span class="badge badge-cyan font-bold">Lớp ${plan.grade}</span>
                 <span class="badge badge-slate font-bold">Môn ${plan.subject || "Tin học"}</span>
                 <span class="text-xs text-slate-400">Thời lượng: ${plan.duration || "2 tiết"}</span>
-                ${isAuthorOrAdmin ? '<span class="badge badge-emerald font-bold text-[10px]">✏️ Bài của tôi</span>' : '<span class="badge badge-slate font-bold text-[10px]">🔒 Chỉ đọc</span>'}
+                ${isAuthorOrAdmin ? '<span class="badge badge-emerald font-bold text-[10px]">✏️ Giáo Án Của Tôi</span>' : `<span class="badge bg-slate-100 text-slate-600 border border-slate-200 font-bold text-[10px]">🔒 Chỉ Đọc (${plan.teacherName || "Đồng nghiệp"})</span>`}
               </div>
               <h4 class="text-lg font-bold text-slate-900">${plan.title}</h4>
-              <p class="text-xs text-slate-600">Tác giả: <b>${plan.teacherName || "Cô Anh Đào"}</b> (${plan.authorUsername || "anhdao"}) | Đã lưu: ${plan.createdAt ? new Date(plan.createdAt).toLocaleDateString("vi-VN") : "Hôm nay"}</p>
+              <p class="text-xs text-slate-600">Tác giả: <b>${plan.teacherName || "Cô Giáo Anh Đào"}</b> (${plan.authorUsername || "anhdao"}) | Đã lưu: ${plan.createdAt ? new Date(plan.createdAt).toLocaleDateString("vi-VN") : "Hôm nay"}</p>
             </div>
             
             <div class="flex items-center gap-2 flex-wrap">
               <button onclick="teacherPortal.openQuizModalForPlan(${plan.grade}, '${plan.lessonId || plan.id}', '${plan.title}')" class="btn btn-amber btn-sm font-bold shadow-sm">
                 ❓ Soạn Câu Hỏi
               </button>
-              <button onclick="teacherPortal.previewPlan('${plan.id}')" class="btn btn-outline btn-sm">👁️ Xem Chi Tiết</button>
+              <button onclick="teacherPortal.previewPlan('${plan.id}')" class="btn btn-outline btn-sm font-bold">👁️ Xem Chi Tiết</button>
               <button onclick="teacherPortal.exportPlanWord('${plan.id}')" class="btn btn-primary btn-sm font-bold">📄 Xuất Word (.doc)</button>
-              ${isAuthorOrAdmin ? `<button onclick="teacherPortal.deletePlan('${plan.id}')" class="btn btn-outline btn-sm text-rose-600 hover:bg-rose-50 border-rose-200">🗑️ Xóa</button>` : ''}
+              ${isAuthorOrAdmin ? `
+                <button onclick="teacherPortal.editPlan('${plan.id}')" class="btn btn-outline btn-sm text-cyan-700 hover:bg-cyan-50 border-cyan-300 font-bold" title="Chỉnh sửa Kế hoạch bài dạy">✏️ Sửa</button>
+                <button onclick="teacherPortal.deletePlan('${plan.id}')" class="btn btn-outline btn-sm text-rose-600 hover:bg-rose-50 border-rose-300 font-bold" title="Xóa Kế hoạch bài dạy">🗑️ Xóa</button>
+              ` : ''}
             </div>
           </div>
         `;
@@ -356,14 +362,42 @@ class TeacherPortal {
     window.app.showToast("📄 Đã xuất kế hoạch bài dạy chuẩn Word .doc!", "success");
   }
 
-  // Xóa giáo án
+  // Chỉnh sửa giáo án (Chỉ dành cho Tác giả hoặc Quản trị viên)
+  async editPlan(planId) {
+    const plans = await window.supabaseService.getLessonPlans();
+    const plan = plans.find(p => p.id === planId);
+    if (!plan) return;
+
+    const user = window.authService?.getUser();
+    const isAuthorOrAdmin = user && (
+      user.role === "admin" ||
+      (plan.authorUsername && user.username && plan.authorUsername.toLowerCase() === user.username.toLowerCase()) ||
+      (plan.authorId && user.id && plan.authorId === user.id) ||
+      (!plan.authorUsername && user.role === "teacher")
+    );
+
+    if (!isAuthorOrAdmin) {
+      window.app?.showToast("🚫 Thầy/Cô chỉ có thể chỉnh sửa Kế hoạch bài dạy do chính mình tạo ra!", "error");
+      return;
+    }
+
+    if (window.lessonPlannerModal) {
+      window.lessonPlannerModal.openModal(plan);
+    }
+  }
+
+  // Xóa giáo án (Bảo vệ phân quyền Owner-based)
   async deletePlan(planId) {
     const user = window.authService?.getUser();
     const plans = await window.supabaseService.getLessonPlans();
     const plan = plans.find(p => p.id === planId);
 
     if (plan && user) {
-      const isAuthorOrAdmin = user.role === "admin" || plan.authorId === user.id || plan.authorUsername === user.username || !plan.authorUsername;
+      const isAuthorOrAdmin = user.role === "admin" || 
+        (plan.authorUsername && user.username && plan.authorUsername.toLowerCase() === user.username.toLowerCase()) ||
+        (plan.authorId && user.id && plan.authorId === user.id) ||
+        (!plan.authorUsername && user.role === "teacher");
+
       if (!isAuthorOrAdmin) {
         window.app?.showToast("🚫 Thầy/Cô chỉ có thể xóa Kế hoạch bài dạy do chính mình tạo ra!", "error");
         return;
@@ -371,8 +405,13 @@ class TeacherPortal {
     }
 
     if (!confirm("Thầy Cô có chắc chắn muốn xóa kế hoạch bài dạy này không?")) return;
-    await window.supabaseService.deleteLessonPlan(planId);
-    window.app.showToast("🗑️ Đã xóa giáo án thành công!", "info");
+    const res = await window.supabaseService.deleteLessonPlan(planId);
+    if (res && !res.success) {
+      window.app?.showToast("🚫 " + (res.error || "Không thể xóa giáo án!"), "error");
+      return;
+    }
+
+    window.app.showToast("🗑️ Đã xóa kế hoạch bài dạy thành công!", "info");
     this.render("main-content-area");
   }
 

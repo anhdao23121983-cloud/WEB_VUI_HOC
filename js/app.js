@@ -92,25 +92,16 @@ class Application {
       else if (route === "lectures-4") window.lecturePortal.selectFolder(4);
       else if (route === "lectures-5") window.lecturePortal.selectFolder(5);
       else window.lecturePortal.render("main-content-area");
-    } else if (route.startsWith("exams")) {
-      document.getElementById("portal-view")?.classList.remove("hidden");
-      if (route === "exams-3") window.examPortal.enterFolder(3);
-      else if (route === "exams-4") window.examPortal.enterFolder(4);
-      else if (route === "exams-5") window.examPortal.enterFolder(5);
-      else if (route === "exams-upload" || route === "exams-my") {
-        window.examPortal.enterFolder("all");
-        window.examPortal.switchTab("my_exams");
-        setTimeout(() => window.examUploadModal?.openModal(3), 150);
-      } else if (route === "exams-custom") {
-        window.examPortal.enterFolder("all");
-        setTimeout(() => window.examPortal.openCustomQuizCreatorModal(3), 150);
-      } else {
-        window.examPortal.enterFolder("all");
-      }
     } else if (route === "lab3d" || route === "experiment3d") {
       document.getElementById("portal-view")?.classList.remove("hidden");
       window.simulation3D.render("main-content-area");
     } else if (route === "arena" || route === "dautruong") {
+      if (!user) {
+        this.showToast("⚡ Vui lòng Đăng nhập hoặc Đăng ký tài khoản để tham gia Đấu Trường Tin Học!", "warning");
+        sessionStorage.setItem("post_login_redirect", "arena");
+        window.location.hash = "auth";
+        return;
+      }
       document.getElementById("portal-view")?.classList.remove("hidden");
       window.arenaPortal.render("main-content-area");
     } else {
@@ -185,10 +176,14 @@ class Application {
       const result = await window.authService.login(username, password);
       if (result.success) {
         this.showToast(`🎉 Chào mừng ${result.user.name} đã đăng nhập thành công!`, "success");
-        if (result.user.role === "teacher") {
+        const redirect = sessionStorage.getItem("post_login_redirect");
+        sessionStorage.removeItem("post_login_redirect");
+        if (redirect === "arena") {
+          window.location.hash = "arena";
+        } else if (result.user.role === "teacher") {
           window.location.hash = "teacher";
         } else {
-          window.location.hash = "student";
+          window.location.hash = "arena";
         }
       } else {
         this.showToast(result.error || "Tên đăng nhập hoặc mật khẩu không đúng!", "error");
@@ -251,10 +246,14 @@ class Application {
 
       if (result.success) {
         this.showToast("✨ Đăng ký tài khoản thành công! Dữ liệu đã lưu trên Supabase.", "success");
-        if (result.user.role === "teacher") {
+        const redirect = sessionStorage.getItem("post_login_redirect");
+        sessionStorage.removeItem("post_login_redirect");
+        if (redirect === "arena") {
+          window.location.hash = "arena";
+        } else if (result.user.role === "teacher") {
           window.location.hash = "teacher";
         } else {
-          window.location.hash = "student";
+          window.location.hash = "arena";
         }
       } else {
         this.showToast(result.error || "Không thể tạo tài khoản, vui lòng thử lại!", "error");

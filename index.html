@@ -78,11 +78,10 @@
         </div>
       </div>
 
-      <!-- Menu Bài Kiểm Tra Bấm Trực Tiếp Mở Ngân Hàng Đề -->
-      <button onclick="window.location.hash='exams'" class="px-2.5 py-1.5 rounded-lg font-black text-xs text-rose-900 bg-rose-100 hover:bg-rose-200 border border-rose-300 flex items-center gap-1 transition-all shadow-xs" title="Kho Bài Kiểm Tra & Đánh Giá Định Kỳ">
-        <span>📝</span> <span>Bài Kiểm Tra</span>
-      </button>
 
+      <button onclick="window.location.hash='arena'" class="px-3 py-1.5 rounded-lg font-black text-xs text-amber-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-500 hover:to-yellow-500 shadow-md shadow-amber-300/40 hover:scale-105 transition-all flex items-center gap-1.5 border border-amber-300">
+        <span class="animate-pulse">⚡</span> Đấu Trường Tin Học
+      </button>
       <button onclick="window.location.hash='lab3d'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-purple-800 bg-purple-50 hover:bg-purple-100 transition-all">🧪 Mô Phỏng 3D</button>
       <button onclick="window.location.hash='student'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">🎒 Học Sinh (Lớp 3-5)</button>
       <button onclick="window.location.hash='gamehub'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">🎮 Game Hub</button>
@@ -103,6 +102,16 @@
         <button onclick="app.handleLogout()" class="text-xs text-rose-600 font-bold ml-1 hover:underline">Đăng Xuất</button>
       </div>
 
+      <!-- Box khi chưa đăng nhập (Khách / Học sinh mới) -->
+      <div id="nav-guest-box" class="hidden flex items-center gap-2">
+        <button onclick="window.location.hash='auth'; app.switchAuthTab('login')" class="px-3 py-1.5 rounded-xl font-black text-xs text-cyan-800 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 shadow-xs transition-all flex items-center gap-1">
+          <span>🔑</span> Đăng Nhập
+        </button>
+        <button onclick="window.location.hash='auth'; app.switchAuthTab('register')" class="px-3 py-1.5 rounded-xl font-black text-xs text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-1">
+          <span>✨</span> Đăng Ký
+        </button>
+      </div>
+    </div>
   </header>
 
   <!-- BANNER THÔNG BÁO KHEN THƯỞNG 50 SAO TOÀN TRƯỜNG REALTIME (SCHOOL-WIDE STAR BROADCAST) -->
@@ -141,6 +150,9 @@
             Hệ sinh thái học liệu số thiết kế chuyên biệt cho Thầy và Trò: Soạn thảo kế hoạch bài dạy chuẩn Công văn 2345 tích hợp AI, ngân hàng trò chơi lập trình & phần cứng tương tác, theo dõi tiến độ thời gian thực.
           </p>
           <div class="flex flex-wrap items-center gap-3 pt-2 justify-center md:justify-start">
+            <button onclick="window.location.hash='arena'" class="btn bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-500 hover:to-yellow-500 text-slate-950 btn-lg font-black shadow-xl hover:scale-105 transition-all border border-amber-300 flex items-center gap-2">
+              <span class="text-xl animate-pulse">⚡</span> <span>Đấu Trường Tin Học (Thi Đấu Ngay)</span>
+            </button>
             <button id="hero-btn-teacher" onclick="window.location.hash='teacher'" class="btn btn-emerald btn-lg font-black shadow-lg">
               👩‍🏫 Portal Giáo Viên (Soạn CV 2345)
             </button>
@@ -381,7 +393,7 @@
       <div class="flex items-center justify-between pb-4 border-b border-slate-200">
         <div>
           <span class="badge badge-emerald font-black mb-1">✨ CHUẨN CÔNG VĂN 2345/BGDĐT</span>
-          <h3 class="text-2xl font-black text-slate-900">SOẠN KẾ HOẠCH BÀI DẠY TIN HỌC</h3>
+          <h3 id="lesson-planner-modal-title" class="text-2xl font-black text-slate-900">SOẠN KẾ HOẠCH BÀI DẠY TIN HỌC</h3>
         </div>
         <button onclick="lessonPlannerModal.closeModal()" class="text-slate-400 hover:text-slate-700 text-2xl font-bold">✕</button>
       </div>
@@ -1799,574 +1811,6 @@
       </div>
     </div>
   </div>
-  <!-- MODAL 14: TẢI LÊN & CHỈNH SỬA ĐỀ KIỂM TRA (EXAM UPLOAD MODAL) -->
-  <div id="exam-upload-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-xl space-y-5 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-3">
-          <span class="text-3xl p-2 bg-emerald-100 text-emerald-800 rounded-2xl">📝</span>
-          <div>
-            <h3 id="exam-modal-title" class="text-lg md:text-xl font-black text-slate-900">TẢI LÊN ĐỀ KIỂM TRA & ĐÁNH GIÁ</h3>
-            <p class="text-xs text-slate-500 font-semibold">Đồng bộ đề kiểm tra (.docx / .pdf) lên Supabase theo Thông tư 27</p>
-          </div>
-        </div>
-        <button onclick="examUploadModal.closeModal()" class="text-slate-400 text-2xl font-bold">✕</button>
-      </div>
-
-      <div class="space-y-4 text-xs">
-        <div class="form-group">
-          <div class="flex items-center justify-between pb-1">
-            <label class="form-label font-bold">Tiêu Đề Đề Kiểm Tra (*)</label>
-            <button type="button" onclick="examUploadModal.generateSuggestedTitle()" class="text-[11px] font-bold text-emerald-700 hover:underline">
-              ✨ Tự động tạo tên chuẩn
-            </button>
-          </div>
-          <input type="text" id="exam-title-input" class="form-control text-xs font-bold" placeholder="Ví dụ: Đề Kiểm Tra Cuối Học Kỳ I - Tin Học Lớp 3 (KNTT)...">
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div class="form-group">
-            <label class="form-label font-bold">Khối Lớp</label>
-            <select id="exam-grade-input" class="form-control text-xs font-bold">
-              <option value="3">🎒 Lớp 3</option>
-              <option value="4">🚀 Lớp 4</option>
-              <option value="5">⭐ Lớp 5</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label font-bold">Loại Đề Kiểm Tra</label>
-            <select id="exam-type-input" class="form-control text-xs font-bold">
-              <option value="regular">⏱️ Thường Xuyên (15P)</option>
-              <option value="mid_term_1">🍂 Giữa Học Kỳ I</option>
-              <option value="final_term_1" selected>❄️ Cuối Học Kỳ I</option>
-              <option value="mid_term_2">🌱 Giữa Học Kỳ II</option>
-              <option value="final_term_2">☀️ Cuối Học Kỳ II</option>
-              <option value="matrix">📐 Ma Trận & Bản Đặc Tả</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label font-bold">Bộ Sách Giáo Khoa</label>
-            <select id="exam-series-input" class="form-control text-xs font-bold">
-              <option value="KNTT">📘 Kết Nối Tri Thức</option>
-              <option value="CD">📙 Cánh Diều</option>
-              <option value="CTST">📗 Chân Trời Sáng Tạo</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div class="form-group">
-            <label class="form-label font-bold">Thời Gian Làm Bài (Phút)</label>
-            <input type="number" id="exam-duration-input" value="35" min="10" max="90" class="form-control text-xs font-bold">
-          </div>
-          <div class="form-group">
-            <label class="form-label font-bold">Thang Điểm Đánh Giá</label>
-            <input type="text" value="Thang điểm 10 (TT 27)" disabled class="form-control text-xs font-bold bg-slate-100 text-slate-500">
-          </div>
-        </div>
-
-        <!-- Khung Chọn File Đề Thi Từ Máy Tính -->
-        <div class="space-y-2">
-          <label class="form-label font-bold text-slate-700">Chọn hoặc Đổi File Đề Kiểm Tra (.docx, .doc, .pdf, .xlsx):</label>
-          <div class="p-5 bg-slate-50 border-2 border-dashed border-emerald-400 rounded-2xl text-center space-y-2 hover:bg-emerald-50/50 transition-all cursor-pointer relative">
-            <input type="file" id="exam-file-input" accept=".docx,.doc,.pdf,.xlsx,.pptx" onchange="examUploadModal.handleFileSelect(event)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
-            <span class="text-4xl block">📝</span>
-            <p class="font-black text-slate-800 text-xs">Nhấp để chọn file Đề kiểm tra hoặc Kéo thả file vào đây</p>
-            <p class="text-[10px] text-slate-400">Hỗ trợ định dạng .docx, .doc, .pdf dung lượng tối đa 50MB</p>
-          </div>
-          
-          <!-- Thông tin file đã chọn -->
-          <div id="exam-file-preview-info" class="hidden p-3 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="text-xl">📄</span>
-              <div>
-                <p id="exam-file-name-disp" class="font-black text-emerald-900 text-xs">De_Kiem_Tra.docx</p>
-                <p id="exam-file-size-disp" class="text-[10px] text-emerald-700 font-semibold">2.1 MB</p>
-              </div>
-            </div>
-            <span class="badge badge-emerald font-black text-[10px]">Đã sẵn sàng</span>
-          </div>
-        </div>
-
-        <!-- Hoặc Dán Link Web / Google Drive -->
-        <div class="form-group pt-1 border-t border-slate-200">
-          <label class="form-label font-bold text-slate-600">Hoặc Dán Đường Dẫn Trực Tuyến (Google Docs / Drive / OneDrive):</label>
-          <input type="text" id="exam-link-input" class="form-control text-xs font-mono" placeholder="https://docs.google.com/document/d/... hoặc https://drive.google.com/...">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label font-bold">Mô Tả & Hướng Dẫn Đề Kiểm Tra (Tùy chọn)</label>
-          <textarea id="exam-desc-input" rows="2" class="form-control text-xs" placeholder="Mô tả cấu trúc đề trắc nghiệm + thực hành, yêu cầu cần đạt hoặc hướng dẫn chấm..."></textarea>
-        </div>
-      </div>
-
-      <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
-        <button onclick="examUploadModal.closeModal()" class="btn btn-outline btn-sm">Hủy</button>
-        <button id="btn-submit-exam-upload" onclick="examUploadModal.submitUpload()" class="btn btn-primary btn-sm font-black px-6 shadow-md bg-emerald-700 hover:bg-emerald-800 text-white">
-          🚀 Tải Lên & Lưu Đề
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 15: XEM MA TRẬN & BẢN ĐẶC TẢ ĐỀ KIỂM TRA CHUẨN THÔNG TƯ 27 (EXAM MATRIX MODAL) -->
-  <div id="exam-matrix-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-indigo-100 rounded-xl">📐</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900">MA TRẬN ĐỀ KIỂM TRA & BẢN ĐẶC TẢ</h3>
-            <p class="text-xs text-slate-500 font-semibold">Chuẩn 4 Mức Độ Nhận Thức theo Thông Tư 27/2020/TT-BGDĐT</p>
-          </div>
-        </div>
-        <button onclick="document.getElementById('exam-matrix-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
-      </div>
-      <div id="exam-matrix-content" class="py-1"></div>
-    </div>
-  </div>
-
-  <!-- MODAL 16: TRÌNH XEM ĐỀ TRỰC TUYẾN (EXAM PREVIEW MODAL) -->
-  <div id="exam-preview-modal" class="modal-backdrop">
-    <div class="modal-content p-4 md:p-6 max-w-5xl h-[88vh] flex flex-col space-y-3 animate-pop">
-      <div class="flex items-center justify-between pb-2 border-b border-slate-200 shrink-0">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-emerald-100 rounded-xl">📝</span>
-          <div>
-            <h3 id="exam-preview-title" class="text-base font-black text-slate-900">Xem Đề Kiểm Tra Trực Tuyến</h3>
-            <p class="text-[11px] text-emerald-700 font-bold">Chế Độ Xem Tài Liệu & Ma Trận Đề Thi</p>
-          </div>
-        </div>
-        <button onclick="examPortal.closePreviewModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
-      </div>
-
-      <div class="flex-1 bg-slate-900 rounded-2xl overflow-hidden shadow-inner relative flex items-center justify-center">
-        <iframe id="exam-preview-iframe" class="w-full h-full border-0" allowfullscreen="true"></iframe>
-      </div>
-
-      <div class="flex items-center justify-between pt-2 border-t border-slate-200 shrink-0 text-xs">
-        <span class="text-slate-500 font-semibold">💡 Thầy Cô có thể bấm nút <b>'📝 Tải Đề Word'</b> để tải tệp .doc có thể chỉnh sửa trực tiếp.</span>
-        <button onclick="examPortal.closePreviewModal()" class="btn btn-outline btn-sm">Đóng Trình Xem</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 17: XÁC NHẬN XÓA ĐỀ KIỂM TRA (EXAM DELETE MODAL) -->
-  <div id="exam-delete-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-md space-y-5 animate-pop text-center">
-      <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-3xl flex items-center justify-center text-3xl mx-auto shadow-inner">
-        🗑️
-      </div>
-
-      <div class="space-y-2">
-        <h3 class="text-lg font-black text-slate-900">XÁC NHẬN XÓA ĐỀ KIỂM TRA?</h3>
-        <p class="text-xs text-slate-500">
-          Thầy Cô có chắc chắn muốn xóa vĩnh viễn đề kiểm tra sau khỏi hệ thống và <b>Cơ sở dữ liệu Supabase</b>?
-        </p>
-        <div class="p-3 bg-rose-50 rounded-xl border border-rose-200 text-xs font-bold text-rose-900 line-clamp-2">
-          <span id="exam-delete-name-disp">Tên đề kiểm tra...</span>
-        </div>
-        <p class="text-[11px] text-slate-400">⚠️ Thao tác này sẽ xóa đồng bộ trên toàn bộ máy chủ và không thể khôi phục lại.</p>
-      </div>
-
-      <div class="flex items-center justify-center gap-3 pt-2">
-        <button onclick="examPortal.closeDeleteModal()" class="btn btn-outline btn-sm px-5">
-          Hủy Bỏ
-        </button>
-        <button id="btn-confirm-delete-exam" onclick="examPortal.executeDeleteExam()" class="btn btn-danger btn-sm font-black px-6 shadow-md">
-          🗑️ Xóa Vĩnh Viễn
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 18: LÀM BÀI KIỂM TRA TRỰC TUYẾN TỰ CHẤM ĐIỂM (ONLINE TEST RUNNER MODAL) -->
-  <div id="online-exam-runner-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-2xl space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2 text-left">
-          <span class="text-2xl p-1.5 bg-amber-100 rounded-xl">✍️</span>
-          <div>
-            <h3 id="exam-runner-title-disp" class="text-base font-black text-slate-900">Làm Bài Kiểm Tra Trực Tuyến</h3>
-            <p class="text-[11px] text-slate-500 font-semibold">Tự động đếm giờ và chấm điểm thang 10 theo chuẩn TT 27</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <div class="flex flex-col items-end min-w-[130px]">
-            <div id="exam-runner-timer-box" class="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 px-3 py-1 rounded-xl shadow-md border border-amber-300 font-bold transition-all">
-              <span class="text-xs animate-spin" style="animation-duration: 3s;">⏳</span>
-              <span id="exam-runner-timer-disp" class="font-mono font-black text-sm tracking-wider">35:00</span>
-            </div>
-            <!-- Thanh tiến độ thời gian (Time Progress Bar) -->
-            <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-1 shadow-inner">
-              <div id="exam-runner-timer-bar" class="bg-amber-500 h-full transition-all duration-1000" style="width: 100%"></div>
-            </div>
-          </div>
-          <button onclick="examPortal.closeRunnerModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-extrabold text-sm flex items-center justify-center transition-all" title="Đóng">✕</button>
-        </div>
-      </div>
-
-      <!-- Thanh Track Số Thứ Tự Câu Hỏi (1..7) -->
-      <div id="exam-runner-nav-track" class="flex items-center gap-1.5 flex-wrap justify-center py-1"></div>
-
-      <!-- Khung Nội Dung Câu Hỏi & Các Lựa Chọn A-B-C-D -->
-      <div id="exam-runner-question-body" class="py-2"></div>
-    </div>
-  </div>
-
-  <!-- MODAL 19: THỐNG KÊ PHỔ ĐIỂM & XẾP LOẠI HỌC SINH (EXAM ANALYTICS MODAL) -->
-  <div id="exam-analytics-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-2xl space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-cyan-100 rounded-xl">📈</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900">PHỔ ĐIỂM & ĐÁNH GIÁ ĐỊNH KỲ</h3>
-            <p class="text-xs text-slate-500 font-semibold">Thống kê tỷ lệ xếp loại Hoàn thành Tốt (T), Hoàn thành (H), Chưa đạt (C)</p>
-          </div>
-        </div>
-        <button onclick="document.getElementById('exam-analytics-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
-      </div>
-      <div id="exam-analytics-content" class="py-2"></div>
-    </div>
-  </div>
-
-  <!-- MODAL 20: TRỘN ĐỀ THI TỰ ĐỘNG 4 MÃ ĐỀ (EXAM SHUFFLER MODAL) -->
-  <div id="exam-shuffler-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-purple-100 rounded-xl">🔀</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900">TRỘN ĐỀ THI TỰ ĐỘNG (4 MÃ ĐỀ)</h3>
-            <p class="text-xs text-slate-500 font-semibold">Hoán vị câu hỏi & phương án, tạo 4 mã đề 101, 102, 103, 104 chống quay cóp</p>
-          </div>
-        </div>
-        <button onclick="document.getElementById('exam-shuffler-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
-      </div>
-      <div id="exam-shuffler-content" class="py-2"></div>
-    </div>
-  </div>
-
-  <!-- MODAL 21: LỊCH SỬ LÀM BÀI THI CỦA HỌC SINH (EXAM HISTORY MODAL) -->
-  <div id="exam-history-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-blue-100 rounded-xl">📜</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900">LỊCH SỬ LÀM BÀI & BẢNG ĐIỂM HỌC SINH</h3>
-            <p class="text-xs text-slate-500 font-semibold">Theo dõi tiến độ, điểm số và số sao tích lũy của từng học sinh</p>
-          </div>
-        </div>
-        <button onclick="document.getElementById('exam-history-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
-      </div>
-      <div id="exam-history-content" class="py-2"></div>
-    </div>
-  </div>
-
-  <!-- MODAL 22: AI TỰ ĐỘNG SINH ĐỀ KIỂM TRA THEO CHỦ ĐỀ (AI EXAM GENERATOR MODAL) -->
-  <div id="ai-exam-generator-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-xl space-y-5 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-purple-100 rounded-xl">✨</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900">AI SINH ĐỀ KIỂM TRA TỰ ĐỘNG</h3>
-            <p class="text-xs text-slate-500 font-semibold">Biên soạn ma trận 4 mức độ nhận thức theo từng chủ đề GDPT 2018</p>
-          </div>
-        </div>
-        <button onclick="document.getElementById('ai-exam-generator-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
-      </div>
-
-      <div class="space-y-4 text-xs">
-        <div>
-          <label class="font-bold text-slate-700 block mb-1">1. Chọn Khối Lớp:</label>
-          <select id="ai-gen-grade" class="form-control text-xs font-bold">
-            <option value="3">🎒 Khối Lớp 3 (GDPT 2018)</option>
-            <option value="4">🚀 Khối Lớp 4 (GDPT 2018)</option>
-            <option value="5">⭐ Khối Lớp 5 (GDPT 2018)</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="font-bold text-slate-700 block mb-1">2. Chọn Chủ Đề Bài Học Cần Tạo Đề:</label>
-          <select id="ai-gen-topic" class="form-control text-xs font-bold">
-            <option value="topic_a">🖥️ Chủ đề A: Máy tính và em (Phần cứng, Bàn phím, Chuột)</option>
-            <option value="topic_b">🌐 Chủ đề B: Mạng máy tính và Internet (Tìm kiếm, Email)</option>
-            <option value="topic_c">📁 Chủ đề C: Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin (Cây thư mục)</option>
-            <option value="topic_d">🛡️ Chủ đề D: Đạo đức, pháp luật và văn hóa số (Bảo vệ thông tin, Bản quyền)</option>
-            <option value="topic_e">🎨 Chủ đề E: Ứng dụng tin học (Paint, Soạn thảo văn bản, PowerPoint)</option>
-            <option value="topic_f">🧩 Chủ đề F: Giải quyết vấn đề với máy tính (Lập trình Scratch/Khối lệnh)</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="font-bold text-slate-700 block mb-1">3. Chọn Bộ Sách Giáo Khoa:</label>
-          <select id="ai-gen-series" class="form-control text-xs font-bold">
-            <option value="KNTT">📘 Kết Nối Tri Thức Với Cuộc Sống</option>
-            <option value="CD">📙 Cánh Diều</option>
-            <option value="CTST">📗 Chân Trời Sáng Tạo</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="font-bold text-slate-700 block mb-1">4. Chọn Số Lượng Câu Hỏi Trắc Nghiệm:</label>
-          <select id="ai-gen-num-questions" class="form-control text-xs font-bold">
-            <option value="5">⚡ 5 Câu Trắc Nghiệm (Khởi động / 15 phút)</option>
-            <option value="10" selected>📝 10 Câu Trắc Nghiệm (Bài kiểm tra 20 phút chuẩn)</option>
-            <option value="15">📚 15 Câu Trắc Nghiệm (Bài thi Giữa Học Kỳ)</option>
-            <option value="20">👑 20 Câu Trắc Nghiệm (Bài thi Cuối Học Kỳ)</option>
-          </select>
-        </div>
-
-        <div class="p-3 bg-purple-50 rounded-xl border border-purple-200 text-purple-900 text-[11px] leading-relaxed">
-          💡 <b>Cơ chế AI:</b> Hệ thống sẽ tự động sinh số lượng câu trắc nghiệm được chọn bám sát SGK chuẩn 4 mức độ nhận thức (Thông tư 27) và lưu ngay vào Ngân Hàng Đề!
-        </div>
-      </div>
-
-      <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
-        <button onclick="document.getElementById('ai-exam-generator-modal').classList.remove('active')" class="btn btn-outline btn-sm font-bold">
-          Hủy Bỏ
-        </button>
-        <button id="btn-submit-ai-gen" onclick="examPortal.executeAIGenerateExam()" class="btn btn-primary btn-sm font-black bg-purple-700 hover:bg-purple-800 text-white shadow-lg flex items-center gap-1.5">
-          <span>✨</span> <span>Bắt Đầu Sinh Đề Ngay</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 23: GỬI BÁO CÁO ĐIỂM SỐ VỀ ZALO / PHỤ HUYNH (PARENT REPORT MODAL) -->
-  <div id="exam-parent-report-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-xl space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-emerald-100 rounded-xl">📱</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900">BÁO ĐIỂM VỀ ZALO PHỤ HUYNH</h3>
-            <p class="text-xs text-slate-500 font-semibold">Tự động soạn tin nhắn thông báo kết quả kiểm tra định kỳ</p>
-          </div>
-        </div>
-        <button onclick="document.getElementById('exam-parent-report-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
-      </div>
-      <div id="exam-parent-report-content" class="py-2"></div>
-    </div>
-  </div>
-
-  <!-- MODAL 24: TÙY CHỈNH DIỆN MẠO THƯ MỤC CON (EXAM FOLDER CUSTOMIZE MODAL) -->
-  <div id="exam-folder-customize-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-lg space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-indigo-100 rounded-xl">⚙️</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900">TÙY CHỈNH THƯ MỤC BÀI KIỂM TRA</h3>
-            <p class="text-xs text-slate-500 font-semibold">Thay đổi Tên, Biểu tượng Icon và Tông màu Gradient</p>
-          </div>
-        </div>
-        <button onclick="document.getElementById('exam-folder-customize-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
-      </div>
-      <div id="exam-folder-customize-content" class="py-2"></div>
-    </div>
-  </div>
-
-  <!-- MODAL 25: MỞ KHÓA MẬT KHẨU THƯ MỤC TRƯỚC GIỜ THI (FOLDER LOCK MODAL) -->
-  <div id="exam-folder-lock-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-md space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-rose-100 rounded-xl">🔐</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900">MẬT KHẨU MỞ THƯ MỤC</h3>
-            <p class="text-xs text-slate-500 font-semibold">Khóa bảo vệ đề thi trước tiết kiểm tra</p>
-          </div>
-        </div>
-        <button onclick="document.getElementById('exam-folder-lock-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
-      </div>
-      <div id="exam-folder-lock-content" class="py-2"></div>
-    </div>
-  </div>
-
-  <!-- MODAL 26: IN HÀNG LOẠT TOÀN BỘ ĐỀ THI RA MÁY IN (BATCH PRINT MODAL) -->
-  <div id="exam-batch-print-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-lg space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-emerald-100 rounded-xl">🖨️</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900">IN HÀNG LOẠT ĐỀ THI & ĐÁP ÁN</h3>
-            <p class="text-xs text-slate-500 font-semibold">Định dạng A4 chuẩn Bộ GD&ĐT xuất thẳng máy in</p>
-          </div>
-        </div>
-        <button onclick="document.getElementById('exam-batch-print-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
-      </div>
-      <div id="exam-batch-print-content" class="py-2"></div>
-    </div>
-  </div>
-
-  <!-- MODAL 27: CHẾ ĐỘ GIÁM THỊ PHÒNG THI TRỰC TUYẾN (LIVE EXAM PROCTORING MODAL) -->
-  <div id="exam-live-proctor-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-4xl space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-rose-100 rounded-xl animate-pulse">📡</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
-              <span>BẢNG ĐIỀU KHIỂN GIÁM THỊ TRỰC TUYẾN</span>
-              <span class="badge bg-rose-600 text-white text-[10px] font-black">LIVE PROCTOR</span>
-            </h3>
-            <p class="text-xs text-slate-500 font-semibold">Theo dõi màn hình, tiến độ và cảnh báo gian lận của học sinh theo thời gian thực</p>
-          </div>
-        </div>
-        <button onclick="examPortal.closeLiveProctorModal()" class="text-slate-400 text-2xl font-bold">✕</button>
-      </div>
-      <div id="exam-live-proctor-content" class="py-2"></div>
-    </div>
-  </div>
-
-  <!-- MODAL 28: THƯ VIỆN NGÂN HÀNG CÂU HỎI TRẮC NGHIỆM ĐỘNG (QUESTION BANK MODAL) -->
-  <div id="exam-question-bank-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-4xl space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-indigo-100 rounded-xl">📚</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
-              <span>NGÂN HÀNG CÂU HỎI TRẮC NGHIỆM ĐỘNG</span>
-              <span class="badge badge-emerald text-[10px] font-black">GDPT 2018</span>
-            </h3>
-            <p class="text-xs text-slate-500 font-semibold">Quản lý, thêm, sửa, xóa câu hỏi trắc nghiệm Tin học 3, 4, 5 theo 4 mức độ nhận thức</p>
-          </div>
-        </div>
-        <button onclick="document.getElementById('exam-question-bank-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
-      </div>
-      <div id="exam-question-bank-content" class="py-2"></div>
-    </div>
-  </div>
-
-  <!-- MODAL 29: TỰ TẠO BÀI KIỂM TRA TRẮC NGHIỆM THEO BÀI HỌC SGK (CUSTOM SGK QUIZ CREATOR MODAL) -->
-  <div id="exam-custom-sgk-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-xl shadow-md">✨</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
-              <span>TỰ TẠO BÀI KIỂM TRA TRẮC NGHIỆM THEO SGK</span>
-              <span class="badge bg-purple-600 text-white text-[10px] font-black">100% Trắc Nghiệm</span>
-            </h3>
-            <p class="text-xs text-slate-500 font-semibold">Tự tạo đề kiểm tra bám sát từng bài trong sách giáo khoa Tin học 3, 4, 5</p>
-          </div>
-        </div>
-        <button onclick="document.getElementById('exam-custom-sgk-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
-      </div>
-
-      <div id="exam-custom-sgk-body" class="space-y-4 py-2">
-        <!-- Dynamic form will be rendered by examPortal.js -->
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 32: ĐẤU TRƯỜNG THI TRẮC NGHIỆM TRỰC TUYẾN REALTIME (REALTIME LIVE QUIZ ARENA MODAL) -->
-  <div id="exam-live-arena-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-4xl space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-gradient-to-br from-amber-500 to-red-600 text-white rounded-xl shadow-md animate-bounce">🏟️</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
-              <span>ĐẤU TRƯỜNG THI TRỰC TUYẾN REALTIME</span>
-              <span class="badge bg-amber-500 text-slate-950 font-black text-[10px]">LIVE QUIZ ARENA</span>
-            </h3>
-            <p class="text-xs text-slate-500 font-semibold">Cạnh tranh thời gian thực trên màn hình lớp học kèm Bảng vinh danh Top 3 & Hiệu ứng âm thanh</p>
-          </div>
-        </div>
-        <button onclick="examPortal.closeLiveArenaModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
-      </div>
-      <div id="exam-live-arena-body" class="space-y-4 py-2">
-        <!-- Dynamic Arena content rendered by examPortal.js -->
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 33: CHẤM BÀI BẰNG CAMERA AI & OMR BUBBLE SCANNER (AI CAMERA OMR SCANNER MODAL) -->
-  <div id="exam-camera-omr-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-gradient-to-br from-blue-600 to-cyan-500 text-white rounded-xl shadow-md">📷</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
-              <span>AI CHẤM PHIẾU TÔ TRẮC NGHIỆM BẰNG CAMERA</span>
-              <span class="badge bg-blue-600 text-white font-black text-[10px]">AI OMR SCANNER</span>
-            </h3>
-            <p class="text-xs text-slate-500 font-semibold">Nhận diện ô tô trắc nghiệm A, B, C, D từ camera điện thoại/máy tính & tự động tính điểm 0.001s</p>
-          </div>
-        </div>
-        <button onclick="examPortal.closeCameraOMRModal()" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
-      </div>
-      <div id="exam-camera-omr-body" class="space-y-4 py-2">
-        <!-- Dynamic Camera OMR content rendered by examPortal.js -->
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 34: BẢNG XẾP THỨ HẠNG HỌC SINH THEO KHỐI LỚP (EXAM STUDENT LEADERBOARD MODAL) -->
-  <div id="exam-student-leaderboard-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-4xl space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 rounded-xl shadow-md animate-bounce">🏆</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
-              <span>BẢNG XẾP THỨ HẠNG HỌC SINH THEO KHỐI LỚP</span>
-              <span class="badge bg-amber-500 text-slate-950 font-black text-[10px]">LEADERBOARD</span>
-            </h3>
-            <p class="text-xs text-slate-500 font-semibold">Vinh danh các học sinh có kết quả kiểm tra cao nhất, nhiều sao vàng nhất & thời gian làm bài nhanh nhất</p>
-          </div>
-        </div>
-        <button onclick="document.getElementById('exam-student-leaderboard-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
-      </div>
-  <!-- MODAL 35: CHẾ ĐỘ ÔN LUYỆN TRẮC NGHIỆM THEO BÀI SGK (PRACTICE SGK QUIZ MODAL) -->
-  <div id="exam-practice-sgk-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-xl shadow-md">📖</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
-              <span>ÔN LUYỆN TRẮC NGHIỆM THEO BÀI SGK</span>
-              <span class="badge bg-emerald-600 text-white font-black text-[10px]">PRACTICE MODE</span>
-            </h3>
-            <p class="text-xs text-slate-500 font-semibold">Luyện tập từng câu trắc nghiệm bám sát bài học SGK Tin 3, 4, 5 kèm đáp án và giải thích ngay lập tức</p>
-          </div>
-        </div>
-        <button onclick="document.getElementById('exam-practice-sgk-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold hover:text-slate-700">✕</button>
-      </div>
-      <div id="exam-practice-sgk-body" class="space-y-4 py-2">
-        <!-- Dynamic Practice content rendered by examPortal.js -->
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 29: GIẤY KHEN VINH DANH HỌC SINH ĐIỂM 10 (HONOR CERTIFICATE MODAL) -->
-  <div id="exam-certificate-modal" class="modal-backdrop">
-    <div class="modal-content p-6 md:p-8 max-w-3xl space-y-4 animate-pop">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl p-1.5 bg-amber-100 rounded-xl animate-bounce">🎖️</span>
-          <div>
-            <h3 class="text-lg font-black text-slate-900">GIẤY KHEN DANH DỰ THÀNH TÍCH XUẤT SẮC</h3>
-            <p class="text-xs text-slate-500 font-semibold">Tuyên dương kết quả kiểm tra định kỳ môn Tin học</p>
-          </div>
-        </div>
-        <button onclick="document.getElementById('exam-certificate-modal').classList.remove('active')" class="text-slate-400 text-2xl font-bold">✕</button>
-      </div>
-      <div id="exam-certificate-content" class="py-2"></div>
-    </div>
-  </div>
-
   <!-- MODAL 30: TOÀN MÀN HÌNH MÔ PHỎNG 3D TIN HỌC 3 - BÀI 7 (SIMULATION 3D MODAL) -->
   <div id="simulation-3d-modal" class="modal-backdrop">
     <div class="modal-content p-4 md:p-6 max-w-5xl w-full h-[90vh] flex flex-col space-y-3 animate-pop">
@@ -3334,6 +2778,8 @@
         </button>
       </div>
     </div>
+  </div>
+
   <!-- MODAL 39: CẤU HÌNH ĐẤU TRƯỜNG TIN HỌC (GRADE 3, 4, 5 ARENA CONFIG MODAL) -->
   <div id="arena-config-modal" class="modal-backdrop">
     <div class="modal-content p-6 md:p-8 max-w-xl space-y-5 animate-pop bg-white rounded-3xl shadow-2xl border-2 border-emerald-400">
@@ -3353,18 +2799,22 @@
         <label class="font-extrabold text-xs text-slate-800 flex items-center gap-1.5 uppercase tracking-wider">
           <span>⚡</span> <span>1. Chọn Số Lượng Câu Hỏi Trận Đấu:</span>
         </label>
-        <div class="grid grid-cols-3 gap-3">
-          <button type="button" onclick="arenaPortal.selectQuestionCount(10)" id="btn-count-10" class="p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm">
-            🎯 10 CÂU HỎI
-            <span class="block text-[10px] font-normal text-emerald-700 mt-0.5">Đấu Nhanh</span>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <button type="button" onclick="arenaPortal.selectQuestionCount(5)" id="btn-count-5" class="p-2.5 rounded-2xl border-2 font-black text-xs text-center transition-all bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100">
+            🌱 5 CÂU
+            <span class="block text-[10px] font-normal text-slate-500 mt-0.5">Khởi Động</span>
           </button>
-          <button type="button" onclick="arenaPortal.selectQuestionCount(20)" id="btn-count-20" class="p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100">
-            🔥 20 CÂU HỎI
-            <span class="block text-[10px] font-normal text-slate-500 mt-0.5">Tiêu Chuẩn</span>
+          <button type="button" onclick="arenaPortal.selectQuestionCount(10)" id="btn-count-10" class="p-2.5 rounded-2xl border-2 font-black text-xs text-center transition-all bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm">
+            🎯 10 CÂU
+            <span class="block text-[10px] font-normal text-emerald-700 mt-0.5">Tiêu Chuẩn</span>
           </button>
-          <button type="button" onclick="arenaPortal.selectQuestionCount(30)" id="btn-count-30" class="p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100">
-            🏆 30 CÂU HỎI
-            <span class="block text-[10px] font-normal text-slate-500 mt-0.5">Vinh Quang</span>
+          <button type="button" onclick="arenaPortal.selectQuestionCount(15)" id="btn-count-15" class="p-2.5 rounded-2xl border-2 font-black text-xs text-center transition-all bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100">
+            🔥 15 CÂU
+            <span class="block text-[10px] font-normal text-slate-500 mt-0.5">Thử Thách</span>
+          </button>
+          <button type="button" onclick="arenaPortal.selectQuestionCount(20)" id="btn-count-20" class="p-2.5 rounded-2xl border-2 font-black text-xs text-center transition-all bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100">
+            🏆 20 CÂU
+            <span class="block text-[10px] font-normal text-slate-500 mt-0.5">Toàn Diện</span>
           </button>
         </div>
       </div>
@@ -3701,6 +3151,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- JSZip v3 for bulk zip packaging -->
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <!-- SheetJS (xlsx) for Excel export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- App Scripts -->
   <script src="js/config.js"></script>
@@ -3714,15 +3166,12 @@
   <script src="js/services/adminService.js"></script>
   <script src="js/services/ttsService.js"></script>
   <script src="js/services/lectureService.js"></script>
-  <script src="js/services/examService.js"></script>
   <script src="js/services/arenaService.js"></script>
   <script src="js/components/adminPortal.js"></script>
   <script src="js/components/quizAuthorModal.js"></script>
   <script src="js/components/quizPlayModal.js"></script>
   <script src="js/components/lectureUploadModal.js"></script>
   <script src="js/components/lecturePortal.js"></script>
-  <script src="js/components/examUploadModal.js"></script>
-  <script src="js/components/examPortal.js"></script>
   <script src="js/components/simulation3D.js"></script>
   <script src="js/components/arenaPortal.js"></script>
   <script src="js/components/teacherPortal.js"></script>

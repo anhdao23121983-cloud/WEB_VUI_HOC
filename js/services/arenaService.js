@@ -361,6 +361,30 @@ class ArenaService {
         options: ["A. Mật khẩu tài khoản, địa chỉ nhà riêng và số điện thoại của bố mẹ", "B. Tên môn học em thích", "C. Bài hát em vừa nghe", "D. Màu sắc em yêu thích"],
         correctIndex: 0, explanation: "Tuyệt đối không chia sẻ thông tin riêng tư (Mật khẩu, địa chỉ, số điện thoại) để tránh nguy cơ bị kẻ xấu lợi dụng.", difficulty: "medium", timeLimit: 15, stars: 25
       },
+      {
+        id: "g3_q_11", grade: 3, lessonId: "bai_11", topic: "Bài 11. Em tập vẽ hình với Paint",
+        question: "Trong phần mềm Paint, nhóm công cụ nào dùng để vẽ nhanh các hình mẫu có sẵn như hình chữ nhật, hình thoi, hình elip?",
+        options: ["A. Nhóm Shapes (Hình mẫu)", "B. Nhóm Brushes (Cọ vẽ)", "C. Nhóm Colors (Bảng màu)", "D. Nút Eraser (Tẩy)"],
+        correctIndex: 0, explanation: "Nhóm công cụ Shapes cung cấp sẵn các hình mẫu hình học cơ bản giúp học sinh vẽ nhanh và chính xác.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g3_q_12", grade: 3, lessonId: "bai_12", topic: "Bài 12. Em tập gõ bàn phím 10 ngón",
+        question: "Hai ngón tay cái của cả bàn tay trái và bàn tay phải được phân công phụ trách gõ phím nào trên bàn phím?",
+        options: ["A. Phím Enter", "B. Phím Cách (Spacebar)", "C. Phím Shift", "D. Phím Caps Lock"],
+        correctIndex: 1, explanation: "Hai ngón tay cái luôn đặt nhẹ trên phím Cách (Spacebar) dài nhất ở hàng dưới cùng.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g3_q_13", grade: 3, lessonId: "bai_13", topic: "Bài 13. Thuật toán: Làm việc theo các bước",
+        question: "Khi thực hiện một công việc theo các bước (thuật toán), điều gì quan trọng nhất để đạt kết quả đúng?",
+        options: ["A. Thực hiện theo đúng thứ tự các bước đã xác định", "B. Nhảy cóc bỏ qua các bước đầu", "C. Làm bước cuối cùng trước", "D. Đổi thứ tự tùy ý"],
+        correctIndex: 0, explanation: "Mỗi thuật toán là một dãy các bước rõ ràng, việc tuân thủ đúng thứ tự giúp công việc hoàn thành chính xác.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g3_q_14", grade: 3, lessonId: "bai_14", topic: "Bài 14. Chia việc lớn thành việc nhỏ",
+        question: "Để dọn dẹp phòng học của em (việc lớn), việc chia nhỏ thành: 'Dọn bàn học' -> 'Xếp sách vào giá' -> 'Quét nhà' có lợi ích gì?",
+        options: ["A. Giúp công việc dễ thực hiện, rõ ràng và không bị bỏ sót", "B. Làm phòng bừa bộn hơn", "C. Tốn nhiều thời gian hơn", "D. Làm em mệt hơn"],
+        correctIndex: 0, explanation: "Chia việc lớn thành các việc nhỏ giúp ta lập kế hoạch rõ ràng và giải quyết công việc dễ dàng hơn.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
 
       // === KHỐI LỚP 5 - SGK CHUẨN KẾT NỐI TRI THỨC VỚI CUỘC SỐNG ===
       {
@@ -370,10 +394,22 @@ class ArenaService {
         correctIndex: 0, explanation: "Mạng máy tính kết nối 2 hoặc nhiều máy tính với nhau nhằm truyền tải thông tin và chia sẻ tài nguyên.", difficulty: "easy", timeLimit: 15, stars: 20
       },
       {
+        id: "g5_q_01b", grade: 5, lessonId: "bai_1", topic: "Bài 1. Máy tính và câu chuyện xử lý thông tin",
+        question: "Thiết bị nào sau đây thường được dùng để phát sóng mạng không dây trong gia đình và trường học?",
+        options: ["A. Bộ định tuyến không dây (Wi-Fi Router)", "B. Màn hình máy tính", "C. Chuột quang", "D. Máy quét scanner"],
+        correctIndex: 0, explanation: "Bộ định tuyến Wi-Fi Router chuyển đổi tín hiệu mạng Internet và phát sóng không dây cho các thiết bị kết nối.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
         id: "g5_q_02", grade: 5, lessonId: "bai_2", topic: "Bài 2. Tìm kiếm thông tin chính xác trên Internet",
         question: "Để tìm kiếm chính xác cụm từ 'Học liệu Vui học Tin học' trên Google, em gõ cú pháp từ khóa nào?",
         options: ["A. Học liệu Vui học Tin học", "B. \"Học liệu Vui học Tin học\"", "C. Học liệu + Vui học", "D. Học liệu - Tin học"],
         correctIndex: 1, explanation: "Đặt cụm từ trong dấu ngoặc kép \"...\" bắt buộc công cụ tìm kiếm trả về đúng nguyên văn cụm từ đó.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g5_q_02b", grade: 5, lessonId: "bai_2", topic: "Bài 2. Khám phá thế giới thông tin số",
+        question: "Dấu hiệu nào sau đây giúp em nhận biết một trang web là nguồn thông tin đáng tin cậy?",
+        options: ["A. Có tên miền cơ quan giáo dục (.edu.vn) hoặc nhà nước (.gov.vn) và ghi rõ tên tác giả, ngày đăng", "B. Quảng cáo chớp nháy khắp màn hình", "C. Yêu cầu nạp tiền để xem tin", "D. Không ghi tác giả"],
+        correctIndex: 0, explanation: "Thông tin tin cậy thường đến từ các cơ quan chính thống, tổ chức giáo dục có nguồn gốc rõ ràng.", difficulty: "medium", timeLimit: 15, stars: 25
       },
       {
         id: "g5_q_03", grade: 5, lessonId: "bai_3", topic: "Bài 3. An toàn số và bảo mật thông tin cá nhân",
@@ -382,10 +418,22 @@ class ArenaService {
         correctIndex: 2, explanation: "Mật khẩu mạnh dài trên 8 ký tự, gồm cả chữ HOA, chữ thường, chữ số và ký tự đặc biệt (@, #, $...).", difficulty: "medium", timeLimit: 15, stars: 25
       },
       {
+        id: "g5_q_03b", grade: 5, lessonId: "bai_3", topic: "Bài 3. Tìm kiếm thông tin chính xác trên Internet",
+        question: "Khi nhận được tin nhắn từ người lạ trên mạng báo em trúng thưởng xe máy và yêu cầu cung cấp mã OTP, em nên làm gì?",
+        options: ["A. Không cung cấp mã OTP và báo ngay cho bố mẹ hoặc thầy cô", "B. Gửi mã OTP ngay", "C. Rủ bạn cùng gửi", "D. Bấm vào mọi đường link gửi kèm"],
+        correctIndex: 0, explanation: "Tuyệt đối không cung cấp mã OTP cho bất kỳ ai vì đây là hình thức lừa đảo trên không gian mạng.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
         id: "g5_q_04", grade: 5, lessonId: "bai_4", topic: "Bài 4. Đạo đức số và bản quyền tài nguyên",
         question: "Hành động nào sau đây thể hiện sự tôn trọng bản quyền khi sử dụng tài liệu trên mạng?",
         options: ["A. Tự nhận là sản phẩm do mình sáng tác", "B. Ghi rõ tên tác giả và trang web nguồn trích dẫn", "C. Xóa tên tác giả khỏi bức ảnh", "D. Đem bán lại lấy tiền"],
         correctIndex: 1, explanation: "Tôn trọng bản quyền tác giả bằng cách ghi nhận tác giả và dẫn nguồn trích dẫn hợp pháp.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
+        id: "g5_q_04b", grade: 5, lessonId: "bai_4", topic: "Bài 4. Cây thư mục và lưu trữ dữ liệu",
+        question: "Cấu trúc thư mục dạng hình cây (Directory Tree) có ưu điểm lớn nhất là gì?",
+        options: ["A. Giúp phân loại tệp tin theo từng cấp rõ ràng, dễ tìm kiếm và quản lý khoa học", "B. Làm ổ đĩa quay nhanh hơn", "C. Tự động đổi màu màn hình", "D. Tăng dung lượng bộ nhớ"],
+        correctIndex: 0, explanation: "Cấu trúc cây thư mục giúp sắp xếp tệp tin theo nhóm, phân cấp logic từ thư mục gốc đến các thư mục con.", difficulty: "medium", timeLimit: 15, stars: 25
       },
       {
         id: "g5_q_05", grade: 5, lessonId: "bai_5", topic: "Bài 5. Tổ chức lưu trữ dữ liệu trên Cloud",
@@ -406,10 +454,22 @@ class ArenaService {
         correctIndex: 0, explanation: "Nhóm lệnh Các biến số (Variables) màu cam dùng để tạo biến, thay đổi giá trị và hiển thị biến số.", difficulty: "medium", timeLimit: 15, stars: 25
       },
       {
+        id: "g5_q_07b", grade: 5, lessonId: "bai_7", topic: "Bài 7. Soạn thảo văn bản nâng cao",
+        question: "Trong MS Word, để chèn một bảng điểm gồm 5 cột và 10 dòng, em nháy chọn dải lệnh nào?",
+        options: ["A. Dải lệnh Insert -> Table", "B. Dải lệnh View", "C. Dải lệnh References", "D. Dải lệnh Help"],
+        correctIndex: 0, explanation: "Dải lệnh Insert chứa công cụ Table cho phép tạo các bảng biểu với số cột và dòng tùy ý.", difficulty: "easy", timeLimit: 15, stars: 20
+      },
+      {
         id: "g5_q_08", grade: 5, lessonId: "bai_8", topic: "Bài 8. Câu lệnh rẽ nhánh Nếu...thì",
         question: "Khối lệnh 'nếu <chạm nhân vật> thì' thực hiện lệnh bên trong khi nào?",
         options: ["A. Khi điều kiện <chạm nhân vật> là ĐÚNG (True)", "B. Khi điều kiện là SAI", "C. Không bao giờ chạy", "D. Chạy liên tục không ngừng"],
         correctIndex: 0, explanation: "Khối lệnh 'nếu... thì' chỉ thực thi các câu lệnh bên trong khi biểu thức điều kiện được thỏa mãn.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g5_q_08b", grade: 5, lessonId: "bai_8", topic: "Bài 8. Thiết kế bài trình chiếu đa phương tiện",
+        question: "Trong PowerPoint, để chèn một đoạn video ca nhạc thiếu nhi vào trang chiếu, em dùng lệnh nào?",
+        options: ["A. Insert -> Video", "B. Insert -> Symbol", "C. Home -> Cut", "D. File -> Print"],
+        correctIndex: 0, explanation: "Lệnh Insert -> Video cho phép chèn tệp video từ máy tính hoặc trực tuyến vào slide thuyết trình.", difficulty: "easy", timeLimit: 15, stars: 20
       },
       {
         id: "g5_q_09", grade: 5, lessonId: "bai_9", topic: "Bài 9. Cấu trúc lặp trong lập trình",
@@ -418,10 +478,22 @@ class ArenaService {
         correctIndex: 0, explanation: "Khối lệnh 'lặp lại N lần' được dùng khi ta biết chính xác số lần lặp lại hành động.", difficulty: "easy", timeLimit: 15, stars: 20
       },
       {
+        id: "g5_q_09b", grade: 5, lessonId: "bai_9", topic: "Bài 9. Biến số trong lập trình Scratch",
+        question: "Để tăng điểm số của người chơi lên thêm 10 điểm khi ăn được quả táo trong Scratch, em dùng lệnh nào?",
+        options: ["A. thay đổi [Điểm] một lượng 10", "B. đặt [Điểm] thành 10", "C. ẩn biến [Điểm]", "D. xóa biến [Điểm]"],
+        correctIndex: 0, explanation: "Khối lệnh 'thay đổi [biến] một lượng N' sẽ cộng thêm N đơn vị vào giá trị hiện tại của biến.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
         id: "g5_q_10", grade: 5, lessonId: "bai_10", topic: "Bài 10. Tạo trò chơi hoàn chỉnh trong Scratch",
         question: "Trong dự án trò chơi 'Né chướng ngại vật', khi nhân vật chạm vào chướng ngại vật thì chương trình xử lý thế nào?",
         options: ["A. Dừng tất cả (stop all) và phát âm thanh thua cuộc", "B. Tăng điểm số lên 100", "C. Nhân vật to lên", "D. Đổi phông nền chúc mừng"],
         correctIndex: 0, explanation: "Khi va chạm chướng ngại vật, trò chơi kết thúc bằng lệnh 'stop all' và thông báo kết quả.", difficulty: "hard", timeLimit: 20, stars: 30
+      },
+      {
+        id: "g5_q_10b", grade: 5, lessonId: "bai_10", topic: "Bài 10. Cấu trúc rẽ nhánh nếu... thì trong Scratch",
+        question: "Khối lệnh 'nếu <điều kiện> thì ... nếu không thì ...' thực hiện nhánh 'nếu không thì' khi nào?",
+        options: ["A. Khi điều kiện kiểm tra cho kết quả SAI (False)", "B. Khi điều kiện cho kết quả ĐÚNG", "C. Chạy cả 2 nhánh cùng lúc", "D. Không bao giờ chạy"],
+        correctIndex: 0, explanation: "Cấu trúc rẽ nhánh 2 nhánh thực thi nhánh thứ nhất khi điều kiện Đúng, nhánh thứ hai khi điều kiện Sai.", difficulty: "medium", timeLimit: 15, stars: 25
       },
       {
         id: "g5_q_11", grade: 5, lessonId: "bai_11", topic: "Bài 11. Thiết kế bài trình chiếu chuyên nghiệp",
@@ -430,10 +502,22 @@ class ArenaService {
         correctIndex: 1, explanation: "Trang chiếu đẹp cần ngắn gọn, rõ ràng, hình ảnh minh họa phù hợp và hiệu ứng chuyên nghiệp.", difficulty: "easy", timeLimit: 15, stars: 20
       },
       {
+        id: "g5_q_11b", grade: 5, lessonId: "bai_11", topic: "Bài 11. Cấu trúc lặp trong Scratch",
+        question: "Khối lệnh 'lặp lại cho đến khi <chạm cạnh>' trong Scratch sẽ dừng hành động lặp khi nào?",
+        options: ["A. Ngay khi nhân vật chạm vào mép cạnh sân khấu (điều kiện trở thành ĐÚNG)", "B. Không bao giờ dừng", "C. Sau 1 giây", "D. Khi tắt màn hình"],
+        correctIndex: 0, explanation: "Khối lệnh lặp với điều kiện sẽ tiếp tục lặp khi điều kiện đang Sai, và dừng lặp ngay khi điều kiện thỏa mãn Đúng.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
         id: "g5_q_12", grade: 5, lessonId: "bai_12", topic: "Bài 12. Dự án học tập Tin học 5",
         question: "Dự án học tập Tin học giúp học sinh rèn luyện được những năng lực cốt lõi nào?",
         options: ["A. Năng lực sử dụng công nghệ số, tư duy giải quyết vấn đề và kỹ năng hợp tác nhóm", "B. Chỉ rèn luyện gõ chữ", "C. Chỉ rèn luyện vẽ hình", "D. Không mang lại lợi ích gì"],
         correctIndex: 0, explanation: "Dự án học tập phát triển toàn diện Năng lực Tin học (NLa, NLb, NLc, NLd, NLe) theo Công văn 2345/BGDĐT.", difficulty: "medium", timeLimit: 15, stars: 25
+      },
+      {
+        id: "g5_q_12b", grade: 5, lessonId: "bai_12", topic: "Bài 12. Dự án học tập: Tạo trò chơi Scratch",
+        question: "Khi bắt tay vào lập trình một trò chơi hoàn chỉnh trong Scratch, bước đầu tiên quan trọng nhất là gì?",
+        options: ["A. Xây dựng kịch bản, xác định nhân vật, luật chơi và cách tính điểm", "B. Bấm nút chia sẻ ngay", "C. Mua máy tính mới", "D. Bật nhạc to"],
+        correctIndex: 0, explanation: "Thiết kế kịch bản và thuật toán rõ ràng trước khi ghép khối lệnh giúp dự án thành công và ít lỗi.", difficulty: "easy", timeLimit: 15, stars: 20
       }
     ];
 
@@ -668,8 +752,8 @@ class ArenaService {
 
     const matchObj = {
       id: "match_" + Date.now(),
-      studentName: user.name || "Nguyễn Văn An",
-      studentClass: user.className || "3A",
+      studentName: matchData.studentName || user.name || user.username || "Nguyễn Văn An",
+      studentClass: matchData.studentClass || user.class || user.className || "3A",
       grade: parseInt(grade) || 3,
       score,
       totalCorrect,
@@ -725,8 +809,8 @@ class ArenaService {
     return { success: true, match: matchObj };
   }
 
-  // 6. LẤY BẢNG XẾP HẠNG HỌC SINH TOÀN DIỆN (CÁ NHÂN)
-  async getStudentLeaderboard(gradeFilter = "all", classFilter = "all") {
+  // 6. LẤY BẢNG XẾP HẠNG HỌC SINH TOÀN DIỆN (CÁ NHÂN - KÈM BỘ LỌC THỜI GIAN & KHỐI)
+  async getStudentLeaderboard(gradeFilter = "all", classFilter = "all", timeRange = "all") {
     let matches = [];
     if (window.supabaseService?.isReady()) {
       try {
@@ -736,6 +820,20 @@ class ArenaService {
           .order("created_at", { ascending: false });
         if (gradeFilter !== "all") query = query.eq("grade_level", parseInt(gradeFilter));
         if (classFilter !== "all") query = query.eq("student_class", classFilter);
+
+        // Lọc theo khung thời gian (Hôm nay, Tuần này, Tháng này)
+        const now = new Date();
+        if (timeRange === "today") {
+          const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+          query = query.gte("created_at", startOfDay);
+        } else if (timeRange === "week") {
+          const startOfWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+          query = query.gte("created_at", startOfWeek);
+        } else if (timeRange === "month") {
+          const startOfMonth = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+          query = query.gte("created_at", startOfMonth);
+        }
+
         const { data, error } = await query;
         if (!error && data && data.length > 0) {
           matches = data.map(d => ({
@@ -757,17 +855,29 @@ class ArenaService {
     if (matches.length === 0) {
       const db = JSON.parse(localStorage.getItem("app_mock_db")) || {};
       matches = db.arena_matches || [
-        { studentName: "Trần Đức Nam", studentClass: "5A", grade: 5, score: 100, starsEarned: 150, durationSeconds: 18, totalCorrect: 5, totalQuestions: 5 },
-        { studentName: "Nguyễn Văn An", studentClass: "3A", grade: 3, score: 100, starsEarned: 140, durationSeconds: 22, totalCorrect: 5, totalQuestions: 5 },
-        { studentName: "Lê Thị Mai", studentClass: "4B", grade: 4, score: 95, starsEarned: 120, durationSeconds: 25, totalCorrect: 4, totalQuestions: 5 },
-        { studentName: "Phạm Hoàng Bách", studentClass: "3B", grade: 3, score: 85, starsEarned: 95, durationSeconds: 28, totalCorrect: 4, totalQuestions: 5 },
-        { studentName: "Vũ Bảo Châu", studentClass: "4A", grade: 4, score: 80, starsEarned: 85, durationSeconds: 30, totalCorrect: 4, totalQuestions: 5 },
-        { studentName: "Đỗ Tuấn Kiệt", studentClass: "5B", grade: 5, score: 80, starsEarned: 80, durationSeconds: 32, totalCorrect: 3, totalQuestions: 5 },
-        { studentName: "Hoàng Gia Huy", studentClass: "3A", grade: 3, score: 75, starsEarned: 70, durationSeconds: 35, totalCorrect: 3, totalQuestions: 5 }
+        { studentName: "Trần Đức Nam", studentClass: "5A", grade: 5, score: 100, starsEarned: 150, durationSeconds: 18, totalCorrect: 5, totalQuestions: 5, createdAt: new Date().toISOString() },
+        { studentName: "Nguyễn Văn An", studentClass: "3A", grade: 3, score: 100, starsEarned: 140, durationSeconds: 22, totalCorrect: 5, totalQuestions: 5, createdAt: new Date().toISOString() },
+        { studentName: "Lê Thị Mai", studentClass: "4B", grade: 4, score: 95, starsEarned: 120, durationSeconds: 25, totalCorrect: 4, totalQuestions: 5, createdAt: new Date(Date.now() - 86400000).toISOString() },
+        { studentName: "Phạm Hoàng Bách", studentClass: "3B", grade: 3, score: 85, starsEarned: 95, durationSeconds: 28, totalCorrect: 4, totalQuestions: 5, createdAt: new Date(Date.now() - 172800000).toISOString() },
+        { studentName: "Vũ Bảo Châu", studentClass: "4A", grade: 4, score: 80, starsEarned: 85, durationSeconds: 30, totalCorrect: 4, totalQuestions: 5, createdAt: new Date(Date.now() - 259200000).toISOString() },
+        { studentName: "Đỗ Tuấn Kiệt", studentClass: "5B", grade: 5, score: 80, starsEarned: 80, durationSeconds: 32, totalCorrect: 3, totalQuestions: 5, createdAt: new Date(Date.now() - 345600000).toISOString() },
+        { studentName: "Hoàng Gia Huy", studentClass: "3A", grade: 3, score: 75, starsEarned: 70, durationSeconds: 35, totalCorrect: 3, totalQuestions: 5, createdAt: new Date(Date.now() - 432000000).toISOString() }
       ];
 
       if (gradeFilter !== "all") matches = matches.filter(m => m.grade === parseInt(gradeFilter));
       if (classFilter !== "all") matches = matches.filter(m => m.studentClass === classFilter);
+
+      if (timeRange !== "all") {
+        const nowMs = Date.now();
+        matches = matches.filter(m => {
+          if (!m.createdAt) return true;
+          const diffMs = nowMs - new Date(m.createdAt).getTime();
+          if (timeRange === "today") return diffMs <= 24 * 3600 * 1000;
+          if (timeRange === "week") return diffMs <= 7 * 24 * 3600 * 1000;
+          if (timeRange === "month") return diffMs <= 30 * 24 * 3600 * 1000;
+          return true;
+        });
+      }
     }
 
     // Nhóm theo tên học sinh để tính tổng tích lũy
@@ -796,7 +906,7 @@ class ArenaService {
     });
 
     const list = Object.values(studentMap);
-    list.sort((a, b) => (b.totalStars - a.totalStars) || (b.highestScore - a.highestScore) || (a.bestDuration - b.bestDuration));
+    list.sort((a, b) => (b.highestScore - a.highestScore) || (b.totalScore - a.totalScore) || (b.totalStars - a.totalStars) || (a.bestDuration - b.bestDuration));
     return list;
   }
 

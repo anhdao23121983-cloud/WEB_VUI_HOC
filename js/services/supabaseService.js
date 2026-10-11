@@ -95,16 +95,96 @@ class SupabaseService {
     return db.lessonPlans || [];
   }
 
-  // 2. LƯU HOẶC CẬP NHẬT KẾ HOẠCH BÀI DẠY
+  // 2. LƯU HOẶC CẬP NHẬT KẾ HOẠCH BÀI DẠY (BẢO MẬT OWNER-BASED)
   async saveLessonPlan(planData) {
     const user = window.authService?.getUser();
     const currentAuthorId = user?.id || "u_teacher_01";
     const currentAuthorUsername = user?.username || "anhdao";
+    const currentTeacherName = user?.name || "Cô Giáo Anh Đào";
+    const currentSchool = user?.school || "Trường Tiểu Học Vui Học";
 
-    planData.authorId = planData.authorId || currentAuthorId;
-    planData.authorUsername = planData.authorUsername || currentAuthorUsername;
+    const isUpdate = planData.id && planData.id.length > 20;
 
-    // 1. Lưu dự phòng vào LocalStorage
+    // 1. Kiểm tra và đồng bộ lên Supabase nếu có kết nối
+    if (this.isLive && this.client) {
+      try {
+        if (isUpdate) {
+          // Gọi hàm bảo mật update_lesson_plan_secure
+          const { data, error } = await this.client.rpc("update_lesson_plan_secure", {
+            p_plan_id: planData.id,
+            p_username: currentAuthorUsername,
+            p_title: planData.title,
+            p_grade_level: parseInt(planData.grade) || 3,
+            p_duration_periods: parseInt(planData.duration) || 2,
+            p_teacher_name: planData.teacherName || currentTeacherName,
+            p_school_name: planData.schoolName || currentSchool,
+            p_objectives: planData.objectives || {},
+            p_equipment: planData.equipment || {},
+            p_teaching_steps: planData.activities || [],
+            p_notes: planData.evaluation || ""
+          });
+
+          if (error) {
+            console.warn("RPC update_lesson_plan_secure lỗi hoặc chưa nạp, thử update trực tiếp:", error.message);
+            let updateQuery = this.client.from("lesson_plans").update({
+              title: planData.title,
+              grade_level: parseInt(planData.grade) || 3,
+              duration_periods: parseInt(planData.duration) || 2,
+              teacher_name: planData.teacherName || currentTeacherName,
+              school_name: planData.schoolName || currentSchool,
+              objectives: planData.objectives,
+              equipment: planData.equipment,
+              teaching_steps: planData.activities,
+              notes: planData.evaluation,
+              updated_at: new Date().toISOString()
+            }).eq("id", planData.id);
+
+            if (user?.role !== "admin") {
+              updateQuery = updateQuery.ilike("author_username", currentAuthorUsername);
+            }
+            const res = await updateQuery;
+            if (res.error) throw new Error(res.error.message);
+          } else if (data && !data.success) {
+            throw new Error(data.error || "Bạn không có quyền chỉnh sửa giáo án của giáo viên khác!");
+          }
+        } else {
+          // Tạo mới
+          const payload = {
+            title: planData.title,
+            grade_level: parseInt(planData.grade) || 3,
+            duration_periods: parseInt(planData.duration) || 2,
+            teacher_name: planData.teacherName || currentTeacherName,
+            author_id: currentAuthorId,
+            author_username: currentAuthorUsername,
+            school_name: planData.schoolName || currentSchool,
+            objectives: planData.objectives || {},
+            equipment: planData.equipment || {},
+            teaching_steps: planData.activities || [],
+            notes: planData.evaluation || "",
+            is_public: true,
+            updated_at: new Date().toISOString()
+          };
+
+          const { data, error } = await this.client
+            .from("lesson_plans")
+            .insert([payload])
+            .select()
+            .single();
+
+          if (error) {
+            console.warn("Lỗi ghi lên Supabase lesson_plans:", error.message);
+          } else if (data) {
+            planData.id = data.id;
+            console.log("✅ Đã tạo mới giáo án trên Supabase Cloud thành công!");
+          }
+        }
+      } catch (err) {
+        console.error("Lỗi đồng bộ Supabase:", err);
+        return { success: false, error: err.message };
+      }
+    }
+
+    // 2. Lưu dự phòng vào LocalStorage
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     if (!db.lessonPlans) db.lessonPlans = [];
 
@@ -113,61 +193,50 @@ class SupabaseService {
       db.lessonPlans[existingIndex] = { ...db.lessonPlans[existingIndex], ...planData, updatedAt: new Date().toISOString() };
     } else {
       planData.id = planData.id || ("plan_" + Date.now());
+      planData.authorId = planData.authorId || currentAuthorId;
+      planData.authorUsername = planData.authorUsername || currentAuthorUsername;
+      planData.teacherName = planData.teacherName || currentTeacherName;
       planData.createdAt = new Date().toISOString();
       db.lessonPlans.unshift(planData);
     }
     localStorage.setItem("app_mock_db", JSON.stringify(db));
 
-    // 2. Đồng bộ lên Supabase nếu có kết nối
-    if (this.isLive && this.client) {
-      try {
-        const payload = {
-          title: planData.title,
-          grade_level: parseInt(planData.grade) || 3,
-          duration_periods: parseInt(planData.duration) || 2,
-          teacher_name: planData.teacherName || user?.name || "Cô Giáo Anh Đào",
-          author_id: planData.authorId,
-          author_username: planData.authorUsername,
-          school_name: planData.schoolName || user?.school || "Trường Tiểu Học",
-          objectives: planData.objectives,
-          equipment: planData.equipment,
-          teaching_steps: planData.activities,
-          notes: planData.evaluation,
-          is_public: true,
-          updated_at: new Date().toISOString()
-        };
-
-        const { data, error } = await this.client
-          .from("lesson_plans")
-          .insert([payload])
-          .select();
-
-        if (error) {
-          console.warn("Chưa ghi được lên Supabase (có thể bảng đang khởi tạo):", error.message);
-        } else {
-          console.log("✅ Đã đồng bộ giáo án lên Supabase Cloud thành công!");
-        }
-      } catch (err) {
-        console.warn("Lỗi đồng bộ Supabase:", err);
-      }
-    }
-
     return { success: true, plan: planData };
   }
 
-  // 3. XÓA KẾ HOẠCH BÀI DẠY
+  // 3. XÓA KẾ HOẠCH BÀI DẠY (BẢO MẬT OWNER-BASED)
   async deleteLessonPlan(planId) {
+    const user = window.authService?.getUser();
+    const currentUsername = user?.username || "anhdao";
+
+    if (this.isLive && this.client && planId && planId.length > 20) {
+      try {
+        const { data, error } = await this.client.rpc("delete_lesson_plan_secure", {
+          p_plan_id: planId,
+          p_username: currentUsername
+        });
+
+        if (error) {
+          console.warn("Lỗi RPC xóa giáo án, thử xóa trực tiếp có lọc tác giả:", error.message);
+          let query = this.client.from("lesson_plans").delete().eq("id", planId);
+          if (user?.role !== "admin") {
+            query = query.ilike("author_username", currentUsername);
+          }
+          const res = await query;
+          if (res.error) throw new Error(res.error.message);
+        } else if (data && !data.success) {
+          throw new Error(data.error || "Bạn không có quyền xóa giáo án này!");
+        }
+      } catch (err) {
+        console.error("Lỗi xóa trên Supabase:", err);
+        return { success: false, error: err.message };
+      }
+    }
+
+    // Xóa trên LocalStorage
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     db.lessonPlans = (db.lessonPlans || []).filter(p => p.id !== planId);
     localStorage.setItem("app_mock_db", JSON.stringify(db));
-
-    if (this.isLive && this.client && planId.length > 20) {
-      try {
-        await this.client.from("lesson_plans").delete().eq("id", planId);
-      } catch (err) {
-        console.warn("Lỗi xóa trên Supabase:", err);
-      }
-    }
 
     return { success: true };
   }

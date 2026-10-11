@@ -8,9 +8,39 @@ class LessonPlannerModal {
     this.currentPlanData = null;
   }
 
-  // Khởi tạo và nạp dữ liệu vào form
-  init() {
-    // Không cần xử lý DOM phức tạp nếu đã có sẵn template trong HTML
+  // Khởi tạo và mở form soạn / sửa giáo án
+  openModal(plan = null) {
+    this.currentPlanData = plan;
+    const modal = document.getElementById("lesson-planner-modal");
+    if (modal) modal.classList.add("active");
+
+    const modalTitle = document.getElementById("lesson-planner-modal-title");
+    if (modalTitle) {
+      modalTitle.innerText = plan ? "CHỈNH SỬA KẾ HOẠCH BÀI DẠY (CV 2345)" : "SOẠN KẾ HOẠCH BÀI DẠY TIN HỌC (CV 2345)";
+    }
+
+    if (plan) {
+      this.populateForm(plan);
+      if (document.getElementById("plan-input-title")) {
+        document.getElementById("plan-input-title").value = plan.title ? plan.title.replace(/^KẾ HOẠCH BÀI DẠY:\s*/i, "") : "";
+      }
+      if (document.getElementById("plan-input-grade")) document.getElementById("plan-input-grade").value = plan.grade || 3;
+      if (document.getElementById("plan-input-book")) document.getElementById("plan-input-book").value = plan.book || "Kết nối tri thức với cuộc sống";
+      if (document.getElementById("plan-input-duration")) document.getElementById("plan-input-duration").value = plan.duration || "2 tiết";
+      if (document.getElementById("plan-input-teacher")) document.getElementById("plan-input-teacher").value = plan.teacherName || "Cô Giáo Anh Đào";
+    } else {
+      const user = window.authService?.getUser();
+      if (document.getElementById("plan-input-teacher")) {
+        document.getElementById("plan-input-teacher").value = user?.name || "Cô Giáo Anh Đào";
+      }
+    }
+  }
+
+  // Mở nhanh từ bài học SGK
+  openModalWithPreset(grade, lessonTitle, topicName) {
+    this.openModal(null);
+    if (document.getElementById("plan-input-title")) document.getElementById("plan-input-title").value = lessonTitle || "";
+    if (document.getElementById("plan-input-grade")) document.getElementById("plan-input-grade").value = grade || 3;
   }
 
   // Kích hoạt Trợ lý AI tự động sinh giáo án theo tên bài
@@ -160,17 +190,30 @@ class LessonPlannerModal {
     };
   }
 
-  // Lưu giáo án
+  // Lưu giáo án (Tạo mới hoặc Cập nhật theo quyền tác giả)
   async savePlan() {
     const plan = this.getFormData();
-    await window.supabaseService?.saveLessonPlan(plan);
+    if (this.currentPlanData?.id) {
+      plan.id = this.currentPlanData.id;
+      plan.authorId = this.currentPlanData.authorId;
+      plan.authorUsername = this.currentPlanData.authorUsername;
+    }
+
+    const res = await window.supabaseService?.saveLessonPlan(plan);
+    if (res && !res.success) {
+      if (window.app) window.app.showToast("🚫 " + (res.error || "Không thể lưu kế hoạch bài dạy!"), "error");
+      return;
+    }
     
     // Đóng Modal và tải lại danh sách
     this.closeModal();
+    const isEdit = !!this.currentPlanData?.id;
+    this.currentPlanData = null;
+
     if (window.teacherPortal) {
       window.teacherPortal.render("main-content-area");
     }
-    if (window.app) window.app.showToast("💾 Đã lưu Kế hoạch bài dạy thành công!", "success");
+    if (window.app) window.app.showToast(isEdit ? "💾 Đã cập nhật Kế hoạch bài dạy thành công!" : "✨ Đã tạo mới Kế hoạch bài dạy thành công!", "success");
   }
 
   // Xuất trực tiếp file Word từ form hiện tại
