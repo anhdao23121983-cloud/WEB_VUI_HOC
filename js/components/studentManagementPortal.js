@@ -109,6 +109,9 @@ class StudentManagementPortal {
             <button onclick="studentManagementPortal.openAddStudentModal()" class="btn bg-amber-400 hover:bg-amber-300 text-slate-950 font-black shadow-lg flex items-center gap-2 px-3.5 py-2.5 rounded-2xl hover:scale-105 transition-all text-xs">
               <span>➕</span> <span>Thêm Học Sinh</span>
             </button>
+            <button onclick="studentManagementPortal.openImportModal()" class="btn bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white font-black shadow-lg flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl hover:scale-105 transition-all text-xs" title="Nhập danh sách học sinh từ file Excel hoặc VnEdu/SMAS">
+              <span>📥</span> <span>Nhập Từ Excel</span>
+            </button>
             <button onclick="studentManagementPortal.exportExcel()" class="btn bg-white/20 hover:bg-white/30 text-white font-black flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl text-xs hover:scale-105 transition-all" title="Xuất toàn bộ danh sách ra file Excel">
               <span>📊</span> <span>Xuất Excel</span>
             </button>
@@ -339,6 +342,81 @@ class StudentManagementPortal {
             <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
               <button onclick="studentManagementPortal.closeAddStudentModal()" class="btn btn-outline btn-sm font-bold px-4">Hủy</button>
               <button onclick="studentManagementPortal.submitAddStudent()" class="btn btn-primary btn-sm font-black px-5">Tạo Tài Khoản</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL NHẬP HỌC SINH HÀNG LOẠT TỪ FILE EXCEL / CSV -->
+        <div id="modal-import-excel" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+          <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-pop max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
+                <span class="text-xl">📥</span> <span>NHẬP DANH SÁCH HỌC SINH TỪ EXCEL / CSV</span>
+              </h3>
+              <button onclick="studentManagementPortal.closeImportModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg cursor-pointer">✕</button>
+            </div>
+
+            <!-- Khu vực tải file & hướng dẫn -->
+            <div class="space-y-4 overflow-y-auto flex-1 pr-1">
+              <div class="p-4 bg-teal-50/80 rounded-2xl border border-teal-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-2xl">💡</span>
+                  <div>
+                    <h5 class="font-black text-teal-950">Chưa có file danh sách chuẩn?</h5>
+                    <p class="text-teal-800">Thầy hãy tải file Excel mẫu đã định dạng sẵn cột để điền thông tin nhanh nhất.</p>
+                  </div>
+                </div>
+                <button type="button" onclick="studentManagementPortal.downloadTemplateExcel()" class="btn bg-teal-600 hover:bg-teal-700 text-white font-black text-xs px-3.5 py-2 rounded-xl shrink-0 flex items-center gap-1.5 shadow-xs cursor-pointer">
+                  <span>📄</span> <span>Tải File Mẫu (.xlsx)</span>
+                </button>
+              </div>
+
+              <!-- Khu vực chọn file hoặc kéo thả -->
+              <div class="border-2 border-dashed border-slate-300 hover:border-teal-500 rounded-2xl p-6 text-center space-y-2 bg-slate-50 transition-colors cursor-pointer" onclick="document.getElementById('excel-file-input').click()">
+                <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="studentManagementPortal.handleExcelFileSelect(this.files[0])">
+                <span class="text-4xl block">📊</span>
+                <p class="font-black text-slate-800 text-sm">Bấm để chọn file Excel (.xlsx, .xls, .csv) hoặc kéo thả vào đây</p>
+                <p class="text-slate-500 text-xs">Tự động nhận diện dữ liệu xuất từ VnEdu, SMAS hoặc file tự tạo với các cột: Họ và tên, Lớp, Khối...</p>
+              </div>
+
+              <!-- Khu vực xem trước dữ liệu khi đã chọn file -->
+              <div id="excel-preview-container" class="hidden space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <h4 class="font-black text-slate-900 text-xs flex items-center gap-1.5" id="excel-preview-title">
+                    <span>📋</span> <span>DỮ LIỆU ĐỌC ĐƯỢC:</span>
+                  </h4>
+                  <span id="excel-preview-count" class="badge bg-teal-100 text-teal-900 font-bold text-xs">0 học sinh</span>
+                </div>
+
+                <div class="overflow-x-auto max-h-56 rounded-xl border border-slate-200">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-100 text-slate-700 font-black text-[11px] border-b border-slate-200">
+                      <tr>
+                        <th class="p-2 text-center w-10">STT</th>
+                        <th class="p-2">Họ và Tên</th>
+                        <th class="p-2 text-center">Lớp</th>
+                        <th class="p-2 text-center">Khối</th>
+                        <th class="p-2">Tài Khoản Sinh Tự Động</th>
+                        <th class="p-2 text-center">Mật Khẩu</th>
+                      </tr>
+                    </thead>
+                    <tbody id="excel-preview-tbody" class="divide-y divide-slate-100"></tbody>
+                  </table>
+                </div>
+
+                <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
+                  <span>⚡</span>
+                  <span>Mật khẩu mặc định là <b>123456</b> (học sinh có thể tự đổi sau). Tài khoản tự động sinh theo cú pháp tiếng Việt không dấu chuẩn tiểu học.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer nút bấm -->
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <button onclick="studentManagementPortal.closeImportModal()" class="btn btn-outline btn-sm font-bold px-4">Đóng</button>
+              <button id="btn-confirm-import" onclick="studentManagementPortal.confirmImportStudents()" class="btn bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black btn-sm px-5 flex items-center gap-1.5 shadow-md disabled:opacity-50" disabled>
+                <span>🚀</span> <span>Xác Nhận Nhập Học Sinh</span>
+              </button>
             </div>
           </div>
         </div>
@@ -879,6 +957,367 @@ class StudentManagementPortal {
 
     XLSX.writeFile(workbook, fileName);
     window.app?.showToast(`📊 Đã xuất file Excel ${this.classFilter !== "all" ? `Lớp ${this.classFilter}` : "toàn trường"} (${exportList.length} học sinh) thành công!`, "success");
+  }
+
+  // =========================================================================
+  // 6. PHÂN HỆ NHẬP HỌC SINH HÀNG LOẠT TỪ EXCEL / CSV (BULK IMPORT)
+  // =========================================================================
+
+  openImportModal() {
+    const modal = document.getElementById("modal-import-excel");
+    if (!modal) return;
+    this.pendingImportStudents = [];
+    const previewContainer = document.getElementById("excel-preview-container");
+    if (previewContainer) previewContainer.classList.add("hidden");
+    const fileInput = document.getElementById("excel-file-input");
+    if (fileInput) fileInput.value = "";
+    const btn = document.getElementById("btn-confirm-import");
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span>🚀</span> <span>Xác Nhận Nhập Học Sinh</span>`;
+    }
+    modal.classList.remove("hidden");
+  }
+
+  closeImportModal() {
+    const modal = document.getElementById("modal-import-excel");
+    if (modal) modal.classList.add("hidden");
+    this.pendingImportStudents = [];
+  }
+
+  // Tải file Excel mẫu về máy
+  downloadTemplateExcel() {
+    if (!window.XLSX) {
+      window.app?.showToast("Thư viện Excel đang tải, vui lòng thử lại sau giây lát!", "warning");
+      return;
+    }
+
+    const templateData = [
+      {
+        "STT": 1,
+        "Họ và Tên (*)": "Nguyễn Minh Khang",
+        "Lớp (*)": "3A",
+        "Khối": 3,
+        "Tên Đăng Nhập (Tùy chọn)": "hs3a_minhkhang",
+        "Mật Khẩu (Tùy chọn)": "123456",
+        "Trường Học": "Trường Tiểu Học Vui Học"
+      },
+      {
+        "STT": 2,
+        "Họ và Tên (*)": "Trần Thảo Linh",
+        "Lớp (*)": "3A",
+        "Khối": 3,
+        "Tên Đăng Nhập (Tùy chọn)": "hs3a_thaolinh",
+        "Mật Khẩu (Tùy chọn)": "123456",
+        "Trường Học": "Trường Tiểu Học Vui Học"
+      },
+      {
+        "STT": 3,
+        "Họ và Tên (*)": "Phạm Gia Bảo",
+        "Lớp (*)": "4B",
+        "Khối": 4,
+        "Tên Đăng Nhập (Tùy chọn)": "hs4b_giabao",
+        "Mật Khẩu (Tùy chọn)": "123456",
+        "Trường Học": "Trường Tiểu Học Vui Học"
+      },
+      {
+        "STT": 4,
+        "Họ và Tên (*)": "Vũ Hoàng Long",
+        "Lớp (*)": "5A",
+        "Khối": 5,
+        "Tên Đăng Nhập (Tùy chọn)": "hs5a_hoanglong",
+        "Mật Khẩu (Tùy chọn)": "123456",
+        "Trường Học": "Trường Tiểu Học Vui Học"
+      }
+    ];
+
+    const worksheet = XLSX.utils.json_to_sheet(templateData);
+    worksheet["!cols"] = [
+      { wch: 6 },
+      { wch: 25 },
+      { wch: 10 },
+      { wch: 8 },
+      { wch: 25 },
+      { wch: 20 },
+      { wch: 30 }
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "MauHocSinh");
+    XLSX.writeFile(workbook, "Mau_Danh_Sach_Hoc_Sinh_TinHoc.xlsx");
+    window.app?.showToast("📄 Đã tải file Excel mẫu về máy tính của Thầy!", "success");
+  }
+
+  // Tự động sinh username không dấu chuẩn học sinh
+  generateUsername(fullName, className) {
+    if (!fullName) return "hs_" + Math.floor(1000 + Math.random() * 9000);
+    const cleanName = fullName
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/[^a-z0-9\s]/g, "")
+      .trim();
+    
+    const parts = cleanName.split(/\s+/).filter(Boolean);
+    const firstName = parts[parts.length - 1] || "hs";
+    const initials = parts.slice(0, -1).map(p => p[0]).join("");
+    const cleanClass = (className || "3A").toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    return `hs${cleanClass}_${initials}${firstName}`;
+  }
+
+  // Phân tích các dòng từ file Excel
+  parseExcelRows(rawRows) {
+    if (!rawRows || rawRows.length === 0) return [];
+
+    const parsed = [];
+    rawRows.forEach((row) => {
+      let name = "";
+      let className = "";
+      let grade = null;
+      let username = "";
+      let password = "";
+      let school = "";
+
+      for (const [key, val] of Object.entries(row)) {
+        const k = key.toString().toLowerCase().trim();
+        const v = val ? val.toString().trim() : "";
+
+        if (!name && (k.includes("họ") || k.includes("tên") || k.includes("name") || k.includes("học sinh"))) {
+          name = v;
+        }
+        if (!className && (k === "lớp" || k.includes("lớp học") || k === "class" || k.includes("chi đội"))) {
+          className = v;
+        }
+        if (!grade && (k === "khối" || k.includes("khối lớp") || k === "grade")) {
+          const g = parseInt(v, 10);
+          if (!isNaN(g)) grade = g;
+        }
+        if (!username && (k.includes("tài khoản") || k.includes("tên đăng nhập") || k.includes("username") || k.includes("mã học sinh") || k.includes("mã hs"))) {
+          username = v;
+        }
+        if (!password && (k.includes("mật khẩu") || k.includes("password") || k.includes("pass"))) {
+          password = v;
+        }
+        if (!school && (k.includes("trường") || k.includes("school"))) {
+          school = v;
+        }
+      }
+
+      // Bỏ qua dòng tiêu đề hoặc dòng trống
+      if (!name || name === "Họ và Tên (*)" || name === "STT") return;
+
+      if (!className) className = "3A";
+      className = className.toUpperCase().replace(/\s+/g, "");
+      if (!grade) {
+        const parsedGrade = parseInt(className.charAt(0), 10);
+        grade = (!isNaN(parsedGrade) && parsedGrade >= 3 && parsedGrade <= 5) ? parsedGrade : 3;
+      }
+
+      if (!username) {
+        username = this.generateUsername(name, className);
+      } else {
+        username = username.toLowerCase().replace(/[^a-z0-9_]/g, "");
+      }
+
+      let finalUsername = username;
+      let counter = 1;
+      while (parsed.some(p => p.username === finalUsername)) {
+        finalUsername = `${username}_${counter++}`;
+      }
+
+      parsed.push({
+        name: name,
+        username: finalUsername,
+        className: className,
+        grade: grade,
+        password: password || "123456",
+        school: school || "Trường Tiểu Học Vui Học"
+      });
+    });
+
+    return parsed;
+  }
+
+  // Xử lý khi chọn file Excel
+  async handleExcelFileSelect(file) {
+    if (!file) return;
+    if (!window.XLSX) {
+      window.app?.showToast("Thư viện Excel đang tải, vui lòng thử lại sau!", "warning");
+      return;
+    }
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: "array" });
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      const rawRows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+      if (!rawRows || rawRows.length === 0) {
+        window.app?.showToast("File Excel không có dữ liệu học sinh!", "warning");
+        return;
+      }
+
+      const parsedStudents = this.parseExcelRows(rawRows);
+      if (parsedStudents.length === 0) {
+        window.app?.showToast("Không tìm thấy cột Họ và Tên trong file Excel! Vui lòng kiểm tra lại file mẫu.", "warning");
+        return;
+      }
+
+      this.pendingImportStudents = parsedStudents;
+      this.renderImportPreviewHtml(file.name, parsedStudents);
+    } catch (err) {
+      console.error("Lỗi đọc file Excel:", err);
+      window.app?.showToast("Không thể đọc file Excel! Vui lòng kiểm tra lại tệp.", "error");
+    }
+  }
+
+  // Render bảng xem trước danh sách học sinh đọc được
+  renderImportPreviewHtml(fileName, students) {
+    const previewContainer = document.getElementById("excel-preview-container");
+    const previewTitle = document.getElementById("excel-preview-title");
+    const previewCount = document.getElementById("excel-preview-count");
+    const previewTbody = document.getElementById("excel-preview-tbody");
+    const btnConfirm = document.getElementById("btn-confirm-import");
+
+    if (!previewContainer || !previewTbody) return;
+
+    previewTitle.innerHTML = `<span>📋</span> <span>Tệp: <b>${fileName}</b></span>`;
+    previewCount.innerText = `${students.length} học sinh`;
+
+    previewTbody.innerHTML = students.slice(0, 15).map((st, idx) => `
+      <tr class="hover:bg-teal-50/40">
+        <td class="p-2 text-center font-bold text-slate-500">${idx + 1}</td>
+        <td class="p-2 font-black text-slate-900">${st.name}</td>
+        <td class="p-2 text-center"><span class="px-2 py-0.5 bg-blue-100 text-blue-800 font-bold rounded text-[10px]">${st.className}</span></td>
+        <td class="p-2 text-center font-bold text-slate-600">Khối ${st.grade}</td>
+        <td class="p-2 font-mono text-teal-700 font-bold">${st.username}</td>
+        <td class="p-2 text-center font-mono text-slate-500">${st.password}</td>
+      </tr>
+    `).join("");
+
+    if (students.length > 15) {
+      previewTbody.innerHTML += `
+        <tr class="bg-slate-50">
+          <td colspan="6" class="p-2.5 text-center text-xs font-bold text-slate-500">
+            ... và còn ${students.length - 15} học sinh khác sẽ được nhập đầy đủ vào hệ thống.
+          </td>
+        </tr>
+      `;
+    }
+
+    previewContainer.classList.remove("hidden");
+    if (btnConfirm) {
+      btnConfirm.disabled = false;
+      btnConfirm.innerHTML = `<span>🚀</span> <span>Xác Nhận Nhập ${students.length} Học Sinh</span>`;
+    }
+  }
+
+  // Xác nhận nhập học sinh hàng loạt và lưu trữ vĩnh viễn
+  async confirmImportStudents() {
+    if (!this.pendingImportStudents || this.pendingImportStudents.length === 0) return;
+
+    const btn = document.getElementById("btn-confirm-import");
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span>⏳ Đang tạo tài khoản & đồng bộ...</span>`;
+    }
+
+    try {
+      const db = JSON.parse(localStorage.getItem("app_mock_db")) || window.MOCK_DATABASE || {};
+      if (!db.users) db.users = [];
+
+      let addedCount = 0;
+      let updatedCount = 0;
+      const targetClasses = new Set();
+      const supabaseBatch = [];
+
+      for (const std of this.pendingImportStudents) {
+        targetClasses.add(std.className);
+        const existingIdx = db.users.findIndex(u => u.username === std.username);
+        const avatar = std.grade === 4 ? "👧" : (std.grade === 5 ? "🧑‍💻" : "👦");
+
+        const studentRecord = {
+          username: std.username,
+          name: std.name,
+          role: "student",
+          className: std.className,
+          grade: std.grade,
+          school: std.school,
+          stars: 50,
+          avatar: avatar,
+          isActive: true
+        };
+
+        if (existingIdx >= 0) {
+          db.users[existingIdx].name = std.name;
+          db.users[existingIdx].className = std.className;
+          db.users[existingIdx].grade = std.grade;
+          db.users[existingIdx].school = std.school;
+          updatedCount++;
+        } else {
+          studentRecord.id = `u_std_${Date.now()}_${addedCount}`;
+          db.users.push(studentRecord);
+          addedCount++;
+        }
+
+        supabaseBatch.push({
+          username: std.username,
+          full_name: std.name,
+          role: "student",
+          class_name: std.className,
+          grade_level: std.grade,
+          school_name: std.school,
+          stars: 50,
+          points: 500,
+          rank: "Học viên Đồng",
+          status: "active"
+        });
+      }
+
+      localStorage.setItem("app_mock_db", JSON.stringify(db));
+
+      // 1. Đồng bộ lên Supabase nếu có
+      if (window.supabaseService?.isReady() && supabaseBatch.length > 0) {
+        try {
+          await window.supabaseService.client
+            .from("app_users")
+            .upsert(supabaseBatch, { onConflict: "username" });
+        } catch (sbErr) {
+          console.warn("Lưu Supabase batch thất bại, đã bảo toàn ở Local:", sbErr);
+        }
+      }
+
+      // 2. Đồng bộ vĩnh viễn vào mã nguồn và file server
+      if (window.dataSyncManager?.syncAllPermanent) {
+        await window.dataSyncManager.syncAllPermanent();
+      }
+
+      this.closeImportModal();
+
+      const msg = `🎉 Đã nhập thành công ${addedCount} học sinh mới${updatedCount > 0 ? ` (cập nhật ${updatedCount} học sinh)` : ''} vào hệ thống!`;
+      window.app?.showToast(msg, "success");
+
+      // Tự động chuyển bộ lọc sang lớp vừa nhập nếu chỉ nhập 1 lớp
+      if (targetClasses.size === 1) {
+        const singleClass = Array.from(targetClasses)[0];
+        this.classFilter = singleClass;
+        const g = parseInt(singleClass.charAt(0), 10);
+        if (!isNaN(g)) this.gradeFilter = g;
+      }
+
+      await this.render();
+    } catch (err) {
+      console.error("Lỗi khi nhập học sinh:", err);
+      window.app?.showToast("Có lỗi xảy ra trong quá trình lưu dữ liệu học sinh!", "error");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<span>🚀</span> <span>Xác Nhận Nhập Học Sinh</span>`;
+      }
+    }
   }
 }
 
