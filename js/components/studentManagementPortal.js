@@ -64,6 +64,23 @@ class StudentManagementPortal {
     const totalStars = this.studentsList.reduce((sum, s) => sum + (s.stars || 0), 0);
     const topArenaChamp = this.leaderboardData.length > 0 ? this.leaderboardData[0] : null;
 
+    // Danh sách lớp học động & đếm số lượng học sinh từng lớp
+    const defaultClasses = ["3A", "3B", "4A", "4B", "5A", "5B"];
+    const foundClasses = Array.from(new Set(this.studentsList.map(s => s.className || s.class_name).filter(Boolean)));
+    const combinedClasses = Array.from(new Set([...defaultClasses, ...foundClasses])).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+    let visibleClasses = combinedClasses;
+    if (this.gradeFilter !== "all") {
+      visibleClasses = visibleClasses.filter(c => c.startsWith(this.gradeFilter.toString()));
+    }
+
+    const allClassOptions = visibleClasses.map(clsName => {
+      const count = this.studentsList.filter(s => (s.className || s.class_name) === clsName).length;
+      const g = parseInt(clsName.charAt(0), 10);
+      const icon = g === 3 ? "🎒" : (g === 4 ? "🚀" : "⭐");
+      return { name: clsName, count, icon, grade: g };
+    });
+
     container.innerHTML = `
       <div class="space-y-6 animate-pop">
         <!-- Banner Tiêu Đề Quản Lý Học Sinh -->
@@ -82,17 +99,17 @@ class StudentManagementPortal {
             <button onclick="window.dataSyncManager.syncAllPermanent()" class="btn bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 text-white font-black shadow-lg flex items-center gap-2 px-3.5 py-2.5 border-2 border-white rounded-2xl hover:scale-105 transition-all text-xs" title="Lưu trữ vĩnh viễn toàn bộ dữ liệu vào mã nguồn web và server">
               <span>☁️</span> <span>Lưu Trữ Vĩnh Viễn</span>
             </button>
-            <button onclick="window.dataSyncManager.exportBackupFile()" class="btn bg-white/20 hover:bg-white/30 text-white font-black flex items-center gap-1.5 px-3 py-2.5 rounded-2xl text-xs hover:scale-105 transition-all" title="Tải file sao lưu hệ thống về máy tính">
+            <button onclick="window.dataSyncManager.exportBackupFile()" class="btn bg-white/20 hover:bg-white/30 text-white font-black flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl text-xs hover:scale-105 transition-all" title="Tải file sao lưu hệ thống về máy tính">
               <span>💾</span> <span>Sao Lưu (.json)</span>
             </button>
-            <label class="btn bg-white/20 hover:bg-white/30 text-white font-black flex items-center gap-1.5 px-3 py-2.5 rounded-2xl text-xs hover:scale-105 transition-all cursor-pointer" title="Khôi phục toàn bộ từ file sao lưu">
+            <label class="btn bg-white/20 hover:bg-white/30 text-white font-black flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl text-xs hover:scale-105 transition-all cursor-pointer" title="Khôi phục toàn bộ từ file sao lưu">
               <span>📥</span> <span>Khôi Phục</span>
               <input type="file" accept=".json" onchange="window.dataSyncManager.importBackupFile(this.files[0])" class="hidden">
             </label>
             <button onclick="studentManagementPortal.openAddStudentModal()" class="btn bg-amber-400 hover:bg-amber-300 text-slate-950 font-black shadow-lg flex items-center gap-2 px-3.5 py-2.5 rounded-2xl hover:scale-105 transition-all text-xs">
               <span>➕</span> <span>Thêm Học Sinh</span>
             </button>
-            <button onclick="studentManagementPortal.exportExcel()" class="btn bg-white/20 hover:bg-white/30 text-white font-black flex items-center gap-1.5 px-3 py-2.5 rounded-2xl text-xs hover:scale-105 transition-all" title="Xuất toàn bộ danh sách ra file Excel">
+            <button onclick="studentManagementPortal.exportExcel()" class="btn bg-white/20 hover:bg-white/30 text-white font-black flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl text-xs hover:scale-105 transition-all" title="Xuất toàn bộ danh sách ra file Excel">
               <span>📊</span> <span>Xuất Excel</span>
             </button>
           </div>
@@ -167,16 +184,60 @@ class StudentManagementPortal {
             </button>
           </div>
 
-          <!-- Bộ lọc khối lớp -->
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-slate-500 hidden sm:inline">Khối lớp:</span>
-            <select onchange="studentManagementPortal.filterGrade(this.value)" class="form-control text-xs font-bold py-1.5 px-3 rounded-xl border-slate-300">
-              <option value="all" ${this.gradeFilter === 'all' ? 'selected' : ''}>Tất Cả Khối (3, 4, 5)</option>
-              <option value="3" ${this.gradeFilter === 3 ? 'selected' : ''}>Khối Lớp 3</option>
-              <option value="4" ${this.gradeFilter === 4 ? 'selected' : ''}>Khối Lớp 4</option>
-              <option value="5" ${this.gradeFilter === 5 ? 'selected' : ''}>Khối Lớp 5</option>
-            </select>
+          <!-- Bộ lọc Khối Lớp và Lớp Học -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-slate-500 hidden sm:inline">Khối:</span>
+              <select onchange="studentManagementPortal.filterGrade(this.value)" class="form-control text-xs font-bold py-1.5 px-2.5 rounded-xl border-slate-300">
+                <option value="all" ${this.gradeFilter === 'all' ? 'selected' : ''}>Tất Cả Khối (3-5)</option>
+                <option value="3" ${this.gradeFilter === 3 ? 'selected' : ''}>Khối Lớp 3</option>
+                <option value="4" ${this.gradeFilter === 4 ? 'selected' : ''}>Khối Lớp 4</option>
+                <option value="5" ${this.gradeFilter === 5 ? 'selected' : ''}>Khối Lớp 5</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-slate-500 hidden sm:inline">Lớp:</span>
+              <select onchange="studentManagementPortal.filterClass(this.value)" class="form-control text-xs font-bold py-1.5 px-2.5 rounded-xl border-slate-300">
+                <option value="all" ${this.classFilter === 'all' ? 'selected' : ''}>Tất Cả Lớp</option>
+                ${allClassOptions.map(c => `
+                  <option value="${c.name}" ${this.classFilter === c.name ? 'selected' : ''}>Lớp ${c.name} (${c.count} em)</option>
+                `).join('')}
+              </select>
+            </div>
           </div>
+        </div>
+
+        <!-- THANH BỘ LỌC NHANH THEO TỪNG LỚP (QUICK CLASS PILL FILTER BAR) -->
+        <div class="p-3 bg-gradient-to-r from-slate-50 via-teal-50/40 to-emerald-50/30 rounded-2xl border border-slate-200/90 shadow-xs flex items-center justify-between gap-3 flex-wrap">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-xs font-black text-slate-700 flex items-center gap-1 shrink-0 mr-1">
+              <span class="text-base">🏫</span> <span>LỌC NHANH LỚP:</span>
+            </span>
+
+            <button onclick="studentManagementPortal.filterClass('all')" class="px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${this.classFilter === 'all' ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md scale-105 border border-emerald-400' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'}">
+              <span>Tất Cả Lớp</span>
+              <span class="px-1.5 py-0.5 ${this.classFilter === 'all' ? 'bg-white/25 text-white' : 'bg-slate-100 text-slate-600'} rounded-full text-[10px] font-bold">${totalStudents}</span>
+            </button>
+
+            ${allClassOptions.map(cls => `
+              <button onclick="studentManagementPortal.filterClass('${cls.name}')" class="px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${this.classFilter === cls.name ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md scale-105 border border-teal-400 ring-2 ring-teal-200' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'}">
+                <span>${cls.icon} Lớp ${cls.name}</span>
+                <span class="px-1.5 py-0.5 ${this.classFilter === cls.name ? 'bg-white/25 text-white' : 'bg-slate-100 text-slate-600'} rounded-full text-[10px] font-bold">${cls.count}</span>
+              </button>
+            `).join('')}
+          </div>
+
+          ${this.classFilter !== 'all' ? `
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-teal-900 bg-teal-100/90 px-2.5 py-1 rounded-xl border border-teal-300 flex items-center gap-1 shadow-xs">
+                <span>🎯</span> Đang xem: <b>Lớp ${this.classFilter}</b>
+              </span>
+              <button onclick="studentManagementPortal.filterClass('all')" class="text-xs text-rose-600 hover:text-rose-700 font-bold hover:underline flex items-center gap-0.5 cursor-pointer" title="Bỏ lọc để xem tất cả các lớp">
+                <span>✕</span> Xem tất cả
+              </button>
+            </div>
+          ` : ''}
         </div>
 
         <!-- VÙNG NỘI DUNG THEO TAB ĐANG CHỌN -->
@@ -294,6 +355,11 @@ class StudentManagementPortal {
       list = list.filter(s => (s.grade || s.grade_level) === parseInt(this.gradeFilter));
     }
 
+    // Lọc theo lớp học
+    if (this.classFilter !== "all") {
+      list = list.filter(s => (s.className || s.class_name) === this.classFilter);
+    }
+
     // Lọc theo từ khóa tìm kiếm
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase().trim();
@@ -309,7 +375,9 @@ class StudentManagementPortal {
         <div class="flex items-center justify-between gap-3 flex-wrap border-b border-slate-100 pb-3">
           <div class="flex items-center gap-2">
             <span class="text-xl">📋</span>
-            <h3 class="font-black text-slate-900 text-sm md:text-base">DANH SÁCH TẤT CẢ HỌC SINH ĐĂNG KÝ (${list.length} em)</h3>
+            <h3 class="font-black text-slate-900 text-sm md:text-base">
+              ${this.classFilter !== 'all' ? `DANH SÁCH HỌC SINH LỚP ${this.classFilter}` : (this.gradeFilter !== 'all' ? `DANH SÁCH HỌC SINH KHỐI ${this.gradeFilter}` : 'DANH SÁCH TẤT CẢ HỌC SINH ĐĂNG KÝ')} (${list.length} em)
+            </h3>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
@@ -322,8 +390,11 @@ class StudentManagementPortal {
         ${list.length === 0 ? `
           <div class="p-12 text-center space-y-3 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
             <span class="text-5xl block animate-bounce">🔍</span>
-            <h4 class="font-black text-slate-700 text-base">Không tìm thấy học sinh nào phù hợp</h4>
-            <p class="text-xs text-slate-500">Thầy có thể thử xóa bớt từ khóa tìm kiếm hoặc bấm nút "Đăng Ký Học Sinh Mới" ở góc trên.</p>
+            <h4 class="font-black text-slate-700 text-base">Không tìm thấy học sinh nào ${this.classFilter !== 'all' ? `thuộc Lớp ${this.classFilter}` : ''}</h4>
+            <p class="text-xs text-slate-500">${this.classFilter !== 'all' ? `Hiện chưa có học sinh nào thuộc Lớp ${this.classFilter} trong hệ thống.` : 'Thầy có thể thử xóa bớt từ khóa tìm kiếm hoặc bấm nút "➕ Thêm Học Sinh" ở góc trên.'}</p>
+            ${this.classFilter !== 'all' ? `
+              <button onclick="studentManagementPortal.filterClass('all')" class="btn btn-outline btn-sm font-bold text-xs mt-2">Xem lại tất cả các lớp</button>
+            ` : ''}
           </div>
         ` : `
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
@@ -449,7 +520,9 @@ class StudentManagementPortal {
           <div class="flex items-center justify-between gap-3 flex-wrap border-b border-slate-100 pb-3">
             <div class="flex items-center gap-2">
               <span class="text-xl">🏆</span>
-              <h3 class="font-black text-slate-900 text-sm md:text-base">BẢNG XẾP HẠNG TOÀN DIỆN ĐẤU TRƯỜNG TIN HỌC (${list.length} đấu thủ)</h3>
+              <h3 class="font-black text-slate-900 text-sm md:text-base">
+                BẢNG XẾP HẠNG TOÀN DIỆN ĐẤU TRƯỜNG TIN HỌC ${this.classFilter !== 'all' ? `- LỚP ${this.classFilter}` : (this.gradeFilter !== 'all' ? `- KHỐI ${this.gradeFilter}` : '')} (${list.length} đấu thủ)
+              </h3>
             </div>
 
             <!-- Bộ lọc thời gian & Đồng bộ nhanh -->
@@ -470,8 +543,11 @@ class StudentManagementPortal {
           ${list.length === 0 ? `
             <div class="p-12 text-center space-y-3 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
               <span class="text-5xl block animate-bounce">⚡</span>
-              <h4 class="font-black text-slate-700 text-base">Chưa có kết quả thi đấu trong khung thời gian này</h4>
+              <h4 class="font-black text-slate-700 text-base">Chưa có kết quả thi đấu ${this.classFilter !== 'all' ? `của Lớp ${this.classFilter}` : ''} trong khung thời gian này</h4>
               <p class="text-xs text-slate-500">Hãy khuyến khích các em học sinh vào mục "Đấu Trường Tin Học" để bắt đầu tranh tài giành Cúp Vàng!</p>
+              ${this.classFilter !== 'all' ? `
+                <button onclick="studentManagementPortal.filterClass('all')" class="btn btn-outline btn-sm font-bold text-xs mt-2">Xem bảng xếp hạng tất cả các lớp</button>
+              ` : ''}
             </div>
           ` : `
             <div class="overflow-x-auto rounded-2xl border border-slate-200">
@@ -588,7 +664,31 @@ class StudentManagementPortal {
 
   async filterGrade(grade) {
     this.gradeFilter = grade === "all" ? "all" : parseInt(grade, 10);
+    // Nếu khối lớp thay đổi mà lớp đang lọc không thuộc khối đó thì đặt lại classFilter = 'all'
+    if (this.gradeFilter !== "all" && this.classFilter !== "all") {
+      const classGrade = parseInt(this.classFilter.charAt(0), 10);
+      if (classGrade !== this.gradeFilter) {
+        this.classFilter = "all";
+      }
+    }
     await this.render();
+  }
+
+  async filterClass(className) {
+    this.classFilter = className;
+    // Nếu chọn lớp cụ thể, tự động đồng bộ khối lớp
+    if (className !== "all") {
+      const g = parseInt(className.charAt(0), 10);
+      if (!isNaN(g) && (g === 3 || g === 4 || g === 5)) {
+        this.gradeFilter = g;
+      }
+    }
+    await this.render();
+    if (className !== "all") {
+      window.app?.showToast(`🔍 Đang hiển thị học sinh Lớp ${className}`, "info");
+    } else {
+      window.app?.showToast(`🔍 Đang hiển thị tất cả các lớp`, "info");
+    }
   }
 
   async filterTime(time) {
@@ -741,14 +841,22 @@ class StudentManagementPortal {
     }
   }
 
-  // Xuất file Excel danh sách học sinh
+  // Xuất file Excel danh sách học sinh (có hỗ trợ xuất theo lớp đang lọc)
   exportExcel() {
     if (!window.XLSX) {
-      window.app.showToast("Đang tải thư viện Excel, vui lòng thử lại sau giây lát!", "warning");
+      window.app?.showToast("Đang tải thư viện Excel, vui lòng thử lại sau giây lát!", "warning");
       return;
     }
 
-    const data = this.studentsList.map((st, idx) => ({
+    let exportList = [...this.studentsList];
+    if (this.gradeFilter !== "all") {
+      exportList = exportList.filter(s => (s.grade || s.grade_level) === parseInt(this.gradeFilter));
+    }
+    if (this.classFilter !== "all") {
+      exportList = exportList.filter(s => (s.className || s.class_name) === this.classFilter);
+    }
+
+    const data = exportList.map((st, idx) => ({
       "STT": idx + 1,
       "Họ và Tên": st.name || st.full_name,
       "Tên Đăng Nhập": st.username,
@@ -761,11 +869,16 @@ class StudentManagementPortal {
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "DanhSachHocSinh");
+    const sheetName = this.classFilter !== "all" ? `Lop_${this.classFilter}` : "DanhSachHocSinh";
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
 
     const dateStr = new Date().toISOString().slice(0, 10);
-    XLSX.writeFile(workbook, `Danh_Sach_Hoc_Sinh_TinHoc_${dateStr}.xlsx`);
-    window.app.showToast("📊 Đã xuất file Excel danh sách học sinh thành công!", "success");
+    const fileName = this.classFilter !== "all"
+      ? `Danh_Sach_Hoc_Sinh_Lop_${this.classFilter}_${dateStr}.xlsx`
+      : `Danh_Sach_Hoc_Sinh_TinHoc_${dateStr}.xlsx`;
+
+    XLSX.writeFile(workbook, fileName);
+    window.app?.showToast(`📊 Đã xuất file Excel ${this.classFilter !== "all" ? `Lớp ${this.classFilter}` : "toàn trường"} (${exportList.length} học sinh) thành công!`, "success");
   }
 }
 
