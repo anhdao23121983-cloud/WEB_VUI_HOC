@@ -7,7 +7,7 @@ const CONFIG = {
   APP_NAME: "HỌC LIỆU & VUI HỌC TIN HỌC",
   APP_SUBTITLE: "Hệ thống Quản lý Kế hoạch bài dạy CV 2345 & Game Hub Tin học 3-5",
   BRAND_BANNER: "ANH ĐÀO - CLASSROOM APP",
-  VERSION: "2.1.0",
+  VERSION: "2.5.2",
 
   // Cấu hình Supabase Trực Tuyến
   SUPABASE: {
