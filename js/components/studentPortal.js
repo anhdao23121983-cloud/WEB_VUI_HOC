@@ -41,6 +41,9 @@ class StudentPortal {
             <button onclick="window.location.hash='arena'" class="btn bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 btn-sm font-black shadow-lg border border-amber-300">
               ⚡ Đấu Trường Tin Học
             </button>
+            <button onclick="window.location.hash='students-manager'" class="btn bg-white/20 hover:bg-white/30 text-white btn-sm font-black border border-white/40 flex items-center gap-1">
+              🏆 Bảng Xếp Hạng
+            </button>
             <button onclick="studentPortal.openGameHub()" class="btn btn-outline btn-sm font-black text-white border-white/40">
               🎮 Vào Game Hub
             </button>

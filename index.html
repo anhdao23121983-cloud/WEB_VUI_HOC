@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ANH ĐÀO - Học Liệu & Vui Học Tin Học 3-5 | Kế Hoạch Bài Dạy CV 2345</title>
   <meta name="description" content="Hệ thống Quản lý Kế hoạch bài dạy chuẩn Công văn 2345 tích hợp AI và Game Hub học tập tương tác Tin học lớp 3, 4, 5.">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -82,8 +85,8 @@
       <button onclick="window.location.hash='arena'" class="px-3 py-1.5 rounded-lg font-black text-xs text-amber-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-500 hover:to-yellow-500 shadow-md shadow-amber-300/40 hover:scale-105 transition-all flex items-center gap-1.5 border border-amber-300">
         <span class="animate-pulse">⚡</span> Đấu Trường Tin Học
       </button>
-      <button onclick="window.location.hash='students-manager'" class="px-2.5 py-1.5 rounded-lg font-black text-xs text-blue-900 bg-blue-100 hover:bg-blue-200 border border-blue-300 transition-all flex items-center gap-1 shadow-xs" title="Quản Lý Học Sinh & Bảng Xếp Hạng Đấu Trường">
-        <span>👨‍🎓</span> <span>Quản Lý Học Sinh</span>
+      <button id="nav-btn-students-manager" onclick="window.location.hash='students-manager'" class="px-3 py-1.5 rounded-lg font-black text-xs text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:from-emerald-700 hover:to-teal-700 shadow-md shadow-emerald-500/30 hover:scale-105 transition-all flex items-center gap-1.5 border border-emerald-400" title="Quản Lý Học Sinh & Bảng Xếp Hạng Đấu Trường">
+        <span class="text-sm">👨‍🎓</span> <span>Quản Lý Học Sinh</span>
       </button>
       <button onclick="window.location.hash='lab3d'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-purple-800 bg-purple-50 hover:bg-purple-100 transition-all">🧪 Mô Phỏng 3D</button>
       <button onclick="window.location.hash='student'" class="px-2.5 py-1.5 rounded-lg font-bold text-xs text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-all">🎒 Học Sinh (Lớp 3-5)</button>
@@ -100,6 +103,9 @@
           <p id="nav-user-name" class="text-xs font-black text-slate-800 hover:text-cyan-700">Cô Giáo Anh Đào</p>
           <p id="nav-user-role" class="text-[10px] text-slate-500 font-bold">Giáo viên</p>
         </div>
+        <button onclick="window.location.hash='students-manager'" class="px-2 py-1 rounded-lg text-xs font-black text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 hidden sm:inline-flex items-center gap-1 transition-all" title="Mở Cổng Quản Lý Học Sinh & BXH Đấu Trường">
+          <span>👨‍🎓</span> Quản Lý HS
+        </button>
         <button onclick="app.openProfileModal()" class="text-xs text-cyan-700 font-bold ml-1 hover:underline hidden sm:inline" title="Chỉnh sửa hồ sơ và mật khẩu">Hồ Sơ</button>
         <button onclick="app.openSettings()" class="text-xs text-amber-700 font-bold ml-1 hover:underline hidden sm:inline" title="Cấu hình kết nối Supabase Database & Gemini AI">⚙️ Cài Đặt DB</button>
         <button onclick="app.handleLogout()" class="text-xs text-rose-600 font-bold ml-1 hover:underline">Đăng Xuất</button>
@@ -158,6 +164,9 @@
             </button>
             <button id="hero-btn-teacher" onclick="window.location.hash='teacher'" class="btn btn-emerald btn-lg font-black shadow-lg">
               👩‍🏫 Portal Giáo Viên (Soạn CV 2345)
+            </button>
+            <button onclick="window.location.hash='students-manager'" class="btn bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 hover:from-teal-600 hover:to-emerald-700 text-white btn-lg font-black shadow-xl hover:scale-105 transition-all border border-teal-300 flex items-center gap-2">
+              <span class="text-xl">👨‍🎓</span> <span>Quản Lý Học Sinh & BXH Đấu Trường</span>
             </button>
             <button onclick="window.location.hash='lab3d'" class="btn btn-purple btn-lg font-black shadow-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
               🧪 Mô Phỏng 3D
@@ -3158,33 +3167,33 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- App Scripts (Anti-cache Version Hash) -->
-  <script src="js/config.js?v=2.4.0"></script>
-  <script src="js/data/curriculumData.js?v=2.4.0"></script>
-  <script src="js/data/defaultLectures.js?v=2.5.0"></script>
-  <script src="js/data/defaultDatabase.js?v=2.5.0"></script>
-  <script src="js/data/mockDatabase.js?v=2.4.0"></script>
-  <script src="js/services/dataSyncManager.js?v=2.5.0"></script>
-  <script src="js/services/authService.js?v=2.4.0"></script>
-  <script src="js/services/supabaseService.js?v=2.4.0"></script>
-  <script src="js/services/aiPlannerService.js?v=2.4.0"></script>
-  <script src="js/services/docExportService.js?v=2.4.0"></script>
-  <script src="js/services/quizService.js?v=2.4.0"></script>
-  <script src="js/services/adminService.js?v=2.4.0"></script>
-  <script src="js/services/ttsService.js?v=2.4.0"></script>
-  <script src="js/services/lectureService.js?v=2.4.0"></script>
-  <script src="js/services/arenaService.js?v=2.5.1"></script>
-  <script src="js/components/adminPortal.js?v=2.4.0"></script>
-  <script src="js/components/quizAuthorModal.js?v=2.4.0"></script>
-  <script src="js/components/quizPlayModal.js?v=2.4.0"></script>
-  <script src="js/components/lectureUploadModal.js?v=2.4.0"></script>
-  <script src="js/components/lecturePortal.js?v=2.4.0"></script>
-  <script src="js/components/simulation3D.js?v=2.4.0"></script>
-  <script src="js/components/arenaPortal.js?v=2.5.1"></script>
-  <script src="js/components/teacherPortal.js?v=2.4.0"></script>
-  <script src="js/components/studentPortal.js?v=2.4.0"></script>
-  <script src="js/components/gameHub.js?v=2.4.0"></script>
-  <script src="js/components/lessonPlannerModal.js?v=2.4.0"></script>
-  <script src="js/components/studentManagementPortal.js?v=2.5.0"></script>
-  <script src="js/app.js?v=2.4.0"></script>
+  <script src="js/config.js?v=2.5.2"></script>
+  <script src="js/data/curriculumData.js?v=2.5.2"></script>
+  <script src="js/data/defaultLectures.js?v=2.5.2"></script>
+  <script src="js/data/defaultDatabase.js?v=2.5.2"></script>
+  <script src="js/data/mockDatabase.js?v=2.5.2"></script>
+  <script src="js/services/dataSyncManager.js?v=2.5.2"></script>
+  <script src="js/services/authService.js?v=2.5.2"></script>
+  <script src="js/services/supabaseService.js?v=2.5.2"></script>
+  <script src="js/services/aiPlannerService.js?v=2.5.2"></script>
+  <script src="js/services/docExportService.js?v=2.5.2"></script>
+  <script src="js/services/quizService.js?v=2.5.2"></script>
+  <script src="js/services/adminService.js?v=2.5.2"></script>
+  <script src="js/services/ttsService.js?v=2.5.2"></script>
+  <script src="js/services/lectureService.js?v=2.5.2"></script>
+  <script src="js/services/arenaService.js?v=2.5.2"></script>
+  <script src="js/components/adminPortal.js?v=2.5.2"></script>
+  <script src="js/components/quizAuthorModal.js?v=2.5.2"></script>
+  <script src="js/components/quizPlayModal.js?v=2.5.2"></script>
+  <script src="js/components/lectureUploadModal.js?v=2.5.2"></script>
+  <script src="js/components/lecturePortal.js?v=2.5.2"></script>
+  <script src="js/components/simulation3D.js?v=2.5.2"></script>
+  <script src="js/components/arenaPortal.js?v=2.5.2"></script>
+  <script src="js/components/teacherPortal.js?v=2.5.2"></script>
+  <script src="js/components/studentPortal.js?v=2.5.2"></script>
+  <script src="js/components/gameHub.js?v=2.5.2"></script>
+  <script src="js/components/lessonPlannerModal.js?v=2.5.2"></script>
+  <script src="js/components/studentManagementPortal.js?v=2.5.2"></script>
+  <script src="js/app.js?v=2.5.2"></script>
 </body>
 </html>

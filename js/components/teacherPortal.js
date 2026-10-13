@@ -81,6 +81,9 @@ class TeacherPortal {
               <button onclick="teacherPortal.switchTab('plans')" id="tab-btn-plans" class="btn btn-primary btn-sm">📋 Kế Hoạch Bài Dạy (CV 2345)</button>
               <button onclick="teacherPortal.switchTab('curriculum')" id="tab-btn-curriculum" class="btn btn-outline btn-sm">📖 Khung SGK & Soạn Câu Hỏi</button>
               <button onclick="teacherPortal.switchTab('scores')" id="tab-btn-scores" class="btn btn-outline btn-sm">🏆 Bảng Điểm & Học Sinh</button>
+              <button onclick="window.location.hash='students-manager'" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-black btn-sm flex items-center gap-1 shadow-sm border border-emerald-500">
+                <span>👨‍🎓</span> Quản Lý Học Sinh & BXH Đấu Trường ↗
+              </button>
               <button onclick="teacherPortal.switchTab('admin')" id="tab-btn-admin" class="btn btn-outline btn-sm text-purple-700 bg-purple-50 hover:bg-purple-100 border-purple-200">🛡️ Quản Trị & Phân Quyền</button>
             </div>
             <div class="flex items-center gap-2" id="grade-filter-container">
@@ -217,6 +220,19 @@ class TeacherPortal {
   // Render Bảng Điểm Học Sinh
   renderScoresTable(leaderboard) {
     return `
+      <div class="mb-4 p-4 bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 border-2 border-emerald-300 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl p-2 bg-emerald-100 text-emerald-800 rounded-xl">👨‍🎓</span>
+          <div>
+            <h5 class="text-sm font-black text-emerald-950 uppercase">CỔNG QUẢN LÝ HỌC SINH & ĐẤU TRƯỜNG TIN HỌC TOÀN DIỆN</h5>
+            <p class="text-xs text-emerald-800">Hiển thị 100% học sinh đăng ký, xếp hạng Đấu Trường theo Hôm Nay / Tuần / Tháng, khen thưởng sao và xuất file Excel.</p>
+          </div>
+        </div>
+        <button onclick="window.location.hash='students-manager'" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-4 py-2 rounded-xl shadow-md shrink-0 flex items-center gap-1.5 hover:scale-105 transition-all">
+          <span>Xem Toàn Bộ 100% Học Sinh</span> <span>➔</span>
+        </button>
+      </div>
+
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse text-sm">
           <thead>
