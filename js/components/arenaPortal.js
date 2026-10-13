@@ -141,68 +141,68 @@ class ArenaPortal {
     if (!container) return;
 
     container.innerHTML = `
-      <div class="space-y-6 animate-pop">
-        <!-- BANNER HEADER ĐẤU TRƯỜNG TIN HỌC -->
-        <div class="banner-anhdao flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-rose-900 via-purple-900 to-indigo-950 border-2 border-rose-400/40 shadow-2xl p-6 rounded-3xl text-white">
-          <div class="space-y-2 text-center md:text-left">
-            <div class="flex items-center gap-2 justify-center md:justify-start flex-wrap">
-              <span class="badge bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider">⚡ ĐẤU TRƯỜNG TOÀN DIỆN</span>
-              <span class="badge bg-white/20 text-white font-bold text-xs">GDPT 2018 • TIN HỌC 3 - 5</span>
-              <span class="badge bg-rose-500 text-white font-black text-xs animate-pulse">🔥 LIVE ARENA</span>
+      <div class="space-y-4 animate-pop">
+        <!-- BANNER HEADER ĐẤU TRƯỜNG TIN HỌC (PHIÊN BẢN COMPACT GỌN GÀNG) -->
+        <div class="banner-anhdao flex flex-col lg:flex-row items-center justify-between gap-3.5 bg-gradient-to-r from-slate-950 via-slate-900 to-cyan-950 border border-slate-700/80 shadow-xl p-3.5 md:p-4 rounded-2xl text-white">
+          <div class="space-y-1 text-center lg:text-left">
+            <div class="flex items-center gap-1.5 justify-center lg:justify-start flex-wrap">
+              <span class="badge bg-amber-400 text-slate-950 font-black text-[10px] uppercase tracking-wider py-0.5 px-2">⚡ ĐẤU TRƯỜNG</span>
+              <span class="badge bg-white/15 text-slate-200 font-bold text-[10px] py-0.5 px-2">GDPT 2018 • TIN HỌC 3 - 5</span>
+              <span class="badge bg-rose-500 text-white font-black text-[10px] animate-pulse py-0.5 px-2">🔥 LIVE ARENA</span>
             </div>
-            <h2 class="text-2xl md:text-4xl font-black text-white leading-tight">
-              ⚡ ĐẤU TRƯỜNG TIN HỌC ⚡
+            <h2 class="text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-rose-300 to-cyan-300 leading-snug">
+              ⚡ ĐẤU TRƯỜNG TIN HỌC TIỂU HỌC ⚡
             </h2>
-            <p class="text-cyan-100 text-xs md:text-sm max-w-2xl">
-              Sàn đấu trí tuệ công nghệ đỉnh cao dành cho học sinh Tiểu học: Tranh tài trả lời nhanh 15s, ngân hàng câu hỏi phân quyền CRUD toàn diện, vinh danh bảng vàng và đồng bộ dữ liệu Supabase Cloud thời gian thực!
+            <p class="text-slate-300 text-[11px] md:text-xs max-w-xl line-clamp-1 md:line-clamp-2">
+              Sàn đấu trí tuệ công nghệ: Tranh tài nhanh 15s, ngân hàng câu hỏi chuẩn SGK, vinh danh Bảng Vàng thời gian thực!
             </p>
           </div>
 
-          <div class="flex items-center gap-3 flex-wrap justify-center shrink-0">
-            <button onclick="arenaPortal.openBossBattleModal()" class="btn bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-700 hover:to-red-800 text-white btn-lg font-black shadow-xl flex items-center gap-2 hover:scale-105 transition-all animate-pulse">
-              <span>👾</span> <span>Đấu Trùm AI Virus</span>
+          <div class="flex items-center gap-2 flex-wrap justify-center lg:justify-end shrink-0">
+            <button onclick="arenaPortal.openBossBattleModal()" class="btn bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-700 hover:to-red-800 text-white btn-xs font-black shadow-md flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:scale-105 transition-all animate-pulse">
+              <span>👾</span> <span>Đấu Trùm AI</span>
             </button>
-            <button onclick="arenaPortal.toggleArenaBGM()" id="btn-arena-bgm" class="btn bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white btn-lg font-black shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
-              <span>🎵</span> <span id="lbl-arena-bgm">${this.isBGMPlaying ? 'Nhạc BGM: BẬT' : 'Nhạc BGM: TẮT'}</span>
+            <button onclick="arenaPortal.toggleArenaBGM()" id="btn-arena-bgm" class="btn bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white btn-xs font-black shadow-md flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:scale-105 transition-all">
+              <span>🎵</span> <span id="lbl-arena-bgm">${this.isBGMPlaying ? 'BGM: BẬT' : 'BGM: TẮT'}</span>
             </button>
-            <button onclick="arenaPortal.openTournamentModal()" class="btn bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white btn-lg font-black shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
-              <span>🏆</span> <span>Giải Đấu Cấp Lớp</span>
+            <button onclick="arenaPortal.openTournamentModal()" class="btn bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white btn-xs font-black shadow-md flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:scale-105 transition-all">
+              <span>🏆</span> <span>Giải Đấu Lớp</span>
             </button>
-            <button onclick="arenaPortal.openRoomModal()" class="btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white btn-lg font-black shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
-              <span>⚔️</span> <span>Đấu 1vs1 Mã Phòng</span>
+            <button onclick="arenaPortal.openRoomModal()" class="btn bg-gradient-to-r from-blue-600 to-cyan-700 hover:from-blue-700 hover:to-cyan-800 text-white btn-xs font-black shadow-md flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:scale-105 transition-all">
+              <span>⚔️</span> <span>Đấu 1vs1 Phòng</span>
             </button>
-            <button onclick="arenaPortal.openQuestionModal()" class="btn btn-amber btn-lg font-black shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
-              <span>➕</span> <span>Thêm Câu Hỏi Mới</span>
+            <button onclick="arenaPortal.openQuestionModal()" class="btn bg-amber-400 hover:bg-amber-300 text-slate-950 btn-xs font-black shadow-md flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:scale-105 transition-all">
+              <span>➕</span> <span>Thêm Câu Hỏi</span>
             </button>
-            <button onclick="arenaPortal.startNewBattle()" class="btn bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white btn-lg font-black shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
+            <button onclick="arenaPortal.startNewBattle()" class="btn bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white btn-xs font-black shadow-md flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:scale-105 transition-all ring-1 ring-rose-400">
               <span>⚡</span> <span>Vào Đấu Ngay</span>
             </button>
           </div>
         </div>
 
-        <!-- THANH ĐIỀU HƯỚNG 3 TAB CHÍNH -->
-        <div class="flex items-center justify-between bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex-wrap gap-3">
-          <div class="flex items-center gap-2 flex-wrap">
-            <button onclick="arenaPortal.switchTab('live_arena')" class="px-4 py-2.5 rounded-xl font-black text-xs transition-all flex items-center gap-2 ${this.currentTab === 'live_arena' ? 'bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-md scale-102 ring-2 ring-rose-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+        <!-- THANH ĐIỀU HƯỚNG 3 TAB CHÍNH (GỌN GÀNG) -->
+        <div class="flex items-center justify-between bg-white p-2 md:p-2.5 rounded-xl border border-slate-200 shadow-xs flex-wrap gap-2">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button onclick="arenaPortal.switchTab('live_arena')" class="px-3 py-1.5 rounded-lg font-black text-xs transition-all flex items-center gap-1.5 ${this.currentTab === 'live_arena' ? 'bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-xs ring-1 ring-rose-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
               <span>🎮</span> <span>Sàn Đấu Trực Tiếp</span>
             </button>
 
-            <button onclick="arenaPortal.switchTab('question_bank')" class="px-4 py-2.5 rounded-xl font-black text-xs transition-all flex items-center gap-2 ${this.currentTab === 'question_bank' ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md scale-102 ring-2 ring-cyan-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
-              <span>📚</span> <span>Ngân Hàng Câu Hỏi (Thêm/Sửa/Xóa)</span>
+            <button onclick="arenaPortal.switchTab('question_bank')" class="px-3 py-1.5 rounded-lg font-black text-xs transition-all flex items-center gap-1.5 ${this.currentTab === 'question_bank' ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-xs ring-1 ring-cyan-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+              <span>📚</span> <span>Ngân Hàng Câu Hỏi</span>
             </button>
 
-            <button onclick="arenaPortal.switchTab('leaderboard')" class="px-4 py-2.5 rounded-xl font-black text-xs transition-all flex items-center gap-2 ${this.currentTab === 'leaderboard' ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md scale-102 ring-2 ring-amber-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+            <button onclick="arenaPortal.switchTab('leaderboard')" class="px-3 py-1.5 rounded-lg font-black text-xs transition-all flex items-center gap-1.5 ${this.currentTab === 'leaderboard' ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-xs ring-1 ring-amber-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
               <span>🏆</span> <span>Bảng Vàng Quán Quân</span>
             </button>
           </div>
 
           <!-- Lọc Khối Lớp -->
-          <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
-            <span class="text-[11px] font-bold text-slate-500 px-2">Khối Lớp:</span>
-            <button onclick="arenaPortal.filterGrade('all')" class="px-2.5 py-1 rounded-lg text-xs font-bold ${this.selectedGrade === 'all' ? 'bg-white text-rose-700 shadow-xs font-black' : 'text-slate-600 hover:bg-white/60'}">Tất cả</button>
-            <button onclick="arenaPortal.filterGrade(3)" class="px-2.5 py-1 rounded-lg text-xs font-bold ${this.selectedGrade === 3 ? 'bg-cyan-600 text-white shadow-xs font-black' : 'text-slate-600 hover:bg-white/60'}">Lớp 3</button>
-            <button onclick="arenaPortal.filterGrade(4)" class="px-2.5 py-1 rounded-lg text-xs font-bold ${this.selectedGrade === 4 ? 'bg-emerald-600 text-white shadow-xs font-black' : 'text-slate-600 hover:bg-white/60'}">Lớp 4</button>
-            <button onclick="arenaPortal.filterGrade(5)" class="px-2.5 py-1 rounded-lg text-xs font-bold ${this.selectedGrade === 5 ? 'bg-amber-600 text-white shadow-xs font-black' : 'text-slate-600 hover:bg-white/60'}">Lớp 5</button>
+          <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+            <span class="text-[11px] font-bold text-slate-500 px-1.5">Khối:</span>
+            <button onclick="arenaPortal.filterGrade('all')" class="px-2 py-0.5 rounded-md text-xs font-bold ${this.selectedGrade === 'all' ? 'bg-white text-rose-700 shadow-xs font-black' : 'text-slate-600 hover:bg-white/60'}">Tất cả</button>
+            <button onclick="arenaPortal.filterGrade(3)" class="px-2 py-0.5 rounded-md text-xs font-bold ${this.selectedGrade === 3 ? 'bg-cyan-600 text-white shadow-xs font-black' : 'text-slate-600 hover:bg-white/60'}">Lớp 3</button>
+            <button onclick="arenaPortal.filterGrade(4)" class="px-2 py-0.5 rounded-md text-xs font-bold ${this.selectedGrade === 4 ? 'bg-emerald-600 text-white shadow-xs font-black' : 'text-slate-600 hover:bg-white/60'}">Lớp 4</button>
+            <button onclick="arenaPortal.filterGrade(5)" class="px-2 py-0.5 rounded-md text-xs font-bold ${this.selectedGrade === 5 ? 'bg-amber-600 text-white shadow-xs font-black' : 'text-slate-600 hover:bg-white/60'}">Lớp 5</button>
           </div>
         </div>
 
@@ -357,117 +357,117 @@ class ArenaPortal {
       }
 
       return `
-        <div class="space-y-6">
-          <!-- HERO BANNER VÀ BẢNG ĐIỀU KHIỂN ĐẤU TRƯỜNG -->
-          <div class="p-6 md:p-10 bg-slate-950 text-white rounded-3xl border-2 border-rose-500/50 shadow-2xl space-y-6 animate-pop relative overflow-hidden">
-            <div class="absolute -top-24 -left-24 w-72 h-72 bg-rose-600/20 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="space-y-4">
+          <!-- HERO BANNER VÀ BẢNG ĐIỀU KHIỂN ĐẤU TRƯỜNG (COMPACT SLIM UI) -->
+          <div class="p-3.5 md:p-5 bg-slate-950 text-white rounded-2xl border border-rose-500/40 shadow-xl space-y-3.5 animate-pop relative overflow-hidden">
+            <div class="absolute -top-24 -left-24 w-60 h-60 bg-rose-600/15 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -right-24 w-60 h-60 bg-cyan-600/15 rounded-full blur-3xl pointer-events-none"></div>
 
-            <div class="space-y-2 text-center relative z-10">
-              <div class="inline-flex items-center gap-2 px-3.5 py-1 bg-rose-500/20 border border-rose-400/40 rounded-full text-rose-300 font-black text-xs uppercase tracking-wider">
+            <div class="space-y-1.5 text-center relative z-10">
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-rose-500/20 border border-rose-400/40 rounded-full text-rose-300 font-black text-[10px] uppercase tracking-wider">
                 <span>⚡</span> SÀN ĐẤU TRẮC NGHIỆM TRỰC TUYẾN THỜI GIAN THỰC
               </div>
-              <h3 class="text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-rose-400 to-amber-300">
+              <h3 class="text-lg md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-rose-300 to-amber-300">
                 ĐẤU TRƯỜNG TIN HỌC TIỂU HỌC
               </h3>
-              <p class="text-slate-300 text-xs md:text-sm max-w-2xl mx-auto leading-relaxed">
-                Hệ thống câu hỏi trắc nghiệm chuẩn <b>SGK Tin học Kết nối tri thức với cuộc sống</b>. Tự chọn Khối lớp, Bài học theo sách và Số câu hỏi để tranh tài vinh danh trên Bảng Vàng!
+              <p class="text-slate-300 text-[11px] md:text-xs max-w-xl mx-auto leading-relaxed">
+                Hệ thống câu hỏi trắc nghiệm chuẩn <b>SGK Tin học Kết nối tri thức với cuộc sống</b>. Tự chọn Khối lớp, Bài học và leo Bảng Vàng!
               </p>
 
-              <!-- LỜI CHÀO MỪNG DŨNG SĨ ĐẤU TRƯỜNG (GỢI Ý 2) -->
-              <div class="max-w-2xl mx-auto p-3.5 bg-gradient-to-r from-amber-500/20 via-yellow-400/20 to-amber-500/20 rounded-2xl border border-amber-400/50 flex items-center justify-between gap-3 text-xs md:text-sm mt-3">
-                <div class="flex items-center gap-2.5 text-left">
-                  <span class="text-2xl animate-bounce">⚡</span>
+              <!-- LỜI CHÀO MỪNG DŨNG SĨ ĐẤU TRƯỜNG (GỌN GÀNG) -->
+              <div class="max-w-2xl mx-auto p-2.5 bg-gradient-to-r from-amber-500/15 via-yellow-400/15 to-amber-500/15 rounded-xl border border-amber-400/40 flex items-center justify-between gap-2 text-xs mt-2">
+                <div class="flex items-center gap-2 text-left">
+                  <span class="text-xl animate-bounce">⚡</span>
                   <div>
                     <span class="text-amber-300 font-black">Xin chào dũng sĩ ${user.name || "Học sinh"} (${user.className || user.class || "Khối " + (user.grade || 3)})!</span>
-                    <p class="text-slate-300 text-[11px]">Sẵn sàng tranh tài! Chọn bài học và số câu hỏi bên dưới để bắt đầu leo Bảng Vàng!</p>
+                    <p class="text-slate-300 text-[10px]">Sẵn sàng tranh tài! Chọn bài học bên dưới để bắt đầu leo Bảng Vàng!</p>
                   </div>
                 </div>
-                <button type="button" onclick="arenaPortal.switchTab('leaderboard')" class="btn bg-amber-400 hover:bg-amber-300 text-slate-950 font-black btn-xs shadow-md shrink-0">
-                  🏆 Xem Bảng Vàng
+                <button type="button" onclick="arenaPortal.switchTab('leaderboard')" class="btn bg-amber-400 hover:bg-amber-300 text-slate-950 font-black btn-xs shadow-xs shrink-0 px-2 py-1 rounded-lg text-[11px]">
+                  🏆 Bảng Vàng
                 </button>
               </div>
             </div>
 
-            <!-- BẢNG ĐIỀU KHIỂN CHỌN BÀI & CẤU HÌNH ĐẤU TRƯỜNG TRỰC TIẾP -->
-            <div class="max-w-3xl mx-auto bg-slate-900/95 rounded-3xl border-2 border-amber-400/60 p-6 md:p-8 space-y-5 shadow-2xl relative z-10 backdrop-blur-md text-left">
+            <!-- BẢNG ĐIỀU KHIỂN CHỌN BÀI & CẤU HÌNH ĐẤU TRƯỜNG TRỰC TIẾP (COMPACT) -->
+            <div class="max-w-2xl mx-auto bg-slate-900/95 rounded-2xl border border-amber-400/50 p-3.5 md:p-5 space-y-3.5 shadow-xl relative z-10 backdrop-blur-md text-left">
               
               <!-- 1. CHỌN KHỐI LỚP (3, 4, 5) -->
-              <div class="space-y-2">
-                <label class="font-black text-xs text-amber-300 flex items-center gap-2 uppercase tracking-wider">
+              <div class="space-y-1.5">
+                <label class="font-black text-[11px] text-amber-300 flex items-center gap-1.5 uppercase tracking-wider">
                   <span>🎒</span> <span>BƯỚC 1: CHỌN KHỐI LỚP THI ĐẤU</span>
                 </label>
-                <div class="grid grid-cols-3 gap-3">
-                  <button type="button" onclick="arenaPortal.selectLobbyGrade(3)" id="lobby-grade-3" class="p-3.5 rounded-2xl border-2 font-black text-xs md:text-sm text-center transition-all flex flex-col items-center gap-1 ${this.selectedLobbyGrade === 3 ? 'bg-cyan-600 border-cyan-300 text-white shadow-lg ring-2 ring-cyan-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
-                    <span class="text-2xl">🎒</span>
+                <div class="grid grid-cols-3 gap-2">
+                  <button type="button" onclick="arenaPortal.selectLobbyGrade(3)" id="lobby-grade-3" class="p-2.5 rounded-xl border-2 font-black text-xs text-center transition-all flex flex-col items-center gap-0.5 ${this.selectedLobbyGrade === 3 ? 'bg-cyan-600 border-cyan-300 text-white shadow-md ring-2 ring-cyan-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                    <span class="text-xl">🎒</span>
                     <span>Tin Lớp 3</span>
-                    <span class="text-[10px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
+                    <span class="text-[9px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
                   </button>
-                  <button type="button" onclick="arenaPortal.selectLobbyGrade(4)" id="lobby-grade-4" class="p-3.5 rounded-2xl border-2 font-black text-xs md:text-sm text-center transition-all flex flex-col items-center gap-1 ${this.selectedLobbyGrade === 4 ? 'bg-emerald-600 border-emerald-300 text-white shadow-lg ring-2 ring-emerald-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
-                    <span class="text-2xl">🚀</span>
+                  <button type="button" onclick="arenaPortal.selectLobbyGrade(4)" id="lobby-grade-4" class="p-2.5 rounded-xl border-2 font-black text-xs text-center transition-all flex flex-col items-center gap-0.5 ${this.selectedLobbyGrade === 4 ? 'bg-emerald-600 border-emerald-300 text-white shadow-md ring-2 ring-emerald-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                    <span class="text-xl">🚀</span>
                     <span>Tin Lớp 4</span>
-                    <span class="text-[10px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
+                    <span class="text-[9px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
                   </button>
-                  <button type="button" onclick="arenaPortal.selectLobbyGrade(5)" id="lobby-grade-5" class="p-3.5 rounded-2xl border-2 font-black text-xs md:text-sm text-center transition-all flex flex-col items-center gap-1 ${this.selectedLobbyGrade === 5 ? 'bg-amber-600 border-amber-300 text-white shadow-lg ring-2 ring-amber-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
-                    <span class="text-2xl">⭐</span>
+                  <button type="button" onclick="arenaPortal.selectLobbyGrade(5)" id="lobby-grade-5" class="p-2.5 rounded-xl border-2 font-black text-xs text-center transition-all flex flex-col items-center gap-0.5 ${this.selectedLobbyGrade === 5 ? 'bg-amber-600 border-amber-300 text-white shadow-md ring-2 ring-amber-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                    <span class="text-xl">⭐</span>
                     <span>Tin Lớp 5</span>
-                    <span class="text-[10px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
+                    <span class="text-[9px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
                   </button>
                 </div>
               </div>
 
               <!-- 2. CHỌN BÀI HỌC THEO SGK KẾT NỐI TRI THỨC -->
-              <div class="space-y-2">
-                <label class="font-black text-xs text-amber-300 flex items-center gap-2 uppercase tracking-wider">
+              <div class="space-y-1.5">
+                <label class="font-black text-[11px] text-amber-300 flex items-center gap-1.5 uppercase tracking-wider">
                   <span>📖</span> <span>BƯỚC 2: CHỌN BÀI THEO SÁCH KẾT NỐI TRI THỨC VỚI CUỘC SỐNG:</span>
                 </label>
                 <div class="relative">
-                  <select id="lobby-lesson-select" onchange="arenaPortal.handleLobbyLessonChange(this.value)" class="form-control font-bold text-xs md:text-sm p-3.5 bg-slate-950 border-2 border-slate-700 text-amber-200 rounded-2xl focus:border-amber-400 cursor-pointer w-full">
+                  <select id="lobby-lesson-select" onchange="arenaPortal.handleLobbyLessonChange(this.value)" class="form-control font-bold text-xs md:text-sm p-2.5 bg-slate-950 border border-slate-700 text-amber-200 rounded-xl focus:border-amber-400 cursor-pointer w-full">
                     ${this.renderLobbyLessonOptions(this.selectedLobbyGrade || 3)}
                   </select>
                 </div>
               </div>
 
               <!-- 3. CHỌN SỐ LƯỢNG CÂU HỎI -->
-              <div class="space-y-2">
-                <label class="font-black text-xs text-amber-300 flex items-center gap-2 uppercase tracking-wider">
+              <div class="space-y-1.5">
+                <label class="font-black text-[11px] text-amber-300 flex items-center gap-1.5 uppercase tracking-wider">
                   <span>⚡</span> <span>BƯỚC 3: CHỌN SỐ LƯỢNG CÂU HỎI TRẮC NGHIỆM:</span>
                 </label>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(5)" id="lobby-count-5" class="p-3 rounded-2xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 5 ? 'bg-rose-600 border-rose-300 text-white shadow-md ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(5)" id="lobby-count-5" class="p-2 rounded-xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 5 ? 'bg-rose-600 border-rose-300 text-white shadow-sm ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
                     🌱 5 CÂU
-                    <span class="block text-[10px] font-normal opacity-80 mt-0.5">Khởi Động Nhanh</span>
+                    <span class="block text-[9px] font-normal opacity-80 mt-0.5">Khởi Động</span>
                   </button>
-                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(10)" id="lobby-count-10" class="p-3 rounded-2xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 10 ? 'bg-rose-600 border-rose-300 text-white shadow-md ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(10)" id="lobby-count-10" class="p-2 rounded-xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 10 ? 'bg-rose-600 border-rose-300 text-white shadow-sm ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
                     🎯 10 CÂU
-                    <span class="block text-[10px] font-normal opacity-80 mt-0.5">Tiêu Chuẩn</span>
+                    <span class="block text-[9px] font-normal opacity-80 mt-0.5">Tiêu Chuẩn</span>
                   </button>
-                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(15)" id="lobby-count-15" class="p-3 rounded-2xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 15 ? 'bg-rose-600 border-rose-300 text-white shadow-md ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(15)" id="lobby-count-15" class="p-2 rounded-xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 15 ? 'bg-rose-600 border-rose-300 text-white shadow-sm ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
                     🔥 15 CÂU
-                    <span class="block text-[10px] font-normal opacity-80 mt-0.5">Thử Thách</span>
+                    <span class="block text-[9px] font-normal opacity-80 mt-0.5">Thử Thách</span>
                   </button>
-                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(20)" id="lobby-count-20" class="p-3 rounded-2xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 20 ? 'bg-rose-600 border-rose-300 text-white shadow-md ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(20)" id="lobby-count-20" class="p-2 rounded-xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 20 ? 'bg-rose-600 border-rose-300 text-white shadow-sm ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
                     🏆 20 CÂU
-                    <span class="block text-[10px] font-normal opacity-80 mt-0.5">Toàn Diện</span>
+                    <span class="block text-[9px] font-normal opacity-80 mt-0.5">Toàn Diện</span>
                   </button>
                 </div>
               </div>
 
               <!-- 4. CHỌN LINH VẬT ĐẠI DIỆN THI ĐẤU (AVATAR MASCOT - GỢI Ý 2) -->
-              <div class="space-y-2">
+              <div class="space-y-1.5">
                 <div class="flex items-center justify-between flex-wrap gap-1">
-                  <label class="font-black text-xs text-amber-300 flex items-center gap-2 uppercase tracking-wider">
+                  <label class="font-black text-[11px] text-amber-300 flex items-center gap-1.5 uppercase tracking-wider">
                     <span>🎭</span> <span>BƯỚC 4: CHỌN LINH VẬT ĐẠI DIỆN THI ĐẤU:</span>
                   </label>
-                  <span class="text-[11px] text-amber-200/90 font-bold">Đang chọn: <b id="selected-mascot-label" class="text-amber-300 text-sm font-black">${this.selectedMascot || "🤖"}</b></span>
+                  <span class="text-[10px] text-amber-200/90 font-bold">Đang chọn: <b id="selected-mascot-label" class="text-amber-300 text-xs font-black">${this.selectedMascot || "🤖"}</b></span>
                 </div>
-                <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
                   ${this.getMascots().map(m => {
                     const isSelected = (this.selectedMascot || "🤖") === m.id;
                     return `
-                      <button type="button" id="mascot-btn-${m.id}" onclick="arenaPortal.selectMascot('${m.id}')" class="p-2.5 rounded-2xl border-2 transition-all flex flex-col items-center gap-1 cursor-pointer ${isSelected ? 'bg-gradient-to-b from-amber-500/30 via-yellow-400/20 to-amber-500/10 border-amber-400 text-white shadow-lg ring-2 ring-amber-300 scale-105' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-slate-500'}">
-                        <span class="text-2xl filter drop-shadow">${m.id}</span>
-                        <span class="text-[10px] font-black leading-tight text-center text-white">${m.name}</span>
+                      <button type="button" id="mascot-btn-${m.id}" onclick="arenaPortal.selectMascot('${m.id}')" class="p-1.5 rounded-xl border-2 transition-all flex flex-col items-center gap-0.5 cursor-pointer ${isSelected ? 'bg-gradient-to-b from-amber-500/30 via-yellow-400/20 to-amber-500/10 border-amber-400 text-white shadow-md ring-2 ring-amber-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-slate-500'}">
+                        <span class="text-xl filter drop-shadow">${m.id}</span>
+                        <span class="text-[9px] font-black leading-tight text-center text-white">${m.name}</span>
                         <span class="text-[8px] opacity-75 font-normal text-center hidden sm:inline text-slate-300">${m.desc}</span>
                       </button>
                     `;
@@ -475,10 +475,10 @@ class ArenaPortal {
                 </div>
               </div>
 
-              <!-- 5. NÚT VÀO ĐẤU TO LỚN NỔI BẬT -->
-              <div class="pt-3">
-                <button type="button" id="btn-start-arena-battle" onclick="window.arenaPortal.startLobbyBattle()" class="w-full py-4 rounded-2xl font-black text-base md:text-lg text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-500 hover:to-yellow-500 shadow-xl shadow-amber-400/30 hover:scale-101 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-200">
-                  <span class="text-2xl animate-pulse">🚀</span> <span>BẮT ĐẦU VÀO ĐẤU NGAY ▶</span>
+              <!-- 5. NÚT VÀO ĐẤU GỌN GÀNG NỔI BẬT -->
+              <div class="pt-1.5">
+                <button type="button" id="btn-start-arena-battle" onclick="window.arenaPortal.startLobbyBattle()" class="w-full py-3 rounded-xl font-black text-sm md:text-base text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-500 hover:to-yellow-500 shadow-lg shadow-amber-400/20 hover:scale-101 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-200">
+                  <span class="text-xl animate-pulse">🚀</span> <span>BẮT ĐẦU VÀO ĐẤU NGAY ▶</span>
                 </button>
               </div>
             </div>
