@@ -117,6 +117,11 @@ class Application {
           }, 350);
         }
       }
+    } else if (route === "students-manager" || route === "student-management" || route === "quanlyhocsinh") {
+      document.getElementById("portal-view")?.classList.remove("hidden");
+      if (window.studentManagementPortal) {
+        window.studentManagementPortal.render("main-content-area");
+      }
     } else {
       document.getElementById("landing-view")?.classList.remove("hidden");
     }

@@ -144,6 +144,10 @@ class QuizService {
 
   // 4. Xóa câu hỏi
   async deleteQuiz(quizId) {
+    if (window.adminProtectionGuard && !window.adminProtectionGuard.canDelete("câu hỏi trắc nghiệm")) {
+      return { success: false, error: "Chỉ tài khoản Quản trị viên tối cao mới có quyền ra lệnh xóa!" };
+    }
+
     // 1. Xóa LocalStorage
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     if (db.quizzes) {

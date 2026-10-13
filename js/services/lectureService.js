@@ -144,6 +144,22 @@ class LectureService {
       }
     }
 
+    // 3. HỢP NHẤT BÀI GIẢNG ĐÃ LƯU VĨNH VIỄN TRÊN WEB (window.SAVED_LECTURES)
+    const seedLectures = (typeof window !== "undefined" && window.SAVED_LECTURES) ? window.SAVED_LECTURES : [];
+    const currentIds = new Set(list.map(l => l.id));
+    for (const seed of seedLectures) {
+      if (!currentIds.has(seed.id)) {
+        list.push(seed);
+        currentIds.add(seed.id);
+      }
+    }
+
+    // 4. TỰ ĐỘNG LƯU VĨNH VIỄN VÀO MÁY CHỦ KHI TRANG WEB KHỞI ĐỘNG
+    if (!this.hasSyncedToServer) {
+      this.hasSyncedToServer = true;
+      this.syncToServer(list);
+    }
+
     // TỰ ĐỘNG PHỤC HỒI FILE BÀI GIẢNG TỪ INDEXEDDB: Kiểm tra xem có file binary trong IndexedDB để tạo Object URL không bị mất sau khi mở lại trình duyệt
     for (const item of list) {
       if (!item.fileUrl || item.fileUrl.startsWith("blob:")) {
@@ -306,6 +322,7 @@ class LectureService {
       db.lectures.unshift(lectureObj);
     }
     localStorage.setItem("app_mock_db", JSON.stringify(db));
+    this.syncToServer(db.lectures);
 
     // 2. Đồng bộ ngầm lên Supabase Database (Tốc độ ánh sáng ⚡ 0.001s, không đứng chờ mạng)
     if (window.supabaseService?.isReady()) {
@@ -377,6 +394,7 @@ class LectureService {
 
         updatedObj = db.lectures[idx];
         localStorage.setItem("app_mock_db", JSON.stringify(db));
+        this.syncToServer(db.lectures);
       }
     }
 
@@ -428,6 +446,10 @@ class LectureService {
 
   // 9b. Chuyển bài giảng vào Thùng Rác (Lưu tạm thời 30 ngày trước khi xóa hẳn)
   async deleteLecture(id) {
+    if (window.adminProtectionGuard && !window.adminProtectionGuard.canDelete("bài giảng điện tử")) {
+      return { success: false, error: "Chỉ tài khoản Quản trị viên tối cao mới có quyền ra lệnh xóa!" };
+    }
+
     this.clearCache();
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     if (!db.trashedLectures) db.trashedLectures = [];
@@ -439,6 +461,7 @@ class LectureService {
         db.trashedLectures.unshift(item);
         db.lectures.splice(idx, 1);
         localStorage.setItem("app_mock_db", JSON.stringify(db));
+        this.syncToServer(db.lectures);
       }
     }
 
@@ -456,6 +479,10 @@ class LectureService {
 
   // 9c. Xóa tất cả bài giảng theo khối lớp (Chuyển toàn bộ vào Thùng Rác 30 ngày)
   async deleteLecturesByGrade(grade) {
+    if (window.adminProtectionGuard && !window.adminProtectionGuard.canDelete("toàn bộ bài giảng của khối lớp")) {
+      return { success: false, error: "Chỉ tài khoản Quản trị viên tối cao mới có quyền ra lệnh xóa!" };
+    }
+
     const g = parseInt(grade, 10);
     this.clearCache();
 
@@ -469,6 +496,7 @@ class LectureService {
       });
       db.lectures = db.lectures.filter(l => parseInt(l.grade, 10) !== g);
       localStorage.setItem("app_mock_db", JSON.stringify(db));
+      this.syncToServer(db.lectures);
     }
 
     if (window.supabaseService?.isReady()) {
@@ -491,6 +519,7 @@ class LectureService {
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     db.lectures = [];
     localStorage.setItem("app_mock_db", JSON.stringify(db));
+    this.syncToServer(db.lectures);
 
     // 2. Xóa sạch trên Supabase Cloud Database
     if (window.supabaseService?.isReady()) {
@@ -544,6 +573,10 @@ class LectureService {
 
   // 9e. Xóa vĩnh viễn 1 bài giảng khỏi Thùng Rác
   permanentlyDeleteFromTrash(id) {
+    if (window.adminProtectionGuard && !window.adminProtectionGuard.canDelete("bài giảng vĩnh viễn khỏi Thùng rác")) {
+      return { success: false, error: "Chỉ tài khoản Quản trị viên tối cao mới có quyền ra lệnh xóa!" };
+    }
+
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     if (db.trashedLectures) {
       db.trashedLectures = db.trashedLectures.filter(l => l.id !== id);
@@ -554,10 +587,106 @@ class LectureService {
 
   // 9f. Dọn sạch toàn bộ Thùng Rác
   emptyTrash() {
+    if (window.adminProtectionGuard && !window.adminProtectionGuard.canDelete("dọn sạch Thùng rác")) {
+      return { success: false, error: "Chỉ tài khoản Quản trị viên tối cao mới có quyền ra lệnh xóa!" };
+    }
+
     const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
     db.trashedLectures = [];
     localStorage.setItem("app_mock_db", JSON.stringify(db));
+    this.syncToServer(db.lectures);
     return { success: true };
+  }
+
+  // 9g. Đồng bộ toàn bộ danh sách bài giảng về file hệ thống server (lưu vĩnh viễn trên web)
+  async syncToServer(lecturesList) {
+    if (!lecturesList) {
+      const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+      lecturesList = (db.lectures && db.lectures.length > 0) ? db.lectures : (window.SAVED_LECTURES || []);
+    }
+    try {
+      const res = await fetch("/api/save-lectures", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(lecturesList)
+      });
+      if (res.ok) {
+        console.log("✅ Đã tự động lưu vĩnh viễn bài giảng vào máy chủ web!");
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  // 9h. Tải file binary PowerPoint/PDF trực tiếp lên thư mục lectures_storage của máy chủ web
+  async uploadFileToServer(file) {
+    if (!file) return null;
+    try {
+      const res = await fetch(`/api/upload-file?name=${encodeURIComponent(file.name)}`, {
+        method: "POST",
+        body: file
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.fileUrl) {
+          console.log("✅ File bài giảng đã được lưu vĩnh viễn vào server:", data.fileUrl);
+          return data.fileUrl;
+        }
+      }
+    } catch (e) {
+      console.warn("Không kết nối được API upload file của server:", e);
+    }
+    return null;
+  }
+
+  // 9i. Tải file JSON sao lưu toàn bộ bài giảng về máy tính cá nhân
+  exportLecturesBackup() {
+    const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+    const lectures = (db.lectures && db.lectures.length > 0) ? db.lectures : (window.SAVED_LECTURES || []);
+    const jsonStr = JSON.stringify(lectures, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `SaoLuu_KhoBaiGiang_TinHoc_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return true;
+  }
+
+  // 9j. Nhập file JSON sao lưu để phục hồi bài giảng
+  async importLecturesBackup(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!Array.isArray(imported)) {
+            throw new Error("File sao lưu không đúng định dạng danh sách bài giảng!");
+          }
+          const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+          if (!db.lectures) db.lectures = [];
+          const existingIds = new Set(db.lectures.map(l => l.id));
+          let count = 0;
+          for (const item of imported) {
+            if (!existingIds.has(item.id)) {
+              db.lectures.push(item);
+              count++;
+            }
+          }
+          localStorage.setItem("app_mock_db", JSON.stringify(db));
+          this.clearCache();
+          await this.syncToServer(db.lectures);
+          resolve({ success: true, count, total: db.lectures.length });
+        } catch (err) {
+          resolve({ success: false, error: err.message });
+        }
+      };
+      reader.onerror = () => resolve({ success: false, error: "Không đọc được file!" });
+      reader.readAsText(file, "UTF-8");
+    });
   }
 
   // 10. Tự động sinh phân cảnh Video hoạt họa AI từ Slide (Auto AI Video Generator)

@@ -58,6 +58,61 @@ const MOCK_DATABASE = {
       stars: 310,
       avatar: "🧑‍💻",
       isActive: true
+    },
+    {
+      id: "u_student_04",
+      username: "hs3b04",
+      name: "Phạm Hoàng Bách",
+      role: "student",
+      grade: 3,
+      className: "3B",
+      stars: 150,
+      avatar: "🦁",
+      isActive: true
+    },
+    {
+      id: "u_student_05",
+      username: "hs4a05",
+      name: "Vũ Bảo Châu",
+      role: "student",
+      grade: 4,
+      className: "4A",
+      stars: 130,
+      avatar: "🦄",
+      isActive: true
+    },
+    {
+      id: "u_student_06",
+      username: "hs5b06",
+      name: "Đỗ Tuấn Kiệt",
+      role: "student",
+      grade: 5,
+      className: "5B",
+      stars: 210,
+      avatar: "🦊",
+      isActive: true
+    },
+    {
+      id: "u_student_07",
+      username: "hs3a07",
+      name: "Hoàng Gia Huy",
+      role: "student",
+      grade: 3,
+      className: "3A",
+      stars: 175,
+      avatar: "👦",
+      isActive: true
+    },
+    {
+      id: "u_student_08",
+      username: "hs3b08",
+      name: "Đặng Quỳnh Anh",
+      role: "student",
+      grade: 3,
+      className: "3B",
+      stars: 195,
+      avatar: "🌸",
+      isActive: true
     }
   ],
 
@@ -240,8 +295,8 @@ const MOCK_DATABASE = {
     { rank: 5, name: "Vũ Bảo Châu", class: "4A", stars: 130, badge: "⭐ Thần Đồng Gõ Phím", avatar: "👩‍🎨" }
   ],
 
-  // 6. KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT SLIDES
-  lectures: [],
+  // 6. KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT SLIDES (TỰ ĐỘNG NẠP BÀI GIẢNG ĐÃ LƯU VĨNH VIỄN)
+  lectures: (typeof window !== "undefined" && window.SAVED_LECTURES && window.SAVED_LECTURES.length > 0) ? window.SAVED_LECTURES : [],
 
   // 7. KHẢO SÁT & NGÂN HÀNG ĐỀ KIỂM TRA MẪU (LỚP 3, 4, 5)
   exams: [
@@ -311,19 +366,67 @@ const MOCK_DATABASE = {
       matrixJson: null,
       createdAt: "2026-09-10T08:00:00.000Z"
     }
+  ],
+
+  // 8. LỊCH SỬ THI ĐẤU ĐẤU TRƯỜNG TIN HỌC (ARENA MATCHES)
+  arena_matches: [
+    { id: "m_01", studentName: "Trần Đức Nam", studentClass: "5A", grade: 5, avatar: "🚀", score: 100, starsEarned: 150, durationSeconds: 18, totalCorrect: 5, totalQuestions: 5, perfectWins: 3, createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString() },
+    { id: "m_02", studentName: "Nguyễn Văn An", studentClass: "3A", grade: 3, avatar: "🤖", score: 100, starsEarned: 140, durationSeconds: 22, totalCorrect: 5, totalQuestions: 5, perfectWins: 2, createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString() },
+    { id: "m_03", studentName: "Lê Thị Mai", studentClass: "4B", grade: 4, avatar: "🐱", score: 95, starsEarned: 120, durationSeconds: 25, totalCorrect: 4, totalQuestions: 5, perfectWins: 1, createdAt: new Date(Date.now() - 90 * 60 * 1000).toISOString() },
+    { id: "m_04", studentName: "Đặng Quỳnh Anh", studentClass: "3B", grade: 3, avatar: "🌸", score: 90, starsEarned: 110, durationSeconds: 24, totalCorrect: 4, totalQuestions: 5, perfectWins: 1, createdAt: new Date(Date.now() - 120 * 60 * 1000).toISOString() },
+    { id: "m_05", studentName: "Phạm Hoàng Bách", studentClass: "3B", grade: 3, avatar: "🦁", score: 85, starsEarned: 95, durationSeconds: 28, totalCorrect: 4, totalQuestions: 5, perfectWins: 0, createdAt: new Date(Date.now() - 180 * 60 * 1000).toISOString() },
+    { id: "m_06", studentName: "Đỗ Tuấn Kiệt", studentClass: "5B", grade: 5, avatar: "🦊", score: 85, starsEarned: 90, durationSeconds: 27, totalCorrect: 4, totalQuestions: 5, perfectWins: 0, createdAt: new Date(Date.now() - 240 * 60 * 1000).toISOString() },
+    { id: "m_07", studentName: "Vũ Bảo Châu", studentClass: "4A", grade: 4, avatar: "🦄", score: 80, starsEarned: 85, durationSeconds: 30, totalCorrect: 4, totalQuestions: 5, perfectWins: 0, createdAt: new Date(Date.now() - 300 * 60 * 1000).toISOString() },
+    { id: "m_08", studentName: "Hoàng Gia Huy", studentClass: "3A", grade: 3, avatar: "👦", score: 75, starsEarned: 70, durationSeconds: 35, totalCorrect: 3, totalQuestions: 5, perfectWins: 0, createdAt: new Date(Date.now() - 360 * 60 * 1000).toISOString() }
   ]
 };
 
-// Khởi tạo và bảo lưu bài giảng điện tử + đề kiểm tra trong LocalStorage
+// Khởi tạo và bảo lưu dữ liệu trong LocalStorage
 try {
+  const seedLectures = (typeof window !== "undefined" && window.SAVED_LECTURES && window.SAVED_LECTURES.length > 0) ? window.SAVED_LECTURES : [];
   let existing = JSON.parse(localStorage.getItem("app_mock_db"));
   if (!existing) {
+    MOCK_DATABASE.lectures = seedLectures;
     localStorage.setItem("app_mock_db", JSON.stringify(MOCK_DATABASE));
   } else {
     let updated = false;
-    if (!existing.lectures) {
-      existing.lectures = [];
+    // Bổ sung users mới nếu thiếu
+    if (!existing.users) existing.users = [];
+    const existingUsernames = new Set(existing.users.map(u => u.username));
+    for (const u of MOCK_DATABASE.users) {
+      if (!existingUsernames.has(u.username)) {
+        existing.users.push(u);
+        updated = true;
+      }
+    }
+    // Bổ sung hoặc làm mới arena_matches hôm nay
+    if (!existing.arena_matches || existing.arena_matches.length === 0) {
+      existing.arena_matches = MOCK_DATABASE.arena_matches;
       updated = true;
+    } else {
+      const todayCount = existing.arena_matches.filter(m => {
+        const t = new Date(m.createdAt).getTime();
+        return (Date.now() - t) <= 24 * 3600 * 1000;
+      }).length;
+      if (todayCount === 0) {
+        existing.arena_matches.forEach((m, idx) => {
+          m.createdAt = new Date(Date.now() - (idx * 20 * 60 * 1000) - (5 * 60 * 1000)).toISOString();
+        });
+        updated = true;
+      }
+    }
+    // Hợp nhất bài giảng vĩnh viễn
+    if (!existing.lectures || existing.lectures.length === 0) {
+      existing.lectures = seedLectures;
+      updated = true;
+    } else if (seedLectures.length > 0) {
+      const existingIds = new Set(existing.lectures.map(l => l.id));
+      for (const seed of seedLectures) {
+        if (!existingIds.has(seed.id)) {
+          existing.lectures.push(seed);
+          updated = true;
+        }
+      }
     }
     if (!existing.exams || existing.exams.length === 0) {
       existing.exams = MOCK_DATABASE.exams;

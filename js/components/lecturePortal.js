@@ -268,18 +268,29 @@ class LecturePortal {
         <!-- Banner Kho Bài Giảng Rực Rỡ -->
         <div class="banner-anhdao flex flex-col md:flex-row items-center justify-between gap-6">
           <div class="space-y-1">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
               <span class="badge badge-amber font-black">📊 HỌC LIỆU SỐ TIỂU HỌC</span>
               <span class="badge bg-white/20 text-white font-bold">Chuẩn GDPT 2018 & CV 2345</span>
+              <span class="badge bg-emerald-500/30 text-emerald-100 border border-emerald-300/40 font-black">🟢 Đã lưu vĩnh viễn trên Web: ${rawAll.length} bài giảng</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-white">KHO BÀI GIẢNG ĐIỆN TỬ & POWERPOINT</h2>
-            <p class="text-cyan-100 text-xs md:text-sm">Hệ thống kho bài giảng điện tử chuẩn sư phạm, hỗ trợ giáo viên tải lên, lưu trữ và trình chiếu trực tuyến mượt mà.</p>
+            <p class="text-cyan-100 text-xs md:text-sm">Hệ thống kho bài giảng điện tử chuẩn sư phạm, hỗ trợ giáo viên tải lên, lưu trữ vĩnh viễn và trình chiếu trực tuyến mượt mà.</p>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
-            <button onclick="lectureUploadModal.openModal(${effectiveGrade !== 'all' ? effectiveGrade : 3})" class="btn btn-emerald btn-lg font-black shadow-2xl flex items-center gap-2 shrink-0 hover:scale-105 transition-all px-5 py-3 text-white bg-gradient-to-r from-emerald-500 to-teal-600 border-2 border-white">
-              <span class="text-xl">📤</span> <span>Tải Lên Bài Giảng Điện Tử (.pptx / .pdf)</span>
+            <button onclick="lectureUploadModal.openModal(${effectiveGrade !== 'all' ? effectiveGrade : 3})" class="btn btn-emerald btn-lg font-black shadow-2xl flex items-center gap-2 shrink-0 hover:scale-105 transition-all px-4 py-2.5 text-white bg-gradient-to-r from-emerald-500 to-teal-600 border-2 border-white">
+              <span class="text-lg">📤</span> <span>Tải Bài Lên</span>
             </button>
+            <button onclick="lecturePortal.persistAllLectures()" class="btn bg-blue-600 hover:bg-blue-700 text-white font-black shadow-lg flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl border border-blue-400 text-xs hover:scale-105 transition-all" title="Lưu vĩnh viễn toàn bộ bài giảng vào máy chủ và mã nguồn web">
+              <span>💾</span> <span>Lưu Vĩnh Viễn Vào Web</span>
+            </button>
+            <button onclick="window.lectureService.exportLecturesBackup()" class="btn bg-white/20 hover:bg-white/30 text-white font-black flex items-center gap-1.5 px-3 py-2.5 rounded-2xl text-xs hover:scale-105 transition-all" title="Xuất file JSON sao lưu về máy tính để cất giữ an toàn">
+              <span>📥</span> <span>Sao Lưu</span>
+            </button>
+            <button onclick="document.getElementById('lec-import-file-input').click()" class="btn bg-white/20 hover:bg-white/30 text-white font-black flex items-center gap-1.5 px-3 py-2.5 rounded-2xl text-xs hover:scale-105 transition-all" title="Nhập file JSON đã sao lưu để khôi phục bài giảng">
+              <span>📂</span> <span>Khôi Phục</span>
+            </button>
+            <input type="file" id="lec-import-file-input" accept=".json" class="hidden" onchange="lecturePortal.handleImportBackup(event)">
           </div>
         </div>
 
@@ -3539,6 +3550,34 @@ class LecturePortal {
     window.app.showToast("🧹 Đã dọn sạch thùng rác!", "success");
     this.renderTrashItems();
     this.render("main-content-area");
+  }
+
+  // Lưu vĩnh viễn toàn bộ bài giảng hiện có vào máy chủ web và mã nguồn
+  async persistAllLectures() {
+    const rawAll = await window.lectureService.getAllLectures();
+    window.app.showToast("⚡ Đang lưu vĩnh viễn toàn bộ bài giảng vào mã nguồn web...", "info");
+    const ok = await window.lectureService.syncToServer(rawAll);
+    if (ok) {
+      window.app.showToast(`🎉 Đã lưu vĩnh viễn ${rawAll.length} bài giảng vào web thành công! Dữ liệu không bao giờ bị mất!`, "success");
+      this.render("main-content-area");
+    } else {
+      window.lectureService.exportLecturesBackup();
+      window.app.showToast(`💾 Đã xuất file sao lưu chứa ${rawAll.length} bài giảng về máy tính của Thầy!`, "success");
+    }
+  }
+
+  // Khôi phục bài giảng từ file sao lưu JSON
+  async handleImportBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const res = await window.lectureService.importLecturesBackup(file);
+    if (res.success) {
+      window.app.showToast(`🎉 Khôi phục thành công! Đã nạp thêm ${res.count} bài giảng (Tổng cộng: ${res.total} bài).`, "success");
+      this.render("main-content-area");
+    } else {
+      window.app.showToast(`⚠️ Không thể nhập file: ${res.error}`, "danger");
+    }
+    event.target.value = "";
   }
 }
 

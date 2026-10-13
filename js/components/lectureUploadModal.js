@@ -212,7 +212,10 @@ class LectureUploadModal {
         updatePayload.fileName = this.selectedFile.name;
         updatePayload.fileSizeText = (this.selectedFile.size / (1024 * 1024)).toFixed(1) + " MB";
         updatePayload.fileType = this.selectedFile.name.split('.').pop().toLowerCase();
-        updatePayload.fileUrl = linkUrl.trim() || this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
+        
+        // Tải file binary trực tiếp lên web server để lưu trữ vĩnh viễn trong thư mục web
+        const serverFileUrl = await window.lectureService.uploadFileToServer(this.selectedFile);
+        updatePayload.fileUrl = serverFileUrl || linkUrl.trim() || this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
         updatePayload.slideCount = Math.floor(Math.random() * 10) + 16;
         updatePayload.file = this.selectedFile;
       } else if (linkUrl.trim() && linkUrl !== this.existingLecture?.fileUrl) {
@@ -227,7 +230,7 @@ class LectureUploadModal {
       }
 
       if (res.success) {
-        window.app.showToast("⚡ Đã cập nhật xong bài giảng trong chớp mắt!", "success");
+        window.app.showToast("⚡ Đã cập nhật và lưu vĩnh viễn bài giảng trên web!", "success");
         this.closeModal();
         if (window.lecturePortal) window.lecturePortal.render("main-content-area");
 
@@ -258,7 +261,9 @@ class LectureUploadModal {
       fileName = this.selectedFile.name;
       fileSizeText = (this.selectedFile.size / (1024 * 1024)).toFixed(1) + " MB";
       fileType = fileName.split('.').pop().toLowerCase();
-      fileUrl = fileUrl || this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
+      // Lưu file binary trực tiếp lên web server
+      const serverFileUrl = await window.lectureService.uploadFileToServer(this.selectedFile);
+      fileUrl = serverFileUrl || fileUrl || this.selectedFileDataUrl || URL.createObjectURL(this.selectedFile);
     }
 
     const res = await window.lectureService.uploadLecture({

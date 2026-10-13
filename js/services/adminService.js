@@ -26,7 +26,7 @@ class AdminService {
           .order("created_at", { ascending: false });
 
         if (!error && data && data.length > 0) {
-          return data.map(u => ({
+          const supabaseUsers = data.map(u => ({
             id: u.id,
             username: u.username,
             name: u.full_name,
@@ -39,6 +39,16 @@ class AdminService {
             isActive: u.is_active !== false,
             createdAt: u.created_at
           }));
+
+          const db = JSON.parse(localStorage.getItem("app_mock_db")) || MOCK_DATABASE;
+          const localUsers = db.users || [];
+          const sbUsernames = new Set(supabaseUsers.map(u => u.username));
+          for (const lu of localUsers) {
+            if (!sbUsernames.has(lu.username)) {
+              supabaseUsers.push(lu);
+            }
+          }
+          return supabaseUsers;
         }
       } catch (err) {
         console.warn("Lỗi đọc danh sách user từ Supabase:", err);
