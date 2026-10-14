@@ -21,6 +21,15 @@ class ArenaPortal {
     this.selectedOptionIndex = null;
     this.isAnswerRevealed = false;
     this.audioCtx = null;
+    
+    // BGM Audio Engine State (Nhạc nền sôi động & hồi hộp)
+    this.isBGMPlaying = localStorage.getItem("arena_bgm_enabled") !== "false";
+    this.bgmVolume = parseFloat(localStorage.getItem("arena_bgm_volume")) || 0.22;
+    this.bgmMode = "lobby";
+    this.bgmCtx = null;
+    this.bgmTimer = null;
+    this.noiseBuffer = null;
+    this.masterBGMGain = null;
 
     // Editing modal state
     this.editingQuestionId = null;
@@ -65,9 +74,9 @@ class ArenaPortal {
       const btn = document.getElementById(`mascot-btn-${m.id}`);
       if (btn) {
         if (m.id === mascotId) {
-          btn.className = "p-2.5 rounded-2xl border-2 transition-all flex flex-col items-center gap-1 bg-gradient-to-b from-amber-500/30 via-yellow-400/20 to-amber-500/10 border-amber-400 text-white shadow-lg ring-2 ring-amber-300 scale-105 cursor-pointer";
+          btn.className = "p-1 sm:p-1.5 rounded-xl border-2 transition-all flex flex-col items-center gap-0.5 bg-gradient-to-b from-amber-500/30 via-yellow-400/20 to-amber-500/10 border-amber-400 text-white shadow-md ring-2 ring-amber-300 scale-102 cursor-pointer";
         } else {
-          btn.className = "p-2.5 rounded-2xl border-2 transition-all flex flex-col items-center gap-1 bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-slate-500 cursor-pointer";
+          btn.className = "p-1 sm:p-1.5 rounded-xl border-2 transition-all flex flex-col items-center gap-0.5 bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-slate-500 cursor-pointer";
         }
       }
     });
@@ -124,6 +133,9 @@ class ArenaPortal {
   // Chuyển Tab
   switchTab(tab) {
     this.currentTab = tab;
+    if (tab !== "live_arena") {
+      this.stopSynthBGM();
+    }
     this.render("main-content-area");
   }
 
@@ -357,118 +369,123 @@ class ArenaPortal {
       }
 
       return `
-        <div class="space-y-4">
+        <div class="space-y-3">
           <!-- HERO BANNER VÀ BẢNG ĐIỀU KHIỂN ĐẤU TRƯỜNG (COMPACT SLIM UI) -->
-          <div class="p-3.5 md:p-5 bg-slate-950 text-white rounded-2xl border border-rose-500/40 shadow-xl space-y-3.5 animate-pop relative overflow-hidden">
+          <div class="max-w-xl mx-auto p-3 sm:p-4 bg-slate-950 text-white rounded-2xl border border-rose-500/40 shadow-xl space-y-2.5 animate-pop relative overflow-hidden">
             <div class="absolute -top-24 -left-24 w-60 h-60 bg-rose-600/15 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute -bottom-24 -right-24 w-60 h-60 bg-cyan-600/15 rounded-full blur-3xl pointer-events-none"></div>
 
-            <div class="space-y-1.5 text-center relative z-10">
-              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-rose-500/20 border border-rose-400/40 rounded-full text-rose-300 font-black text-[10px] uppercase tracking-wider">
+            <div class="space-y-1 text-center relative z-10">
+              <div class="inline-flex items-center gap-1 px-2 py-0.5 bg-rose-500/20 border border-rose-400/40 rounded-full text-rose-300 font-black text-[9px] uppercase tracking-wider">
                 <span>⚡</span> SÀN ĐẤU TRẮC NGHIỆM TRỰC TUYẾN THỜI GIAN THỰC
               </div>
-              <h3 class="text-lg md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-rose-300 to-amber-300">
+              <h3 class="text-base sm:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-rose-300 to-amber-300">
                 ĐẤU TRƯỜNG TIN HỌC TIỂU HỌC
               </h3>
-              <p class="text-slate-300 text-[11px] md:text-xs max-w-xl mx-auto leading-relaxed">
+              <p class="text-slate-300 text-[10px] sm:text-[11px] max-w-lg mx-auto leading-normal">
                 Hệ thống câu hỏi trắc nghiệm chuẩn <b>SGK Tin học Kết nối tri thức với cuộc sống</b>. Tự chọn Khối lớp, Bài học và leo Bảng Vàng!
               </p>
 
               <!-- LỜI CHÀO MỪNG DŨNG SĨ ĐẤU TRƯỜNG (GỌN GÀNG) -->
-              <div class="max-w-2xl mx-auto p-2.5 bg-gradient-to-r from-amber-500/15 via-yellow-400/15 to-amber-500/15 rounded-xl border border-amber-400/40 flex items-center justify-between gap-2 text-xs mt-2">
-                <div class="flex items-center gap-2 text-left">
-                  <span class="text-xl animate-bounce">⚡</span>
+              <div class="p-2 bg-gradient-to-r from-amber-500/15 via-yellow-400/15 to-amber-500/15 rounded-xl border border-amber-400/40 flex items-center justify-between gap-2 text-xs mt-1.5">
+                <div class="flex items-center gap-1.5 text-left">
+                  <span class="text-base animate-bounce">⚡</span>
                   <div>
-                    <span class="text-amber-300 font-black">Xin chào dũng sĩ ${user.name || "Học sinh"} (${user.className || user.class || "Khối " + (user.grade || 3)})!</span>
-                    <p class="text-slate-300 text-[10px]">Sẵn sàng tranh tài! Chọn bài học bên dưới để bắt đầu leo Bảng Vàng!</p>
+                    <span class="text-amber-300 font-black text-[11px] sm:text-xs">Xin chào dũng sĩ ${user.name || "Học sinh"} (${user.className || user.class || "Khối " + (user.grade || 3)})!</span>
+                    <p class="text-slate-300 text-[9px] sm:text-[10px]">Sẵn sàng tranh tài! Chọn bài học bên dưới để bắt đầu leo Bảng Vàng!</p>
                   </div>
                 </div>
-                <button type="button" onclick="arenaPortal.switchTab('leaderboard')" class="btn bg-amber-400 hover:bg-amber-300 text-slate-950 font-black btn-xs shadow-xs shrink-0 px-2 py-1 rounded-lg text-[11px]">
-                  🏆 Bảng Vàng
-                </button>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button type="button" onclick="arenaPortal.toggleArenaBGM()" id="btn-lobby-bgm" class="btn ${this.isBGMPlaying ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-200'} font-black btn-xs shadow-xs px-2 py-0.5 rounded-lg text-[10px] flex items-center gap-1 cursor-pointer">
+                    <span>${this.isBGMPlaying ? '🔊' : '🔇'}</span> <span id="lbl-lobby-bgm">${this.isBGMPlaying ? 'Nhạc: BẬT' : 'Nhạc: TẮT'}</span>
+                  </button>
+                  <button type="button" onclick="arenaPortal.switchTab('leaderboard')" class="btn bg-amber-400 hover:bg-amber-300 text-slate-950 font-black btn-xs shadow-xs shrink-0 px-2 py-0.5 rounded-lg text-[10px]">
+                    🏆 Bảng Vàng
+                  </button>
+                </div>
               </div>
             </div>
 
             <!-- BẢNG ĐIỀU KHIỂN CHỌN BÀI & CẤU HÌNH ĐẤU TRƯỜNG TRỰC TIẾP (COMPACT) -->
-            <div class="max-w-2xl mx-auto bg-slate-900/95 rounded-2xl border border-amber-400/50 p-3.5 md:p-5 space-y-3.5 shadow-xl relative z-10 backdrop-blur-md text-left">
+            <div class="bg-slate-900/95 rounded-xl border border-amber-400/50 p-2.5 sm:p-3.5 space-y-2.5 shadow-xl relative z-10 backdrop-blur-md text-left">
               
               <!-- 1. CHỌN KHỐI LỚP (3, 4, 5) -->
-              <div class="space-y-1.5">
-                <label class="font-black text-[11px] text-amber-300 flex items-center gap-1.5 uppercase tracking-wider">
+              <div class="space-y-1">
+                <label class="font-black text-[10px] text-amber-300 flex items-center gap-1 uppercase tracking-wider">
                   <span>🎒</span> <span>BƯỚC 1: CHỌN KHỐI LỚP THI ĐẤU</span>
                 </label>
-                <div class="grid grid-cols-3 gap-2">
-                  <button type="button" onclick="arenaPortal.selectLobbyGrade(3)" id="lobby-grade-3" class="p-2.5 rounded-xl border-2 font-black text-xs text-center transition-all flex flex-col items-center gap-0.5 ${this.selectedLobbyGrade === 3 ? 'bg-cyan-600 border-cyan-300 text-white shadow-md ring-2 ring-cyan-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
-                    <span class="text-xl">🎒</span>
+                <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
+                  <button type="button" onclick="arenaPortal.selectLobbyGrade(3)" id="lobby-grade-3" class="p-1.5 sm:p-2 rounded-xl border-2 font-black text-[11px] sm:text-xs text-center transition-all flex flex-col items-center gap-0.5 ${this.selectedLobbyGrade === 3 ? 'bg-cyan-600 border-cyan-300 text-white shadow-md ring-2 ring-cyan-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                    <span class="text-base sm:text-lg">🎒</span>
                     <span>Tin Lớp 3</span>
-                    <span class="text-[9px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
+                    <span class="text-[8.5px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
                   </button>
-                  <button type="button" onclick="arenaPortal.selectLobbyGrade(4)" id="lobby-grade-4" class="p-2.5 rounded-xl border-2 font-black text-xs text-center transition-all flex flex-col items-center gap-0.5 ${this.selectedLobbyGrade === 4 ? 'bg-emerald-600 border-emerald-300 text-white shadow-md ring-2 ring-emerald-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
-                    <span class="text-xl">🚀</span>
+                  <button type="button" onclick="arenaPortal.selectLobbyGrade(4)" id="lobby-grade-4" class="p-1.5 sm:p-2 rounded-xl border-2 font-black text-[11px] sm:text-xs text-center transition-all flex flex-col items-center gap-0.5 ${this.selectedLobbyGrade === 4 ? 'bg-emerald-600 border-emerald-300 text-white shadow-md ring-2 ring-emerald-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                    <span class="text-base sm:text-lg">🚀</span>
                     <span>Tin Lớp 4</span>
-                    <span class="text-[9px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
+                    <span class="text-[8.5px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
                   </button>
-                  <button type="button" onclick="arenaPortal.selectLobbyGrade(5)" id="lobby-grade-5" class="p-2.5 rounded-xl border-2 font-black text-xs text-center transition-all flex flex-col items-center gap-0.5 ${this.selectedLobbyGrade === 5 ? 'bg-amber-600 border-amber-300 text-white shadow-md ring-2 ring-amber-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
-                    <span class="text-xl">⭐</span>
+                  <button type="button" onclick="arenaPortal.selectLobbyGrade(5)" id="lobby-grade-5" class="p-1.5 sm:p-2 rounded-xl border-2 font-black text-[11px] sm:text-xs text-center transition-all flex flex-col items-center gap-0.5 ${this.selectedLobbyGrade === 5 ? 'bg-amber-600 border-amber-300 text-white shadow-md ring-2 ring-amber-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                    <span class="text-base sm:text-lg">⭐</span>
                     <span>Tin Lớp 5</span>
-                    <span class="text-[9px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
+                    <span class="text-[8.5px] opacity-80 font-normal">SGK Kết Nối Tri Thức</span>
                   </button>
                 </div>
               </div>
 
               <!-- 2. CHỌN BÀI HỌC THEO SGK KẾT NỐI TRI THỨC -->
-              <div class="space-y-1.5">
-                <label class="font-black text-[11px] text-amber-300 flex items-center gap-1.5 uppercase tracking-wider">
+              <div class="space-y-1">
+                <label class="font-black text-[10px] text-amber-300 flex items-center gap-1 uppercase tracking-wider">
                   <span>📖</span> <span>BƯỚC 2: CHỌN BÀI THEO SÁCH KẾT NỐI TRI THỨC VỚI CUỘC SỐNG:</span>
                 </label>
                 <div class="relative">
-                  <select id="lobby-lesson-select" onchange="arenaPortal.handleLobbyLessonChange(this.value)" class="form-control font-bold text-xs md:text-sm p-2.5 bg-slate-950 border border-slate-700 text-amber-200 rounded-xl focus:border-amber-400 cursor-pointer w-full">
+                  <select id="lobby-lesson-select" onchange="arenaPortal.handleLobbyLessonChange(this.value)" class="form-control font-bold text-xs p-2 bg-slate-950 border border-slate-700 text-amber-200 rounded-xl focus:border-amber-400 cursor-pointer w-full">
                     ${this.renderLobbyLessonOptions(this.selectedLobbyGrade || 3)}
                   </select>
                 </div>
               </div>
 
               <!-- 3. CHỌN SỐ LƯỢNG CÂU HỎI -->
-              <div class="space-y-1.5">
-                <label class="font-black text-[11px] text-amber-300 flex items-center gap-1.5 uppercase tracking-wider">
+              <div class="space-y-1">
+                <label class="font-black text-[10px] text-amber-300 flex items-center gap-1 uppercase tracking-wider">
                   <span>⚡</span> <span>BƯỚC 3: CHỌN SỐ LƯỢNG CÂU HỎI TRẮC NGHIỆM:</span>
                 </label>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(5)" id="lobby-count-5" class="p-2 rounded-xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 5 ? 'bg-rose-600 border-rose-300 text-white shadow-sm ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2">
+                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(5)" id="lobby-count-5" class="p-1.5 rounded-xl border-2 font-black text-[11px] text-center transition-all ${this.selectedLobbyQuestionCount === 5 ? 'bg-rose-600 border-rose-300 text-white shadow-sm ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
                     🌱 5 CÂU
-                    <span class="block text-[9px] font-normal opacity-80 mt-0.5">Khởi Động</span>
+                    <span class="block text-[8px] font-normal opacity-80 mt-0.5">Khởi Động</span>
                   </button>
-                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(10)" id="lobby-count-10" class="p-2 rounded-xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 10 ? 'bg-rose-600 border-rose-300 text-white shadow-sm ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(10)" id="lobby-count-10" class="p-1.5 rounded-xl border-2 font-black text-[11px] text-center transition-all ${this.selectedLobbyQuestionCount === 10 ? 'bg-rose-600 border-rose-300 text-white shadow-sm ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
                     🎯 10 CÂU
-                    <span class="block text-[9px] font-normal opacity-80 mt-0.5">Tiêu Chuẩn</span>
+                    <span class="block text-[8px] font-normal opacity-80 mt-0.5">Tiêu Chuẩn</span>
                   </button>
-                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(15)" id="lobby-count-15" class="p-2 rounded-xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 15 ? 'bg-rose-600 border-rose-300 text-white shadow-sm ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(15)" id="lobby-count-15" class="p-1.5 rounded-xl border-2 font-black text-[11px] text-center transition-all ${this.selectedLobbyQuestionCount === 15 ? 'bg-rose-600 border-rose-300 text-white shadow-sm ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
                     🔥 15 CÂU
-                    <span class="block text-[9px] font-normal opacity-80 mt-0.5">Thử Thách</span>
+                    <span class="block text-[8px] font-normal opacity-80 mt-0.5">Thử Thách</span>
                   </button>
-                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(20)" id="lobby-count-20" class="p-2 rounded-xl border-2 font-black text-xs text-center transition-all ${this.selectedLobbyQuestionCount === 20 ? 'bg-rose-600 border-rose-300 text-white shadow-sm ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                  <button type="button" onclick="arenaPortal.selectLobbyQuestionCount(20)" id="lobby-count-20" class="p-1.5 rounded-xl border-2 font-black text-[11px] text-center transition-all ${this.selectedLobbyQuestionCount === 20 ? 'bg-rose-600 border-rose-300 text-white shadow-sm ring-2 ring-rose-300' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
                     🏆 20 CÂU
-                    <span class="block text-[9px] font-normal opacity-80 mt-0.5">Toàn Diện</span>
+                    <span class="block text-[8px] font-normal opacity-80 mt-0.5">Toàn Diện</span>
                   </button>
                 </div>
               </div>
 
               <!-- 4. CHỌN LINH VẬT ĐẠI DIỆN THI ĐẤU (AVATAR MASCOT - GỢI Ý 2) -->
-              <div class="space-y-1.5">
+              <div class="space-y-1">
                 <div class="flex items-center justify-between flex-wrap gap-1">
-                  <label class="font-black text-[11px] text-amber-300 flex items-center gap-1.5 uppercase tracking-wider">
+                  <label class="font-black text-[10px] text-amber-300 flex items-center gap-1 uppercase tracking-wider">
                     <span>🎭</span> <span>BƯỚC 4: CHỌN LINH VẬT ĐẠI DIỆN THI ĐẤU:</span>
                   </label>
-                  <span class="text-[10px] text-amber-200/90 font-bold">Đang chọn: <b id="selected-mascot-label" class="text-amber-300 text-xs font-black">${this.selectedMascot || "🤖"}</b></span>
+                  <span class="text-[9.5px] text-amber-200/90 font-bold">Đang chọn: <b id="selected-mascot-label" class="text-amber-300 text-[11px] font-black">${this.selectedMascot || "🤖"}</b></span>
                 </div>
-                <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                <div class="grid grid-cols-3 sm:grid-cols-6 gap-1 sm:gap-1.5">
                   ${this.getMascots().map(m => {
                     const isSelected = (this.selectedMascot || "🤖") === m.id;
                     return `
-                      <button type="button" id="mascot-btn-${m.id}" onclick="arenaPortal.selectMascot('${m.id}')" class="p-1.5 rounded-xl border-2 transition-all flex flex-col items-center gap-0.5 cursor-pointer ${isSelected ? 'bg-gradient-to-b from-amber-500/30 via-yellow-400/20 to-amber-500/10 border-amber-400 text-white shadow-md ring-2 ring-amber-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-slate-500'}">
-                        <span class="text-xl filter drop-shadow">${m.id}</span>
-                        <span class="text-[9px] font-black leading-tight text-center text-white">${m.name}</span>
-                        <span class="text-[8px] opacity-75 font-normal text-center hidden sm:inline text-slate-300">${m.desc}</span>
+                      <button type="button" id="mascot-btn-${m.id}" onclick="arenaPortal.selectMascot('${m.id}')" class="p-1 sm:p-1.5 rounded-xl border-2 transition-all flex flex-col items-center gap-0.5 cursor-pointer ${isSelected ? 'bg-gradient-to-b from-amber-500/30 via-yellow-400/20 to-amber-500/10 border-amber-400 text-white shadow-md ring-2 ring-amber-300 scale-102' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-slate-500'}">
+                        <span class="text-base sm:text-lg filter drop-shadow">${m.id}</span>
+                        <span class="text-[8.5px] font-black leading-tight text-center text-white">${m.name}</span>
+                        <span class="text-[7.5px] opacity-75 font-normal text-center hidden sm:inline text-slate-300">${m.desc}</span>
                       </button>
                     `;
                   }).join("")}
@@ -476,9 +493,9 @@ class ArenaPortal {
               </div>
 
               <!-- 5. NÚT VÀO ĐẤU GỌN GÀNG NỔI BẬT -->
-              <div class="pt-1.5">
-                <button type="button" id="btn-start-arena-battle" onclick="window.arenaPortal.startLobbyBattle()" class="w-full py-3 rounded-xl font-black text-sm md:text-base text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-500 hover:to-yellow-500 shadow-lg shadow-amber-400/20 hover:scale-101 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-200">
-                  <span class="text-xl animate-pulse">🚀</span> <span>BẮT ĐẦU VÀO ĐẤU NGAY ▶</span>
+              <div class="pt-1">
+                <button type="button" id="btn-start-arena-battle" onclick="window.arenaPortal.startLobbyBattle()" class="w-full py-2.5 rounded-xl font-black text-xs sm:text-sm text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-500 hover:to-yellow-500 shadow-md shadow-amber-400/20 hover:scale-101 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-200">
+                  <span class="text-base sm:text-lg animate-pulse">🚀</span> <span>BẮT ĐẦU VÀO ĐẤU NGAY ▶</span>
                 </button>
               </div>
             </div>
@@ -508,8 +525,8 @@ class ArenaPortal {
               ? `<span class="badge bg-amber-950/80 border border-amber-400 text-amber-300 font-black text-xs">🟡 THÔNG HIỂU • ${this.questionMaxTimer || 20}s</span>`
               : `<span class="badge bg-emerald-950/80 border border-emerald-400 text-emerald-300 font-black text-xs">🟢 NHẬN BIẾT • ${this.questionMaxTimer || 15}s</span>`
             }
-            <span class="badge bg-amber-500 text-slate-950 font-black text-xs">
-              ${userRank === 1 ? '🥇 BẠN DẪN ĐẦU TOP 1' : userRank === 2 ? '🥈 THỨ HẠNG TOP 2' : userRank === 3 ? '🥉 THỨ HẠNG TOP 3' : '🎖️ THỨ HẠNG TOP 4'}
+            <span class="badge ${userRank === 1 ? 'bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950 shadow-lg shadow-amber-400/50 ring-2 ring-yellow-200 animate-bounce' : userRank === 2 ? 'bg-slate-300 text-slate-950' : userRank === 3 ? 'bg-amber-600 text-white' : 'bg-slate-800 text-slate-300'} font-black text-xs px-2.5 py-1">
+              ${userRank === 1 ? '👑🥇 BẠN DẪN ĐẦU TOP 1 👏' : userRank === 2 ? '🥈 THỨ HẠNG TOP 2' : userRank === 3 ? '🥉 THỨ HẠNG TOP 3' : '🎖️ THỨ HẠNG TOP 4'}
             </span>
           </div>
 
@@ -533,6 +550,11 @@ class ArenaPortal {
               <span class="text-base animate-spin">⏱️</span>
               <span id="arena-timer-display" class="font-mono text-lg font-black ${this.timer <= 5 ? 'text-rose-400 animate-ping' : 'text-amber-300'}">${this.timer}s</span>
             </div>
+
+            <!-- Nút Bật/Tắt Nhạc Nền Trong Trận -->
+            <button type="button" onclick="arenaPortal.toggleArenaBGM()" id="btn-battle-bgm-toggle" class="p-1.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-400 text-sm shadow-sm transition-all cursor-pointer" title="${this.isBGMPlaying ? 'Nhạc Nền: BẬT (Bấm để Tắt)' : 'Nhạc Nền: TẮT (Bấm để Bật)'}">
+              <span>${this.isBGMPlaying ? '🔊' : '🔇'}</span>
+            </button>
 
             <button onclick="arenaPortal.exitBattle()" class="btn btn-outline btn-xs text-slate-400 hover:text-white">✕ Thoát</button>
           </div>
@@ -1301,9 +1323,9 @@ class ArenaPortal {
       if (btn) {
         if (g === this.selectedLobbyGrade) {
           const colorClass = g === 3 ? 'bg-cyan-600 border-cyan-300 ring-cyan-300' : (g === 4 ? 'bg-emerald-600 border-emerald-300 ring-emerald-300' : 'bg-amber-600 border-amber-300 ring-amber-300');
-          btn.className = `p-3.5 rounded-2xl border-2 font-black text-xs md:text-sm text-center transition-all flex flex-col items-center gap-1 ${colorClass} text-white shadow-lg ring-2 scale-102 cursor-pointer`;
+          btn.className = `p-1.5 sm:p-2 rounded-xl border-2 font-black text-[11px] sm:text-xs text-center transition-all flex flex-col items-center gap-0.5 ${colorClass} text-white shadow-md ring-2 scale-102 cursor-pointer`;
         } else {
-          btn.className = `p-3.5 rounded-2xl border-2 font-black text-xs md:text-sm text-center transition-all flex flex-col items-center gap-1 bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 cursor-pointer`;
+          btn.className = `p-1.5 sm:p-2 rounded-xl border-2 font-black text-[11px] sm:text-xs text-center transition-all flex flex-col items-center gap-0.5 bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 cursor-pointer`;
         }
       }
     });
@@ -1328,9 +1350,9 @@ class ArenaPortal {
       const btn = document.getElementById(`lobby-count-${c}`);
       if (btn) {
         if (c === this.selectedLobbyQuestionCount) {
-          btn.className = "p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-rose-600 border-rose-300 text-white shadow-md ring-2 ring-rose-300 cursor-pointer scale-102";
+          btn.className = "p-1.5 rounded-xl border-2 font-black text-[11px] text-center transition-all bg-rose-600 border-rose-300 text-white shadow-sm ring-2 ring-rose-300 cursor-pointer scale-102";
         } else {
-          btn.className = "p-3 rounded-2xl border-2 font-black text-xs text-center transition-all bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 cursor-pointer";
+          btn.className = "p-1.5 rounded-xl border-2 font-black text-[11px] text-center transition-all bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800 cursor-pointer";
         }
       }
     });
@@ -1365,6 +1387,9 @@ class ArenaPortal {
 
       this.playBeep(660, 0.15);
       this.currentTab = "live_arena";
+      if (this.isBGMPlaying) {
+        this.startArenaBGM("battle");
+      }
       await this.startBattleWithMode("blitz", grade, count, lesson);
     } catch (err) {
       console.error("❌ Lỗi khi khởi động trận đấu:", err);
@@ -1496,6 +1521,7 @@ class ArenaPortal {
     const user = window.authService?.getUser() || { name: "Học Sinh", className: "3A" };
     this.streakCombo = 0;
     this.hasAnnouncedTop1 = false;
+    this.previousUserRank = 4;
     this.competitors = [
       { id: "user", name: user.name || "Học Sinh", avatar: this.selectedMascot || user.avatar || "🤖", isUser: true, score: 0 },
       { id: "bot_1", name: "🤖 Robot AI Vui Học", avatar: "🤖", isUser: false, score: 0, accuracy: 0.85 },
@@ -1752,6 +1778,9 @@ class ArenaPortal {
           this.playBeep(880, 0.3);
           // 3. Bước 3: Vào Trận Đấu Thực Sự
           this.matchStage = "playing";
+          if (this.isBGMPlaying) {
+            this.startArenaBGM("battle");
+          }
           this.startQuestionTimer();
           this.render("main-content-area");
           if (window.ttsService) {
@@ -1884,14 +1913,23 @@ class ArenaPortal {
       }
     });
 
-    // Lời bình luận MC AI khi dẫn đầu TOP 1 (Gợi ý 1)
+    // Kiểm tra biến động Bảng Xếp Hạng Realtime & Kích hoạt Âm thanh Khán đài Cổ vũ khi Bứt phá TOP 1 (Gợi ý 4)
     const sortedCompetitors = [...(this.competitors || [])].sort((a, b) => b.score - a.score);
-    if (sortedCompetitors[0] && sortedCompetitors[0].isUser && !this.hasAnnouncedTop1) {
+    const currentRank = sortedCompetitors.findIndex(c => c.isUser) + 1;
+    const isTop1 = (currentRank === 1);
+    const justOvertookToTop1 = isTop1 && (this.previousUserRank !== 1 || !this.hasAnnouncedTop1);
+
+    if (justOvertookToTop1) {
       this.hasAnnouncedTop1 = true;
+      this.playCrowdCheer(3.2);
+      window.app?.showToast?.("🏆👏 KHÁN ĐÀI BÙNG NỔ! Em đã bứt phá vươn lên DẪN ĐẦU TOP 1!", "warning");
       if (window.ttsService?.speak) {
-        window.ttsService.speak(`Xuất sắc! Chúc mừng em ${sortedCompetitors[0].name} đã bứt phá vươn lên dẫn đầu TOP 1 Đấu Trường Tin Học!`);
+        window.ttsService.speak(`Khán đài bùng nổ! Chúc mừng em ${sortedCompetitors[0].name} đã bứt phá vươn lên dẫn đầu TOP 1 Đấu Trường Tin Học!`);
       }
+    } else if (this.streakCombo >= 3 && optionIndex === q.correctIndex) {
+      this.playCrowdCheer(1.8);
     }
+    this.previousUserRank = currentRank;
 
     this.render("main-content-area");
   }
@@ -1912,6 +1950,8 @@ class ArenaPortal {
   async finishBattle() {
     if (this.timerInterval) clearInterval(this.timerInterval);
     this.battleActive = false;
+    this.stopSynthBGM();
+    this.playVictoryFanfare();
 
     const totalQuestions = this.battleQuestions.length;
     const maxScore = totalQuestions * 20;
@@ -1962,8 +2002,11 @@ class ArenaPortal {
       window.simulation3D.triggerFireworks();
     }
 
-    if (this.score >= 60 && window.ttsService?.playApplause) {
-      window.ttsService.playApplause(3.5, true);
+    if (this.score >= 60) {
+      this.playCrowdCheer(4.0);
+      if (window.ttsService?.playApplause) {
+        window.ttsService.playApplause(3.5, true);
+      }
     }
 
     window.app.showToast(`🎉 Xuất sắc! Em hoàn thành trận đấu với ${this.score}/${maxScore} Điểm trong ${duration} giây!`, "success");
@@ -2390,53 +2433,428 @@ class ArenaPortal {
     modal.classList.add("active");
   }
 
+  // =========================================================================
+  // HỆ THỐNG NHẠC NỀN ĐẤU TRƯỜNG ĐA BÈ (ARCADE ESPORTS SYNTHESIZER ENGINE)
+  // =========================================================================
   toggleArenaBGM() {
     this.isBGMPlaying = !this.isBGMPlaying;
-    const btnLbl = document.getElementById("lbl-arena-bgm");
-    if (btnLbl) btnLbl.innerText = this.isBGMPlaying ? "Nhạc BGM: BẬT" : "Nhạc BGM: TẮT";
+    localStorage.setItem("arena_bgm_enabled", this.isBGMPlaying ? "true" : "false");
+    this.updateBGMControlsUI();
 
     if (this.isBGMPlaying) {
-      this.playSynthBGM();
-      window.app?.showToast?.("🎵 Đã BẬT Nhạc Nền Đấu Trường eSports!", "info");
+      const mode = (this.battleActive && this.matchStage === "playing") ? "battle" : "lobby";
+      this.startArenaBGM(mode);
+      window.app?.showToast?.("🎵 Đã BẬT Nhạc Nền Đấu Trường Sôi Động!", "info");
     } else {
       this.stopSynthBGM();
       window.app?.showToast?.("🔇 Đã TẮT Nhạc Nền Đấu Trường!", "info");
     }
   }
 
-  playSynthBGM() {
+  updateBGMControlsUI() {
+    const isPlaying = !!this.isBGMPlaying;
+    const btnLbl = document.getElementById("lbl-arena-bgm");
+    if (btnLbl) btnLbl.innerText = isPlaying ? "Nhạc BGM: BẬT" : "Nhạc BGM: TẮT";
+    const lobbyLbl = document.getElementById("lbl-lobby-bgm");
+    if (lobbyLbl) lobbyLbl.innerText = isPlaying ? "Nhạc: BẬT" : "Nhạc: TẮT";
+    const lobbyBtn = document.getElementById("btn-lobby-bgm");
+    if (lobbyBtn) {
+      lobbyBtn.className = `btn ${isPlaying ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-200'} font-black btn-xs shadow-xs px-2 py-0.5 rounded-lg text-[10px] flex items-center gap-1 cursor-pointer`;
+      const icon = lobbyBtn.querySelector("span");
+      if (icon) icon.innerText = isPlaying ? "🔊" : "🔇";
+    }
+    const battleBtn = document.getElementById("btn-battle-bgm-toggle");
+    if (battleBtn) {
+      battleBtn.innerHTML = `<span>${isPlaying ? '🔊' : '🔇'}</span>`;
+      battleBtn.title = isPlaying ? "Nhạc Nền: BẬT (Bấm để Tắt)" : "Nhạc Nền: TẮT (Bấm để Bật)";
+    }
+  }
+
+  startArenaBGM(mode = "battle") {
+    if (!this.isBGMPlaying) return;
+    this.bgmMode = mode;
+    this.playSynthBGM(mode);
+  }
+
+  playSynthBGM(mode = "battle") {
     this.stopSynthBGM();
+    if (!this.isBGMPlaying) return;
+
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
-      this.bgmCtx = new AudioCtx();
+      if (!this.bgmCtx || this.bgmCtx.state === "closed") {
+        this.bgmCtx = new AudioCtx();
+      }
+      if (this.bgmCtx.state === "suspended") {
+        this.bgmCtx.resume();
+      }
+
+      // Tạo Noise Buffer cho trống Hi-Hat / Snare điện tử
+      if (!this.noiseBuffer && this.bgmCtx) {
+        const bufferSize = this.bgmCtx.sampleRate;
+        const buffer = this.bgmCtx.createBuffer(1, bufferSize, this.bgmCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        this.noiseBuffer = buffer;
+      }
+
+      const masterGain = this.bgmCtx.createGain();
+      const vol = this.bgmVolume || 0.22;
+      masterGain.gain.setValueAtTime(vol, this.bgmCtx.currentTime);
+      masterGain.connect(this.bgmCtx.destination);
+      this.masterBGMGain = masterGain;
+
+      // 1. Kick Drum (Tiếng trống Kick dứt khoát)
+      const triggerKick = (t) => {
+        try {
+          const osc = this.bgmCtx.createOscillator();
+          const g = this.bgmCtx.createGain();
+          osc.frequency.setValueAtTime(145, t);
+          osc.frequency.exponentialRampToValueAtTime(36, t + 0.08);
+          g.gain.setValueAtTime(0.2, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+          osc.connect(g);
+          g.connect(masterGain);
+          osc.start(t);
+          osc.stop(t + 0.09);
+        } catch (e) {}
+      };
+
+      // 2. Hi-Hat (Tiếng xèng nhịp điện tử)
+      const triggerHiHat = (t, isOpen = false) => {
+        try {
+          if (!this.noiseBuffer) return;
+          const src = this.bgmCtx.createBufferSource();
+          src.buffer = this.noiseBuffer;
+          const flt = this.bgmCtx.createBiquadFilter();
+          flt.type = "highpass";
+          flt.frequency.value = 7500;
+          const g = this.bgmCtx.createGain();
+          const dur = isOpen ? 0.08 : 0.035;
+          g.gain.setValueAtTime(0.06, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+          src.connect(flt);
+          flt.connect(g);
+          g.connect(masterGain);
+          src.start(t);
+          src.stop(t + dur);
+        } catch (e) {}
+      };
+
+      // 3. Snare (Tiếng đanh nhịp 2 và 4)
+      const triggerSnare = (t) => {
+        try {
+          triggerHiHat(t, true);
+          const osc = this.bgmCtx.createOscillator();
+          const g = this.bgmCtx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(190, t);
+          osc.frequency.exponentialRampToValueAtTime(80, t + 0.07);
+          g.gain.setValueAtTime(0.08, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+          osc.connect(g);
+          g.connect(masterGain);
+          osc.start(t);
+          osc.stop(t + 0.08);
+        } catch (e) {}
+      };
+
+      // 4. Synth Bass (Rung nhịp kịch tính)
+      const triggerBass = (freq, t, dur = 0.1) => {
+        try {
+          const osc = this.bgmCtx.createOscillator();
+          const flt = this.bgmCtx.createBiquadFilter();
+          flt.type = "lowpass";
+          flt.frequency.setValueAtTime(450, t);
+          flt.frequency.exponentialRampToValueAtTime(220, t + dur);
+          const g = this.bgmCtx.createGain();
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(freq, t);
+          g.gain.setValueAtTime(0.12, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+          osc.connect(flt);
+          flt.connect(g);
+          g.connect(masterGain);
+          osc.start(t);
+          osc.stop(t + dur);
+        } catch (e) {}
+      };
+
+      // 5. Arp Lead (Giai điệu game hào hùng)
+      const triggerLead = (freq, t, dur = 0.12) => {
+        try {
+          const osc = this.bgmCtx.createOscillator();
+          const g = this.bgmCtx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(freq, t);
+          g.gain.setValueAtTime(0.09, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+          osc.connect(g);
+          g.connect(masterGain);
+          osc.start(t);
+          osc.stop(t + dur);
+        } catch (e) {}
+      };
+
+      // 6. Suspense Ticking (Tích tắc hồi hộp dồn dập khi sắp hết giờ)
+      const triggerTensionTick = (t) => {
+        try {
+          const osc = this.bgmCtx.createOscillator();
+          const g = this.bgmCtx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(950, t);
+          g.gain.setValueAtTime(0.14, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+          osc.connect(g);
+          g.connect(masterGain);
+          osc.start(t);
+          osc.stop(t + 0.045);
+        } catch (e) {}
+      };
+
+      // Giai điệu và Hợp âm 32 bước (Phrygian / Minor Heroic Arcade Mode)
+      const battleBassNotes = [
+        73.4, 73.4, 73.4, 73.4, 87.3, 87.3, 87.3, 87.3, 98.0, 98.0, 98.0, 98.0, 110.0, 110.0, 110.0, 110.0,
+        73.4, 73.4, 73.4, 73.4, 58.3, 58.3, 58.3, 58.3, 65.4, 65.4, 65.4, 65.4, 55.0, 55.0, 110.0, 110.0
+      ];
+
+      const battleLeadNotes = [
+        293.7, null, 349.2, null, 440.0, null, 587.3, null,
+        523.3, null, 440.0, null, 392.0, 349.2, 392.0, 440.0,
+        293.7, null, 349.2, null, 587.3, null, 698.5, null,
+        659.3, null, 523.3, null, 440.0, 392.0, 349.2, 329.6
+      ];
+
+      // Nhịp điệu: Battle 132 BPM (114ms) | Lobby 110 BPM (136ms)
+      const isBattle = (mode === "battle");
+      const stepIntervalMs = isBattle ? 114 : 136;
       let step = 0;
-      const freqs = [220, 261.63, 329.63, 392.00, 440, 392.00, 329.63, 261.63];
 
       this.bgmTimer = setInterval(() => {
         if (!this.bgmCtx) return;
-        const osc = this.bgmCtx.createOscillator();
-        const gain = this.bgmCtx.createGain();
-        osc.type = "sawtooth";
-        osc.frequency.setValueAtTime(freqs[step % freqs.length], this.bgmCtx.currentTime);
-        gain.gain.setValueAtTime(0.04, this.bgmCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.bgmCtx.currentTime + 0.18);
-        osc.connect(gain);
-        gain.connect(this.bgmCtx.destination);
-        osc.start();
-        osc.stop(this.bgmCtx.currentTime + 0.18);
+        const now = this.bgmCtx.currentTime;
+        const stepInBar = step % 32;
+
+        if (isBattle) {
+          // Trống Kick (Nhịp 0, 8, 16, 24)
+          if (stepInBar === 0 || stepInBar === 8 || stepInBar === 16 || stepInBar === 24) {
+            triggerKick(now);
+          }
+          // Trống Snare (Nhịp 4, 12, 20, 28)
+          if (stepInBar === 4 || stepInBar === 12 || stepInBar === 20 || stepInBar === 28) {
+            triggerSnare(now);
+          }
+          // Hi-Hat (Nhịp chẵn phụ)
+          if (stepInBar % 2 === 0 && stepInBar % 4 !== 0) {
+            triggerHiHat(now, stepInBar % 8 === 6);
+          }
+
+          // Bassline dồn dập
+          const bNote = battleBassNotes[stepInBar];
+          if (bNote && stepInBar % 2 === 0) {
+            triggerBass(bNote, now, 0.09);
+          }
+
+          // Lead giai điệu
+          const lNote = battleLeadNotes[stepInBar];
+          if (lNote) {
+            triggerLead(lNote, now, 0.12);
+          }
+
+          // Hiệu ứng hồi hộp khi thời gian câu hỏi <= 5s
+          if (this.battleActive && this.timer <= 5 && this.timer > 0) {
+            triggerTensionTick(now);
+          }
+        } else {
+          // Lobby Mode (Chill Synthwave nhẹ nhàng kích thích hứng thú)
+          if (stepInBar % 8 === 0) triggerKick(now);
+          if (stepInBar % 4 === 2) triggerHiHat(now);
+          const lobbyScale = [110.0, 130.8, 146.8, 164.8, 196.0];
+          if (stepInBar % 4 === 0) {
+            triggerBass(lobbyScale[Math.floor(stepInBar / 4) % lobbyScale.length], now, 0.15);
+          }
+          if (stepInBar % 4 === 2) {
+            triggerLead(lobbyScale[(Math.floor(stepInBar / 4) + 2) % lobbyScale.length] * 2, now, 0.18);
+          }
+        }
+
         step++;
-      }, 200);
+      }, stepIntervalMs);
     } catch (e) {
       console.warn("BGM synth error", e);
     }
   }
 
   stopSynthBGM() {
-    if (this.bgmTimer) clearInterval(this.bgmTimer);
+    if (this.bgmTimer) {
+      clearInterval(this.bgmTimer);
+      this.bgmTimer = null;
+    }
     if (this.bgmCtx) {
-      try { this.bgmCtx.close(); } catch (e) {}
-      this.bgmCtx = null;
+      try {
+        if (this.masterBGMGain) {
+          this.masterBGMGain.gain.setValueAtTime(0.001, this.bgmCtx.currentTime);
+        }
+      } catch (e) {}
+    }
+  }
+
+  playVictoryFanfare() {
+    try {
+      this.initAudio();
+      if (!this.audioCtx) return;
+      const t = this.audioCtx.currentTime;
+      const notes = [
+        { f: 523.25, d: 0.15, offset: 0 },
+        { f: 659.25, d: 0.15, offset: 0.14 },
+        { f: 783.99, d: 0.18, offset: 0.28 },
+        { f: 1046.50, d: 0.55, offset: 0.44 }
+      ];
+      notes.forEach(n => {
+        const osc = this.audioCtx.createOscillator();
+        const g = this.audioCtx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(n.f, t + n.offset);
+        g.gain.setValueAtTime(0.2, t + n.offset);
+        g.gain.exponentialRampToValueAtTime(0.001, t + n.offset + n.d);
+        osc.connect(g);
+        g.connect(this.audioCtx.destination);
+        osc.start(t + n.offset);
+        osc.stop(t + n.offset + n.d);
+      });
+    } catch (e) {}
+  }
+
+  // =========================================================================
+  // HIỆU ỨNG ÂM THANH CỔ VŨ KHÁN ĐÀI BÙNG NỔ (CROWD CHEER & STADIUM APPLAUSE)
+  // Gồm: Chùm vỗ tay ngẫu nhiên (65+ claps) + Tiếng hò reo vang dội (vocal swell)
+  // + Tiếng huýt sáo cổ vũ (stadium whistle) + Hợp âm kèn chiến thắng (fanfare)
+  // =========================================================================
+  playCrowdCheer(duration = 3.2) {
+    try {
+      this.initAudio();
+      if (!this.audioCtx) return;
+      const ctx = this.audioCtx;
+      if (ctx.state === 'suspended') ctx.resume();
+      const now = ctx.currentTime;
+
+      // 1. ÂM HÒ REO CỦA KHÁN ĐÀI (Crowd Roar / Vocal Resonant Swell)
+      const roarDuration = Math.min(duration, 3.5);
+      const roarBufferSize = Math.floor(ctx.sampleRate * roarDuration);
+      const roarBuffer = ctx.createBuffer(1, roarBufferSize, ctx.sampleRate);
+      const roarData = roarBuffer.getChannelData(0);
+      let lastVal = 0;
+      for (let i = 0; i < roarBufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        lastVal = (lastVal + (0.05 * white)) / 1.05;
+        roarData[i] = lastVal * 3.5;
+      }
+
+      const roarSource = ctx.createBufferSource();
+      roarSource.buffer = roarBuffer;
+
+      // Bộ lọc Formant tạo cảm giác tiếng hô "Ooooohhh" của hàng trăm khán giả
+      const formantFilter = ctx.createBiquadFilter();
+      formantFilter.type = "bandpass";
+      formantFilter.frequency.setValueAtTime(680, now);
+      formantFilter.Q.setValueAtTime(2.2, now);
+
+      const roarGain = ctx.createGain();
+      roarGain.gain.setValueAtTime(0.01, now);
+      roarGain.gain.linearRampToValueAtTime(0.22, now + 0.5);
+      roarGain.gain.setValueAtTime(0.22, now + roarDuration * 0.6);
+      roarGain.gain.exponentialRampToValueAtTime(0.001, now + roarDuration);
+
+      roarSource.connect(formantFilter);
+      formantFilter.connect(roarGain);
+      roarGain.connect(ctx.destination);
+      roarSource.start(now);
+      roarSource.stop(now + roarDuration);
+
+      // 2. CHÙM TIẾNG VỖ TAY RÒN RÃ KHẮP KHÁN ĐÀI (65+ Dense Claps)
+      const clapCount = 65;
+      for (let c = 0; c < clapCount; c++) {
+        const clapOffset = Math.random() * (duration - 0.25);
+        const clapLen = 0.03 + Math.random() * 0.04;
+        const clapBufSize = Math.floor(ctx.sampleRate * clapLen);
+        const clapBuf = ctx.createBuffer(1, clapBufSize, ctx.sampleRate);
+        const cd = clapBuf.getChannelData(0);
+        for (let j = 0; j < clapBufSize; j++) {
+          cd[j] = (Math.random() * 2 - 1) * Math.exp(-j / (clapBufSize * 0.3));
+        }
+
+        const clapSrc = ctx.createBufferSource();
+        clapSrc.buffer = clapBuf;
+
+        const clapFilter = ctx.createBiquadFilter();
+        clapFilter.type = "bandpass";
+        clapFilter.frequency.setValueAtTime(900 + Math.random() * 1400, now + clapOffset);
+        clapFilter.Q.setValueAtTime(1.5, now + clapOffset);
+
+        const cGain = ctx.createGain();
+        const baseVol = 0.06 + Math.random() * 0.12;
+        cGain.gain.setValueAtTime(baseVol, now + clapOffset);
+        cGain.gain.exponentialRampToValueAtTime(0.001, now + clapOffset + clapLen);
+
+        clapSrc.connect(clapFilter);
+        clapFilter.connect(cGain);
+        cGain.connect(ctx.destination);
+
+        clapSrc.start(now + clapOffset);
+        clapSrc.stop(now + clapOffset + clapLen);
+      }
+
+      // 3. TIẾNG HUÝT SÁO CỔ VŨ THỂ THAO REO VANG (Stadium Pea-Whistle)
+      const whistleOsc1 = ctx.createOscillator();
+      const whistleOsc2 = ctx.createOscillator();
+      const whistleGain = ctx.createGain();
+
+      whistleOsc1.type = "sine";
+      whistleOsc2.type = "sine";
+      whistleOsc1.frequency.setValueAtTime(2450, now + 0.35);
+      whistleOsc2.frequency.setValueAtTime(2780, now + 0.35);
+
+      whistleGain.gain.setValueAtTime(0.001, now);
+      whistleGain.gain.setValueAtTime(0.001, now + 0.35);
+      whistleGain.gain.linearRampToValueAtTime(0.12, now + 0.45);
+      whistleGain.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
+
+      whistleOsc1.connect(whistleGain);
+      whistleOsc2.connect(whistleGain);
+      whistleGain.connect(ctx.destination);
+
+      whistleOsc1.start(now + 0.35);
+      whistleOsc2.start(now + 0.35);
+      whistleOsc1.stop(now + 1.15);
+      whistleOsc2.stop(now + 1.15);
+
+      // 4. HỢP ÂM KÈN VINH QUANG BỨT PHÁ (Fanfare Stabs)
+      const brassNotes = [
+        { f: 523.25, offset: 0.1, dur: 0.25 },
+        { f: 659.25, offset: 0.22, dur: 0.28 },
+        { f: 783.99, offset: 0.35, dur: 0.35 },
+        { f: 1046.50, offset: 0.52, dur: 0.8 }
+      ];
+      brassNotes.forEach(b => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(b.f, now + b.offset);
+
+        g.gain.setValueAtTime(0.001, now + b.offset);
+        g.gain.linearRampToValueAtTime(0.18, now + b.offset + 0.04);
+        g.gain.exponentialRampToValueAtTime(0.001, now + b.offset + b.dur);
+
+        osc.connect(g);
+        g.connect(ctx.destination);
+        osc.start(now + b.offset);
+        osc.stop(now + b.offset + b.dur);
+      });
+    } catch (e) {
+      console.warn("Crowd cheer sound error", e);
     }
   }
 

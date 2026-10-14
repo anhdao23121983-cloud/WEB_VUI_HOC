@@ -60,3 +60,6 @@ $RECYCLE.BIN/
 *.tar.gz
 *.iso
 *.exe
+
+# 8. Thư mục công cụ phụ trợ bên ngoài
+taste-skill-main/

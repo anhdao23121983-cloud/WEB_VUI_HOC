@@ -95,14 +95,21 @@ class Application {
     } else if (route === "lab3d" || route === "experiment3d") {
       document.getElementById("portal-view")?.classList.remove("hidden");
       window.simulation3D.render("main-content-area");
-    } else if (route === "arena" || route === "dautruong") {
+    } else if (route === "arena" || route === "dautruong" || route === "arena-analytics" || route === "arena-leaderboard" || route === "bxh") {
       if (!user) {
         this.showToast("⚡ Vui lòng Đăng nhập hoặc Đăng ký tài khoản để tham gia Đấu Trường Tin Học!", "warning");
-        sessionStorage.setItem("post_login_redirect", "arena");
+        sessionStorage.setItem("post_login_redirect", route);
         window.location.hash = "auth";
         return;
       }
       document.getElementById("portal-view")?.classList.remove("hidden");
+      if (route === "arena-analytics") {
+        window.arenaPortal.currentTab = "leaderboard";
+        window.arenaPortal.leaderboardSubTab = "analytics";
+      } else if (route === "arena-leaderboard" || route === "bxh") {
+        window.arenaPortal.currentTab = "leaderboard";
+        window.arenaPortal.leaderboardSubTab = "individual";
+      }
       window.arenaPortal.render("main-content-area");
 
       // Gợi ý 2: Hiển thị thông báo Toast chào đón khi học sinh vừa bước vào Đấu Trường

@@ -4,7 +4,7 @@
    Typography: Nunito, Outfit (Google Fonts)
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,400&family=Outfit:wght@400;500;600;700;800&display=swap');
+/* Google Fonts đã được nạp tối ưu bằng preconnect và <link> trong index.html */
 
 :root {
   /* Brand Palettes */

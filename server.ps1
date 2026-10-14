@@ -44,6 +44,18 @@ $mimeTypes = @{
     ".xlsx"  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 }
 
+# Ham nen Gzip trong bo nho RAM giup giam 75% dung luong truyen tai
+function Compress-Gzip([byte[]]$data) {
+    $ms = New-Object System.IO.MemoryStream
+    $gz = New-Object System.IO.Compression.GZipStream($ms, [System.IO.Compression.CompressionMode]::Compress)
+    $gz.Write($data, 0, $data.Length)
+    $gz.Close()
+    return $ms.ToArray()
+}
+
+# Bo nho dem RAM phuc vu load file sieu toc (kem cache ban da nen Gzip)
+$staticCache = @{}
+
 try {
     while ($listener.IsListening) {
         $context = $listener.GetContext()
@@ -53,14 +65,44 @@ try {
         $localPath = [System.Uri]::UnescapeDataString($request.Url.LocalPath)
         if ($localPath -eq "/") { $localPath = "/index.html" }
 
-        # Header CORS va Cache-Control phuc vu lap trinh khong bi cache
+        # Header CORS phuc vu ket noi linh hoat
         $response.AddHeader("Access-Control-Allow-Origin", "*")
         $response.AddHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
-        $response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        $response.AddHeader("Cache-Control", "no-cache, no-store, must-revalidate")
+        $response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, If-None-Match, If-Modified-Since")
 
         if ($request.HttpMethod -eq "OPTIONS") {
             $response.StatusCode = 200
+            $response.Close()
+            continue
+        }
+
+        # API luon luon duoc cap nhat moi nhat khong cache
+        if ($localPath.StartsWith("/api/")) {
+            $response.AddHeader("Cache-Control", "no-cache, no-store, must-revalidate")
+        }
+
+        # API: Luu anh WebP chuyen doi
+        if ($request.HttpMethod -eq "POST" -and $localPath -eq "/api/save-webp") {
+            try {
+                $reader = New-Object System.IO.StreamReader($request.InputStream, [System.Text.Encoding]::UTF8)
+                $body = $reader.ReadToEnd()
+                $reader.Close()
+                $base64 = $body.Replace("data:image/webp;base64,", "")
+                $bytes = [Convert]::FromBase64String($base64)
+                [System.IO.File]::WriteAllBytes((Join-Path $PSScriptRoot "logo.webp"), $bytes)
+                $resJson = '{"success":true,"size":' + $bytes.Length + '}'
+                $buffer = [System.Text.Encoding]::UTF8.GetBytes($resJson)
+                $response.ContentType = "application/json; charset=utf-8"
+                $response.ContentLength64 = $buffer.Length
+                $response.OutputStream.Write($buffer, 0, $buffer.Length)
+            } catch {
+                $errJson = '{"success":false,"error":"' + $_.Exception.Message + '"}'
+                $buffer = [System.Text.Encoding]::UTF8.GetBytes($errJson)
+                $response.StatusCode = 500
+                $response.ContentType = "application/json; charset=utf-8"
+                $response.ContentLength64 = $buffer.Length
+                $response.OutputStream.Write($buffer, 0, $buffer.Length)
+            }
             $response.Close()
             continue
         }
@@ -205,19 +247,85 @@ try {
 
         if (Test-Path $filePath -PathType Leaf) {
             $ext = [System.IO.Path]::GetExtension($filePath).ToLower()
-            if ($mimeTypes.ContainsKey($ext)) {
-                $response.ContentType = $mimeTypes[$ext]
-            } else {
-                $response.ContentType = "application/octet-stream"
+            $mime = if ($mimeTypes.ContainsKey($ext)) { $mimeTypes[$ext] } else { "application/octet-stream" }
+            $fileInfo = [System.IO.FileInfo]::new($filePath)
+            $lwtUtc = $fileInfo.LastWriteTimeUtc
+            $etag = '"' + $lwtUtc.Ticks.ToString("x") + '"'
+
+            # 1. Kiem tra HTTP 304 Not Modified (Trinh duyet dung cache cu, khong ton bang thong)
+            $reqIfNoneMatch = $request.Headers["If-None-Match"]
+            $reqIfModifiedSince = $request.Headers["If-Modified-Since"]
+            $isNotModified = $false
+
+            if ($reqIfNoneMatch -and $reqIfNoneMatch -eq $etag) {
+                $isNotModified = $true
+            } elseif ($reqIfModifiedSince) {
+                [DateTime]$clientDate = [DateTime]::MinValue
+                if ([DateTime]::TryParse($reqIfModifiedSince, [ref]$clientDate)) {
+                    if ($clientDate.ToUniversalTime() -ge $lwtUtc.AddSeconds(-1)) {
+                        $isNotModified = $true
+                    }
+                }
             }
 
-            $bytes = [System.IO.File]::ReadAllBytes($filePath)
-            $response.ContentLength64 = $bytes.Length
-            $response.OutputStream.Write($bytes, 0, $bytes.Length)
+            if ($isNotModified) {
+                $response.StatusCode = 304
+                $response.AddHeader("ETag", $etag)
+                $response.AddHeader("Last-Modified", $lwtUtc.ToString("R"))
+                if ($ext -eq ".html" -or $ext -eq ".htm") {
+                    $response.AddHeader("Cache-Control", "no-cache")
+                } else {
+                    $response.AddHeader("Cache-Control", "public, max-age=86400")
+                }
+                $response.Close()
+                continue
+            }
+
+            # 2. Nap va phuc vu file truc tiep tu bo nho dem RAM (In-Memory Cache kem Gzip)
+            $isCompressible = $ext -in @(".html", ".htm", ".css", ".js", ".mjs", ".json", ".csv", ".svg")
+            if (-not $staticCache.ContainsKey($filePath) -or $staticCache[$filePath].Lwt -ne $lwtUtc) {
+                $rawBytes = [System.IO.File]::ReadAllBytes($filePath)
+                $gzipBytes = $null
+                if ($isCompressible -and $rawBytes.Length -gt 256) {
+                    try { $gzipBytes = Compress-Gzip $rawBytes } catch { $gzipBytes = $null }
+                }
+                $staticCache[$filePath] = @{
+                    Bytes = $rawBytes
+                    GzipBytes = $gzipBytes
+                    Lwt = $lwtUtc
+                    Mime = $mime
+                    ETag = $etag
+                }
+            }
+
+            $entry = $staticCache[$filePath]
+            $acceptEncoding = $request.Headers["Accept-Encoding"]
+            $useGzip = $entry.GzipBytes -and $acceptEncoding -and ($acceptEncoding -like "*gzip*")
+
+            $response.ContentType = $entry.Mime
+            $response.AddHeader("ETag", $entry.ETag)
+            $response.AddHeader("Last-Modified", $entry.Lwt.ToString("R"))
+            $response.AddHeader("Vary", "Accept-Encoding")
+
+            if ($ext -eq ".html" -or $ext -eq ".htm") {
+                $response.AddHeader("Cache-Control", "no-cache")
+            } else {
+                $response.AddHeader("Cache-Control", "public, max-age=86400")
+            }
+
+            if ($useGzip) {
+                $response.AddHeader("Content-Encoding", "gzip")
+                $response.ContentLength64 = $entry.GzipBytes.Length
+                $response.OutputStream.Write($entry.GzipBytes, 0, $entry.GzipBytes.Length)
+            } else {
+                $response.ContentLength64 = $entry.Bytes.Length
+                $response.OutputStream.Write($entry.Bytes, 0, $entry.Bytes.Length)
+            }
         } else {
             $response.StatusCode = 404
             $notFoundMsg = "404 - Khong tim thay file: $localPath"
             $buffer = [System.Text.Encoding]::UTF8.GetBytes($notFoundMsg)
+            $response.ContentType = "text/plain; charset=utf-8"
             $response.ContentLength64 = $buffer.Length
             $response.OutputStream.Write($buffer, 0, $buffer.Length)
         }

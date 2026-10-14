@@ -19,11 +19,11 @@ class StudentManagementPortal {
     this.selectedStudentForReward = null;
   }
 
-  // 1. TẢI DỮ LIỆU TỔNG HỢP TỪ SUPABASE & LOCALSTORAGE
-  async loadData() {
+  // 1. TẢI DỮ LIỆU TỔNG HỢP TỪ SUPABASE & LOCALSTORAGE (HỖ TRỢ LOAD CỤC BỘ SIÊU TỐC)
+  async loadData(forceLocal = false) {
     // 1.1 Lấy toàn bộ người dùng và lọc học sinh
     let allUsers = [];
-    if (window.adminService) {
+    if (!forceLocal && window.adminService) {
       allUsers = await window.adminService.getAllUsers();
     } else {
       const db = JSON.parse(localStorage.getItem("app_mock_db")) || window.MOCK_DATABASE || {};
@@ -36,7 +36,7 @@ class StudentManagementPortal {
     // 1.2 Lấy dữ liệu Bảng xếp hạng Đấu Trường Tin Học
     if (window.arenaService) {
       this.leaderboardData = await window.arenaService.getStudentLeaderboard(this.gradeFilter, this.classFilter, this.timeFilter);
-      if (this.leaderboardData.length === 0 && window.arenaService.syncArenaWithStudents) {
+      if (this.leaderboardData.length === 0 && window.arenaService.syncArenaWithStudents && !forceLocal) {
         await window.arenaService.syncArenaWithStudents(true);
         this.leaderboardData = await window.arenaService.getStudentLeaderboard(this.gradeFilter, this.classFilter, this.timeFilter);
       }
@@ -50,11 +50,11 @@ class StudentManagementPortal {
   }
 
   // 2. RENDER MÀN HÌNH CHÍNH
-  async render(containerId = "main-content-area") {
+  async render(containerId = "main-content-area", forceLocal = false) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    await this.loadData();
+    await this.loadData(forceLocal);
 
     // Thống kê nhanh
     const totalStudents = this.studentsList.length;
@@ -554,6 +554,24 @@ class StudentManagementPortal {
 
     return `
       <div class="space-y-6">
+        <!-- Lối Tắt Sang Bảng Tổng Sắp & Thống Kê Chiến Tích Đấu Trường -->
+        <div class="p-4 md:p-5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 rounded-3xl text-slate-950 flex flex-col md:flex-row items-center justify-between gap-3 shadow-xl border-2 border-white">
+          <div class="flex items-center gap-3 text-center md:text-left">
+            <span class="text-3xl p-2.5 bg-slate-950 text-amber-300 rounded-2xl shadow-inner shrink-0">📊</span>
+            <div>
+              <div class="flex items-center gap-2 justify-center md:justify-start flex-wrap">
+                <span class="badge bg-slate-950 text-amber-300 font-black text-[10px] uppercase px-2.5 py-0.5">BẢNG TỔNG SẮP TOÀN TRƯỜNG</span>
+                <span class="badge bg-white/40 text-slate-950 font-black text-[10px]">MÙA GIẢI 2026</span>
+              </div>
+              <h4 class="font-black text-base text-slate-950">THỐNG KÊ CHIẾN TÍCH, KỸ NĂNG & IN GIẤY KHEN</h4>
+              <p class="text-xs font-bold text-slate-900">Xem phân tích % mức độ nắm vững SGK, Đua Top Tập thể lớp, In Giấy Khen A4 & Xuất Excel</p>
+            </div>
+          </div>
+          <button onclick="window.location.hash='arena-analytics'" class="btn bg-slate-950 hover:bg-slate-900 text-amber-300 font-black btn-sm px-4 py-2 rounded-2xl shadow-lg flex items-center gap-2 shrink-0 hover:scale-105 transition-all cursor-pointer">
+            <span>🚀</span> <span>Mở Bảng Tổng Sắp Chi Tiết ▶</span>
+          </button>
+        </div>
+
         <!-- Bảng Vinh Danh Top 3 Cao Nhất -->
         ${list.length >= 3 ? `
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

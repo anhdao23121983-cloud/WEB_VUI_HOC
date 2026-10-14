@@ -5,20 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ANH ĐÀO - Học Liệu & Vui Học Tin Học 3-5 | Kế Hoạch Bài Dạy CV 2345</title>
   <meta name="description" content="Hệ thống Quản lý Kế hoạch bài dạy chuẩn Công văn 2345 tích hợp AI và Game Hub học tập tương tác Tin học lớp 3, 4, 5.">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  
+  <!-- Tối ưu kết nối sớm tới các CDN & Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+
+  <!-- Google Fonts (display=swap giúp chữ hiển thị ngay tức thì) -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="logo.png">
+  <!-- Favicon (Hỗ trợ WebP và PNG dự phòng) -->
+  <link rel="icon" type="image/webp" href="logo.webp">
+  <link rel="alternate icon" type="image/png" href="logo.png">
   
   <!-- Custom Design System -->
   <link rel="stylesheet" href="css/main.css">
@@ -31,7 +32,7 @@
   <header class="navbar px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-sm">
     <!-- Brand Logo -->
     <div class="flex items-center gap-3">
-      <img src="logo.png" alt="Logo Web Vui Học" onclick="app.openLogoLightbox()" title="Bấm để xem logo phóng to" class="w-11 h-11 object-contain rounded-xl shadow-md bg-white p-1 border border-slate-200/80 cursor-pointer hover:scale-105 transition-all">
+      <img src="logo.webp" onerror="this.onerror=null;this.src='logo.png'" alt="Logo Web Vui Học" onclick="app.openLogoLightbox()" title="Bấm để xem logo phóng to" class="w-11 h-11 object-contain rounded-xl shadow-md bg-white p-1 border border-slate-200/80 cursor-pointer hover:scale-105 transition-all">
       <div class="cursor-pointer" onclick="window.location.hash='landing'">
         <h1 class="text-base lg:text-lg font-black text-slate-900 leading-tight">ANH ĐÀO • CLASSROOM</h1>
         <p class="text-[11px] font-bold text-cyan-700 uppercase tracking-wider">Học Liệu & Vui Học Tin Học 3-5</p>
@@ -103,9 +104,6 @@
           <p id="nav-user-name" class="text-xs font-black text-slate-800 hover:text-cyan-700">Cô Giáo Anh Đào</p>
           <p id="nav-user-role" class="text-[10px] text-slate-500 font-bold">Giáo viên</p>
         </div>
-        <button onclick="window.location.hash='students-manager'" class="px-2 py-1 rounded-lg text-xs font-black text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 hidden sm:inline-flex items-center gap-1 transition-all" title="Mở Cổng Quản Lý Học Sinh & BXH Đấu Trường">
-          <span>👨‍🎓</span> Quản Lý HS
-        </button>
         <button onclick="app.openProfileModal()" class="text-xs text-cyan-700 font-bold ml-1 hover:underline hidden sm:inline" title="Chỉnh sửa hồ sơ và mật khẩu">Hồ Sơ</button>
         <button onclick="app.openSettings()" class="text-xs text-amber-700 font-bold ml-1 hover:underline hidden sm:inline" title="Cấu hình kết nối Supabase Database & Gemini AI">⚙️ Cài Đặt DB</button>
         <button onclick="app.handleLogout()" class="text-xs text-rose-600 font-bold ml-1 hover:underline">Đăng Xuất</button>
@@ -199,8 +197,8 @@
         </div>
       </div>
 
-      <!-- Sơ Đồ 4 Tầng Kiến Trúc Hệ Thống (Trực quan hóa sơ đồ của Thầy) -->
-      <div class="space-y-4">
+      <!-- Sơ Đồ 4 Tầng Kiến Trúc Hệ Thống (Trực quan hóa sơ đồ) - Đã ẩn theo yêu cầu -->
+      <div class="space-y-4 hidden" style="display: none;">
         <div class="text-center max-w-xl mx-auto">
           <h3 class="text-2xl font-black text-slate-900">🏛️ KIẾN TRÚC 4 TẦNG HỆ THỐNG</h3>
           <p class="text-xs text-slate-500 font-semibold">Mô hình vận hành theo đúng sơ đồ thiết kế Classroom App</p>
@@ -263,7 +261,7 @@
       <div class="glass-card p-6 md:p-8 space-y-6 shadow-2xl border-2 border-cyan-100">
         <!-- Auth Header -->
         <div class="text-center space-y-1">
-          <img src="logo.png" alt="Logo Anh Đào" class="w-16 h-16 mx-auto object-contain drop-shadow-md bg-white p-1 rounded-2xl border border-slate-200/80 animate-float mb-2">
+          <img src="logo.webp" onerror="this.onerror=null;this.src='logo.png'" alt="Logo Anh Đào" class="w-16 h-16 mx-auto object-contain drop-shadow-md bg-white p-1 rounded-2xl border border-slate-200/80 animate-float mb-2">
           <h3 class="text-2xl font-black text-slate-900 pt-1">CỔNG XÁC THỰC THÀNH VIÊN</h3>
           <p class="text-xs text-slate-500 font-semibold">Đồng bộ dữ liệu trực tiếp với Supabase Database</p>
         </div>
@@ -640,7 +638,7 @@
         <button onclick="document.getElementById('logo-lightbox-modal').classList.remove('active')" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">✕</button>
       </div>
       <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 inline-block shadow-inner">
-        <img src="logo.png" alt="Logo Lớp Học Anh Đào" class="w-48 h-48 object-contain mx-auto drop-shadow-xl animate-float">
+        <img src="logo.webp" onerror="this.onerror=null;this.src='logo.png'" alt="Logo Lớp Học Anh Đào" class="w-48 h-48 object-contain mx-auto drop-shadow-xl animate-float">
       </div>
       <div>
         <h3 class="text-lg font-black text-slate-900">ANH ĐÀO • CLASSROOM</h3>
@@ -742,7 +740,7 @@
     <div class="modal-content p-6 md:p-8 max-w-2xl space-y-5 animate-pop">
       <div class="flex items-center justify-between pb-3 border-b border-slate-200">
         <div class="flex items-center gap-3">
-          <img src="logo.png" alt="Logo Anh Đào" class="w-10 h-10 object-contain">
+          <img src="logo.webp" onerror="this.onerror=null;this.src='logo.png'" alt="Logo Anh Đào" class="w-10 h-10 object-contain">
           <div>
             <h3 class="text-lg font-black text-slate-900">VỀ HỆ THỐNG ANH ĐÀO • CLASSROOM</h3>
             <p class="text-xs text-cyan-700 font-bold">Giải Pháp Học Liệu Số & Kế Hoạch Bài Dạy Chuẩn CV 2345</p>
@@ -3153,47 +3151,48 @@
 
   <footer class="mt-auto bg-white border-t border-slate-200 py-6 px-4 text-center text-xs text-slate-500 flex flex-col items-center justify-center gap-2">
     <div class="flex items-center gap-2">
-      <img src="logo.png" alt="Logo Anh Đào" class="w-7 h-7 object-contain">
+      <img src="logo.webp" onerror="this.onerror=null;this.src='logo.png'" alt="Logo Anh Đào" class="w-7 h-7 object-contain">
       <p class="font-bold text-slate-700">🎓 Classroom App - Hệ thống Học liệu & Vui học Tin học 3-5</p>
     </div>
     <p class="text-[11px]">Thiết kế theo chuẩn Công văn 2345/BGDĐT & Chương trình GDPT 2018 | Tác giả: <b>anhdao23121983</b></p>
   </footer>
 
   <!-- Supabase JS Client v2 -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase JS Client v2 (Tải song song không chặn hiển thị) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- JSZip v3 for bulk zip packaging -->
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <!-- SheetJS (xlsx) for Excel export -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <!-- App Scripts (Anti-cache Version Hash) -->
-  <script src="js/config.js?v=2.5.2"></script>
-  <script src="js/data/curriculumData.js?v=2.5.2"></script>
-  <script src="js/data/defaultLectures.js?v=2.5.2"></script>
-  <script src="js/data/defaultDatabase.js?v=2.5.2"></script>
-  <script src="js/data/mockDatabase.js?v=2.5.2"></script>
-  <script src="js/services/dataSyncManager.js?v=2.5.2"></script>
-  <script src="js/services/authService.js?v=2.5.2"></script>
-  <script src="js/services/supabaseService.js?v=2.5.2"></script>
-  <script src="js/services/aiPlannerService.js?v=2.5.2"></script>
-  <script src="js/services/docExportService.js?v=2.5.2"></script>
-  <script src="js/services/quizService.js?v=2.5.2"></script>
-  <script src="js/services/adminService.js?v=2.5.2"></script>
-  <script src="js/services/ttsService.js?v=2.5.2"></script>
-  <script src="js/services/lectureService.js?v=2.5.2"></script>
-  <script src="js/services/arenaService.js?v=2.5.2"></script>
-  <script src="js/components/adminPortal.js?v=2.5.2"></script>
-  <script src="js/components/quizAuthorModal.js?v=2.5.2"></script>
-  <script src="js/components/quizPlayModal.js?v=2.5.2"></script>
-  <script src="js/components/lectureUploadModal.js?v=2.5.2"></script>
-  <script src="js/components/lecturePortal.js?v=2.5.2"></script>
-  <script src="js/components/simulation3D.js?v=2.5.2"></script>
-  <script src="js/components/arenaPortal.js?v=2.5.2"></script>
-  <script src="js/components/teacherPortal.js?v=2.5.2"></script>
-  <script src="js/components/studentPortal.js?v=2.5.2"></script>
-  <script src="js/components/gameHub.js?v=2.5.2"></script>
-  <script src="js/components/lessonPlannerModal.js?v=2.5.2"></script>
-  <script src="js/components/studentManagementPortal.js?v=2.5.2"></script>
-  <script src="js/app.js?v=2.5.2"></script>
+  <!-- App Scripts (Thứ tự thực thi tuần tự được đảm bảo hoàn toàn bởi defer) -->
+  <script defer src="js/config.js?v=2.5.2"></script>
+  <script defer src="js/data/curriculumData.js?v=2.5.2"></script>
+  <script defer src="js/data/defaultLectures.js?v=2.5.2"></script>
+  <script defer src="js/data/defaultDatabase.js?v=2.5.2"></script>
+  <script defer src="js/data/mockDatabase.js?v=2.5.2"></script>
+  <script defer src="js/services/dataSyncManager.js?v=2.5.2"></script>
+  <script defer src="js/services/authService.js?v=2.5.2"></script>
+  <script defer src="js/services/supabaseService.js?v=2.5.2"></script>
+  <script defer src="js/services/aiPlannerService.js?v=2.5.2"></script>
+  <script defer src="js/services/docExportService.js?v=2.5.2"></script>
+  <script defer src="js/services/quizService.js?v=2.5.2"></script>
+  <script defer src="js/services/adminService.js?v=2.5.2"></script>
+  <script defer src="js/services/ttsService.js?v=2.5.2"></script>
+  <script defer src="js/services/lectureService.js?v=2.5.2"></script>
+  <script defer src="js/services/arenaService.js?v=2.5.2"></script>
+  <script defer src="js/components/adminPortal.js?v=2.5.2"></script>
+  <script defer src="js/components/quizAuthorModal.js?v=2.5.2"></script>
+  <script defer src="js/components/quizPlayModal.js?v=2.5.2"></script>
+  <script defer src="js/components/lectureUploadModal.js?v=2.5.2"></script>
+  <script defer src="js/components/lecturePortal.js?v=2.5.2"></script>
+  <script defer src="js/components/simulation3D.js?v=2.5.2"></script>
+  <script defer src="js/components/arenaPortal.js?v=2.5.2"></script>
+  <script defer src="js/components/teacherPortal.js?v=2.5.2"></script>
+  <script defer src="js/components/studentPortal.js?v=2.5.2"></script>
+  <script defer src="js/components/gameHub.js?v=2.5.2"></script>
+  <script defer src="js/components/lessonPlannerModal.js?v=2.5.2"></script>
+  <script defer src="js/components/studentManagementPortal.js?v=2.5.2"></script>
+  <script defer src="js/app.js?v=2.5.2"></script>
 </body>
 </html>
